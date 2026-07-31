@@ -1,0 +1,21 @@
+{
+  "name": "ثبت اطلاعات کل",
+  "short_name": "ثبت اطلاعات",
+  "description": "سامانه ثبت اطلاعات داروخانه، پزشک، سفارشات و تردد نمایندگان علمی",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#f1f5f9",
+  "theme_color": "#0f766e",
+  "dir": "rtl",
+  "lang": "fa-IR",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
