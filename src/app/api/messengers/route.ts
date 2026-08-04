@@ -1,14 +1,16 @@
 import { db } from "@/db";
 import { messageLogs, messengers } from "@/db/schema";
 import { getSessionUser } from "@/lib/auth";
+import { getProxy } from "@/lib/messaging";
 import { desc, eq } from "drizzle-orm";
 
 export const dynamic = "force-dynamic";
 
 async function adminGuard() {
   const user = await getSessionUser();
-  if (!user || user.role !== "admin") return null;
-  return user;
+  if (!user) return null;
+  if (user.role === "admin" || user.permissions.includes("messengers")) return user;
+  return null;
 }
 
 export async function GET() {
@@ -16,7 +18,8 @@ export async function GET() {
   if (!admin) return Response.json({ error: "دسترسی غیرمجاز" }, { status: 401 });
   const rows = await db.select().from(messengers).orderBy(desc(messengers.id));
   const logs = await db.select().from(messageLogs).orderBy(desc(messageLogs.id)).limit(50);
-  return Response.json({ rows, logs });
+  const proxy = await getProxy();
+  return Response.json({ rows, logs, proxy });
 }
 
 export async function POST(req: Request) {
@@ -24,7 +27,7 @@ export async function POST(req: Request) {
   if (!admin) return Response.json({ error: "دسترسی غیرمجاز" }, { status: 401 });
   const b = await req.json().catch(() => ({}));
   const platform = String(b.platform ?? "");
-  if (!["bale", "eitaa", "whatsapp"].includes(platform)) {
+  if (!["telegram", "bale", "eitaa", "whatsapp"].includes(platform)) {
     return Response.json({ error: "پیام‌رسان نامعتبر" }, { status: 400 });
   }
   const [row] = await db

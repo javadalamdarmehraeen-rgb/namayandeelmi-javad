@@ -40,6 +40,11 @@ export const OPTION_CATEGORIES: { key: string; label: string }[] = [
 
 export const PLATFORMS: { key: string; label: string; hint: string }[] = [
   {
+    key: "telegram",
+    label: "تلگرام",
+    hint: "توکن ربات از @BotFather. مقصد: chat_id عددی کاربر یا گروه (گروه‌ها با منفی شروع می‌شوند)",
+  },
+  {
     key: "bale",
     label: "بله",
     hint: "توکن ربات بله (از @BotFather بله). مقصد: chat_id عددی کاربر یا گروه (گروه با منفی)",

@@ -291,12 +291,34 @@ async function seed() {
   const st = await db.select().from(settings).limit(1);
   if (st.length === 0) {
     await db.insert(settings).values([
+      {
+        key: "messagingProxy",
+        value: {
+          url: process.env.MESSAGING_PROXY_URL || "https://namayandeelmi-javad.javadalamdar-mehraeen.workers.dev/",
+          enabled: true,
+          secret: "",
+        },
+      },
       { key: "products", value: DEFAULT_PRODUCTS },
       { key: "columns.pharmacies", value: DEFAULT_COLUMNS.pharmacies },
       { key: "columns.doctors", value: DEFAULT_COLUMNS.doctors },
       { key: "columns.orders", value: DEFAULT_COLUMNS.orders },
     ]);
   }
+  // مدیر همیشه دسترسی کامل داشته باشد (ترمیم دیتابیس‌های قدیمی)
+  try {
+    await db.execute(sql`
+      UPDATE users SET permissions = ${JSON.stringify(ALL_PERMISSION_KEYS)}::jsonb
+      WHERE role = 'admin' AND (permissions IS NULL OR jsonb_array_length(permissions) < ${ALL_PERMISSION_KEYS.length})
+    `);
+    await db.execute(sql`
+      UPDATE users SET permissions = ${JSON.stringify(REP_DEFAULT_PERMISSIONS)}::jsonb
+      WHERE role = 'rep' AND (permissions IS NULL OR jsonb_array_length(permissions) = 0)
+    `);
+  } catch {
+    /* ignore */
+  }
+
   const existing = await db.select().from(options).limit(1);
   if (existing.length === 0) {
     await db.insert(options).values([

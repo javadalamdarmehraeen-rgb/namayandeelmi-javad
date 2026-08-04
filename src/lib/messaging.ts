@@ -1,8 +1,9 @@
 import { db } from "@/db";
-import { messageLogs, messengers } from "@/db/schema";
+import { messageLogs, messengers, settings } from "@/db/schema";
 import { bonusKeyOf } from "./defaults";
 import { getProducts } from "./settings-server";
 import { toPersianDigits } from "./jalali";
+import { eq } from "drizzle-orm";
 
 type OrderLike = {
   id: number;
@@ -19,6 +20,25 @@ type OrderLike = {
   visitor: string;
   notes: string;
 };
+
+export type ProxyConfig = { url: string; enabled: boolean; secret?: string };
+
+export const DEFAULT_PROXY: ProxyConfig = {
+  url: "https://namayandeelmi-javad.javadalamdar-mehraeen.workers.dev/",
+  enabled: true,
+  secret: "",
+};
+
+export async function getProxy(): Promise<ProxyConfig> {
+  try {
+    const rows = await db.select().from(settings).where(eq(settings.key, "messagingProxy")).limit(1);
+    const v = rows[0]?.value as ProxyConfig | undefined;
+    if (v && typeof v.url === "string") return { ...DEFAULT_PROXY, ...v };
+  } catch {
+    /* ignore */
+  }
+  return DEFAULT_PROXY;
+}
 
 export async function formatOrderMessage(o: OrderLike) {
   const PRODUCTS = await getProducts();
@@ -44,14 +64,14 @@ export async function formatOrderMessage(o: OrderLike) {
 }
 
 function friendly(platform: string, status: number, raw: string) {
-  const snippet = raw.replace(/\s+/g, " ").slice(0, 200);
-  if (status === 401 || status === 403) return `توکن ${platform} نامعتبر یا منقضی است (${status})`;
-  if (status === 404) return `توکن/آدرس ${platform} یافت نشد (۴۰۴) — توکن ربات را بررسی کنید`;
-  if (status === 400) return `مقصد نامعتبر است: ${snippet}`;
+  const snippet = raw.replace(/\s+/g, " ").slice(0, 220);
+  if (status === 401 || status === 403) return `توکن ${platform} نامعتبر یا منقضی است (${status}) — ${snippet}`;
+  if (status === 404) return `آدرس/توکن ${platform} یافت نشد (۴۰۴) — ${snippet}`;
+  if (status === 400) return `مقصد یا پارامتر نامعتبر: ${snippet}`;
   return `خطای ${status}: ${snippet}`;
 }
 
-async function withTimeout(url: string, init: RequestInit, ms = 12000) {
+async function withTimeout(url: string, init: RequestInit, ms = 15000) {
   const ctrl = new AbortController();
   const t = setTimeout(() => ctrl.abort(), ms);
   try {
@@ -61,35 +81,98 @@ async function withTimeout(url: string, init: RequestInit, ms = 12000) {
   }
 }
 
-export async function sendOne(
+const LABEL: Record<string, string> = {
+  telegram: "تلگرام",
+  bale: "بله",
+  eitaa: "ایتا",
+  whatsapp: "واتساپ",
+};
+
+/** ارسال از طریق پروکسی Cloudflare Worker (برای عبور از تحریم/فیلترینگ سرورهای خارجی) */
+async function sendViaProxy(
+  proxy: ProxyConfig,
+  m: { platform: string; target: string; token: string },
+  text: string,
+): Promise<{ ok: boolean; detail: string }> {
+  const url = proxy.url.trim();
+  if (!url) return { ok: false, detail: "آدرس پروکسی تنظیم نشده است" };
+  // نگاشت نام‌ها برای سازگاری با ورکرهای رایج
+  const alias = m.platform === "eitaa" ? "ita" : m.platform;
+  try {
+    const res = await withTimeout(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        ...(proxy.secret ? { "x-proxy-secret": proxy.secret } : {}),
+      },
+      body: JSON.stringify({
+        messenger: alias,
+        platform: m.platform,
+        text,
+        chatId: m.target,
+        chat_id: m.target,
+        token: m.token,
+      }),
+    });
+    const raw = await res.text();
+    let ok = res.ok;
+    let detail = raw.slice(0, 220);
+    try {
+      const j = JSON.parse(raw);
+      if (j.success === false || j.ok === false) {
+        ok = false;
+        detail = String(j.error ?? j.description ?? detail);
+      } else if (j.success === true || j.ok === true) {
+        ok = true;
+        detail = "ارسال شد (از طریق پروکسی)";
+      }
+    } catch {
+      /* raw text */
+    }
+    return ok
+      ? { ok: true, detail }
+      : { ok: false, detail: `پروکسی: ${friendly(LABEL[m.platform] ?? m.platform, res.status, detail)}` };
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : "خطای شبکه";
+    return {
+      ok: false,
+      detail: msg.includes("abort") ? "پاسخی از پروکسی دریافت نشد (Timeout)" : `خطای پروکسی: ${msg}`,
+    };
+  }
+}
+
+/** ارسال مستقیم (بدون پروکسی) */
+async function sendDirect(
   m: { platform: string; target: string; token: string },
   text: string,
 ): Promise<{ ok: boolean; detail: string }> {
   const token = m.token.trim();
   const target = m.target.trim();
-  if (!token) return { ok: false, detail: "توکن وارد نشده است" };
-  if (!target) return { ok: false, detail: "مقصد (شماره یا آیدی گروه) وارد نشده است" };
-
   try {
-    if (m.platform === "bale") {
-      // Bale bot API – identical shape to Telegram
-      const res = await withTimeout(`https://tapi.bale.ai/bot${token}/sendMessage`, {
+    if (m.platform === "telegram" || m.platform === "bale") {
+      const base =
+        m.platform === "telegram" ? `https://api.telegram.org/bot${token}` : `https://tapi.bale.ai/bot${token}`;
+      const res = await withTimeout(`${base}/sendMessage`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ chat_id: target, text }),
       });
       const raw = await res.text();
       let ok = res.ok;
+      let detail = "ارسال شد";
       try {
-        ok = ok && JSON.parse(raw)?.ok !== false;
+        const j = JSON.parse(raw);
+        if (j.ok === false) {
+          ok = false;
+          detail = String(j.description ?? raw);
+        }
       } catch {
-        /* keep */
+        detail = raw.slice(0, 200);
       }
-      return ok ? { ok: true, detail: "ارسال شد" } : { ok: false, detail: friendly("بله", res.status, raw) };
+      return ok ? { ok, detail } : { ok: false, detail: friendly(LABEL[m.platform], res.status, detail) };
     }
 
     if (m.platform === "eitaa") {
-      // eitaayar.ir gateway expects form-urlencoded
       const body = new URLSearchParams({ chat_id: target, text });
       const res = await withTimeout(`https://eitaayar.ir/api/${token}/sendMessage`, {
         method: "POST",
@@ -125,9 +208,7 @@ export async function sendOne(
         }),
       });
       const raw = await res.text();
-      return res.ok
-        ? { ok: true, detail: "ارسال شد" }
-        : { ok: false, detail: friendly("واتساپ", res.status, raw) };
+      return res.ok ? { ok: true, detail: "ارسال شد" } : { ok: false, detail: friendly("واتساپ", res.status, raw) };
     }
 
     return { ok: false, detail: "پیام‌رسان ناشناخته" };
@@ -136,13 +217,32 @@ export async function sendOne(
     return {
       ok: false,
       detail: msg.includes("abort")
-        ? "پاسخی از سرور پیام‌رسان دریافت نشد (Timeout)"
-        : `خطای شبکه: ${msg}. اگر سرور خارج از ایران است، دسترسی به بله/ایتا ممکن است مسدود باشد.`,
+        ? "پاسخی از سرور پیام‌رسان دریافت نشد (Timeout) — پروکسی را فعال کنید"
+        : `خطای شبکه: ${msg} — سرور خارج از ایران معمولاً به این سرویس دسترسی ندارد؛ پروکسی را فعال کنید.`,
     };
   }
 }
 
-/** Sends the order to every enabled messenger target. Never throws. */
+export async function sendOne(
+  m: { platform: string; target: string; token: string },
+  text: string,
+  proxyOverride?: ProxyConfig,
+): Promise<{ ok: boolean; detail: string }> {
+  if (!m.target.trim()) return { ok: false, detail: "مقصد (chat_id یا شماره) وارد نشده است" };
+  const proxy = proxyOverride ?? (await getProxy());
+  if (proxy.enabled && proxy.url) {
+    const viaProxy = await sendViaProxy(proxy, m, text);
+    if (viaProxy.ok) return viaProxy;
+    // اگر پروکسی ناموفق بود، تلاش مستقیم به عنوان جایگزین
+    if (!m.token.trim()) return viaProxy;
+    const direct = await sendDirect(m, text);
+    return direct.ok ? { ok: true, detail: `${direct.detail} (مستقیم)` } : { ok: false, detail: `${viaProxy.detail} | مستقیم: ${direct.detail}` };
+  }
+  if (!m.token.trim()) return { ok: false, detail: "توکن وارد نشده است (یا پروکسی را فعال کنید)" };
+  return sendDirect(m, text);
+}
+
+/** ارسال سفارش به همه مقصدهای فعال. هرگز خطا پرتاب نمی‌کند. */
 export async function dispatchOrder(order: OrderLike) {
   const text = await formatOrderMessage(order);
   let targets: (typeof messengers.$inferSelect)[] = [];
@@ -153,10 +253,11 @@ export async function dispatchOrder(order: OrderLike) {
   }
   const enabled = targets.filter((m) => m.enabled);
   if (enabled.length === 0) return "پیام‌رسان فعالی تعریف نشده است";
+  const proxy = await getProxy();
 
   const results = await Promise.all(
     enabled.map(async (t) => {
-      const r = await sendOne({ platform: t.platform, target: t.target, token: t.token }, text);
+      const r = await sendOne({ platform: t.platform, target: t.target, token: t.token }, text, proxy);
       try {
         await db.insert(messageLogs).values({
           orderId: order.id,
@@ -168,8 +269,7 @@ export async function dispatchOrder(order: OrderLike) {
       } catch {
         /* ignore */
       }
-      const label = t.platform === "bale" ? "بله" : t.platform === "eitaa" ? "ایتا" : "واتساپ";
-      return `${label}: ${r.ok ? "✔ ارسال شد" : `✖ ${r.detail}`}`;
+      return `${LABEL[t.platform] ?? t.platform}: ${r.ok ? "✔ ارسال شد" : `✖ ${r.detail}`}`;
     }),
   );
   return results.join(" | ");
