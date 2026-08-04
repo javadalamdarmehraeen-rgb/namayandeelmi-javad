@@ -16,8 +16,9 @@ type M = {
 };
 type Log = { id: number; platform: string; target: string; ok: boolean; detail: string; createdAt: string };
 type Proxy = { url: string; enabled: boolean; secret?: string };
+type Chat = { id: string; title: string; type: string };
 
-const blank = { platform: "telegram", label: "", targetType: "phone", target: "", token: "", enabled: true };
+const blank = { platform: "bale", label: "", targetType: "group", target: "", token: "", enabled: true };
 
 export default function MessengersPage() {
   const [rows, setRows] = useState<M[]>([]);
@@ -26,6 +27,11 @@ export default function MessengersPage() {
   const [proxy, setProxy] = useState<Proxy>({ url: "", enabled: true, secret: "" });
   const [msg, setMsg] = useState("");
   const [showToken, setShowToken] = useState<Record<number, boolean>>({});
+  const [chats, setChats] = useState<Chat[]>([]);
+  const [chatBusy, setChatBusy] = useState(false);
+  const [sysTokens, setSysTokens] = useState<Record<string, string>>({});
+  const [workerVersion, setWorkerVersion] = useState<"new" | "old" | "down" | "">("");
+  const [workerCode, setWorkerCode] = useState("");
 
   const load = useCallback(async () => {
     const res = await fetch("/api/messengers", { cache: "no-store" });
@@ -39,7 +45,30 @@ export default function MessengersPage() {
 
   useEffect(() => {
     load();
+    fetch("/api/messengers/updates", { cache: "no-store" })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => setSysTokens(d?.tokens ?? {}))
+      .catch(() => undefined);
   }, [load]);
+
+  const discover = async () => {
+    setChatBusy(true);
+    setChats([]);
+    setMsg("⏳ در حال دریافت لیست چت‌های ربات...");
+    const res = await fetch("/api/messengers/updates", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ platform: form.platform, token: form.token }),
+    });
+    const d = await res.json().catch(() => ({}));
+    setChatBusy(false);
+    setChats(d.chats ?? []);
+    setMsg(
+      d.ok
+        ? `✅ ${(d.chats ?? []).length} چت پیدا شد — روی هرکدام بزنید تا مقصد پر شود`
+        : `✖ ${d.detail ?? "دریافت ناموفق"}`,
+    );
+  };
 
   const saveProxy = async (next: Proxy) => {
     setProxy(next);
@@ -98,7 +127,28 @@ export default function MessengersPage() {
       body: JSON.stringify({ pingProxy: true }),
     });
     const d = await res.json().catch(() => ({}));
-    setMsg(d.ok ? `✅ پروکسی در دسترس است — ${d.detail ?? ""}` : `✖ ${d.detail ?? "پروکسی پاسخ نداد"}`);
+    setWorkerVersion(d.version ?? "");
+    setMsg(d.ok ? `${d.detail ?? "پروکسی در دسترس است"}` : `✖ ${d.detail ?? "پروکسی پاسخ نداد"}`);
+  };
+
+  const copyWorker = async () => {
+    let code = workerCode;
+    if (!code) {
+      code = await fetch("/cloudflare-worker.js")
+        .then((r) => r.text())
+        .catch(() => "");
+      setWorkerCode(code);
+    }
+    if (!code) {
+      setMsg("✖ دریافت کد ورکر ناموفق بود");
+      return;
+    }
+    try {
+      await navigator.clipboard.writeText(code);
+      setMsg("✅ کد کامل ورکر کپی شد — در Cloudflare جایگزین کد فعلی کنید و Deploy بزنید");
+    } catch {
+      window.open("/cloudflare-worker.js", "_blank");
+    }
   };
 
   return (
@@ -107,7 +157,21 @@ export default function MessengersPage() {
       {msg ? <Alert kind={msg.startsWith("✖") ? "error" : "success"}>{msg}</Alert> : null}
 
       <Card>
-        <h3 className="mb-2 text-sm font-bold text-slate-700">✅ اگر هیچ توکنی ندارید (حالت بدون توکن)</h3>
+        <h3 className="mb-2 text-sm font-bold text-slate-700">🟣 ربات بله (آماده استفاده)</h3>
+        <Alert kind="success">
+          توکن ربات بله شما در سامانه ثبت شده است و نیازی به وارد کردن مجدد آن نیست. برای فعال شدن ارسال خودکار فقط
+          کافی است: <b>۱)</b> در بله ربات{" "}
+          <a href="https://ble.ir/namayandeelmibot" target="_blank" rel="noreferrer" className="font-bold underline">
+            namayandeelmibot@
+          </a>{" "}
+          را باز کنید و دکمه «شروع» را بزنید (یا ربات را در گروه موردنظر عضو و یک پیام ارسال کنید). <b>۲)</b> در فرم
+          پایین، پیام‌رسان را «بله» انتخاب کرده و دکمه «🔎 دریافت خودکار chat_id» را بزنید تا چت شما یا گروه نمایش داده
+          شود. <b>۳)</b> روی آن بزنید و «افزودن مقصد» را کلیک کنید. از این پس هر سفارش خودکار به بله ارسال می‌شود.
+        </Alert>
+      </Card>
+
+      <Card>
+        <h3 className="mb-2 text-sm font-bold text-slate-700">✅ ارسال بدون توکن (همیشه در دسترس)</h3>
         <Alert kind="success">
           نیازی به توکن نیست! در صفحه «سفارشات»، روی نام هر داروخانه بزنید؛ پایین پنجره جزئیات، بخش «📤 ارسال دستی به
           پیام‌رسان‌ها» قرار دارد که متن کامل سفارش را آماده می‌کند و با یک کلیک آن را در واتساپ، تلگرام، بله، ایتا یا
@@ -167,8 +231,42 @@ export default function MessengersPage() {
             <Input value={proxy.secret ?? ""} onChange={(e) => setProxy({ ...proxy, secret: e.target.value })} />
           </Field>
         </div>
+        {workerVersion === "old" ? (
+          <div className="mt-3 rounded-xl bg-amber-50 p-3 ring-1 ring-amber-300">
+            <p className="text-xs font-bold text-amber-900">
+              ورکر فعلی شما نسخه قدیمی است و توکن ارسالی از برنامه را نادیده می‌گیرد. دو راه دارید:
+            </p>
+            <ol className="mt-1 list-inside list-decimal space-y-1 text-[11px] text-amber-900">
+              <li>
+                <b>ساده‌ترین راه:</b> در کد ورکر فعلی، مقدار <code>BALE_BOT_TOKEN</code> را برابر توکن ربات بله و
+                <code> BALE_CHAT_ID</code> را برابر آیدی گروه/چت خود بگذارید و Deploy کنید.
+              </li>
+              <li>
+                <b>راه بهتر:</b> با دکمه زیر کد کامل نسخه جدید را کپی و در Cloudflare جایگزین کنید تا توکن‌ها از همین
+                صفحه مدیریت شوند و کشف خودکار chat_id هم کار کند.
+              </li>
+            </ol>
+          </div>
+        ) : null}
+        {workerVersion === "new" ? (
+          <div className="mt-3 rounded-xl bg-emerald-50 p-3 text-xs font-bold text-emerald-800 ring-1 ring-emerald-200">
+            ✅ ورکر نسخه جدید فعال است — ارسال خودکار بله آماده است.
+          </div>
+        ) : null}
+
         <div className="mt-3 flex flex-wrap gap-2">
           <Button onClick={() => saveProxy(proxy)}>💾 ذخیره پروکسی</Button>
+          <Button variant="soft" onClick={copyWorker}>
+            📋 کپی کد کامل ورکر
+          </Button>
+          <a
+            href="/cloudflare-worker.js"
+            target="_blank"
+            rel="noreferrer"
+            className="rounded-xl bg-white px-4 py-2.5 text-sm font-bold text-slate-700 ring-1 ring-slate-300"
+          >
+            ⬇️ دانلود فایل ورکر
+          </a>
           <Button variant={proxy.enabled ? "danger" : "success"} onClick={() => saveProxy({ ...proxy, enabled: !proxy.enabled })}>
             {proxy.enabled ? "غیرفعال کردن پروکسی" : "فعال کردن پروکسی"}
           </Button>
@@ -217,9 +315,49 @@ export default function MessengersPage() {
         <p className="mt-2 text-[11px] text-slate-500">
           {PLATFORMS.find((p) => p.key === form.platform)?.hint}
         </p>
-        <div className="mt-3 flex justify-end">
+        {sysTokens[form.platform] ? (
+          <p className="mt-1 text-[11px] font-bold text-emerald-700">
+            ✅ توکن پیش‌فرض این پیام‌رسان در سامانه ثبت شده است ({sysTokens[form.platform]}) — فیلد توکن را خالی
+            بگذارید.
+          </p>
+        ) : null}
+
+        <div className="mt-3 flex flex-wrap items-center gap-2">
+          {form.platform === "bale" || form.platform === "telegram" ? (
+            <Button variant="soft" onClick={discover} disabled={chatBusy}>
+              {chatBusy ? "⏳ ..." : "🔎 دریافت خودکار chat_id"}
+            </Button>
+          ) : null}
+          <div className="flex-1" />
           <Button onClick={add}>➕ افزودن مقصد</Button>
         </div>
+
+        {chats.length ? (
+          <div className="mt-3 rounded-xl bg-slate-50 p-2 ring-1 ring-slate-200">
+            <div className="mb-1 text-[11px] font-bold text-slate-600">چت‌های اخیر ربات:</div>
+            <div className="flex flex-wrap gap-1">
+              {chats.map((c) => (
+                <button
+                  key={c.id}
+                  onClick={() =>
+                    setForm({
+                      ...form,
+                      target: c.id,
+                      label: c.title,
+                      targetType: c.type === "شخصی" ? "phone" : "group",
+                    })
+                  }
+                  className="rounded-lg bg-white px-2 py-1 text-[11px] font-bold text-teal-700 ring-1 ring-teal-200 hover:bg-teal-50"
+                >
+                  {c.type === "شخصی" ? "👤" : "👥"} {c.title}
+                  <span className="mr-1 text-[10px] text-slate-400" dir="ltr">
+                    {c.id}
+                  </span>
+                </button>
+              ))}
+            </div>
+          </div>
+        ) : null}
       </Card>
 
       <Card>

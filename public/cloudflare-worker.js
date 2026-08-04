@@ -58,6 +58,24 @@ export default {
       return json({ success: false, error: "بدنه درخواست باید JSON باشد" }, 400);
     }
 
+    // پشتیبانی از getUpdates برای کشف chat_id
+    if (body.action === "getUpdates") {
+      const mg = String(body.messenger || body.platform || "").toLowerCase();
+      const tk = body.token || (mg === "telegram" ? CONFIG.TELEGRAM_BOT_TOKEN : CONFIG.BALE_BOT_TOKEN);
+      if (!tk) return json({ ok: false, error: "توکن ارسال نشده است" }, 400);
+      const bases = mg === "telegram" ? ["https://api.telegram.org"] : ["https://tapi.bale.ai", "https://api.bale.ai"];
+      for (const base of bases) {
+        try {
+          const r = await fetch(`${base}/bot${tk}/getUpdates?limit=100`);
+          const raw = await r.text();
+          if (r.ok) return new Response(raw, { headers: { "Content-Type": "application/json", ...CORS } });
+        } catch {
+          /* next host */
+        }
+      }
+      return json({ ok: false, error: "دریافت لیست چت ناموفق بود" }, 502);
+    }
+
     const messenger = String(body.messenger || body.platform || "").toLowerCase();
     const text = body.text;
     const chatId = body.chatId || body.chat_id;

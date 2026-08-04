@@ -245,7 +245,7 @@ export default function RecordScreen({ type, isAdmin = false }: { type: RecordTy
       `شماره همراه: ${toPersianDigits(r.managerPhone ?? "")}`,
       `آدرس: ${r.address ?? ""}`,
     ];
-    if (r.lat && r.lng) lines.push(`لوکیشن: https://www.google.com/maps?q=${r.lat},${r.lng}`);
+    // در ارسال دستی، لوکیشن درج نمی‌شود (طبق درخواست)
     lines.push("— اقلام سفارش —");
     for (const p of products) {
       const q = Number(r.items?.[p.key] ?? 0);

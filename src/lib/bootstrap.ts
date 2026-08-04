@@ -318,6 +318,15 @@ async function seed() {
           secret: "",
         },
       },
+      {
+        key: "messengerTokens",
+        value: {
+          bale: process.env.BALE_BOT_TOKEN || "1199464939:uhHpJVtcy__qdtFfN7iuzr4AH7bZBKPG85A",
+          telegram: process.env.TELEGRAM_BOT_TOKEN || "",
+          eitaa: process.env.EITAA_TOKEN || "",
+          whatsapp: process.env.WHATSAPP_TOKEN || "",
+        },
+      },
       { key: "products", value: DEFAULT_PRODUCTS },
       { key: "columns.pharmacies", value: DEFAULT_COLUMNS.pharmacies },
       { key: "columns.doctors", value: DEFAULT_COLUMNS.doctors },

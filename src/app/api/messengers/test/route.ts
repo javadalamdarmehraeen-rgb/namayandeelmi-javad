@@ -1,7 +1,7 @@
 import { db } from "@/db";
 import { messageLogs, messengers } from "@/db/schema";
 import { getSessionUser } from "@/lib/auth";
-import { getProxy, sendOne } from "@/lib/messaging";
+import { getProxy, getTokens, sendOne } from "@/lib/messaging";
 import { eq } from "drizzle-orm";
 
 export const dynamic = "force-dynamic";
@@ -15,27 +15,43 @@ export async function POST(req: Request) {
 
   if (b.pingProxy) {
     const proxy = await getProxy();
-    if (!proxy.url) return Response.json({ ok: false, detail: "آدرس پروکسی وارد نشده است" });
+    if (!proxy.url) return Response.json({ ok: false, version: "down", detail: "آدرس پروکسی وارد نشده است" });
+    const tokens = await getTokens();
     try {
       const ctrl = new AbortController();
-      const timer = setTimeout(() => ctrl.abort(), 12000);
+      const timer = setTimeout(() => ctrl.abort(), 15000);
+      // درخواست کشف چت با توکن؛ فقط ورکر نسخه جدید توکن بدنه را می‌پذیرد
       const res = await fetch(proxy.url, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           ...(proxy.secret ? { "x-proxy-secret": proxy.secret } : {}),
         },
-        body: JSON.stringify({ ping: true }),
+        body: JSON.stringify({ action: "getUpdates", messenger: "bale", token: tokens.bale ?? "" }),
         signal: ctrl.signal,
         cache: "no-store",
       });
       clearTimeout(timer);
-      const raw = (await res.text()).slice(0, 200);
-      // هر پاسخی (حتی خطای اعتبارسنجی) یعنی ورکر در دسترس است
-      return Response.json({ ok: true, detail: `ورکر پاسخ داد (کد ${res.status}): ${raw}` });
+      const raw = (await res.text()).slice(0, 250);
+      const supportsToken = /"result"|"ok"\s*:\s*true/.test(raw);
+      if (supportsToken) {
+        return Response.json({
+          ok: true,
+          version: "new",
+          detail: "✅ ورکر نسخه جدید فعال است و توکن را از برنامه می‌پذیرد.",
+        });
+      }
+      return Response.json({
+        ok: true,
+        version: "old",
+        detail:
+          "⚠️ ورکر در دسترس است اما نسخه قدیمی است و توکن ارسالی از برنامه را نادیده می‌گیرد. کد جدید ورکر را جایگزین کنید (یا توکن بله را داخل خود ورکر قرار دهید). پاسخ ورکر: " +
+          raw,
+      });
     } catch (err) {
       return Response.json({
         ok: false,
+        version: "down",
         detail: err instanceof Error ? err.message : "اتصال به پروکسی برقرار نشد",
       });
     }

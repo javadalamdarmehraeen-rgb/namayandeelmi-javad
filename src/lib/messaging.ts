@@ -29,6 +29,109 @@ export const DEFAULT_PROXY: ProxyConfig = {
   secret: "",
 };
 
+export type TokenMap = Record<string, string>;
+
+const FALLBACK_TOKENS: TokenMap = {
+  bale: process.env.BALE_BOT_TOKEN || "1199464939:uhHpJVtcy__qdtFfN7iuzr4AH7bZBKPG85A",
+  telegram: process.env.TELEGRAM_BOT_TOKEN || "",
+  eitaa: process.env.EITAA_TOKEN || "",
+  whatsapp: process.env.WHATSAPP_TOKEN || "",
+};
+
+/** توکن‌های پیش‌فرض سامانه؛ اگر برای یک مقصد توکن وارد نشده باشد از اینها استفاده می‌شود. */
+export async function getTokens(): Promise<TokenMap> {
+  try {
+    const rows = await db.select().from(settings).where(eq(settings.key, "messengerTokens")).limit(1);
+    const v = rows[0]?.value as TokenMap | undefined;
+    if (v && typeof v === "object") return { ...FALLBACK_TOKENS, ...v };
+  } catch {
+    /* ignore */
+  }
+  return FALLBACK_TOKENS;
+}
+
+export async function resolveToken(platform: string, rowToken?: string) {
+  const t = (rowToken ?? "").trim();
+  if (t) return t;
+  const map = await getTokens();
+  return (map[platform] ?? "").trim();
+}
+
+/** استخراج chat_id های اخیر ربات (بله/تلگرام) برای انتخاب آسان مقصد */
+export async function fetchUpdates(platform: string, rowToken?: string) {
+  const token = await resolveToken(platform, rowToken);
+  if (!token) return { ok: false, detail: "توکن ربات موجود نیست", chats: [] as ChatInfo[] };
+  const bases =
+    platform === "telegram"
+      ? ["https://api.telegram.org"]
+      : platform === "bale"
+        ? ["https://tapi.bale.ai", "https://api.bale.ai"]
+        : [];
+  if (bases.length === 0) return { ok: false, detail: "این پیام‌رسان پشتیبانی نمی‌شود", chats: [] as ChatInfo[] };
+
+  const proxy = await getProxy();
+  const chats = new Map<string, ChatInfo>();
+  let lastErr = "";
+
+  const consume = (raw: string) => {
+    try {
+      const j = JSON.parse(raw);
+      const list = j?.result ?? [];
+      for (const u of list) {
+        const c = u?.message?.chat ?? u?.channel_post?.chat ?? u?.edited_message?.chat;
+        if (!c?.id) continue;
+        const id = String(c.id);
+        chats.set(id, {
+          id,
+          title: c.title || [c.first_name, c.last_name].filter(Boolean).join(" ") || c.username || id,
+          type: c.type === "private" ? "شخصی" : c.type === "group" || c.type === "supergroup" ? "گروه" : "کانال",
+        });
+      }
+      return j?.ok !== false;
+    } catch {
+      return false;
+    }
+  };
+
+  for (const base of bases) {
+    try {
+      const res = await withTimeout(`${base}/bot${token}/getUpdates?limit=100`, { method: "GET" }, 15000);
+      const raw = await res.text();
+      if (res.ok && consume(raw)) return { ok: true, detail: "", chats: [...chats.values()] };
+      lastErr = raw.slice(0, 200);
+    } catch (err) {
+      lastErr = err instanceof Error ? err.message : "خطای شبکه";
+    }
+  }
+
+  // تلاش از طریق پروکسی (وقتی سرور به بله/تلگرام دسترسی ندارد)
+  if (proxy.enabled && proxy.url) {
+    try {
+      const res = await withTimeout(proxy.url, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...(proxy.secret ? { "x-proxy-secret": proxy.secret } : {}),
+        },
+        body: JSON.stringify({ action: "getUpdates", messenger: platform === "eitaa" ? "ita" : platform, token }),
+      });
+      const raw = await res.text();
+      if (res.ok && consume(raw)) return { ok: true, detail: "از طریق پروکسی", chats: [...chats.values()] };
+      lastErr = raw.slice(0, 200);
+    } catch (err) {
+      lastErr = err instanceof Error ? err.message : lastErr;
+    }
+  }
+
+  return {
+    ok: false,
+    detail: `دریافت لیست چت ناموفق بود: ${lastErr}. ابتدا در ربات پیامی بفرستید یا ربات را در گروه عضو کنید.`,
+    chats: [] as ChatInfo[],
+  };
+}
+
+export type ChatInfo = { id: string; title: string; type: string };
+
 export async function getProxy(): Promise<ProxyConfig> {
   try {
     const rows = await db.select().from(settings).where(eq(settings.key, "messagingProxy")).limit(1);
@@ -224,16 +327,26 @@ async function sendDirect(
 }
 
 export async function sendOne(
-  m: { platform: string; target: string; token: string },
+  input: { platform: string; target: string; token: string },
   text: string,
   proxyOverride?: ProxyConfig,
 ): Promise<{ ok: boolean; detail: string }> {
-  if (!m.target.trim()) return { ok: false, detail: "مقصد (chat_id یا شماره) وارد نشده است" };
+  if (!input.target.trim()) return { ok: false, detail: "مقصد (chat_id یا شماره) وارد نشده است" };
+  // اگر توکن مقصد خالی باشد، از توکن پیش‌فرض سامانه استفاده می‌شود
+  const m = { ...input, token: await resolveToken(input.platform, input.token) };
   const proxy = proxyOverride ?? (await getProxy());
   if (proxy.enabled && proxy.url) {
+    // ابتدا تلاش مستقیم (سریع‌تر و دقیق‌تر)، سپس پروکسی
+    if (m.token.trim()) {
+      const direct = await sendDirect(m, text);
+      if (direct.ok) return direct;
+      const viaProxyAfter = await sendViaProxy(proxy, m, text);
+      return viaProxyAfter.ok
+        ? viaProxyAfter
+        : { ok: false, detail: `مستقیم: ${direct.detail} | پروکسی: ${viaProxyAfter.detail}` };
+    }
     const viaProxy = await sendViaProxy(proxy, m, text);
     if (viaProxy.ok) return viaProxy;
-    // اگر پروکسی ناموفق بود، تلاش مستقیم به عنوان جایگزین
     if (!m.token.trim()) return viaProxy;
     const direct = await sendDirect(m, text);
     return direct.ok ? { ok: true, detail: `${direct.detail} (مستقیم)` } : { ok: false, detail: `${viaProxy.detail} | مستقیم: ${direct.detail}` };
