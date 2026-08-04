@@ -21,7 +21,9 @@ export async function POST(req: Request) {
   const username = String(body.username ?? "").trim().toLowerCase();
   const password = String(body.password ?? "");
   const phone = normalizePhone(body.phone ?? "");
-  const deviceSim = body.simActive !== false;
+  const mode = body.mode === "admin" ? "admin" : "rep"; // تب انتخاب‌شده در صفحه ورود
+  const remember = body.remember === true;
+  const deviceOnline = body.simActive !== false;
 
   if (!username || !password) {
     return Response.json({ error: "نام کاربری و رمز عبور الزامی است" }, { status: 400 });
@@ -33,53 +35,71 @@ export async function POST(req: Request) {
   } catch (err) {
     console.error("login db error", err);
     return Response.json(
-      {
-        error:
-          "❌ اتصال به پایگاه داده برقرار نشد. مقدار DATABASE_URL (رشته اتصال Neon همراه با ?sslmode=require) را در تنظیمات سرویس بررسی کنید.",
-      },
+      { error: "❌ اتصال به پایگاه داده برقرار نشد. مقدار DATABASE_URL را بررسی کنید." },
       { status: 500 },
     );
   }
+
   const user = rows[0];
   if (!user || !verifyPassword(password, user.passwordHash)) {
     return Response.json({ error: "نام کاربری یا رمز عبور اشتباه است" }, { status: 401 });
   }
-  if (!user.active) {
-    return Response.json({ error: "حساب کاربری غیرفعال است" }, { status: 403 });
-  }
-  if (!deviceSim) {
+  if (!user.active) return Response.json({ error: "حساب کاربری غیرفعال است" }, { status: 403 });
+
+  // ✅ تفکیک کامل ورود مدیر و نماینده
+  const isManagerAccount = user.role === "admin" || user.role === "supervisor";
+  if (mode === "admin" && !isManagerAccount) {
     return Response.json(
-      { error: "⚠️ سیم‌کارت فعالی روی این گوشی شناسایی نشد. لطفاً سیم‌کارت ثبت‌شده را فعال کنید." },
+      { error: "⛔ این حساب کاربری نماینده است. لطفاً از تب «ورود نماینده علمی» وارد شوید." },
       { status: 403 },
     );
   }
-  const registered = normalizePhone(user.phone);
-  if (registered && phone !== registered) {
+  if (mode === "rep" && isManagerAccount) {
     return Response.json(
-      {
-        error:
-          "⚠️ شماره همراه وارد شده با شماره ثبت‌شده برای این کاربر مطابقت ندارد. شماره‌ای را وارد کنید که روی همین گوشی فعال است.",
-      },
+      { error: "⛔ این حساب مدیر/سرپرست است. لطفاً از تب «ورود مدیر» وارد شوید." },
       { status: 403 },
     );
   }
 
-  const store = await cookies();
-  store.set(SESSION_COOKIE, createToken(user.id), {
-    httpOnly: true,
-    sameSite: "lax",
-    path: "/",
-    maxAge: 60 * 60 * 24 * 30,
-  });
+  // ✅ الزام شماره همراه به تفکیک هر کاربر
+  if (user.requirePhone) {
+    if (!deviceOnline) {
+      return Response.json(
+        { error: "⚠️ سیم‌کارت/شبکه فعالی روی این دستگاه شناسایی نشد." },
+        { status: 403 },
+      );
+    }
+    if (!/^0\d{10}$/.test(phone)) {
+      return Response.json({ error: "⚠️ شماره همراه فعال روی این گوشی را وارد کنید" }, { status: 400 });
+    }
+    const registered = normalizePhone(user.phone);
+    if (registered && phone !== registered) {
+      return Response.json(
+        { error: "⚠️ شماره همراه وارد شده با شماره ثبت‌شده برای این کاربر مطابقت ندارد." },
+        { status: 403 },
+      );
+    }
+  }
+
+  const token = createToken(user.id);
+  if (remember) {
+    const store = await cookies();
+    store.set(SESSION_COOKIE, token, {
+      httpOnly: true,
+      sameSite: "lax",
+      path: "/",
+      maxAge: 60 * 60 * 24 * 30,
+    });
+  }
+
   await db.update(users).set({ lastSeenAt: new Date() }).where(eq(users.id, user.id));
-  await db.insert(activityLogs).values({
-    userId: user.id,
-    userName: user.fullName,
-    action: "ورود به سامانه",
-    detail: phone,
-  });
+  await db
+    .insert(activityLogs)
+    .values({ userId: user.id, userName: user.fullName, action: "ورود به سامانه", detail: phone || "بدون شماره" })
+    .catch(() => undefined);
 
   return Response.json({
+    token,
     user: {
       id: user.id,
       username: user.username,

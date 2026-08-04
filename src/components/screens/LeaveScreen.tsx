@@ -4,6 +4,8 @@ import { useCallback, useEffect, useState } from "react";
 import JalaliDateInput from "@/components/JalaliDateInput";
 import { Alert, Badge, Button, Card, Field, Input, SectionTitle, TextArea } from "@/components/ui";
 import { toPersianDigits, todayJalali } from "@/lib/jalali";
+import { useSession } from "@/components/SessionProvider";
+import Combobox from "@/components/Combobox";
 
 type Leave = {
   id: number;
@@ -29,7 +31,10 @@ function StatusBadge({ s }: { s: string }) {
   return <Badge tone="slate">در انتظار</Badge>;
 }
 
-export default function LeaveScreen({ role }: { role: "admin" | "supervisor" | "rep" }) {
+export default function LeaveScreen() {
+  const { me } = useSession();
+  const role = me?.role ?? "rep";
+  const [showForm, setShowForm] = useState(true);
   const [rows, setRows] = useState<Leave[]>([]);
   const [kind, setKind] = useState("روزانه");
   const [fromDate, setFrom] = useState(todayJalali());
@@ -37,6 +42,15 @@ export default function LeaveScreen({ role }: { role: "admin" | "supervisor" | "
   const [days, setDays] = useState("1");
   const [reason, setReason] = useState("");
   const [msg, setMsg] = useState<{ kind: "success" | "error"; text: string } | null>(null);
+  const [kinds, setKinds] = useState<string[]>(KINDS);
+
+  const loadKinds = useCallback(async () => {
+    const res = await fetch("/api/options?category=leaveKind", { cache: "no-store" });
+    if (!res.ok) return;
+    const d = await res.json();
+    const vals = (d.rows ?? []).map((r: { value: string }) => r.value);
+    setKinds([...new Set([...KINDS, ...vals])]);
+  }, []);
 
   const load = useCallback(async () => {
     const res = await fetch("/api/leaves", { cache: "no-store" });
@@ -45,7 +59,8 @@ export default function LeaveScreen({ role }: { role: "admin" | "supervisor" | "
 
   useEffect(() => {
     load();
-  }, [load]);
+    loadKinds();
+  }, [load, loadKinds]);
 
   const submit = async () => {
     const res = await fetch("/api/leaves", {
@@ -79,19 +94,20 @@ export default function LeaveScreen({ role }: { role: "admin" | "supervisor" | "
       <SectionTitle icon="📝">درخواست مرخصی (دو مرحله تایید: سرپرست + مدیر)</SectionTitle>
       {msg ? <Alert kind={msg.kind}>{msg.text}</Alert> : null}
 
-      {role === "rep" ? (
+      <div className="flex flex-wrap items-center gap-2">
+        <Button variant={showForm ? "primary" : "ghost"} onClick={() => setShowForm(true)}>
+          ➕ ثبت درخواست مرخصی
+        </Button>
+        <Button variant={!showForm ? "primary" : "ghost"} onClick={() => setShowForm(false)}>
+          📋 لیست درخواست‌ها
+        </Button>
+      </div>
+
+      {showForm ? (
         <Card>
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
-            <Field label="نوع مرخصی">
-              <select
-                value={kind}
-                onChange={(e) => setKind(e.target.value)}
-                className="w-full rounded-xl border border-slate-300 px-3 py-2.5 text-sm"
-              >
-                {KINDS.map((k) => (
-                  <option key={k}>{k}</option>
-                ))}
-              </select>
+            <Field label="نوع مرخصی" hint="کشویی + افزودن لحظه‌ای">
+              <Combobox value={kind} onChange={setKind} options={kinds} category="leaveKind" onAdded={loadKinds} />
             </Field>
             <Field label="از تاریخ" required>
               <JalaliDateInput value={fromDate} onChange={setFrom} />

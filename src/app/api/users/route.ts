@@ -1,15 +1,16 @@
 import { db } from "@/db";
 import { users } from "@/db/schema";
 import { getSessionUser, hashPassword } from "@/lib/auth";
-import { ALL_PERMISSIONS } from "@/lib/constants";
+import { ALL_PERMISSION_KEYS } from "@/lib/defaults";
 import { asc, eq } from "drizzle-orm";
 
 export const dynamic = "force-dynamic";
 
 async function adminGuard() {
   const user = await getSessionUser();
-  if (!user || user.role !== "admin") return null;
-  return user;
+  if (!user) return null;
+  if (user.role === "admin" || user.permissions.includes("users")) return user;
+  return null;
 }
 
 export async function GET() {
@@ -25,6 +26,7 @@ export async function GET() {
       active: users.active,
       permissions: users.permissions,
       passwordPlain: users.passwordPlain,
+      requirePhone: users.requirePhone,
       lastSeenAt: users.lastSeenAt,
       createdAt: users.createdAt,
     })
@@ -55,7 +57,8 @@ export async function POST(req: Request) {
       phone: String(b.phone ?? "").trim(),
       role: ["admin", "supervisor", "rep"].includes(b.role) ? b.role : "rep",
       active: b.active !== false,
-      permissions: Array.isArray(b.permissions) && b.permissions.length ? b.permissions : ALL_PERMISSIONS,
+      requirePhone: b.requirePhone !== false,
+      permissions: Array.isArray(b.permissions) && b.permissions.length ? b.permissions : ALL_PERMISSION_KEYS,
     })
     .returning();
   return Response.json({ row: { ...row, passwordHash: undefined } });
@@ -73,6 +76,7 @@ export async function PATCH(req: Request) {
   if (typeof b.username === "string" && b.username.trim()) patch.username = b.username.trim().toLowerCase();
   if (typeof b.role === "string") patch.role = ["admin", "supervisor", "rep"].includes(b.role) ? b.role : "rep";
   if (typeof b.active === "boolean") patch.active = b.active;
+  if (typeof b.requirePhone === "boolean") patch.requirePhone = b.requirePhone;
   if (Array.isArray(b.permissions)) patch.permissions = b.permissions;
   if (typeof b.password === "string" && b.password.length >= 4) {
     patch.passwordHash = hashPassword(b.password);

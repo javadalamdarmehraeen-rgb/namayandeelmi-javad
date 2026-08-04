@@ -2,7 +2,15 @@ import { db } from "@/db";
 import { options, users } from "@/db/schema";
 import { eq, sql } from "drizzle-orm";
 import { hashPassword } from "./auth";
-import { ALL_PERMISSIONS, DEFAULT_PROVINCES, DEFAULT_SPECIALTIES } from "./constants";
+import { DEFAULT_PROVINCES, DEFAULT_SPECIALTIES } from "./constants";
+import {
+  ALL_PERMISSION_KEYS,
+  DEFAULT_COLUMNS,
+  DEFAULT_PRODUCTS,
+  REP_DEFAULT_PERMISSIONS,
+  SUPERVISOR_DEFAULT_PERMISSIONS,
+} from "./defaults";
+import { settings } from "@/db/schema";
 
 let done = false;
 let running: Promise<void> | null = null;
@@ -18,6 +26,7 @@ async function migrate() {
       phone varchar(20) NOT NULL DEFAULT '',
       role varchar(20) NOT NULL DEFAULT 'rep',
       active boolean NOT NULL DEFAULT true,
+      require_phone boolean NOT NULL DEFAULT true,
       permissions jsonb NOT NULL DEFAULT '["dashboard","pharmacy","doctor","order","trip","home","leave","options","reports"]'::jsonb,
       last_seen_at timestamptz,
       created_at timestamptz NOT NULL DEFAULT now()
@@ -191,9 +200,32 @@ async function migrate() {
     );
   `);
 
+  await db.execute(sql`
+    CREATE TABLE IF NOT EXISTS notifications (
+      id serial PRIMARY KEY,
+      to_user_id integer,
+      to_role varchar(20) NOT NULL DEFAULT '',
+      from_name varchar(160) NOT NULL DEFAULT '',
+      kind varchar(40) NOT NULL DEFAULT 'info',
+      title varchar(200) NOT NULL,
+      body text NOT NULL DEFAULT '',
+      link varchar(200) NOT NULL DEFAULT '',
+      read_at timestamptz,
+      created_at timestamptz NOT NULL DEFAULT now()
+    );
+  `);
+  await db.execute(sql`
+    CREATE TABLE IF NOT EXISTS settings (
+      key varchar(80) PRIMARY KEY,
+      value jsonb NOT NULL,
+      updated_at timestamptz NOT NULL DEFAULT now()
+    );
+  `);
+
   // ---- incremental columns for databases created by older versions ----
   const alters = [
     `ALTER TABLE users ADD COLUMN IF NOT EXISTS password_plain varchar(120) NOT NULL DEFAULT ''`,
+    `ALTER TABLE users ADD COLUMN IF NOT EXISTS require_phone boolean NOT NULL DEFAULT true`,
     `ALTER TABLE pharmacies ADD COLUMN IF NOT EXISTS province varchar(100) NOT NULL DEFAULT ''`,
     `ALTER TABLE pharmacies ADD COLUMN IF NOT EXISTS city varchar(100) NOT NULL DEFAULT ''`,
     `ALTER TABLE pharmacies ADD COLUMN IF NOT EXISTS region varchar(100) NOT NULL DEFAULT ''`,
@@ -219,6 +251,7 @@ async function migrate() {
   await db.execute(sql`CREATE INDEX IF NOT EXISTS pharmacies_user_idx ON pharmacies (user_id)`);
   await db.execute(sql`CREATE INDEX IF NOT EXISTS doctors_user_idx ON doctors (user_id)`);
   await db.execute(sql`CREATE INDEX IF NOT EXISTS activity_user_idx ON activity_logs (user_id)`);
+  await db.execute(sql`CREATE INDEX IF NOT EXISTS notif_user_idx ON notifications (to_user_id)`);
 }
 
 async function seed() {
@@ -233,7 +266,7 @@ async function seed() {
         fullName: "مدیر سیستم",
         phone: process.env.ADMIN_PHONE || "09120000000",
         role: "admin",
-        permissions: ALL_PERMISSIONS,
+        permissions: ALL_PERMISSION_KEYS,
       },
       {
         username: "sarparast",
@@ -242,7 +275,7 @@ async function seed() {
         fullName: "سرپرست فروش",
         phone: "09122222222",
         role: "supervisor",
-        permissions: ALL_PERMISSIONS,
+        permissions: SUPERVISOR_DEFAULT_PERMISSIONS,
       },
       {
         username: "rep1",
@@ -251,8 +284,17 @@ async function seed() {
         fullName: "نماینده علمی نمونه",
         phone: "09121111111",
         role: "rep",
-        permissions: ALL_PERMISSIONS,
+        permissions: REP_DEFAULT_PERMISSIONS,
       },
+    ]);
+  }
+  const st = await db.select().from(settings).limit(1);
+  if (st.length === 0) {
+    await db.insert(settings).values([
+      { key: "products", value: DEFAULT_PRODUCTS },
+      { key: "columns.pharmacies", value: DEFAULT_COLUMNS.pharmacies },
+      { key: "columns.doctors", value: DEFAULT_COLUMNS.doctors },
+      { key: "columns.orders", value: DEFAULT_COLUMNS.orders },
     ]);
   }
   const existing = await db.select().from(options).limit(1);

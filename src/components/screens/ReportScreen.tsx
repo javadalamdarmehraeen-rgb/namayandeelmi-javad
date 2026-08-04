@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Card, SectionTitle } from "@/components/ui";
 import { JALALI_MONTHS, toPersianDigits } from "@/lib/jalali";
-import { PRODUCTS } from "@/lib/constants";
+import { DEFAULT_PRODUCTS, type ProductConfig } from "@/lib/defaults";
 
 type Row = {
   period: string;
@@ -19,6 +19,7 @@ type Row = {
 export default function ReportScreen({ compact = false }: { compact?: boolean }) {
   const [rows, setRows] = useState<Row[]>([]);
   const [totals, setTotals] = useState<Record<string, Record<string, number>>>({});
+  const [products, setProducts] = useState<ProductConfig[]>(DEFAULT_PRODUCTS);
   const [year, setYear] = useState("");
   const [month, setMonth] = useState("");
 
@@ -33,6 +34,13 @@ export default function ReportScreen({ compact = false }: { compact?: boolean })
 
   useEffect(() => {
     load();
+    fetch("/api/settings?key=products", { cache: "no-store" })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => {
+        const v = d?.value as ProductConfig[] | null;
+        if (Array.isArray(v) && v.length) setProducts(v.filter((p) => p.enabled !== false));
+      })
+      .catch(() => undefined);
   }, [load]);
 
   const years = useMemo(() => [...new Set(rows.map((r) => r.period.slice(0, 4)))].sort().reverse(), [rows]);
@@ -165,7 +173,7 @@ export default function ReportScreen({ compact = false }: { compact?: boolean })
               <thead>
                 <tr className="bg-slate-100 text-slate-600">
                   <th className="px-2 py-2">ماه</th>
-                  {PRODUCTS.map((p) => (
+                  {products.map((p) => (
                     <th key={p.key} className="px-2 py-2">
                       {p.label}
                     </th>
@@ -179,7 +187,7 @@ export default function ReportScreen({ compact = false }: { compact?: boolean })
                   .map(([per, vals]) => (
                     <tr key={per} className="border-b border-slate-100">
                       <td className="px-2 py-2 font-bold text-teal-700">{monthName(per)}</td>
-                      {PRODUCTS.map((p) => (
+                      {products.map((p) => (
                         <td key={p.key} className="px-2 py-2">
                           {toPersianDigits(vals[p.key] ?? 0)}
                         </td>

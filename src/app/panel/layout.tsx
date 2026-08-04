@@ -1,13 +1,13 @@
-import { redirect } from "next/navigation";
+"use client";
+
 import type { ReactNode } from "react";
 import Shell, { type NavItem } from "@/components/Shell";
-import { getSessionUser } from "@/lib/auth";
+import SessionProvider, { useSession } from "@/components/SessionProvider";
 
-export const dynamic = "force-dynamic";
-
-export default async function PanelLayout({ children }: { children: ReactNode }) {
-  const user = await getSessionUser();
-  if (!user) redirect("/login");
+function Inner({ children }: { children: ReactNode }) {
+  const { me } = useSession();
+  if (!me) return null;
+  const has = (p: string) => me.role === "admin" || me.permissions.includes(p);
 
   const all: (NavItem & { perm?: string })[] = [
     { href: "/panel", label: "صفحه اصلی", icon: "🏠" },
@@ -17,21 +17,28 @@ export default async function PanelLayout({ children }: { children: ReactNode })
     { href: "/panel/trip", label: "تردد و ویزیت", icon: "🗺️", perm: "trip" },
     { href: "/panel/home", label: "لوکیشن منزل", icon: "🏡", perm: "home" },
     { href: "/panel/leaves", label: "مرخصی", icon: "📝", perm: "leave" },
+    { href: "/panel/notifications", label: "اعلان‌ها", icon: "🔔" },
     { href: "/panel/options", label: "افزودن‌ها", icon: "➕", perm: "options" },
     { href: "/panel/reports", label: "گزارش ماهانه", icon: "📈", perm: "reports" },
   ];
-  const nav = all
-    .filter((n) => !n.perm || user.role === "admin" || user.permissions.includes(n.perm))
-    .map(({ href, label, icon }) => ({ href, label, icon }));
+  const nav = all.filter((n) => !n.perm || has(n.perm)).map(({ href, label, icon }) => ({ href, label, icon }));
 
   return (
     <Shell
-      userName={user.fullName}
-      roleLabel={user.role === "admin" ? "مدیر" : user.role === "supervisor" ? "سرپرست" : "نماینده علمی"}
+      userName={me.fullName}
+      roleLabel={me.role === "admin" ? "مدیر" : me.role === "supervisor" ? "سرپرست" : "نماینده علمی"}
       nav={nav}
-      showAdminLink={user.role === "admin" || user.role === "supervisor"}
+      showAdminLink={me.role !== "rep"}
     >
       {children}
     </Shell>
+  );
+}
+
+export default function PanelLayout({ children }: { children: ReactNode }) {
+  return (
+    <SessionProvider require>
+      <Inner>{children}</Inner>
+    </SessionProvider>
   );
 }

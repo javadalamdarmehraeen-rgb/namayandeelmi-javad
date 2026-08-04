@@ -2,6 +2,7 @@ import { db } from "@/db";
 import { activityLogs, leaves } from "@/db/schema";
 import { getSessionUser } from "@/lib/auth";
 import { isValidJalali } from "@/lib/jalali";
+import { notify } from "@/lib/notify";
 import { desc, eq } from "drizzle-orm";
 
 export const dynamic = "force-dynamic";
@@ -46,6 +47,16 @@ export async function POST(req: Request) {
       detail: `${fromDate} تا ${toDate}`,
     })
     .catch(() => undefined);
+  for (const role of ["admin", "supervisor"] as const) {
+    await notify({
+      toRole: role,
+      fromName: user.fullName,
+      kind: "leave",
+      title: `📝 درخواست مرخصی جدید از ${user.fullName}`,
+      body: `از ${fromDate} تا ${toDate} — ${row.kind}${row.reason ? ` | ${row.reason}` : ""}`,
+      link: "/admin/leaves",
+    });
+  }
   return Response.json({ row });
 }
 
@@ -66,7 +77,18 @@ export async function PATCH(req: Request) {
       ? { supervisorStatus: status, supervisorNote: note, supervisorName: user.fullName }
       : { managerStatus: status, managerNote: note, managerName: user.fullName };
 
+  const target = (await db.select().from(leaves).where(eq(leaves.id, id)).limit(1))[0];
   await db.update(leaves).set(patch).where(eq(leaves.id, id));
+  if (target) {
+    await notify({
+      toUserId: target.userId,
+      fromName: user.fullName,
+      kind: "leave",
+      title: `${status === "approved" ? "✅" : "⛔"} مرخصی شما توسط ${user.role === "supervisor" ? "سرپرست" : "مدیر"} ${status === "approved" ? "تایید" : "رد"} شد`,
+      body: `${target.fromDate} تا ${target.toDate}${note ? ` — ${note}` : ""}`,
+      link: "/panel/leaves",
+    });
+  }
   await db
     .insert(activityLogs)
     .values({

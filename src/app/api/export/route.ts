@@ -1,7 +1,8 @@
 import { db } from "@/db";
 import { doctors, homes, leaves, orders, pharmacies, trips, users } from "@/db/schema";
 import { getSessionUser } from "@/lib/auth";
-import { PRODUCTS } from "@/lib/constants";
+import { bonusKeyOf } from "@/lib/defaults";
+import { getProducts } from "@/lib/settings-server";
 import { xlsResponse } from "@/lib/excel";
 import { tehranDateTime } from "@/lib/jalali";
 import { desc, eq, SQL } from "drizzle-orm";
@@ -26,6 +27,7 @@ export async function GET(req: Request) {
     return true;
   };
 
+  const PRODUCTS = await getProducts();
   let rows: (string | number)[][] = [];
   let name = type;
 
@@ -108,7 +110,7 @@ export async function GET(req: Request) {
         r.managerName,
         r.managerPhone,
         r.address,
-        ...PRODUCTS.flatMap((p) => [Number(r.items?.[p.key] ?? 0), Number(r.items?.[p.bonusKey] ?? 0)]),
+        ...PRODUCTS.flatMap((p) => [Number(r.items?.[p.key] ?? 0), Number(r.items?.[bonusKeyOf(p.key)] ?? 0)]),
         r.distributor,
         r.visitor,
         r.notes,

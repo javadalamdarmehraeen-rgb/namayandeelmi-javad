@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState, type ReactNode } from "react";
+import NotificationBell from "./NotificationBell";
+import { useSession } from "./SessionProvider";
 
 export type NavItem = { href: string; label: string; icon: string };
 
@@ -23,6 +25,7 @@ export default function Shell({
 }) {
   const pathname = usePathname();
   const router = useRouter();
+  const { logout: sessionLogout } = useSession();
   const [online, setOnline] = useState(true);
   const [open, setOpen] = useState(false);
 
@@ -40,9 +43,8 @@ export default function Shell({
   useEffect(() => setOpen(false), [pathname]);
 
   const logout = async () => {
-    await fetch("/api/auth/logout", { method: "POST" });
+    await sessionLogout();
     router.replace("/login");
-    router.refresh();
   };
 
   return (
@@ -72,6 +74,7 @@ export default function Shell({
           >
             {online ? "آنلاین" : "آفلاین"}
           </span>
+          <NotificationBell basePath={showPanelLink ? "/admin" : "/panel"} />
           {showAdminLink ? (
             <Link href="/admin" className="rounded-lg bg-white/15 px-2 py-1.5 text-[11px] font-bold hover:bg-white/25">
               داشبورد مدیر

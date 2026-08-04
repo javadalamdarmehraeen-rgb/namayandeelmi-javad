@@ -20,6 +20,7 @@ export const users = pgTable("users", {
   phone: varchar("phone", { length: 20 }).notNull().default(""),
   role: varchar("role", { length: 20 }).notNull().default("rep"), // admin | supervisor | rep
   active: boolean("active").notNull().default(true),
+  requirePhone: boolean("require_phone").notNull().default(true),
   permissions: jsonb("permissions")
     .$type<string[]>()
     .notNull()
@@ -199,4 +200,27 @@ export const activityLogs = pgTable("activity_logs", {
   action: varchar("action", { length: 80 }).notNull(),
   detail: text("detail").notNull().default(""),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
+export const notifications = pgTable(
+  "notifications",
+  {
+    id: serial("id").primaryKey(),
+    toUserId: integer("to_user_id"), // null = همه مدیران
+    toRole: varchar("to_role", { length: 20 }).notNull().default(""),
+    fromName: varchar("from_name", { length: 160 }).notNull().default(""),
+    kind: varchar("kind", { length: 40 }).notNull().default("info"),
+    title: varchar("title", { length: 200 }).notNull(),
+    body: text("body").notNull().default(""),
+    link: varchar("link", { length: 200 }).notNull().default(""),
+    readAt: timestamp("read_at", { withTimezone: true }),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [index("notif_user_idx").on(t.toUserId)],
+);
+
+export const settings = pgTable("settings", {
+  key: varchar("key", { length: 80 }).primaryKey(),
+  value: jsonb("value").$type<unknown>().notNull(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 });

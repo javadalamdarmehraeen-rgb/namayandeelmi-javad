@@ -29,6 +29,11 @@ export const OPTION_CATEGORIES: { key: string; label: string }[] = [
   { key: "city", label: "شهر" },
   { key: "region", label: "منطقه" },
   { key: "specialty", label: "تخصص پزشک" },
+  { key: "pharmacy", label: "نام داروخانه" },
+  { key: "manager", label: "نام مسئول سفارش" },
+  { key: "doctor", label: "نام پزشک" },
+  { key: "secretary", label: "نام منشی" },
+  { key: "leaveKind", label: "نوع مرخصی" },
   { key: "distributor", label: "نام پخش" },
   { key: "visitor", label: "نام ویزیتور" },
 ];

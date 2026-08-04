@@ -1,6 +1,7 @@
 import { db } from "@/db";
 import { messageLogs, messengers } from "@/db/schema";
-import { PRODUCTS } from "./constants";
+import { bonusKeyOf } from "./defaults";
+import { getProducts } from "./settings-server";
 import { toPersianDigits } from "./jalali";
 
 type OrderLike = {
@@ -19,7 +20,8 @@ type OrderLike = {
   notes: string;
 };
 
-export function formatOrderMessage(o: OrderLike) {
+export async function formatOrderMessage(o: OrderLike) {
+  const PRODUCTS = await getProducts();
   const lines: string[] = [];
   lines.push("🧾 سفارش جدید داروخانه");
   lines.push(`تاریخ سفارش: ${toPersianDigits(o.dateShamsi)}`);
@@ -32,7 +34,7 @@ export function formatOrderMessage(o: OrderLike) {
   lines.push("— اقلام سفارش —");
   for (const p of PRODUCTS) {
     const q = Number(o.items?.[p.key] || 0);
-    const b = Number(o.items?.[p.bonusKey] || 0);
+    const b = Number(o.items?.[bonusKeyOf(p.key)] || 0);
     if (q || b) lines.push(`${p.label}: ${toPersianDigits(q)} | جایزه: ${toPersianDigits(b)}`);
   }
   lines.push(`نام پخش: ${o.distributor}`);
@@ -142,7 +144,7 @@ export async function sendOne(
 
 /** Sends the order to every enabled messenger target. Never throws. */
 export async function dispatchOrder(order: OrderLike) {
-  const text = formatOrderMessage(order);
+  const text = await formatOrderMessage(order);
   let targets: (typeof messengers.$inferSelect)[] = [];
   try {
     targets = await db.select().from(messengers);

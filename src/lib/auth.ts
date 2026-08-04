@@ -1,11 +1,12 @@
 import { createHmac, randomBytes, scryptSync, timingSafeEqual } from "crypto";
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
 import { db } from "@/db";
 import { users } from "@/db/schema";
 import { eq } from "drizzle-orm";
 
 const SECRET = process.env.APP_SECRET || "sabt-etelaat-kol-default-secret-key";
 export const SESSION_COOKIE = "sek_session";
+export const AUTH_HEADER = "x-auth-token";
 
 export type SessionUser = {
   id: number;
@@ -13,6 +14,7 @@ export type SessionUser = {
   fullName: string;
   role: "admin" | "supervisor" | "rep";
   phone: string;
+  requirePhone: boolean;
   permissions: string[];
 };
 
@@ -36,13 +38,11 @@ function sign(payload: string) {
 }
 
 export function createToken(userId: number) {
-  const payload = Buffer.from(
-    JSON.stringify({ id: userId, iat: Date.now() }),
-  ).toString("base64url");
+  const payload = Buffer.from(JSON.stringify({ id: userId, iat: Date.now() })).toString("base64url");
   return `${payload}.${sign(payload)}`;
 }
 
-export function readToken(token: string | undefined): number | null {
+export function readToken(token: string | undefined | null): number | null {
   if (!token) return null;
   const [payload, signature] = token.split(".");
   if (!payload || !signature) return null;
@@ -55,15 +55,12 @@ export function readToken(token: string | undefined): number | null {
   }
 }
 
-export async function getSessionUser(): Promise<SessionUser | null> {
-  const store = await cookies();
-  const id = readToken(store.get(SESSION_COOKIE)?.value);
-  if (!id) return null;
+export async function userFromId(id: number): Promise<SessionUser | null> {
   let rows: (typeof users.$inferSelect)[] = [];
   try {
     rows = await db.select().from(users).where(eq(users.id, id)).limit(1);
   } catch (err) {
-    console.error("getSessionUser db error", err);
+    console.error("session db error", err);
     return null;
   }
   const u = rows[0];
@@ -74,14 +71,29 @@ export async function getSessionUser(): Promise<SessionUser | null> {
     fullName: u.fullName,
     role: u.role === "admin" ? "admin" : u.role === "supervisor" ? "supervisor" : "rep",
     phone: u.phone,
+    requirePhone: u.requirePhone,
     permissions: Array.isArray(u.permissions) ? u.permissions : [],
   };
 }
 
-export async function requireUser() {
-  const user = await getSessionUser();
-  if (!user) throw new Error("UNAUTHORIZED");
-  return user;
+/**
+ * توکن ابتدا از هدر `x-auth-token` خوانده می‌شود (نشست مخصوص همان تب مرورگر)
+ * و در صورت نبود، از کوکی (حالت «مرا به خاطر بسپار»).
+ */
+export async function getSessionUser(): Promise<SessionUser | null> {
+  const h = await headers();
+  const headerId = readToken(h.get(AUTH_HEADER));
+  if (headerId) return userFromId(headerId);
+  const store = await cookies();
+  const cookieId = readToken(store.get(SESSION_COOKIE)?.value);
+  if (!cookieId) return null;
+  return userFromId(cookieId);
+}
+
+export function can(user: SessionUser | null, perm: string) {
+  if (!user) return false;
+  if (user.role === "admin") return true;
+  return user.permissions.includes(perm);
 }
 
 export function unauthorized() {

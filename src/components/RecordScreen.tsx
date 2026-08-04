@@ -6,7 +6,13 @@ import JalaliDateInput from "./JalaliDateInput";
 import Combobox from "./Combobox";
 import LocationPicker, { type LatLng } from "./LocationPicker";
 import { Alert, Badge, Button, Card, Field, Input, SectionTitle, TextArea } from "./ui";
-import { PRODUCTS } from "@/lib/constants";
+import {
+  DEFAULT_PRODUCTS,
+  DEFAULT_COLUMNS,
+  bonusKeyOf,
+  type ProductConfig,
+  type ColumnConfig,
+} from "@/lib/defaults";
 import { isValidJalali, toPersianDigits, todayJalali } from "@/lib/jalali";
 
 const MapBox = dynamicImport(() => import("./MapBox"), { ssr: false });
@@ -89,6 +95,8 @@ export default function RecordScreen({ type, isAdmin = false }: { type: RecordTy
   const [search, setSearch] = useState("");
   const [period, setPeriod] = useState("");
   const [page, setPage] = useState(1);
+  const [products, setProducts] = useState<ProductConfig[]>(DEFAULT_PRODUCTS);
+  const [columns, setColumns] = useState<ColumnConfig[]>(DEFAULT_COLUMNS[type]);
 
   const set = (k: string, v: string) => setForm((f) => ({ ...f, [k]: v }));
 
@@ -106,10 +114,20 @@ export default function RecordScreen({ type, isAdmin = false }: { type: RecordTy
     setOpts(grouped);
   }, []);
 
+  const loadSettings = useCallback(async () => {
+    const res = await fetch("/api/settings", { cache: "no-store" });
+    if (!res.ok) return;
+    const d = await res.json();
+    const v = d.values ?? {};
+    setProducts((v.products as ProductConfig[])?.filter((p) => p.enabled) ?? DEFAULT_PRODUCTS);
+    setColumns((v[`columns.${type}`] as ColumnConfig[]) ?? DEFAULT_COLUMNS[type]);
+  }, [type]);
+
   useEffect(() => {
     loadRows();
     loadOptions();
-  }, [loadRows, loadOptions]);
+    loadSettings();
+  }, [loadRows, loadOptions, loadSettings]);
 
   const recordName = type === "orders" ? form.pharmacyName : form.name;
 
@@ -196,6 +214,73 @@ export default function RecordScreen({ type, isAdmin = false }: { type: RecordTy
 
   const onAdded = () => loadOptions();
 
+  const visibleCols = columns.filter((c) => c.visible);
+
+  const nameOf = (r: Row) => (type === "orders" ? r.pharmacyName : r.name) ?? "";
+
+  const renderCell = (key: string, r: Row, i: number) => {
+    switch (key) {
+      case "row":
+        return (
+          <div className="flex items-center gap-2">
+            {!isAdmin ? (
+              <input
+                type="checkbox"
+                className="size-4 accent-teal-600"
+                checked={selected.includes(r.id)}
+                onChange={(e) => setSelected((s) => (e.target.checked ? [...s, r.id] : s.filter((x) => x !== r.id)))}
+              />
+            ) : null}
+            {toPersianDigits(i + 1)}
+          </div>
+        );
+      case "repName":
+        return <span className="font-semibold text-slate-700">{r.repName}</span>;
+      case "dateShamsi":
+        return toPersianDigits(r.dateShamsi);
+      case "name":
+      case "pharmacyName":
+        return (
+          <button
+            onClick={() => setDetail(r)}
+            className="font-bold text-teal-700 underline decoration-dotted underline-offset-4"
+          >
+            {nameOf(r)}
+          </button>
+        );
+      case "location":
+        return r.lat && r.lng ? (
+          <Badge tone="green">{r.accuracy ? `${toPersianDigits(Math.round(r.accuracy))}م` : "ثبت"}</Badge>
+        ) : (
+          <Badge tone="amber">ندارد</Badge>
+        );
+      case "sent":
+        return r.sent ? <Badge tone="green">ارسال شد</Badge> : <Badge tone="amber">در انتظار</Badge>;
+      case "products":
+        return (
+          <span className="text-[11px] text-slate-600">
+            {products
+              .filter((p) => (r.items?.[p.key] ?? 0) || (r.items?.[bonusKeyOf(p.key)] ?? 0))
+              .map(
+                (p) =>
+                  `${p.label}: ${toPersianDigits(r.items?.[p.key] ?? 0)}+${toPersianDigits(r.items?.[bonusKeyOf(p.key)] ?? 0)}`,
+              )
+              .join(" | ") || "—"}
+          </span>
+        );
+      case "managerPhone":
+      case "phone":
+      case "secretaryPhone":
+      case "landline":
+        return toPersianDigits((r as unknown as Record<string, string>)[key] ?? "") || "—";
+      default: {
+        const v = (r as unknown as Record<string, unknown>)[key];
+        return v ? String(v) : "—";
+      }
+    }
+  };
+
+
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -259,8 +344,15 @@ export default function RecordScreen({ type, isAdmin = false }: { type: RecordTy
 
             {type === "doctors" ? (
               <>
-                <Field label="نام پزشک" required>
-                  <Input value={form.name} onChange={(e) => set("name", e.target.value)} placeholder="دکتر ..." />
+                <Field label="نام پزشک" required hint="قابل تایپ + افزودن لحظه‌ای">
+                  <Combobox
+                    value={form.name}
+                    onChange={(v) => set("name", v)}
+                    options={opts.doctor ?? []}
+                    category="doctor"
+                    onAdded={onAdded}
+                    placeholder="دکتر ..."
+                  />
                 </Field>
                 <Field label="تخصص" hint="کشویی + جستجوی پیشرفته + افزودن لحظه‌ای">
                   <Combobox
@@ -275,7 +367,13 @@ export default function RecordScreen({ type, isAdmin = false }: { type: RecordTy
                   <Input inputMode="numeric" value={form.phone} onChange={(e) => set("phone", e.target.value)} />
                 </Field>
                 <Field label="نام منشی">
-                  <Input value={form.secretaryName} onChange={(e) => set("secretaryName", e.target.value)} />
+                  <Combobox
+                    value={form.secretaryName}
+                    onChange={(v) => set("secretaryName", v)}
+                    options={opts.secretary ?? []}
+                    category="secretary"
+                    onAdded={onAdded}
+                  />
                 </Field>
                 <Field label="شماره همراه منشی">
                   <Input
@@ -301,10 +399,13 @@ export default function RecordScreen({ type, isAdmin = false }: { type: RecordTy
               </>
             ) : (
               <>
-                <Field label="نام داروخانه" required>
-                  <Input
+                <Field label="نام داروخانه" required hint="قابل تایپ + افزودن لحظه‌ای">
+                  <Combobox
                     value={type === "orders" ? form.pharmacyName : form.name}
-                    onChange={(e) => set(type === "orders" ? "pharmacyName" : "name", e.target.value)}
+                    onChange={(v) => set(type === "orders" ? "pharmacyName" : "name", v)}
+                    options={opts.pharmacy ?? []}
+                    category="pharmacy"
+                    onAdded={onAdded}
                   />
                 </Field>
                 {type === "pharmacies" ? (
@@ -313,7 +414,13 @@ export default function RecordScreen({ type, isAdmin = false }: { type: RecordTy
                   </Field>
                 ) : null}
                 <Field label="نام مسئول سفارش">
-                  <Input value={form.managerName} onChange={(e) => set("managerName", e.target.value)} />
+                  <Combobox
+                    value={form.managerName}
+                    onChange={(v) => set("managerName", v)}
+                    options={opts.manager ?? []}
+                    category="manager"
+                    onAdded={onAdded}
+                  />
                 </Field>
                 <Field label="شماره همراه مسئول سفارش">
                   <Input
@@ -335,7 +442,7 @@ export default function RecordScreen({ type, isAdmin = false }: { type: RecordTy
             <div className="mt-4">
               <SectionTitle icon="💊">اقلام سفارش</SectionTitle>
               <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4">
-                {PRODUCTS.map((p) => (
+                {products.map((p) => (
                   <div key={p.key} className="rounded-xl bg-slate-50 p-2.5 ring-1 ring-slate-200">
                     <div className="mb-1.5 text-xs font-bold text-slate-700">{p.label}</div>
                     <div className="grid grid-cols-2 gap-1.5">
@@ -354,9 +461,9 @@ export default function RecordScreen({ type, isAdmin = false }: { type: RecordTy
                         <span className="mb-1 block text-[10px] text-slate-500">جایزه</span>
                         <Input
                           inputMode="numeric"
-                          value={items[p.bonusKey] ?? ""}
+                          value={items[bonusKeyOf(p.key)] ?? ""}
                           onChange={(e) =>
-                            setItems({ ...items, [p.bonusKey]: Number(e.target.value.replace(/\D/g, "")) || 0 })
+                            setItems({ ...items, [bonusKeyOf(p.key)]: Number(e.target.value.replace(/\D/g, "")) || 0 })
                           }
                           className="px-2 py-1.5 text-center"
                         />
@@ -441,80 +548,31 @@ export default function RecordScreen({ type, isAdmin = false }: { type: RecordTy
           </div>
 
           <div className="scroll-x">
-            <table className="w-full min-w-[760px] text-right text-xs sm:text-sm">
+            <table className="w-full min-w-[720px] text-right text-xs sm:text-sm">
               <thead>
                 <tr className="bg-slate-100 text-slate-600">
-                  <th className="rounded-r-lg px-2 py-2">ردیف</th>
-                  <th className="px-2 py-2">نام نماینده</th>
-                  <th className="px-2 py-2">تاریخ</th>
-                  {type !== "orders" ? <th className="px-2 py-2">استان/شهر</th> : null}
-                  <th className="px-2 py-2">{meta.nameLabel}</th>
-                  {type === "doctors" ? <th className="px-2 py-2">تخصص</th> : null}
-                  {type !== "doctors" ? <th className="px-2 py-2">مسئول سفارش</th> : null}
-                  <th className="px-2 py-2">شماره همراه</th>
-                  {type === "orders" ? <th className="px-2 py-2">پخش/ویزیتور</th> : null}
-                  <th className="px-2 py-2">لوکیشن</th>
-                  <th className="rounded-l-lg px-2 py-2">وضعیت</th>
+                  {visibleCols.map((c) => (
+                    <th key={c.key} className="px-2 py-2 whitespace-nowrap">
+                      {c.label}
+                    </th>
+                  ))}
                 </tr>
               </thead>
               <tbody>
                 {pageRows.length === 0 ? (
                   <tr>
-                    <td colSpan={10} className="py-8 text-center text-slate-400">
+                    <td colSpan={visibleCols.length} className="py-8 text-center text-slate-400">
                       رکوردی یافت نشد
                     </td>
                   </tr>
                 ) : (
                   pageRows.map((r, i) => (
                     <tr key={r.id} className="border-b border-slate-100 hover:bg-teal-50/40">
-                      <td className="px-2 py-2">
-                        <div className="flex items-center gap-2">
-                          {!isAdmin ? (
-                            <input
-                              type="checkbox"
-                              className="size-4 accent-teal-600"
-                              checked={selected.includes(r.id)}
-                              onChange={(e) =>
-                                setSelected((s) => (e.target.checked ? [...s, r.id] : s.filter((x) => x !== r.id)))
-                              }
-                            />
-                          ) : null}
-                          {toPersianDigits(i + 1)}
-                        </div>
-                      </td>
-                      <td className="px-2 py-2 font-semibold text-slate-700">{r.repName}</td>
-                      <td className="px-2 py-2">{toPersianDigits(r.dateShamsi)}</td>
-                      {type !== "orders" ? (
-                        <td className="px-2 py-2 text-slate-500">
-                          {[r.province, r.city].filter(Boolean).join(" / ") || "—"}
+                      {visibleCols.map((c) => (
+                        <td key={c.key} className="px-2 py-2 align-top">
+                          {renderCell(c.key, r, i)}
                         </td>
-                      ) : null}
-                      <td className="px-2 py-2">
-                        <button
-                          onClick={() => setDetail(r)}
-                          className="font-bold text-teal-700 underline decoration-dotted underline-offset-4"
-                        >
-                          {type === "orders" ? r.pharmacyName : r.name}
-                        </button>
-                      </td>
-                      {type === "doctors" ? <td className="px-2 py-2">{r.specialty}</td> : null}
-                      {type !== "doctors" ? <td className="px-2 py-2">{r.managerName}</td> : null}
-                      <td className="px-2 py-2">{toPersianDigits(r.managerPhone || r.phone || "-")}</td>
-                      {type === "orders" ? (
-                        <td className="px-2 py-2 text-slate-600">
-                          {r.distributor} {r.visitor ? `/ ${r.visitor}` : ""}
-                        </td>
-                      ) : null}
-                      <td className="px-2 py-2">
-                        {r.lat && r.lng ? (
-                          <Badge tone="green">{r.accuracy ? `${toPersianDigits(Math.round(r.accuracy))}م` : "ثبت"}</Badge>
-                        ) : (
-                          <Badge tone="amber">ندارد</Badge>
-                        )}
-                      </td>
-                      <td className="px-2 py-2">
-                        {r.sent ? <Badge tone="green">ارسال شد</Badge> : <Badge tone="amber">در انتظار</Badge>}
-                      </td>
+                      ))}
                     </tr>
                   ))
                 )}
@@ -591,12 +649,12 @@ export default function RecordScreen({ type, isAdmin = false }: { type: RecordTy
                         </tr>
                       </thead>
                       <tbody>
-                        {PRODUCTS.map((p) => (
+                        {products.map((p) => (
                           <tr key={p.key} className="border-b border-slate-100">
                             <td className="px-2 py-1 text-right">{p.label}</td>
                             <td className="px-2 py-1 text-center">{toPersianDigits(detail.items?.[p.key] ?? 0)}</td>
                             <td className="px-2 py-1 text-center">
-                              {toPersianDigits(detail.items?.[p.bonusKey] ?? 0)}
+                              {toPersianDigits(detail.items?.[bonusKeyOf(p.key)] ?? 0)}
                             </td>
                           </tr>
                         ))}

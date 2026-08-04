@@ -2,6 +2,7 @@ import { db } from "@/db";
 import { activityLogs, doctors, orders, pharmacies } from "@/db/schema";
 import { getSessionUser } from "@/lib/auth";
 import { dispatchOrder } from "@/lib/messaging";
+import { notify } from "@/lib/notify";
 import { eq, inArray, and } from "drizzle-orm";
 
 export const dynamic = "force-dynamic";
@@ -64,6 +65,22 @@ export async function POST(req: Request, ctx: Ctx) {
       userName: user.fullName,
       action: "ارسال اطلاعات",
       detail: `${type} - ${ids.length} رکورد`,
+    });
+    const typeLabel = type === "pharmacies" ? "داروخانه" : type === "doctors" ? "پزشک" : "سفارش";
+    await notify({
+      toRole: "admin",
+      fromName: user.fullName,
+      kind: "record",
+      title: `📥 ${ids.length} رکورد ${typeLabel} جدید از ${user.fullName}`,
+      body: sendStatusText || `اطلاعات ${typeLabel} ارسال شد و در داشبورد قابل مشاهده است.`,
+      link: `/admin/records/${type}`,
+    });
+    await notify({
+      toRole: "supervisor",
+      fromName: user.fullName,
+      kind: "record",
+      title: `📥 ${ids.length} رکورد ${typeLabel} جدید از ${user.fullName}`,
+      link: `/admin/records/${type}`,
     });
     return Response.json({ ok: true, count: ids.length, status: sendStatusText });
   } catch {
