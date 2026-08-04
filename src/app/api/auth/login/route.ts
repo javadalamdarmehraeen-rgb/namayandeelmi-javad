@@ -27,7 +27,19 @@ export async function POST(req: Request) {
     return Response.json({ error: "نام کاربری و رمز عبور الزامی است" }, { status: 400 });
   }
 
-  const rows = await db.select().from(users).where(eq(users.username, username)).limit(1);
+  let rows: (typeof users.$inferSelect)[] = [];
+  try {
+    rows = await db.select().from(users).where(eq(users.username, username)).limit(1);
+  } catch (err) {
+    console.error("login db error", err);
+    return Response.json(
+      {
+        error:
+          "❌ اتصال به پایگاه داده برقرار نشد. مقدار DATABASE_URL (رشته اتصال Neon همراه با ?sslmode=require) را در تنظیمات سرویس بررسی کنید.",
+      },
+      { status: 500 },
+    );
+  }
   const user = rows[0];
   if (!user || !verifyPassword(password, user.passwordHash)) {
     return Response.json({ error: "نام کاربری یا رمز عبور اشتباه است" }, { status: 401 });

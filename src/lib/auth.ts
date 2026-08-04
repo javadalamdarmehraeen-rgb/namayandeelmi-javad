@@ -11,7 +11,7 @@ export type SessionUser = {
   id: number;
   username: string;
   fullName: string;
-  role: "admin" | "rep";
+  role: "admin" | "supervisor" | "rep";
   phone: string;
   permissions: string[];
 };
@@ -59,14 +59,20 @@ export async function getSessionUser(): Promise<SessionUser | null> {
   const store = await cookies();
   const id = readToken(store.get(SESSION_COOKIE)?.value);
   if (!id) return null;
-  const rows = await db.select().from(users).where(eq(users.id, id)).limit(1);
+  let rows: (typeof users.$inferSelect)[] = [];
+  try {
+    rows = await db.select().from(users).where(eq(users.id, id)).limit(1);
+  } catch (err) {
+    console.error("getSessionUser db error", err);
+    return null;
+  }
   const u = rows[0];
   if (!u || !u.active) return null;
   return {
     id: u.id,
     username: u.username,
     fullName: u.fullName,
-    role: u.role === "admin" ? "admin" : "rep",
+    role: u.role === "admin" ? "admin" : u.role === "supervisor" ? "supervisor" : "rep",
     phone: u.phone,
     permissions: Array.isArray(u.permissions) ? u.permissions : [],
   };

@@ -5,7 +5,9 @@ services:
     plan: free
     region: frankfurt
     branch: main
-    buildCommand: npm install && npm run build
+    # 👇 مهم‌ترین بخش: بدون این خط، Render فقط npm start را اجرا می‌کند و خطای
+    # "Could not find a production build in the '.next' directory" می‌دهد.
+    buildCommand: npm install --include=dev && npm run build
     startCommand: npm run start
     healthCheckPath: /api/health
     autoDeploy: true
@@ -14,7 +16,9 @@ services:
         value: "20.18.0"
       - key: NODE_ENV
         value: production
-      # مقدار DATABASE_URL را از داشبورد Neon کپی و در Render ثبت کنید
+      - key: NPM_CONFIG_PRODUCTION
+        value: "false"
+      # مقدار DATABASE_URL را از داشبورد Neon کپی و اینجا (یا در داشبورد Render) ثبت کنید
       # نمونه: postgresql://user:pass@ep-xxx.eu-central-1.aws.neon.tech/neondb?sslmode=require
       - key: DATABASE_URL
         sync: false

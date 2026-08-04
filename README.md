@@ -26,17 +26,60 @@ npm run dev
 
 ## استقرار روی Render + Neon
 
-1. در Neon یک دیتابیس بسازید و Connection String آن را کپی کنید (حتماً با `?sslmode=require`).
-2. در Render سرویس Web Service بسازید و **حتماً** این مقادیر را تنظیم کنید:
-   - **Build Command:** `npm install && npm run build`
-   - **Start Command:** `npm run start`
-   - **Health Check Path:** `/api/health`
-   - **Environment Variables:**
-     - `DATABASE_URL` = رشته اتصال Neon
-     - `APP_SECRET` = یک رشته تصادفی طولانی
-     - `NODE_VERSION` = `20.18.0`
-3. خطای `Could not find a production build in the '.next' directory` دقیقاً یعنی Build Command تنظیم نشده است؛
-   با مرحله ۲ برطرف می‌شود. فایل `render.yaml` موجود در ریشه پروژه همین تنظیمات را به صورت Blueprint دارد.
+### چرا خطای «Could not find a production build» می‌گیرید؟
+
+در لاگ Render فقط این خط دیده می‌شود:
+
+```
+==> Running 'npm start'
+```
+
+و **هیچ خطی از `npm run build` وجود ندارد** → یعنی فیلد **Build Command** سرویس شما خالی است.
+`next start` فقط سرور را اجرا می‌کند و خودش بیلد نمی‌سازد، به همین دلیل پوشه‌ی `.next` وجود ندارد.
+
+### راه‌حل قطعی (۲ دقیقه)
+
+Render → سرویس شما → **Settings** → بخش **Build & Deploy**:
+
+| فیلد | مقدار درست |
+| --- | --- |
+| Root Directory | خالی (اگر پروژه در ریشه‌ی ریپو است) |
+| Build Command | `npm install --include=dev && npm run build` |
+| Start Command | `npm run start` |
+| Health Check Path | `/api/health` |
+
+سپس **Environment** → افزودن متغیرها:
+
+| Key | Value |
+| --- | --- |
+| `DATABASE_URL` | رشته اتصال Neon، مثلا `postgresql://user:pass@ep-xxx.neon.tech/neondb?sslmode=require` |
+| `APP_SECRET` | یک رشته تصادفی طولانی |
+| `NODE_VERSION` | `20.18.0` |
+| `NPM_CONFIG_PRODUCTION` | `false` |
+
+در آخر **Manual Deploy → Clear build cache & deploy**.
+
+> نکته: `--include=dev` لازم است چون Render مقدار `NODE_ENV=production` می‌گذارد و در این حالت
+> `npm install` بسته‌های toolchain (typescript و tailwind) را نصب نمی‌کند و بیلد می‌شکند.
+
+### شبکه‌ی ایمنی (اگر باز هم Build Command را فراموش کردید)
+
+اسکریپت `npm start` این پروژه به `scripts/start.mjs` وصل شده است: اگر پوشه‌ی `.next` موجود نباشد،
+**خودش قبل از اجرای سرور یک بار `next build` می‌گیرد** و بعد روی `PORT` مربوط به Render بالا می‌آید.
+پس حتی با تنظیمات ناقص هم سرویس live می‌شود (فقط اولین بوت کندتر است).
+
+### استفاده از Blueprint
+
+فایل `render.yaml` در ریشه‌ی پروژه همه‌ی این تنظیمات را دارد؛ کافیست در Render گزینه‌ی
+**New → Blueprint** را بزنید و ریپو را انتخاب کنید، سپس فقط `DATABASE_URL` را وارد کنید.
+
+### تشخیص سریع مشکل
+
+آدرس `https://<your-app>.onrender.com/api/health` را باز کنید:
+
+- `{"ok":true,"db":true}` → همه‌چیز سالم است.
+- `{"ok":false,"reason":"DATABASE_URL تنظیم نشده است"}` → متغیر محیطی را اضافه کنید.
+- `{"ok":false,"reason":"..."}` → متن خطا مشکل اتصال Neon (معمولاً نبودن `?sslmode=require`) را نشان می‌دهد.
 
 ## امکانات
 

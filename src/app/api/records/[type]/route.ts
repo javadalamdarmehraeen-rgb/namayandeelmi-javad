@@ -1,20 +1,17 @@
 import { db } from "@/db";
 import { activityLogs, doctors, orders, pharmacies } from "@/db/schema";
 import { getSessionUser } from "@/lib/auth";
-import { and, desc, eq, SQL } from "drizzle-orm";
+import { desc, eq, SQL } from "drizzle-orm";
 
 export const dynamic = "force-dynamic";
 
 type Ctx = { params: Promise<{ type: string }> };
 
-function num(v: unknown): number | null {
+const num = (v: unknown): number | null => {
   const n = Number(v);
-  return Number.isFinite(n) ? n : null;
-}
-
-function str(v: unknown, max = 500): string {
-  return String(v ?? "").trim().slice(0, max);
-}
+  return Number.isFinite(n) && n !== 0 ? n : null;
+};
+const str = (v: unknown, max = 500) => String(v ?? "").trim().slice(0, max);
 
 export async function GET(req: Request, ctx: Ctx) {
   const user = await getSessionUser();
@@ -22,55 +19,40 @@ export async function GET(req: Request, ctx: Ctx) {
   const { type } = await ctx.params;
   const url = new URL(req.url);
   const userIdFilter = url.searchParams.get("userId");
-
-  const conds: SQL[] = [];
-  if (user.role !== "admin") {
-    conds.push(eq(pharmacies.userId, user.id));
-  } else if (userIdFilter) {
-    conds.push(eq(pharmacies.userId, Number(userIdFilter)));
-  }
+  const isAdmin = user.role === "admin" || user.role === "supervisor";
+  const limit = Math.min(Number(url.searchParams.get("limit")) || 300, 1000);
 
   try {
     if (type === "pharmacies") {
-      const where =
-        user.role !== "admin"
-          ? eq(pharmacies.userId, user.id)
-          : userIdFilter
-            ? eq(pharmacies.userId, Number(userIdFilter))
-            : undefined;
-      const rows = await db
-        .select()
-        .from(pharmacies)
-        .where(where)
-        .orderBy(desc(pharmacies.id))
-        .limit(1000);
+      const w: SQL | undefined = !isAdmin
+        ? eq(pharmacies.userId, user.id)
+        : userIdFilter
+          ? eq(pharmacies.userId, Number(userIdFilter))
+          : undefined;
+      const rows = await db.select().from(pharmacies).where(w).orderBy(desc(pharmacies.id)).limit(limit);
       return Response.json({ rows });
     }
     if (type === "doctors") {
-      const where =
-        user.role !== "admin"
-          ? eq(doctors.userId, user.id)
-          : userIdFilter
-            ? eq(doctors.userId, Number(userIdFilter))
-            : undefined;
-      const rows = await db.select().from(doctors).where(where).orderBy(desc(doctors.id)).limit(1000);
+      const w: SQL | undefined = !isAdmin
+        ? eq(doctors.userId, user.id)
+        : userIdFilter
+          ? eq(doctors.userId, Number(userIdFilter))
+          : undefined;
+      const rows = await db.select().from(doctors).where(w).orderBy(desc(doctors.id)).limit(limit);
       return Response.json({ rows });
     }
     if (type === "orders") {
-      const where =
-        user.role !== "admin"
-          ? eq(orders.userId, user.id)
-          : userIdFilter
-            ? eq(orders.userId, Number(userIdFilter))
-            : undefined;
-      const rows = await db.select().from(orders).where(where).orderBy(desc(orders.id)).limit(1000);
+      const w: SQL | undefined = !isAdmin
+        ? eq(orders.userId, user.id)
+        : userIdFilter
+          ? eq(orders.userId, Number(userIdFilter))
+          : undefined;
+      const rows = await db.select().from(orders).where(w).orderBy(desc(orders.id)).limit(limit);
       return Response.json({ rows });
     }
   } catch {
     return Response.json({ error: "خطا در خواندن اطلاعات" }, { status: 500 });
   }
-  void and;
-  void conds;
   return Response.json({ error: "نوع نامعتبر" }, { status: 400 });
 }
 
@@ -85,6 +67,7 @@ export async function POST(req: Request, ctx: Ctx) {
     dateShamsi: str(body.dateShamsi, 12),
     lat: num(body.lat),
     lng: num(body.lng),
+    accuracy: num(body.accuracy),
     locationLabel: str(body.locationLabel, 200),
   };
 
@@ -97,7 +80,11 @@ export async function POST(req: Request, ctx: Ctx) {
         .insert(pharmacies)
         .values({
           ...base,
+          province: str(body.province, 100),
+          city: str(body.city, 100),
+          region: str(body.region, 100),
           name: str(body.name, 200),
+          landline: str(body.landline, 20),
           managerName: str(body.managerName, 160),
           managerPhone: str(body.managerPhone, 20),
           address: str(body.address, 1000),
@@ -115,6 +102,9 @@ export async function POST(req: Request, ctx: Ctx) {
         .insert(doctors)
         .values({
           ...base,
+          province: str(body.province, 100),
+          city: str(body.city, 100),
+          region: str(body.region, 100),
           name: str(body.name, 200),
           specialty: str(body.specialty, 160),
           phone: str(body.phone, 20),
@@ -133,8 +123,7 @@ export async function POST(req: Request, ctx: Ctx) {
         return Response.json({ error: "تاریخ و نام داروخانه الزامی است" }, { status: 400 });
       }
       const items: Record<string, number> = {};
-      const rawItems = (body.items ?? {}) as Record<string, unknown>;
-      for (const [k, v] of Object.entries(rawItems)) {
+      for (const [k, v] of Object.entries((body.items ?? {}) as Record<string, unknown>)) {
         const n = Number(v);
         if (Number.isFinite(n) && n !== 0) items[k] = n;
       }

@@ -3,11 +3,18 @@ import { Pool } from "pg";
 
 const databaseUrl = process.env.DATABASE_URL;
 
+export const hasDatabaseUrl = Boolean(databaseUrl);
+
 if (!databaseUrl) {
-  throw new Error("DATABASE_URL is required");
+  // در محیط‌هایی مثل Render اگر متغیر تنظیم نشده باشد، به جای کرش کردن کل برنامه
+  // پیام واضح لاگ می‌شود و کاربر در صفحه ورود خطای فارسی می‌بیند.
+  console.error(
+    "❌ DATABASE_URL تنظیم نشده است. در Render → Environment مقدار رشته اتصال Neon را اضافه کنید.",
+  );
 }
 
-const isLocal = /localhost|127\.0\.0\.1/.test(databaseUrl);
+const effectiveUrl = databaseUrl ?? "postgresql://invalid:invalid@127.0.0.1:1/invalid";
+const isLocal = /localhost|127\.0\.0\.1/.test(effectiveUrl);
 
 const globalForDb = globalThis as typeof globalThis & {
   __arenaNextJsPostgresqlPool?: Pool;
@@ -16,7 +23,7 @@ const globalForDb = globalThis as typeof globalThis & {
 export const pool =
   globalForDb.__arenaNextJsPostgresqlPool ??
   new Pool({
-    connectionString: databaseUrl,
+    connectionString: effectiveUrl,
     // Neon / Render managed Postgres require TLS; local docker does not.
     ssl: isLocal ? undefined : { rejectUnauthorized: false },
     max: 5,

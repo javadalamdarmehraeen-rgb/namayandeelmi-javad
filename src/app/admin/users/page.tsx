@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { Alert, Badge, Button, Card, Field, Input, SectionTitle } from "@/components/ui";
-import { PERMISSIONS } from "@/lib/constants";
+import { ALL_PERMISSIONS, PERMISSIONS } from "@/lib/constants";
 import { tehranDateTime, toPersianDigits } from "@/lib/jalali";
 
 type User = {
@@ -13,6 +13,7 @@ type User = {
   role: string;
   active: boolean;
   permissions: string[];
+  passwordPlain: string;
   lastSeenAt: string | null;
 };
 
@@ -22,7 +23,7 @@ const blank = {
   fullName: "",
   phone: "",
   role: "rep",
-  permissions: ["pharmacy", "doctor", "order", "trip"] as string[],
+  permissions: [...ALL_PERMISSIONS] as string[],
 };
 
 export default function UsersPage() {
@@ -31,6 +32,7 @@ export default function UsersPage() {
   const [msg, setMsg] = useState<{ kind: "error" | "success"; text: string } | null>(null);
   const [editing, setEditing] = useState<User | null>(null);
   const [newPass, setNewPass] = useState("");
+  const [showPass, setShowPass] = useState<Record<number, boolean>>({});
 
   const load = useCallback(async () => {
     const res = await fetch("/api/users", { cache: "no-store" });
@@ -81,7 +83,12 @@ export default function UsersPage() {
 
   return (
     <div className="space-y-4">
-      <SectionTitle icon="👤">تعریف نماینده، رمز عبور و سطح دسترسی</SectionTitle>
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <SectionTitle icon="👤">تعریف نماینده، رمز عبور و سطح دسترسی</SectionTitle>
+        <a href="/api/export?type=users" className="rounded-xl bg-emerald-600 px-3 py-2 text-xs font-bold text-white">
+          ⬇️ خروجی اکسل کاربران
+        </a>
+      </div>
       {msg ? <Alert kind={msg.kind}>{msg.text}</Alert> : null}
 
       <Card>
@@ -110,6 +117,7 @@ export default function UsersPage() {
               className="w-full rounded-xl border border-slate-300 px-3 py-2.5 text-sm"
             >
               <option value="rep">نماینده علمی</option>
+              <option value="supervisor">سرپرست</option>
               <option value="admin">مدیر</option>
             </select>
           </Field>
@@ -146,6 +154,7 @@ export default function UsersPage() {
                 <th className="px-2 py-2">ردیف</th>
                 <th className="px-2 py-2">نام</th>
                 <th className="px-2 py-2">نام کاربری</th>
+                <th className="px-2 py-2">رمز عبور</th>
                 <th className="px-2 py-2">شماره همراه</th>
                 <th className="px-2 py-2">نقش</th>
                 <th className="px-2 py-2">سطح دسترسی</th>
@@ -159,14 +168,35 @@ export default function UsersPage() {
                   <td className="px-2 py-2">{toPersianDigits(i + 1)}</td>
                   <td className="px-2 py-2 font-bold text-slate-700">{u.fullName}</td>
                   <td className="px-2 py-2">{u.username}</td>
+                  <td className="px-2 py-2">
+                    <button
+                      onClick={() => setShowPass((s) => ({ ...s, [u.id]: !s[u.id] }))}
+                      className="rounded-lg bg-slate-100 px-2 py-1 font-mono text-[11px] font-bold text-slate-700"
+                      title="نمایش / مخفی کردن رمز"
+                    >
+                      {showPass[u.id] ? u.passwordPlain || "—" : "••••••"}
+                    </button>
+                  </td>
                   <td className="px-2 py-2">{toPersianDigits(u.phone)}</td>
                   <td className="px-2 py-2">
-                    <Badge tone={u.role === "admin" ? "green" : "slate"}>
-                      {u.role === "admin" ? "مدیر" : "نماینده"}
+                    <Badge tone={u.role === "admin" ? "green" : u.role === "supervisor" ? "amber" : "slate"}>
+                      {u.role === "admin" ? "مدیر" : u.role === "supervisor" ? "سرپرست" : "نماینده"}
                     </Badge>
                   </td>
                   <td className="px-2 py-2">
                     <div className="flex flex-wrap gap-1">
+                      <button
+                        onClick={() => patch({ id: u.id, permissions: ALL_PERMISSIONS })}
+                        className="rounded-lg bg-teal-600 px-2 py-0.5 text-[10px] font-bold text-white"
+                      >
+                        همه
+                      </button>
+                      <button
+                        onClick={() => patch({ id: u.id, permissions: [] })}
+                        className="rounded-lg bg-slate-300 px-2 py-0.5 text-[10px] font-bold text-slate-700"
+                      >
+                        هیچ
+                      </button>
                       {PERMISSIONS.map((p) => (
                         <button
                           key={p.key}

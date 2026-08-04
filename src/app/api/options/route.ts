@@ -1,10 +1,13 @@
 import { db } from "@/db";
-import { options } from "@/db/schema";
+import { activityLogs, options } from "@/db/schema";
 import { getSessionUser } from "@/lib/auth";
 import { ensureSeed } from "@/lib/bootstrap";
+import { OPTION_CATEGORIES } from "@/lib/constants";
 import { and, asc, eq } from "drizzle-orm";
 
 export const dynamic = "force-dynamic";
+
+const VALID = OPTION_CATEGORIES.map((c) => c.key);
 
 export async function GET(req: Request) {
   await ensureSeed();
@@ -17,26 +20,36 @@ export async function GET(req: Request) {
   return Response.json({ rows });
 }
 
+/** هم مدیر و هم نماینده (با دسترسی options) می‌توانند در لحظه مقدار اضافه کنند. */
 export async function POST(req: Request) {
   const user = await getSessionUser();
-  if (!user || user.role !== "admin") return Response.json({ error: "دسترسی غیرمجاز" }, { status: 401 });
+  if (!user) return Response.json({ error: "دسترسی غیرمجاز" }, { status: 401 });
+  const canAdd = user.role === "admin" || user.permissions.includes("options");
+  if (!canAdd) return Response.json({ error: "شما اجازه افزودن ندارید" }, { status: 403 });
+
   const body = await req.json().catch(() => ({}));
   const category = String(body.category ?? "").trim();
   const value = String(body.value ?? "").trim().slice(0, 200);
-  if (!category || !value) return Response.json({ error: "مقدار نامعتبر" }, { status: 400 });
+  if (!VALID.includes(category) || !value) return Response.json({ error: "مقدار نامعتبر" }, { status: 400 });
+
   const exists = await db
     .select()
     .from(options)
     .where(and(eq(options.category, category), eq(options.value, value)))
     .limit(1);
-  if (exists.length) return Response.json({ row: exists[0] });
-  const [row] = await db.insert(options).values({ category, value }).returning();
+  if (exists.length) return Response.json({ row: exists[0], duplicate: true });
+
+  const [row] = await db.insert(options).values({ category, value, createdBy: user.fullName }).returning();
+  await db
+    .insert(activityLogs)
+    .values({ userId: user.id, userName: user.fullName, action: "افزودن مقدار کشویی", detail: `${category}: ${value}` })
+    .catch(() => undefined);
   return Response.json({ row });
 }
 
 export async function DELETE(req: Request) {
   const user = await getSessionUser();
-  if (!user || user.role !== "admin") return Response.json({ error: "دسترسی غیرمجاز" }, { status: 401 });
+  if (!user || user.role !== "admin") return Response.json({ error: "فقط مدیر می‌تواند حذف کند" }, { status: 401 });
   const id = Number(new URL(req.url).searchParams.get("id"));
   if (!Number.isFinite(id)) return Response.json({ error: "شناسه نامعتبر" }, { status: 400 });
   await db.delete(options).where(eq(options.id, id));

@@ -64,6 +64,18 @@ export default function MessengersPage() {
     load();
   };
 
+  const test = async (id: number) => {
+    setMsg("در حال ارسال پیام آزمایشی...");
+    const res = await fetch("/api/messengers/test", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id }),
+    });
+    const d = await res.json().catch(() => ({}));
+    setMsg(d.ok ? "✅ پیام آزمایشی ارسال شد" : `✖ ${d.detail ?? d.error ?? "ارسال ناموفق"}`);
+    load();
+  };
+
   return (
     <div className="space-y-4">
       <SectionTitle icon="📨">ارسال خودکار سفارشات به پیام‌رسان‌ها</SectionTitle>
@@ -71,7 +83,21 @@ export default function MessengersPage() {
         پس از ارسال سفارش توسط نماینده، متن سفارش به ترتیب فیلدها برای همه مقصدهای «فعال» ارسال می‌شود. توکن بله:
         توکن ربات، ایتا: توکن eitaayar، واتساپ: به صورت <b>phoneNumberId:accessToken</b>.
       </Alert>
-      {msg ? <Alert kind="success">{msg}</Alert> : null}
+      {msg ? <Alert kind={msg.startsWith("✖") ? "error" : "success"}>{msg}</Alert> : null}
+      <Card>
+        <h3 className="mb-2 text-sm font-bold text-slate-700">راهنمای تنظیم هر پیام‌رسان</h3>
+        <ul className="space-y-1 text-xs text-slate-600">
+          {PLATFORMS.map((p) => (
+            <li key={p.key} className="rounded-lg bg-slate-50 px-3 py-2">
+              <b className="text-teal-700">{p.label}:</b> {p.hint}
+            </li>
+          ))}
+          <li className="rounded-lg bg-amber-50 px-3 py-2 text-amber-800">
+            ⚠️ اگر سرور برنامه خارج از ایران باشد (مثل Render)، دسترسی به سرور بله و ایتا ممکن است مسدود شود؛ در این
+            حالت با دکمه «تست ارسال» پیام خطا را ببینید. راه‌حل: میزبانی برنامه روی سرور ایران.
+          </li>
+        </ul>
+      </Card>
 
       <Card>
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-5">
@@ -143,6 +169,12 @@ export default function MessengersPage() {
                         className="rounded-lg bg-slate-100 px-2 py-1 text-[11px] font-bold"
                       >
                         {m.enabled ? "غیرفعال" : "فعال"}
+                      </button>
+                      <button
+                        onClick={() => test(m.id)}
+                        className="rounded-lg bg-sky-100 px-2 py-1 text-[11px] font-bold text-sky-700"
+                      >
+                        تست ارسال
                       </button>
                       <button
                         onClick={() => remove(m.id)}

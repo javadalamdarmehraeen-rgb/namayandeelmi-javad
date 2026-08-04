@@ -18,6 +18,7 @@ export async function POST(req: Request, ctx: Ctx) {
     : [];
   if (ids.length === 0) return Response.json({ error: "موردی انتخاب نشده است" }, { status: 400 });
 
+  let sendStatusText = "";
   try {
     if (type === "pharmacies") {
       await db
@@ -34,6 +35,7 @@ export async function POST(req: Request, ctx: Ctx) {
         .select()
         .from(orders)
         .where(and(inArray(orders.id, ids), eq(orders.userId, user.id)));
+      let lastStatus = "";
       for (const row of rows) {
         const status = await dispatchOrder({
           id: row.id,
@@ -50,8 +52,10 @@ export async function POST(req: Request, ctx: Ctx) {
           visitor: row.visitor,
           notes: row.notes,
         });
+        lastStatus = status;
         await db.update(orders).set({ sent: true, sendStatus: status }).where(eq(orders.id, row.id));
       }
+      sendStatusText = lastStatus;
     } else {
       return Response.json({ error: "نوع نامعتبر" }, { status: 400 });
     }
@@ -61,7 +65,7 @@ export async function POST(req: Request, ctx: Ctx) {
       action: "ارسال اطلاعات",
       detail: `${type} - ${ids.length} رکورد`,
     });
-    return Response.json({ ok: true, count: ids.length });
+    return Response.json({ ok: true, count: ids.length, status: sendStatusText });
   } catch {
     return Response.json({ error: "خطا در ارسال اطلاعات" }, { status: 500 });
   }

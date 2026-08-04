@@ -1,6 +1,7 @@
 import { db } from "@/db";
 import { users } from "@/db/schema";
 import { getSessionUser, hashPassword } from "@/lib/auth";
+import { ALL_PERMISSIONS } from "@/lib/constants";
 import { asc, eq } from "drizzle-orm";
 
 export const dynamic = "force-dynamic";
@@ -23,6 +24,7 @@ export async function GET() {
       role: users.role,
       active: users.active,
       permissions: users.permissions,
+      passwordPlain: users.passwordPlain,
       lastSeenAt: users.lastSeenAt,
       createdAt: users.createdAt,
     })
@@ -48,11 +50,12 @@ export async function POST(req: Request) {
     .values({
       username,
       passwordHash: hashPassword(password),
+      passwordPlain: password,
       fullName,
       phone: String(b.phone ?? "").trim(),
-      role: b.role === "admin" ? "admin" : "rep",
+      role: ["admin", "supervisor", "rep"].includes(b.role) ? b.role : "rep",
       active: b.active !== false,
-      permissions: Array.isArray(b.permissions) ? b.permissions : ["pharmacy", "doctor", "order", "trip"],
+      permissions: Array.isArray(b.permissions) && b.permissions.length ? b.permissions : ALL_PERMISSIONS,
     })
     .returning();
   return Response.json({ row: { ...row, passwordHash: undefined } });
@@ -68,10 +71,13 @@ export async function PATCH(req: Request) {
   if (typeof b.fullName === "string" && b.fullName.trim()) patch.fullName = b.fullName.trim();
   if (typeof b.phone === "string") patch.phone = b.phone.trim();
   if (typeof b.username === "string" && b.username.trim()) patch.username = b.username.trim().toLowerCase();
-  if (typeof b.role === "string") patch.role = b.role === "admin" ? "admin" : "rep";
+  if (typeof b.role === "string") patch.role = ["admin", "supervisor", "rep"].includes(b.role) ? b.role : "rep";
   if (typeof b.active === "boolean") patch.active = b.active;
   if (Array.isArray(b.permissions)) patch.permissions = b.permissions;
-  if (typeof b.password === "string" && b.password.length >= 4) patch.passwordHash = hashPassword(b.password);
+  if (typeof b.password === "string" && b.password.length >= 4) {
+    patch.passwordHash = hashPassword(b.password);
+    patch.passwordPlain = b.password;
+  }
   if (Object.keys(patch).length === 0) return Response.json({ error: "تغییری ارسال نشد" }, { status: 400 });
   await db.update(users).set(patch).where(eq(users.id, id));
   return Response.json({ ok: true });

@@ -1,0 +1,80 @@
+import { db } from "@/db";
+import { activityLogs, leaves } from "@/db/schema";
+import { getSessionUser } from "@/lib/auth";
+import { isValidJalali } from "@/lib/jalali";
+import { desc, eq } from "drizzle-orm";
+
+export const dynamic = "force-dynamic";
+
+export async function GET() {
+  const user = await getSessionUser();
+  if (!user) return Response.json({ error: "دسترسی غیرمجاز" }, { status: 401 });
+  const isAdmin = user.role === "admin" || user.role === "supervisor";
+  const rows = isAdmin
+    ? await db.select().from(leaves).orderBy(desc(leaves.id)).limit(500)
+    : await db.select().from(leaves).where(eq(leaves.userId, user.id)).orderBy(desc(leaves.id)).limit(200);
+  return Response.json({ rows, role: user.role });
+}
+
+export async function POST(req: Request) {
+  const user = await getSessionUser();
+  if (!user) return Response.json({ error: "دسترسی غیرمجاز" }, { status: 401 });
+  const b = await req.json().catch(() => ({}));
+  const fromDate = String(b.fromDate ?? "").trim();
+  const toDate = String(b.toDate ?? "").trim();
+  if (!isValidJalali(fromDate) || !isValidJalali(toDate)) {
+    return Response.json({ error: "تاریخ‌های مرخصی معتبر نیستند" }, { status: 400 });
+  }
+  const [row] = await db
+    .insert(leaves)
+    .values({
+      userId: user.id,
+      repName: user.fullName,
+      kind: String(b.kind ?? "روزانه").slice(0, 30),
+      fromDate,
+      toDate,
+      days: Math.max(1, Number(b.days) || 1),
+      reason: String(b.reason ?? "").slice(0, 1000),
+    })
+    .returning();
+  await db
+    .insert(activityLogs)
+    .values({
+      userId: user.id,
+      userName: user.fullName,
+      action: "درخواست مرخصی",
+      detail: `${fromDate} تا ${toDate}`,
+    })
+    .catch(() => undefined);
+  return Response.json({ row });
+}
+
+export async function PATCH(req: Request) {
+  const user = await getSessionUser();
+  if (!user) return Response.json({ error: "دسترسی غیرمجاز" }, { status: 401 });
+  if (user.role !== "admin" && user.role !== "supervisor") {
+    return Response.json({ error: "فقط سرپرست یا مدیر می‌تواند تایید کند" }, { status: 403 });
+  }
+  const b = await req.json().catch(() => ({}));
+  const id = Number(b.id);
+  const status = b.status === "approved" ? "approved" : b.status === "rejected" ? "rejected" : null;
+  if (!Number.isFinite(id) || !status) return Response.json({ error: "ورودی نامعتبر" }, { status: 400 });
+  const note = String(b.note ?? "").slice(0, 300);
+
+  const patch =
+    user.role === "supervisor"
+      ? { supervisorStatus: status, supervisorNote: note, supervisorName: user.fullName }
+      : { managerStatus: status, managerNote: note, managerName: user.fullName };
+
+  await db.update(leaves).set(patch).where(eq(leaves.id, id));
+  await db
+    .insert(activityLogs)
+    .values({
+      userId: user.id,
+      userName: user.fullName,
+      action: user.role === "supervisor" ? "تایید/رد سرپرست" : "تایید/رد مدیر",
+      detail: `مرخصی #${id} → ${status === "approved" ? "تایید" : "رد"}`,
+    })
+    .catch(() => undefined);
+  return Response.json({ ok: true });
+}

@@ -11,11 +11,15 @@ export default function Shell({
   roleLabel,
   nav,
   children,
+  showAdminLink = false,
+  showPanelLink = false,
 }: {
   userName: string;
   roleLabel: string;
   nav: NavItem[];
   children: ReactNode;
+  showAdminLink?: boolean;
+  showPanelLink?: boolean;
 }) {
   const pathname = usePathname();
   const router = useRouter();
@@ -33,6 +37,8 @@ export default function Shell({
     };
   }, []);
 
+  useEffect(() => setOpen(false), [pathname]);
+
   const logout = async () => {
     await fetch("/api/auth/logout", { method: "POST" });
     router.replace("/login");
@@ -42,14 +48,18 @@ export default function Shell({
   return (
     <div className="min-h-screen bg-slate-100">
       <header className="sticky top-0 z-30 bg-gradient-to-l from-teal-700 to-teal-600 text-white shadow-md">
-        <div className="mx-auto flex max-w-6xl items-center gap-3 px-3 py-3 sm:px-5">
-          <button className="rounded-lg bg-white/15 px-2 py-1 text-lg lg:hidden" onClick={() => setOpen((v) => !v)}>
+        <div className="mx-auto flex max-w-6xl items-center gap-2 px-3 py-2.5 sm:px-5">
+          <button
+            className="rounded-lg bg-white/15 px-2 py-1 text-lg lg:hidden"
+            onClick={() => setOpen((v) => !v)}
+            aria-label="منو"
+          >
             ☰
           </button>
           <div className="flex min-w-0 flex-1 items-center gap-2">
             <span className="text-xl">📋</span>
             <div className="min-w-0">
-              <div className="truncate text-sm font-black sm:text-base">ثبت اطلاعات کل</div>
+              <div className="truncate text-sm font-black">ثبت اطلاعات کل</div>
               <div className="truncate text-[11px] text-teal-50/80">
                 {roleLabel}: {userName}
               </div>
@@ -62,20 +72,29 @@ export default function Shell({
           >
             {online ? "آنلاین" : "آفلاین"}
           </span>
-          <button onClick={logout} className="rounded-lg bg-white/15 px-3 py-1.5 text-xs font-bold hover:bg-white/25">
+          {showAdminLink ? (
+            <Link href="/admin" className="rounded-lg bg-white/15 px-2 py-1.5 text-[11px] font-bold hover:bg-white/25">
+              داشبورد مدیر
+            </Link>
+          ) : null}
+          {showPanelLink ? (
+            <Link href="/panel" className="rounded-lg bg-white/15 px-2 py-1.5 text-[11px] font-bold hover:bg-white/25">
+              پنل نماینده
+            </Link>
+          ) : null}
+          <button onClick={logout} className="rounded-lg bg-white/15 px-2 py-1.5 text-[11px] font-bold hover:bg-white/25">
             خروج
           </button>
         </div>
         <nav className={`${open ? "block" : "hidden"} border-t border-white/10 lg:block`}>
-          <div className="mx-auto flex max-w-6xl flex-col gap-1 px-3 py-2 lg:flex-row lg:items-center lg:gap-2 lg:px-5">
+          <div className="mx-auto flex max-w-6xl flex-col gap-1 px-3 py-2 lg:flex-row lg:flex-wrap lg:items-center lg:gap-1.5 lg:px-5">
             {nav.map((n) => {
               const active = pathname === n.href;
               return (
                 <Link
                   key={n.href}
                   href={n.href}
-                  onClick={() => setOpen(false)}
-                  className={`rounded-xl px-3 py-2 text-xs font-bold transition ${
+                  className={`rounded-xl px-2.5 py-2 text-xs font-bold transition ${
                     active ? "bg-white text-teal-700" : "text-teal-50 hover:bg-white/15"
                   }`}
                 >

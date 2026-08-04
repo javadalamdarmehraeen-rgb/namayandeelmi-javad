@@ -1,7 +1,9 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import MapBox from "@/components/MapBox";
+import dynamic from "next/dynamic";
+
+const MapBox = dynamic(() => import("@/components/MapBox"), { ssr: false });
 import { Alert, Badge, Button, Card, SectionTitle } from "@/components/ui";
 import { tehranTime, toPersianDigits, todayJalali } from "@/lib/jalali";
 
@@ -30,6 +32,7 @@ export default function TripPage() {
   const [msg, setMsg] = useState<{ kind: "info" | "error" | "success"; text: string } | null>(null);
   const [gpsOk, setGpsOk] = useState(true);
   const [startedAt, setStartedAt] = useState<string>("");
+  const [home, setHome] = useState<{ lat: number; lng: number; title: string } | null>(null);
   const watchRef = useRef<number | null>(null);
   const lastSaved = useRef<number>(0);
 
@@ -61,6 +64,13 @@ export default function TripPage() {
       }
     }
     setQueueLen(readQueue().length);
+    fetch("/api/homes", { cache: "no-store" })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => {
+        const h = d?.rows?.[0];
+        if (h) setHome({ lat: h.lat, lng: h.lng, title: h.title });
+      })
+      .catch(() => undefined);
     const t = setInterval(flush, 15000);
     window.addEventListener("online", flush);
     return () => {
@@ -234,14 +244,17 @@ export default function TripPage() {
             height={360}
             follow
             path={path.map((p) => ({ lat: p.lat, lng: p.lng }))}
-            points={path
-              .filter((p) => p.kind !== "move")
-              .map((p) => ({
-                lat: p.lat,
-                lng: p.lng,
-                label: p.note || (p.kind === "start" ? "شروع ویزیت" : "پایان"),
-                color: p.kind === "pause" ? "#f59e0b" : "#0f766e",
-              }))}
+            points={[
+              ...path
+                .filter((p) => p.kind !== "move")
+                .map((p) => ({
+                  lat: p.lat,
+                  lng: p.lng,
+                  label: p.note || (p.kind === "start" ? "شروع ویزیت" : "پایان"),
+                  color: p.kind === "pause" ? "#f59e0b" : "#0f766e",
+                })),
+              ...(home ? [{ lat: home.lat, lng: home.lng, label: `🏠 ${home.title}`, color: "#7c3aed" }] : []),
+            ]}
           />
           {pauses.length ? (
             <ul className="mt-3 space-y-1 text-xs text-slate-600">

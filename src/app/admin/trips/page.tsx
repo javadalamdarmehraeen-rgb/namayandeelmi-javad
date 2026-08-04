@@ -1,7 +1,9 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import MapBox from "@/components/MapBox";
+import dynamic from "next/dynamic";
+
+const MapBox = dynamic(() => import("@/components/MapBox"), { ssr: false });
 import { Badge, Button, Card, SectionTitle } from "@/components/ui";
 import { tehranDateTime, tehranTime, toPersianDigits } from "@/lib/jalali";
 
@@ -21,6 +23,7 @@ export default function AdminTrips() {
   const [sel, setSel] = useState<number | null>(null);
   const [points, setPoints] = useState<Point[]>([]);
   const [onlyActive, setOnlyActive] = useState(false);
+  const [homes, setHomes] = useState<{ lat: number; lng: number; repName: string; title: string }[]>([]);
 
   const loadTrips = useCallback(async () => {
     const res = await fetch(`/api/trips${onlyActive ? "?active=1" : ""}`, { cache: "no-store" });
@@ -33,15 +36,22 @@ export default function AdminTrips() {
   }, []);
 
   useEffect(() => {
+    fetch("/api/homes", { cache: "no-store" })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => setHomes(d?.rows ?? []))
+      .catch(() => undefined);
+  }, []);
+
+  useEffect(() => {
     loadTrips();
-    const t = setInterval(loadTrips, 10000);
+    const t = setInterval(loadTrips, 25000);
     return () => clearInterval(t);
   }, [loadTrips]);
 
   useEffect(() => {
     if (sel === null) return;
     loadPoints(sel);
-    const t = setInterval(() => loadPoints(sel), 10000);
+    const t = setInterval(() => loadPoints(sel), 20000);
     return () => clearInterval(t);
   }, [sel, loadPoints]);
 
@@ -101,14 +111,19 @@ export default function AdminTrips() {
               <MapBox
                 height={380}
                 path={points.map((p) => ({ lat: p.lat, lng: p.lng }))}
-                points={points
-                  .filter((p) => p.kind !== "move")
-                  .map((p) => ({
-                    lat: p.lat,
-                    lng: p.lng,
-                    label: `${p.kind === "start" ? "شروع" : p.kind === "end" ? "پایان" : "وقفه"} - ${tehranTime(p.recordedAt)}`,
-                    color: p.kind === "pause" ? "#f59e0b" : p.kind === "end" ? "#e11d48" : "#0f766e",
-                  }))}
+                points={[
+                  ...points
+                    .filter((p) => p.kind !== "move")
+                    .map((p) => ({
+                      lat: p.lat,
+                      lng: p.lng,
+                      label: `${p.kind === "start" ? "شروع" : p.kind === "end" ? "پایان" : "وقفه"} - ${tehranTime(p.recordedAt)}`,
+                      color: p.kind === "pause" ? "#f59e0b" : p.kind === "end" ? "#e11d48" : "#0f766e",
+                    })),
+                  ...homes
+                    .filter((h) => h.repName === selected.repName)
+                    .map((h) => ({ lat: h.lat, lng: h.lng, label: `🏠 ${h.title}`, color: "#7c3aed" })),
+                ]}
               />
               <div className="mt-3 max-h-40 space-y-1 overflow-y-auto text-[11px]">
                 {points

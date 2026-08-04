@@ -2,26 +2,23 @@ import { db } from "@/db";
 import { options, users } from "@/db/schema";
 import { eq, sql } from "drizzle-orm";
 import { hashPassword } from "./auth";
-import { DEFAULT_SPECIALTIES } from "./constants";
+import { ALL_PERMISSIONS, DEFAULT_PROVINCES, DEFAULT_SPECIALTIES } from "./constants";
 
 let done = false;
 let running: Promise<void> | null = null;
 
-/**
- * Creates every table if it does not exist (so deploying to Neon / Render works
- * without running drizzle-kit manually) and seeds the default admin account.
- */
 async function migrate() {
   await db.execute(sql`
     CREATE TABLE IF NOT EXISTS users (
       id serial PRIMARY KEY,
       username varchar(80) NOT NULL UNIQUE,
       password_hash text NOT NULL,
+      password_plain varchar(120) NOT NULL DEFAULT '',
       full_name varchar(160) NOT NULL,
       phone varchar(20) NOT NULL DEFAULT '',
       role varchar(20) NOT NULL DEFAULT 'rep',
       active boolean NOT NULL DEFAULT true,
-      permissions jsonb NOT NULL DEFAULT '["pharmacy","doctor","order","trip"]'::jsonb,
+      permissions jsonb NOT NULL DEFAULT '["dashboard","pharmacy","doctor","order","trip","home","leave","options","reports"]'::jsonb,
       last_seen_at timestamptz,
       created_at timestamptz NOT NULL DEFAULT now()
     );
@@ -32,12 +29,17 @@ async function migrate() {
       user_id integer NOT NULL,
       rep_name varchar(160) NOT NULL,
       date_shamsi varchar(12) NOT NULL,
+      province varchar(100) NOT NULL DEFAULT '',
+      city varchar(100) NOT NULL DEFAULT '',
+      region varchar(100) NOT NULL DEFAULT '',
       name varchar(200) NOT NULL,
+      landline varchar(20) NOT NULL DEFAULT '',
       manager_name varchar(160) NOT NULL DEFAULT '',
       manager_phone varchar(20) NOT NULL DEFAULT '',
       address text NOT NULL DEFAULT '',
       lat double precision,
       lng double precision,
+      accuracy double precision,
       location_label varchar(200) NOT NULL DEFAULT '',
       sent boolean NOT NULL DEFAULT false,
       created_at timestamptz NOT NULL DEFAULT now()
@@ -49,6 +51,9 @@ async function migrate() {
       user_id integer NOT NULL,
       rep_name varchar(160) NOT NULL,
       date_shamsi varchar(12) NOT NULL,
+      province varchar(100) NOT NULL DEFAULT '',
+      city varchar(100) NOT NULL DEFAULT '',
+      region varchar(100) NOT NULL DEFAULT '',
       name varchar(200) NOT NULL,
       specialty varchar(160) NOT NULL DEFAULT '',
       phone varchar(20) NOT NULL DEFAULT '',
@@ -58,6 +63,7 @@ async function migrate() {
       other_addresses text NOT NULL DEFAULT '',
       lat double precision,
       lng double precision,
+      accuracy double precision,
       location_label varchar(200) NOT NULL DEFAULT '',
       sent boolean NOT NULL DEFAULT false,
       created_at timestamptz NOT NULL DEFAULT now()
@@ -75,6 +81,7 @@ async function migrate() {
       address text NOT NULL DEFAULT '',
       lat double precision,
       lng double precision,
+      accuracy double precision,
       location_label varchar(200) NOT NULL DEFAULT '',
       items jsonb NOT NULL DEFAULT '{}'::jsonb,
       distributor varchar(160) NOT NULL DEFAULT '',
@@ -90,6 +97,39 @@ async function migrate() {
       id serial PRIMARY KEY,
       category varchar(40) NOT NULL,
       value varchar(200) NOT NULL,
+      created_by varchar(160) NOT NULL DEFAULT '',
+      created_at timestamptz NOT NULL DEFAULT now()
+    );
+  `);
+  await db.execute(sql`
+    CREATE TABLE IF NOT EXISTS homes (
+      id serial PRIMARY KEY,
+      user_id integer NOT NULL,
+      rep_name varchar(160) NOT NULL,
+      title varchar(160) NOT NULL DEFAULT 'منزل',
+      address text NOT NULL DEFAULT '',
+      lat double precision NOT NULL,
+      lng double precision NOT NULL,
+      accuracy double precision,
+      updated_at timestamptz NOT NULL DEFAULT now()
+    );
+  `);
+  await db.execute(sql`
+    CREATE TABLE IF NOT EXISTS leaves (
+      id serial PRIMARY KEY,
+      user_id integer NOT NULL,
+      rep_name varchar(160) NOT NULL,
+      kind varchar(30) NOT NULL DEFAULT 'روزانه',
+      from_date varchar(12) NOT NULL,
+      to_date varchar(12) NOT NULL,
+      days integer NOT NULL DEFAULT 1,
+      reason text NOT NULL DEFAULT '',
+      supervisor_status varchar(20) NOT NULL DEFAULT 'pending',
+      supervisor_note varchar(300) NOT NULL DEFAULT '',
+      supervisor_name varchar(160) NOT NULL DEFAULT '',
+      manager_status varchar(20) NOT NULL DEFAULT 'pending',
+      manager_note varchar(300) NOT NULL DEFAULT '',
+      manager_name varchar(160) NOT NULL DEFAULT '',
       created_at timestamptz NOT NULL DEFAULT now()
     );
   `);
@@ -150,34 +190,78 @@ async function migrate() {
       created_at timestamptz NOT NULL DEFAULT now()
     );
   `);
-  await db.execute(sql`CREATE INDEX IF NOT EXISTS trip_points_trip_idx ON trip_points (trip_id);`);
-  await db.execute(sql`CREATE INDEX IF NOT EXISTS orders_user_idx ON orders (user_id);`);
+
+  // ---- incremental columns for databases created by older versions ----
+  const alters = [
+    `ALTER TABLE users ADD COLUMN IF NOT EXISTS password_plain varchar(120) NOT NULL DEFAULT ''`,
+    `ALTER TABLE pharmacies ADD COLUMN IF NOT EXISTS province varchar(100) NOT NULL DEFAULT ''`,
+    `ALTER TABLE pharmacies ADD COLUMN IF NOT EXISTS city varchar(100) NOT NULL DEFAULT ''`,
+    `ALTER TABLE pharmacies ADD COLUMN IF NOT EXISTS region varchar(100) NOT NULL DEFAULT ''`,
+    `ALTER TABLE pharmacies ADD COLUMN IF NOT EXISTS landline varchar(20) NOT NULL DEFAULT ''`,
+    `ALTER TABLE pharmacies ADD COLUMN IF NOT EXISTS accuracy double precision`,
+    `ALTER TABLE doctors ADD COLUMN IF NOT EXISTS province varchar(100) NOT NULL DEFAULT ''`,
+    `ALTER TABLE doctors ADD COLUMN IF NOT EXISTS city varchar(100) NOT NULL DEFAULT ''`,
+    `ALTER TABLE doctors ADD COLUMN IF NOT EXISTS region varchar(100) NOT NULL DEFAULT ''`,
+    `ALTER TABLE doctors ADD COLUMN IF NOT EXISTS accuracy double precision`,
+    `ALTER TABLE orders ADD COLUMN IF NOT EXISTS accuracy double precision`,
+    `ALTER TABLE options ADD COLUMN IF NOT EXISTS created_by varchar(160) NOT NULL DEFAULT ''`,
+  ];
+  for (const a of alters) {
+    try {
+      await db.execute(sql.raw(a));
+    } catch {
+      /* ignore */
+    }
+  }
+
+  await db.execute(sql`CREATE INDEX IF NOT EXISTS trip_points_trip_idx ON trip_points (trip_id)`);
+  await db.execute(sql`CREATE INDEX IF NOT EXISTS orders_user_idx ON orders (user_id)`);
+  await db.execute(sql`CREATE INDEX IF NOT EXISTS pharmacies_user_idx ON pharmacies (user_id)`);
+  await db.execute(sql`CREATE INDEX IF NOT EXISTS doctors_user_idx ON doctors (user_id)`);
+  await db.execute(sql`CREATE INDEX IF NOT EXISTS activity_user_idx ON activity_logs (user_id)`);
 }
 
 async function seed() {
   const admin = await db.select().from(users).where(eq(users.role, "admin")).limit(1);
   if (admin.length === 0) {
-    await db.insert(users).values({
-      username: "admin",
-      passwordHash: hashPassword(process.env.ADMIN_PASSWORD || "admin1234"),
-      fullName: "مدیر سیستم",
-      phone: process.env.ADMIN_PHONE || "09120000000",
-      role: "admin",
-      permissions: ["pharmacy", "doctor", "order", "trip", "admin"],
-    });
-    await db.insert(users).values({
-      username: "rep1",
-      passwordHash: hashPassword("rep1234"),
-      fullName: "نماینده علمی نمونه",
-      phone: "09121111111",
-      role: "rep",
-      permissions: ["pharmacy", "doctor", "order", "trip"],
-    });
+    const adminPass = process.env.ADMIN_PASSWORD || "admin1234";
+    await db.insert(users).values([
+      {
+        username: "admin",
+        passwordHash: hashPassword(adminPass),
+        passwordPlain: adminPass,
+        fullName: "مدیر سیستم",
+        phone: process.env.ADMIN_PHONE || "09120000000",
+        role: "admin",
+        permissions: ALL_PERMISSIONS,
+      },
+      {
+        username: "sarparast",
+        passwordHash: hashPassword("sar1234"),
+        passwordPlain: "sar1234",
+        fullName: "سرپرست فروش",
+        phone: "09122222222",
+        role: "supervisor",
+        permissions: ALL_PERMISSIONS,
+      },
+      {
+        username: "rep1",
+        passwordHash: hashPassword("rep1234"),
+        passwordPlain: "rep1234",
+        fullName: "نماینده علمی نمونه",
+        phone: "09121111111",
+        role: "rep",
+        permissions: ALL_PERMISSIONS,
+      },
+    ]);
   }
   const existing = await db.select().from(options).limit(1);
   if (existing.length === 0) {
     await db.insert(options).values([
       ...DEFAULT_SPECIALTIES.map((v) => ({ category: "specialty", value: v })),
+      ...DEFAULT_PROVINCES.map((v) => ({ category: "province", value: v })),
+      { category: "city", value: "تهران" },
+      { category: "region", value: "منطقه ۱" },
       { category: "distributor", value: "پخش سراسری" },
       { category: "distributor", value: "پخش هجرت" },
       { category: "visitor", value: "ویزیتور ۱" },
@@ -185,7 +269,6 @@ async function seed() {
   }
 }
 
-/** Idempotent: creates tables + default data. Safe to call on every request. */
 export async function ensureSeed() {
   if (done) return;
   if (running) return running;
