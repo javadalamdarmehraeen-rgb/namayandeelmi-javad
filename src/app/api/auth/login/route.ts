@@ -61,11 +61,23 @@ export async function POST(req: Request) {
     );
   }
 
-  // ✅ الزام شماره همراه به تفکیک هر کاربر
-  if (user.requirePhone) {
+  // ✅ بررسی سیم‌کارت فقط برای نماینده علمی (مدیر و سرپرست معاف هستند)
+  if (user.requirePhone && !isManagerAccount) {
     if (!deviceOnline) {
       return Response.json(
-        { error: "⚠️ سیم‌کارت/شبکه فعالی روی این دستگاه شناسایی نشد." },
+        {
+          error:
+            "⚠️ سیم‌کارت فعالی روی این گوشی شناسایی نشد. لطفاً سیم‌کارت ثبت‌شده را فعال کرده و دوباره تلاش کنید.",
+        },
+        { status: 403 },
+      );
+    }
+    if (body.simActiveOnDevice === false) {
+      return Response.json(
+        {
+          error:
+            "⚠️ شماره همراه ثبت‌شده روی این گوشی فعال نیست. ورود فقط با گوشی حاوی سیم‌کارت همان شماره مجاز است.",
+        },
         { status: 403 },
       );
     }

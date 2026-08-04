@@ -44,6 +44,8 @@ export const pharmacies = pgTable(
     managerName: varchar("manager_name", { length: 160 }).notNull().default(""),
     managerPhone: varchar("manager_phone", { length: 20 }).notNull().default(""),
     address: text("address").notNull().default(""),
+    isPercent: boolean("is_percent").notNull().default(false),
+    percentValue: varchar("percent_value", { length: 40 }).notNull().default(""),
     lat: doublePrecision("lat"),
     lng: doublePrecision("lng"),
     accuracy: doublePrecision("accuracy"),
@@ -71,6 +73,8 @@ export const doctors = pgTable(
     secretaryPhone: varchar("secretary_phone", { length: 20 }).notNull().default(""),
     address: text("address").notNull().default(""),
     otherAddresses: text("other_addresses").notNull().default(""),
+    isPercent: boolean("is_percent").notNull().default(false),
+    percentValue: varchar("percent_value", { length: 40 }).notNull().default(""),
     lat: doublePrecision("lat"),
     lng: doublePrecision("lng"),
     accuracy: doublePrecision("accuracy"),
@@ -224,3 +228,20 @@ export const settings = pgTable("settings", {
   value: jsonb("value").$type<unknown>().notNull(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 });
+
+export const attachments = pgTable(
+  "attachments",
+  {
+    id: serial("id").primaryKey(),
+    ownerType: varchar("owner_type", { length: 30 }).notNull().default("doctor"),
+    ownerId: integer("owner_id"),
+    userId: integer("user_id").notNull(),
+    repName: varchar("rep_name", { length: 160 }).notNull().default(""),
+    fileName: varchar("file_name", { length: 200 }).notNull().default("file"),
+    mimeType: varchar("mime_type", { length: 100 }).notNull().default("application/octet-stream"),
+    size: integer("size").notNull().default(0),
+    data: text("data").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [index("attach_owner_idx").on(t.ownerType, t.ownerId)],
+);

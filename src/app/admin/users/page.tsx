@@ -298,25 +298,41 @@ export default function UsersPage() {
               </label>
 
               <label className="block">
-                <span className="mb-1 block text-[11px] font-bold text-slate-500">رمز عبور فعلی</span>
-                <div className="flex gap-1">
-                  <div className="flex-1 rounded-xl border border-slate-300 bg-slate-50 px-3 py-2.5 text-left font-mono text-sm">
-                    {visible ? u.passwordPlain || "ثبت نشده" : "••••••••"}
-                  </div>
+                <span className="mb-1 block text-[11px] font-bold text-slate-500">رمز عبور</span>
+                <div className="relative">
+                  <input
+                    type={visible ? "text" : "password"}
+                    readOnly
+                    value={u.passwordPlain || ""}
+                    placeholder="ثبت نشده — رمز جدید بگذارید"
+                    dir="ltr"
+                    className="w-full rounded-xl border border-slate-300 bg-slate-50 py-2.5 pr-3 pl-12 text-left font-mono text-sm text-slate-800"
+                    onFocus={(e) => e.currentTarget.select()}
+                  />
                   <button
+                    type="button"
                     onClick={() => setShowPass((s) => ({ ...s, [u.id]: !s[u.id] }))}
-                    className="rounded-xl bg-slate-100 px-3 text-sm ring-1 ring-slate-200"
-                    title={visible ? "پنهان" : "نمایش"}
+                    className="absolute left-2 top-1/2 -translate-y-1/2 rounded-lg bg-white px-2 py-1 text-xs ring-1 ring-slate-200"
+                    title={visible ? "پنهان کردن رمز" : "نمایش رمز"}
                   >
                     {visible ? "🙈" : "👁"}
                   </button>
                 </div>
+                {u.passwordPlain ? (
+                  <button
+                    onClick={() => navigator.clipboard?.writeText(u.passwordPlain)}
+                    className="mt-1 text-[10px] font-bold text-teal-700"
+                  >
+                    📋 کپی رمز
+                  </button>
+                ) : null}
               </label>
 
               <label className="block">
                 <span className="mb-1 block text-[11px] font-bold text-slate-500">تغییر رمز عبور</span>
                 <div className="flex gap-1">
                   <Input
+                    type={visible ? "text" : "password"}
                     value={pwDraft[u.id] ?? ""}
                     onChange={(e) => setPwDraft({ ...pwDraft, [u.id]: e.target.value })}
                     placeholder="رمز جدید"

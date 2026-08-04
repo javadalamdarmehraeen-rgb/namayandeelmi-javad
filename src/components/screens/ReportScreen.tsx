@@ -18,7 +18,10 @@ type Row = {
 
 export default function ReportScreen({ compact = false }: { compact?: boolean }) {
   const [rows, setRows] = useState<Row[]>([]);
-  const [totals, setTotals] = useState<Record<string, Record<string, number>>>({});
+  const [byRep, setByRep] = useState<
+    { period: string; repName: string; items: Record<string, number>; bonuses: Record<string, number> }[]
+  >([]);
+  const [rep, setRep] = useState("");
   const [products, setProducts] = useState<ProductConfig[]>(DEFAULT_PRODUCTS);
   const [year, setYear] = useState("");
   const [month, setMonth] = useState("");
@@ -28,7 +31,7 @@ export default function ReportScreen({ compact = false }: { compact?: boolean })
     if (res.ok) {
       const d = await res.json();
       setRows(d.rows ?? []);
-      setTotals(d.productTotals ?? {});
+      setByRep(d.productByRep ?? []);
     }
   }, []);
 
@@ -63,6 +66,19 @@ export default function ReportScreen({ compact = false }: { compact?: boolean })
       trips: a.trips + r.trips,
     }),
     { pharmacies: 0, doctors: 0, orders: 0, units: 0, bonus: 0, trips: 0 },
+  );
+
+  const reps = useMemo(() => [...new Set(byRep.map((r) => r.repName))].sort(), [byRep]);
+
+  const byRepFiltered = useMemo(
+    () =>
+      byRep.filter(
+        (r) =>
+          (!year || r.period.startsWith(year)) &&
+          (!month || r.period.slice(5, 7) === month.padStart(2, "0")) &&
+          (!rep || r.repName === rep),
+      ),
+    [byRep, year, month, rep],
   );
 
   const monthName = (p: string) => {
@@ -167,36 +183,91 @@ export default function ReportScreen({ compact = false }: { compact?: boolean })
 
       {!compact ? (
         <Card>
-          <h3 className="mb-2 text-sm font-bold text-slate-700">فروش هر قلم به تفکیک ماه</h3>
+          <div className="mb-2 flex flex-wrap items-center gap-2">
+            <h3 className="text-sm font-bold text-slate-700">فروش هر قلم — به تفکیک ماه، سال و نماینده</h3>
+            <select
+              value={rep}
+              onChange={(e) => setRep(e.target.value)}
+              className="rounded-xl border border-slate-300 px-3 py-2 text-xs"
+            >
+              <option value="">همه نمایندگان</option>
+              {reps.map((r) => (
+                <option key={r} value={r}>
+                  {r}
+                </option>
+              ))}
+            </select>
+          </div>
+
           <div className="scroll-x">
-            <table className="w-full min-w-[680px] text-right text-xs">
+            <table className="w-full min-w-[760px] text-right text-xs">
               <thead>
                 <tr className="bg-slate-100 text-slate-600">
-                  <th className="px-2 py-2">ماه</th>
+                  <th className="px-2 py-2">ماه و سال</th>
+                  <th className="px-2 py-2">نام نماینده</th>
                   {products.map((p) => (
-                    <th key={p.key} className="px-2 py-2">
+                    <th key={p.key} className="px-2 py-2 text-center">
                       {p.label}
+                      <div className="text-[9px] font-normal text-slate-400">تعداد / جایزه</div>
                     </th>
                   ))}
+                  <th className="px-2 py-2 text-center">جمع</th>
                 </tr>
               </thead>
               <tbody>
-                {Object.entries(totals)
-                  .filter(([per]) => (!year || per.startsWith(year)) && (!month || per.slice(5, 7) === month.padStart(2, "0")))
-                  .sort((a, b) => b[0].localeCompare(a[0]))
-                  .map(([per, vals]) => (
-                    <tr key={per} className="border-b border-slate-100">
-                      <td className="px-2 py-2 font-bold text-teal-700">{monthName(per)}</td>
+                {byRepFiltered.map((r) => {
+                  const sumUnits = products.reduce((a, p) => a + (r.items[p.key] ?? 0), 0);
+                  return (
+                    <tr key={`${r.period}-${r.repName}`} className="border-b border-slate-100">
+                      <td className="whitespace-nowrap px-2 py-2 font-bold text-teal-700">{monthName(r.period)}</td>
+                      <td className="whitespace-nowrap px-2 py-2 font-semibold text-slate-700">{r.repName}</td>
                       {products.map((p) => (
-                        <td key={p.key} className="px-2 py-2">
-                          {toPersianDigits(vals[p.key] ?? 0)}
+                        <td key={p.key} className="px-2 py-2 text-center">
+                          <span className="font-bold text-slate-800">{toPersianDigits(r.items[p.key] ?? 0)}</span>
+                          <span className="text-slate-400"> / </span>
+                          <span className="text-emerald-600">{toPersianDigits(r.bonuses[p.key] ?? 0)}</span>
                         </td>
                       ))}
+                      <td className="px-2 py-2 text-center font-black text-teal-700">{toPersianDigits(sumUnits)}</td>
                     </tr>
-                  ))}
+                  );
+                })}
+                {byRepFiltered.length === 0 ? (
+                  <tr>
+                    <td colSpan={products.length + 3} className="py-6 text-center text-slate-400">
+                      سفارشی در این دوره ثبت نشده است
+                    </td>
+                  </tr>
+                ) : (
+                  <tr className="bg-teal-50 font-black text-teal-800">
+                    <td className="px-2 py-2" colSpan={2}>
+                      جمع کل دوره
+                    </td>
+                    {products.map((p) => (
+                      <td key={p.key} className="px-2 py-2 text-center">
+                        {toPersianDigits(byRepFiltered.reduce((a, r) => a + (r.items[p.key] ?? 0), 0))}
+                        <span className="text-slate-400"> / </span>
+                        <span className="text-emerald-700">
+                          {toPersianDigits(byRepFiltered.reduce((a, r) => a + (r.bonuses[p.key] ?? 0), 0))}
+                        </span>
+                      </td>
+                    ))}
+                    <td className="px-2 py-2 text-center">
+                      {toPersianDigits(
+                        byRepFiltered.reduce(
+                          (a, r) => a + products.reduce((x, p) => x + (r.items[p.key] ?? 0), 0),
+                          0,
+                        ),
+                      )}
+                    </td>
+                  </tr>
+                )}
               </tbody>
             </table>
           </div>
+          <p className="mt-2 text-[11px] text-slate-400">
+            در هر خانه، عدد اول «تعداد فروش» و عدد سبز «تعداد جایزه» است.
+          </p>
         </Card>
       ) : null}
     </div>

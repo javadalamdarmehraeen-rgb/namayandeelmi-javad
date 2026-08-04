@@ -1,7 +1,8 @@
 import { db } from "@/db";
 import { doctors, orders, pharmacies, trips } from "@/db/schema";
 import { getSessionUser } from "@/lib/auth";
-import { PRODUCTS } from "@/lib/constants";
+import { bonusKeyOf } from "@/lib/defaults";
+import { getProducts } from "@/lib/settings-server";
 import { eq, SQL } from "drizzle-orm";
 
 export const dynamic = "force-dynamic";
@@ -30,6 +31,7 @@ export async function GET(req: Request) {
   const wO: SQL | undefined = scopeId ? eq(orders.userId, scopeId) : undefined;
   const wT: SQL | undefined = scopeId ? eq(trips.userId, scopeId) : undefined;
 
+  const PRODUCTS = await getProducts();
   const [ph, dr, or, tr] = await Promise.all([
     db
       .select({ d: pharmacies.dateShamsi, rep: pharmacies.repName })
@@ -74,7 +76,7 @@ export async function GET(req: Request) {
     row.orders++;
     for (const p of PRODUCTS) {
       row.units += Number(r.items?.[p.key] ?? 0);
-      row.bonus += Number(r.items?.[p.bonusKey] ?? 0);
+      row.bonus += Number(r.items?.[bonusKeyOf(p.key)] ?? 0);
     }
   }
 
@@ -82,15 +84,37 @@ export async function GET(req: Request) {
     a.period === b.period ? a.repName.localeCompare(b.repName) : b.period.localeCompare(a.period),
   );
 
-  // product totals per period for the current scope
+  // فروش هر قلم: به تفکیک ماه و نماینده
   const productTotals: Record<string, Record<string, number>> = {};
+  const productByRep: {
+    period: string;
+    repName: string;
+    items: Record<string, number>;
+    bonuses: Record<string, number>;
+  }[] = [];
+  const idx = new Map<string, number>();
+
   for (const r of or) {
     const per = r.d.slice(0, 7);
     productTotals[per] ??= {};
+    const k = `${per}|${r.rep}`;
+    let i = idx.get(k);
+    if (i === undefined) {
+      i = productByRep.length;
+      idx.set(k, i);
+      productByRep.push({ period: per, repName: r.rep, items: {}, bonuses: {} });
+    }
     for (const p of PRODUCTS) {
-      productTotals[per][p.key] = (productTotals[per][p.key] ?? 0) + Number(r.items?.[p.key] ?? 0);
+      const q = Number(r.items?.[p.key] ?? 0);
+      const b = Number(r.items?.[bonusKeyOf(p.key)] ?? 0);
+      productTotals[per][p.key] = (productTotals[per][p.key] ?? 0) + q;
+      productByRep[i].items[p.key] = (productByRep[i].items[p.key] ?? 0) + q;
+      productByRep[i].bonuses[p.key] = (productByRep[i].bonuses[p.key] ?? 0) + b;
     }
   }
+  productByRep.sort((a, b) =>
+    a.period === b.period ? a.repName.localeCompare(b.repName) : b.period.localeCompare(a.period),
+  );
 
-  return Response.json({ rows, productTotals });
+  return Response.json({ rows, productTotals, productByRep });
 }

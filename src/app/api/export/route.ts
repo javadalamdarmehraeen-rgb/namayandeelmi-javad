@@ -1,5 +1,5 @@
 import { db } from "@/db";
-import { doctors, homes, leaves, orders, pharmacies, trips, users } from "@/db/schema";
+import { attachments, doctors, homes, leaves, orders, pharmacies, trips, users } from "@/db/schema";
 import { getSessionUser } from "@/lib/auth";
 import { bonusKeyOf } from "@/lib/defaults";
 import { getProducts } from "@/lib/settings-server";
@@ -37,7 +37,7 @@ export async function GET(req: Request) {
       inPeriod(r.dateShamsi),
     );
     rows = [
-      ["ردیف", "نام نماینده", "تاریخ ثبت", "استان", "شهر", "منطقه", "نام داروخانه", "شماره ثابت", "مسئول سفارش", "شماره همراه", "آدرس", "لینک نقشه", "دقت (متر)", "ارسال شده"],
+      ["ردیف", "نام نماینده", "تاریخ ثبت", "استان", "شهر", "منطقه", "نام داروخانه", "شماره ثابت", "مسئول سفارش", "شماره همراه", "آدرس", "درصدی؟", "میزان درصد", "لینک نقشه", "دقت (متر)", "ارسال شده"],
       ...data.map((r, i) => [
         i + 1,
         r.repName,
@@ -50,6 +50,8 @@ export async function GET(req: Request) {
         r.managerName,
         r.managerPhone,
         r.address,
+        r.isPercent ? "بله" : "خیر",
+        r.percentValue,
         mapLink(r.lat, r.lng),
         r.accuracy ? Math.round(r.accuracy) : "",
         r.sent ? "بله" : "خیر",
@@ -61,8 +63,18 @@ export async function GET(req: Request) {
     const data = (await db.select().from(doctors).where(w).orderBy(desc(doctors.id))).filter((r) =>
       inPeriod(r.dateShamsi),
     );
+    const fileCount = new Map<number, number>();
+    try {
+      const atts = await db
+        .select({ ownerId: attachments.ownerId })
+        .from(attachments)
+        .where(eq(attachments.ownerType, "doctor"));
+      for (const a of atts) if (a.ownerId) fileCount.set(a.ownerId, (fileCount.get(a.ownerId) ?? 0) + 1);
+    } catch {
+      /* ignore */
+    }
     rows = [
-      ["ردیف", "نام نماینده", "تاریخ ثبت", "استان", "شهر", "منطقه", "نام پزشک", "تخصص", "شماره همراه پزشک", "نام منشی", "شماره منشی", "آدرس مطب", "آدرس مطب‌های دیگر", "لینک نقشه", "ارسال شده"],
+      ["ردیف", "نام نماینده", "تاریخ ثبت", "استان", "شهر", "منطقه", "نام پزشک", "تخصص", "شماره همراه پزشک", "نام منشی", "شماره منشی", "آدرس مطب", "آدرس مطب‌های دیگر", "درصدی؟", "میزان درصد", "تعداد فایل", "لینک نقشه", "ارسال شده"],
       ...data.map((r, i) => [
         i + 1,
         r.repName,
@@ -77,6 +89,9 @@ export async function GET(req: Request) {
         r.secretaryPhone,
         r.address,
         r.otherAddresses,
+        r.isPercent ? "بله" : "خیر",
+        r.percentValue,
+        fileCount.get(r.id) ?? 0,
         mapLink(r.lat, r.lng),
         r.sent ? "بله" : "خیر",
       ]),

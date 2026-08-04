@@ -5,6 +5,8 @@ import dynamicImport from "next/dynamic";
 import JalaliDateInput from "./JalaliDateInput";
 import Combobox from "./Combobox";
 import LocationPicker, { type LatLng } from "./LocationPicker";
+import FileUploader, { FileList, type Att } from "./FileUploader";
+import ShareBox from "./ShareBox";
 import { Alert, Badge, Button, Card, Field, Input, SectionTitle, TextArea } from "./ui";
 import {
   DEFAULT_PRODUCTS,
@@ -37,6 +39,8 @@ export type Row = {
   secretaryPhone?: string;
   otherAddresses?: string;
   address?: string;
+  isPercent?: boolean;
+  percentValue?: string;
   lat?: number | null;
   lng?: number | null;
   accuracy?: number | null;
@@ -96,6 +100,10 @@ export default function RecordScreen({ type, isAdmin = false }: { type: RecordTy
   const [period, setPeriod] = useState("");
   const [page, setPage] = useState(1);
   const [products, setProducts] = useState<ProductConfig[]>(DEFAULT_PRODUCTS);
+  const [isPercent, setIsPercent] = useState(false);
+  const [percentValue, setPercentValue] = useState("");
+  const [fileIds, setFileIds] = useState<number[]>([]);
+  const [detailFiles, setDetailFiles] = useState<Att[]>([]);
   const [columns, setColumns] = useState<ColumnConfig[]>(DEFAULT_COLUMNS[type]);
 
   const set = (k: string, v: string) => setForm((f) => ({ ...f, [k]: v }));
@@ -148,6 +156,9 @@ export default function RecordScreen({ type, isAdmin = false }: { type: RecordTy
       body: JSON.stringify({
         ...form,
         items,
+        isPercent,
+        percentValue,
+        fileIds,
         lat: loc.lat,
         lng: loc.lng,
         accuracy: loc.accuracy,
@@ -158,6 +169,9 @@ export default function RecordScreen({ type, isAdmin = false }: { type: RecordTy
     if (res.ok) {
       setForm(emptyForm());
       setItems({});
+      setIsPercent(false);
+      setPercentValue("");
+      setFileIds([]);
       setLoc({ lat: null, lng: null, accuracy: null });
       setMsg({ kind: "success", text: "✅ ثبت شد. برای ارسال به مدیر به تب «لیست ثبت‌شده‌ها» بروید." });
       loadRows();
@@ -212,6 +226,38 @@ export default function RecordScreen({ type, isAdmin = false }: { type: RecordTy
 
   const pageRows = filtered.slice(0, page * PAGE);
 
+  useEffect(() => {
+    if (detail && type === "doctors") {
+      fetch(`/api/attachments?ownerType=doctor&ownerId=${detail.id}`, { cache: "no-store" })
+        .then((r) => (r.ok ? r.json() : null))
+        .then((d) => setDetailFiles(d?.rows ?? []))
+        .catch(() => setDetailFiles([]));
+    } else setDetailFiles([]);
+  }, [detail, type]);
+
+  const orderText = (r: Row) => {
+    const lines = [
+      "🧾 سفارش داروخانه",
+      `تاریخ سفارش: ${toPersianDigits(r.dateShamsi)}`,
+      `نماینده علمی: ${r.repName}`,
+      `نام داروخانه: ${r.pharmacyName ?? ""}`,
+      `مسئول سفارش: ${r.managerName ?? ""}`,
+      `شماره همراه: ${toPersianDigits(r.managerPhone ?? "")}`,
+      `آدرس: ${r.address ?? ""}`,
+    ];
+    if (r.lat && r.lng) lines.push(`لوکیشن: https://www.google.com/maps?q=${r.lat},${r.lng}`);
+    lines.push("— اقلام سفارش —");
+    for (const p of products) {
+      const q = Number(r.items?.[p.key] ?? 0);
+      const b = Number(r.items?.[bonusKeyOf(p.key)] ?? 0);
+      if (q || b) lines.push(`${p.label}: ${toPersianDigits(q)} | جایزه: ${toPersianDigits(b)}`);
+    }
+    lines.push(`نام پخش: ${r.distributor ?? ""}`);
+    lines.push(`نام ویزیتور: ${r.visitor ?? ""}`);
+    if (r.notes) lines.push(`توضیحات: ${r.notes}`);
+    return lines.join("\n");
+  };
+
   const onAdded = () => loadOptions();
 
   const visibleCols = columns.filter((c) => c.visible);
@@ -256,6 +302,12 @@ export default function RecordScreen({ type, isAdmin = false }: { type: RecordTy
         );
       case "sent":
         return r.sent ? <Badge tone="green">ارسال شد</Badge> : <Badge tone="amber">در انتظار</Badge>;
+      case "isPercent":
+        return r.isPercent ? (
+          <Badge tone="green">بله{r.percentValue ? ` (${r.percentValue})` : ""}</Badge>
+        ) : (
+          <Badge tone="slate">خیر</Badge>
+        );
       case "products":
         return (
           <span className="text-[11px] text-slate-600">
@@ -498,6 +550,53 @@ export default function RecordScreen({ type, isAdmin = false }: { type: RecordTy
             </div>
           ) : null}
 
+          {type !== "orders" ? (
+            <div className="mt-4 rounded-2xl bg-amber-50 p-3 ring-1 ring-amber-200">
+              <div className="flex flex-wrap items-center gap-3">
+                <span className="text-sm font-bold text-amber-900">
+                  آیا {type === "doctors" ? "این پزشک" : "این داروخانه"} درصدی می‌باشد؟
+                </span>
+                <div className="flex rounded-xl bg-white p-1 text-xs font-bold ring-1 ring-amber-200">
+                  <button
+                    type="button"
+                    onClick={() => setIsPercent(true)}
+                    className={`rounded-lg px-4 py-1.5 ${isPercent ? "bg-emerald-600 text-white" : "text-slate-600"}`}
+                  >
+                    بله
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsPercent(false);
+                      setPercentValue("");
+                    }}
+                    className={`rounded-lg px-4 py-1.5 ${!isPercent ? "bg-slate-700 text-white" : "text-slate-600"}`}
+                  >
+                    خیر
+                  </button>
+                </div>
+                {isPercent ? (
+                  <label className="flex items-center gap-2">
+                    <span className="text-xs font-bold text-amber-900">درصد / توضیح:</span>
+                    <Input
+                      value={percentValue}
+                      onChange={(e) => setPercentValue(e.target.value)}
+                      placeholder="مثلاً ۱۰٪"
+                      className="max-w-[160px] px-2 py-1.5"
+                    />
+                  </label>
+                ) : null}
+              </div>
+            </div>
+          ) : null}
+
+          {type === "doctors" ? (
+            <div className="mt-4">
+              <SectionTitle icon="📎">بارگذاری عکس یا فایل پزشک</SectionTitle>
+              <FileUploader ownerType="doctor" onChangeIds={setFileIds} />
+            </div>
+          ) : null}
+
           <div className="mt-4">
             <SectionTitle icon="📍">
               {type === "doctors" ? "لوکیشن مطب" : "لوکیشن داروخانه"}
@@ -633,6 +732,12 @@ export default function RecordScreen({ type, isAdmin = false }: { type: RecordTy
                   <D k="آدرس" v={detail.address} full />
                 </>
               )}
+              {type !== "orders" ? (
+                <D
+                  k="وضعیت درصدی"
+                  v={detail.isPercent ? `بله${detail.percentValue ? ` — ${detail.percentValue}` : ""}` : "خیر"}
+                />
+              ) : null}
               {type === "orders" ? (
                 <>
                   <D k="نام پخش" v={detail.distributor} />
@@ -664,6 +769,19 @@ export default function RecordScreen({ type, isAdmin = false }: { type: RecordTy
                 </>
               ) : null}
             </dl>
+            {type === "doctors" ? (
+              <div className="mt-3">
+                <h4 className="mb-2 text-sm font-bold text-slate-700">📎 فایل‌ها و تصاویر</h4>
+                <FileList files={detailFiles} />
+              </div>
+            ) : null}
+
+            {type === "orders" ? (
+              <div className="mt-3">
+                <ShareBox text={orderText(detail)} />
+              </div>
+            ) : null}
+
             <div className="mt-3">
               {detail.lat && detail.lng ? (
                 <>

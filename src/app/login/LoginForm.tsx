@@ -17,11 +17,41 @@ export default function LoginForm() {
   const [error, setError] = useState("");
   const [hint, setHint] = useState("");
   const [busy, setBusy] = useState(false);
+  const [simOk, setSimOk] = useState(true);
+  const [simWarn, setSimWarn] = useState("");
 
   useEffect(() => {
     patchFetch();
     const saved = localStorage.getItem("sek_phone");
     if (saved) setPhone(saved);
+
+    // بررسی فعال بودن شبکه سیم‌کارت روی همین گوشی
+    const check = () => {
+      type Conn = { type?: string; effectiveType?: string; downlink?: number };
+      const nav = navigator as Navigator & { connection?: Conn };
+      const conn = nav.connection;
+      if (!navigator.onLine) {
+        setSimOk(false);
+        setSimWarn("⚠️ این دستگاه به شبکه متصل نیست. سیم‌کارت ثبت‌شده را فعال کنید.");
+        return;
+      }
+      // در موبایل اگر نوع اتصال مشخص و غیر از cellular/wifi بود هشدار می‌دهیم
+      const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+      if (isMobile && conn?.type && !["cellular", "wifi", "unknown"].includes(conn.type)) {
+        setSimOk(false);
+        setSimWarn("⚠️ اتصال سیم‌کارت روی این گوشی فعال نیست.");
+        return;
+      }
+      setSimOk(true);
+      setSimWarn("");
+    };
+    check();
+    window.addEventListener("online", check);
+    window.addEventListener("offline", check);
+    return () => {
+      window.removeEventListener("online", check);
+      window.removeEventListener("offline", check);
+    };
   }, []);
 
   // با تایپ نام کاربری، تب صحیح و نیاز به شماره همراه تشخیص داده می‌شود
@@ -60,6 +90,10 @@ export default function LoginForm() {
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+    if (mode === "rep" && needPhone && !simOk) {
+      setError(simWarn || "⚠️ سیم‌کارت فعالی روی این گوشی شناسایی نشد.");
+      return;
+    }
     if (needPhone && !/^0\d{10}$/.test(phone.replace(/\D/g, ""))) {
       setError("⚠️ شماره همراه فعال روی این گوشی را ۱۱ رقمی وارد کنید (نمونه: ۰۹۱۲۳۴۵۶۷۸۹)");
       return;
@@ -68,7 +102,15 @@ export default function LoginForm() {
     const res = await fetch("/api/auth/login", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ username, password, phone, mode, remember, simActive: navigator.onLine }),
+      body: JSON.stringify({
+        username,
+        password,
+        phone,
+        mode,
+        remember,
+        simActive: navigator.onLine,
+        simActiveOnDevice: simOk,
+      }),
     });
     setBusy(false);
     const data = await res.json().catch(() => ({}));
@@ -120,6 +162,7 @@ export default function LoginForm() {
             </button>
           </div>
 
+          {mode === "rep" && simWarn ? <Alert kind="error">{simWarn}</Alert> : null}
           {hint ? <Alert kind="info">{hint}</Alert> : null}
           {error ? <Alert kind="error">{error}</Alert> : null}
 

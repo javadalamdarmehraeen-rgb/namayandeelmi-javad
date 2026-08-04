@@ -103,8 +103,39 @@ export default function MessengersPage() {
 
   return (
     <div className="space-y-4">
-      <SectionTitle icon="📨">ارسال خودکار سفارشات به پیام‌رسان‌ها</SectionTitle>
+      <SectionTitle icon="📨">ارسال سفارشات به پیام‌رسان‌ها</SectionTitle>
       {msg ? <Alert kind={msg.startsWith("✖") ? "error" : "success"}>{msg}</Alert> : null}
+
+      <Card>
+        <h3 className="mb-2 text-sm font-bold text-slate-700">✅ اگر هیچ توکنی ندارید (حالت بدون توکن)</h3>
+        <Alert kind="success">
+          نیازی به توکن نیست! در صفحه «سفارشات»، روی نام هر داروخانه بزنید؛ پایین پنجره جزئیات، بخش «📤 ارسال دستی به
+          پیام‌رسان‌ها» قرار دارد که متن کامل سفارش را آماده می‌کند و با یک کلیک آن را در واتساپ، تلگرام، بله، ایتا یا
+          پیامک باز می‌کند. دکمه «کپی متن» هم برای چسباندن در هر برنامه‌ای موجود است.
+        </Alert>
+        <div className="mt-3 rounded-xl bg-slate-50 p-3">
+          <h4 className="mb-1 text-xs font-black text-slate-700">🎯 اگر بعداً ارسال کاملاً خودکار خواستید:</h4>
+          <ol className="list-inside list-decimal space-y-1 text-[11px] leading-6 text-slate-600">
+            <li>
+              <b>تلگرام:</b> در تلگرام به <span dir="ltr">@BotFather</span> پیام دهید → دستور <code>/newbot</code> →
+              نام و آیدی ربات را بدهید → توکن به شما داده می‌شود (رایگان).
+            </li>
+            <li>
+              <b>بله:</b> در بله به <span dir="ltr">@BotFather</span> پیام دهید → <code>/newbot</code> → توکن دریافت
+              کنید.
+            </li>
+            <li>
+              <b>ایتا:</b> در سایت <span dir="ltr">eitaayar.ir</span> ثبت‌نام کنید و توکن رایگان بگیرید.
+            </li>
+            <li>
+              برای گرفتن <b>chat_id</b>: ربات را در گروه عضو کنید، یک پیام بفرستید، سپس آدرس
+              <span dir="ltr"> https://api.telegram.org/bot&lt;TOKEN&gt;/getUpdates </span> را باز کنید و مقدار
+              <code> chat.id </code> را کپی کنید.
+            </li>
+            <li>توکن و chat_id را در فرم پایین همین صفحه وارد کرده و دکمه «تست ارسال» را بزنید.</li>
+          </ol>
+        </div>
+      </Card>
 
       <Card>
         <div className="mb-2 flex flex-wrap items-center justify-between gap-2">

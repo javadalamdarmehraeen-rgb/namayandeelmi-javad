@@ -1,7 +1,7 @@
 import { db } from "@/db";
-import { activityLogs, doctors, orders, pharmacies } from "@/db/schema";
+import { activityLogs, attachments, doctors, orders, pharmacies } from "@/db/schema";
 import { getSessionUser } from "@/lib/auth";
-import { desc, eq, SQL } from "drizzle-orm";
+import { and, desc, eq, inArray, SQL } from "drizzle-orm";
 
 export const dynamic = "force-dynamic";
 
@@ -88,6 +88,8 @@ export async function POST(req: Request, ctx: Ctx) {
           managerName: str(body.managerName, 160),
           managerPhone: str(body.managerPhone, 20),
           address: str(body.address, 1000),
+          isPercent: body.isPercent === true,
+          percentValue: str(body.percentValue, 40),
           locationLabel: base.locationLabel || str(body.name, 200),
         })
         .returning();
@@ -112,9 +114,20 @@ export async function POST(req: Request, ctx: Ctx) {
           secretaryPhone: str(body.secretaryPhone, 20),
           address: str(body.address, 1000),
           otherAddresses: str(body.otherAddresses, 2000),
+          isPercent: body.isPercent === true,
+          percentValue: str(body.percentValue, 40),
           locationLabel: base.locationLabel || str(body.name, 200),
         })
         .returning();
+      const fileIds: number[] = Array.isArray(body.fileIds)
+        ? body.fileIds.map(Number).filter((n: number) => Number.isFinite(n))
+        : [];
+      if (fileIds.length) {
+        await db
+          .update(attachments)
+          .set({ ownerId: row.id })
+          .where(and(inArray(attachments.id, fileIds), eq(attachments.userId, user.id)));
+      }
       await log(user.id, user.fullName, "ثبت پزشک", str(body.name, 200));
       return Response.json({ row });
     }

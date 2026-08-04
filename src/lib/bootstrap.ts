@@ -215,6 +215,20 @@ async function migrate() {
     );
   `);
   await db.execute(sql`
+    CREATE TABLE IF NOT EXISTS attachments (
+      id serial PRIMARY KEY,
+      owner_type varchar(30) NOT NULL DEFAULT 'doctor',
+      owner_id integer,
+      user_id integer NOT NULL,
+      rep_name varchar(160) NOT NULL DEFAULT '',
+      file_name varchar(200) NOT NULL DEFAULT 'file',
+      mime_type varchar(100) NOT NULL DEFAULT 'application/octet-stream',
+      size integer NOT NULL DEFAULT 0,
+      data text NOT NULL,
+      created_at timestamptz NOT NULL DEFAULT now()
+    );
+  `);
+  await db.execute(sql`
     CREATE TABLE IF NOT EXISTS settings (
       key varchar(80) PRIMARY KEY,
       value jsonb NOT NULL,
@@ -237,6 +251,10 @@ async function migrate() {
     `ALTER TABLE doctors ADD COLUMN IF NOT EXISTS accuracy double precision`,
     `ALTER TABLE orders ADD COLUMN IF NOT EXISTS accuracy double precision`,
     `ALTER TABLE options ADD COLUMN IF NOT EXISTS created_by varchar(160) NOT NULL DEFAULT ''`,
+    `ALTER TABLE pharmacies ADD COLUMN IF NOT EXISTS is_percent boolean NOT NULL DEFAULT false`,
+    `ALTER TABLE pharmacies ADD COLUMN IF NOT EXISTS percent_value varchar(40) NOT NULL DEFAULT ''`,
+    `ALTER TABLE doctors ADD COLUMN IF NOT EXISTS is_percent boolean NOT NULL DEFAULT false`,
+    `ALTER TABLE doctors ADD COLUMN IF NOT EXISTS percent_value varchar(40) NOT NULL DEFAULT ''`,
   ];
   for (const a of alters) {
     try {
@@ -252,6 +270,7 @@ async function migrate() {
   await db.execute(sql`CREATE INDEX IF NOT EXISTS doctors_user_idx ON doctors (user_id)`);
   await db.execute(sql`CREATE INDEX IF NOT EXISTS activity_user_idx ON activity_logs (user_id)`);
   await db.execute(sql`CREATE INDEX IF NOT EXISTS notif_user_idx ON notifications (to_user_id)`);
+  await db.execute(sql`CREATE INDEX IF NOT EXISTS attach_owner_idx ON attachments (owner_type, owner_id)`);
 }
 
 async function seed() {
