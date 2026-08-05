@@ -2,6 +2,7 @@ import { db } from "@/db";
 import { messageLogs, messengers } from "@/db/schema";
 import { getSessionUser } from "@/lib/auth";
 import { getProxy } from "@/lib/messaging";
+import { getSmsConfig } from "@/lib/otp";
 import { desc, eq } from "drizzle-orm";
 
 export const dynamic = "force-dynamic";
@@ -19,7 +20,8 @@ export async function GET() {
   const rows = await db.select().from(messengers).orderBy(desc(messengers.id));
   const logs = await db.select().from(messageLogs).orderBy(desc(messageLogs.id)).limit(50);
   const proxy = await getProxy();
-  return Response.json({ rows, logs, proxy });
+  const sms = await getSmsConfig();
+  return Response.json({ rows, logs, proxy, sms });
 }
 
 export async function POST(req: Request) {

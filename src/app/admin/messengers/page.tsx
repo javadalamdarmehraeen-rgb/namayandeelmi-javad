@@ -19,6 +19,7 @@ type M = {
 type Log = { id: number; platform: string; target: string; ok: boolean; detail: string; createdAt: string };
 type Proxy = { url: string; enabled: boolean; secret?: string };
 type Chat = { id: string; title: string; type: string };
+type Sms = { provider: string; apiKey: string; sender: string; pattern: string; enabled: boolean };
 
 const blank = { platform: "bale", label: "", targetType: "group", target: "", token: "", enabled: true };
 
@@ -34,6 +35,7 @@ export default function MessengersPage() {
   const [sysTokens, setSysTokens] = useState<Record<string, string>>({});
   const [workerVersion, setWorkerVersion] = useState<"new" | "old" | "down" | "">("");
   const [workerCode, setWorkerCode] = useState("");
+  const [sms, setSms] = useState<Sms>({ provider: "kavenegar", apiKey: "", sender: "", pattern: "", enabled: false });
   const confirm = useConfirm();
 
   const load = useCallback(async () => {
@@ -43,6 +45,7 @@ export default function MessengersPage() {
       setRows(d.rows ?? []);
       setLogs(d.logs ?? []);
       if (d.proxy) setProxy(d.proxy);
+      if (d.sms) setSms(d.sms);
     }
   }, []);
 
@@ -169,6 +172,66 @@ export default function MessengersPage() {
     <div className="space-y-4">
       <SectionTitle icon="📨">ارسال سفارشات به پیام‌رسان‌ها</SectionTitle>
       {msg ? <Alert kind={msg.startsWith("✖") ? "error" : "success"}>{msg}</Alert> : null}
+
+      <Card>
+        <h3 className="mb-2 text-sm font-bold text-slate-700">📱 سرویس پیامک — تایید سیم‌کارت نمایندگان</h3>
+        <Alert kind="info">
+          برای اینکه سامانه بتواند مطمئن شود <b>سیم‌کارت ثبت‌شده واقعاً داخل گوشی نماینده است</b>، هنگام اولین ورود یا
+          تعویض گوشی یک کد پیامکی به شماره ثبت‌شده ارسال می‌شود. اگر سرویس پیامک تنظیم نشود، کد به‌جای پیامک برای
+          <b> مدیر </b>ارسال می‌شود تا شفاهی به نماینده بدهد (سامانه بدون پیامک هم کار می‌کند).
+        </Alert>
+        <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-4">
+          <Field label="سرویس‌دهنده">
+            <select
+              value={sms.provider}
+              onChange={(e) => setSms({ ...sms, provider: e.target.value })}
+              className="w-full rounded-xl border border-slate-300 px-3 py-2.5 text-sm"
+            >
+              <option value="kavenegar">کاوه‌نگار</option>
+              <option value="smsir">SMS.ir</option>
+              <option value="melipayamak">ملی‌پیامک</option>
+              <option value="custom">آدرس سفارشی</option>
+            </select>
+          </Field>
+          <Field label="کلید API">
+            <Input value={sms.apiKey} onChange={(e) => setSms({ ...sms, apiKey: e.target.value })} className="text-left" />
+          </Field>
+          <Field label={sms.provider === "custom" ? "آدرس با {phone} و {code}" : "شماره فرستنده"}>
+            <Input value={sms.sender} onChange={(e) => setSms({ ...sms, sender: e.target.value })} className="text-left" />
+          </Field>
+          <Field label="کد الگو / تمپلیت (اختیاری)">
+            <Input value={sms.pattern} onChange={(e) => setSms({ ...sms, pattern: e.target.value })} className="text-left" />
+          </Field>
+        </div>
+        <div className="mt-3 flex flex-wrap items-center gap-2">
+          <label className="flex items-center gap-2 text-xs font-bold text-slate-600">
+            <input
+              type="checkbox"
+              className="size-4 accent-teal-600"
+              checked={sms.enabled}
+              onChange={(e) => setSms({ ...sms, enabled: e.target.checked })}
+            />
+            سرویس پیامک فعال باشد
+          </label>
+          <Button
+            onClick={async () => {
+              if (!(await confirm({ title: "ذخیره تنظیمات پیامک", message: "تنظیمات ذخیره شود؟", confirmText: "ذخیره" })))
+                return;
+              const res = await fetch("/api/settings", {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ key: "sms", value: sms }),
+              });
+              setMsg(res.ok ? "✅ تنظیمات پیامک ذخیره شد" : "✖ خطا در ذخیره");
+            }}
+          >
+            💾 ذخیره تنظیمات پیامک
+          </Button>
+          <Badge tone={sms.enabled && sms.apiKey ? "green" : "amber"}>
+            {sms.enabled && sms.apiKey ? "فعال" : "غیرفعال — کد برای مدیر ارسال می‌شود"}
+          </Badge>
+        </div>
+      </Card>
 
       <Card>
         <h3 className="mb-2 text-sm font-bold text-slate-700">🟣 ربات بله (آماده استفاده)</h3>

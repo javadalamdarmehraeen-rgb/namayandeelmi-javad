@@ -235,6 +235,20 @@ async function migrate() {
     );
   `);
   await db.execute(sql`
+    CREATE TABLE IF NOT EXISTS otp_codes (
+      id serial PRIMARY KEY,
+      user_id integer NOT NULL,
+      phone varchar(20) NOT NULL,
+      code_hash varchar(128) NOT NULL,
+      device_id varchar(80) NOT NULL DEFAULT '',
+      channel varchar(20) NOT NULL DEFAULT 'sms',
+      attempts integer NOT NULL DEFAULT 0,
+      used boolean NOT NULL DEFAULT false,
+      expires_at timestamptz NOT NULL,
+      created_at timestamptz NOT NULL DEFAULT now()
+    );
+  `);
+  await db.execute(sql`
     CREATE TABLE IF NOT EXISTS roles (
       id serial PRIMARY KEY,
       key varchar(40) NOT NULL UNIQUE,

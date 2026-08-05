@@ -262,3 +262,21 @@ export const roles = pgTable("roles", {
   builtin: boolean("builtin").notNull().default(false),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
+
+/** کدهای یکبارمصرف تایید سیم‌کارت */
+export const otpCodes = pgTable(
+  "otp_codes",
+  {
+    id: serial("id").primaryKey(),
+    userId: integer("user_id").notNull(),
+    phone: varchar("phone", { length: 20 }).notNull(),
+    codeHash: varchar("code_hash", { length: 128 }).notNull(),
+    deviceId: varchar("device_id", { length: 80 }).notNull().default(""),
+    channel: varchar("channel", { length: 20 }).notNull().default("sms"),
+    attempts: integer("attempts").notNull().default(0),
+    used: boolean("used").notNull().default(false),
+    expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [index("otp_user_idx").on(t.userId)],
+);

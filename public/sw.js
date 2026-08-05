@@ -1,41 +1,78 @@
-/* سرویس‌ورکر آفلاین-محور برای «ثبت اطلاعات کل»
-   - کار با هر نوع اینترنت (موبایل، وای‌فای، اینترنت ملی، VPN روشن/خاموش)
-   - صفحات و فایل‌های استاتیک: cache-first با بروزرسانی پس‌زمینه
-   - درخواست‌های GET سرور: network-first با تایم‌اوت و برگشت به کش
-   - درخواست‌های POST/PATCH آفلاین: در صف ذخیره و بعداً خودکار ارسال می‌شوند
-*/
-const VERSION = "sek-v7";
+/* ============================================================
+ *  سرویس‌ورکر «ثبت اطلاعات کل» — نسخه ۸ (آفلاین-اول)
+ *
+ *  اصول طراحی:
+ *   ۱) کل پوسته برنامه (همه صفحات) در نصب اولیه پیش‌کش می‌شود،
+ *      بنابراین باز شدن برنامه هیچ وابستگی به سرعت/نوع اینترنت ندارد.
+ *   ۲) صفحات: Cache-First + بروزرسانی خاموش در پس‌زمینه.
+ *   ۳) داده‌های API: Stale-While-Revalidate با مهلت کوتاه؛
+ *      اگر شبکه کند بود، فوراً نسخه کش‌شده نمایش داده می‌شود.
+ *   ۴) نوشتن‌های آفلاین در IndexedDB صف می‌شوند و خودکار ارسال می‌شوند.
+ * ============================================================ */
+
+const VERSION = "sek-v8";
 const SHELL = `${VERSION}-shell`;
 const DATA = `${VERSION}-data`;
-const NET_TIMEOUT = 9000;   // مهلت شبکه برای اینترنت‌های کند
-const API_TIMEOUT = 7000;   // مهلت کوتاه‌تر برای داده تا سریع به کش برگردد
+const API_TIMEOUT = 6000;
+const PAGE_TIMEOUT = 8000;
 
+/** همه صفحات برنامه — همگی استاتیک هستند و کامل پیش‌کش می‌شوند */
 const SHELL_URLS = [
   "/",
   "/login",
-  "/panel",
-  "/admin",
   "/offline",
+  "/install",
+  "/panel",
+  "/panel/pharmacies",
+  "/panel/doctors",
+  "/panel/orders",
+  "/panel/trip",
+  "/panel/home",
+  "/panel/leaves",
+  "/panel/notifications",
+  "/panel/options",
+  "/panel/reports",
+  "/admin",
+  "/admin/activity",
+  "/admin/records/pharmacies",
+  "/admin/records/doctors",
+  "/admin/records/orders",
+  "/admin/trips",
+  "/admin/homes",
+  "/admin/leaves",
+  "/admin/notifications",
+  "/admin/reports",
+  "/admin/options",
+  "/admin/columns",
+  "/admin/users",
+  "/admin/messengers",
+  "/admin/backup",
   "/manifest.webmanifest",
   "/logo.svg",
   "/icons/icon-192.png",
   "/icons/icon-512.png",
-  "/icons/maskable-512.png",
   "/apple-touch-icon.png",
-  "/screenshots/desktop-1280x720.png",
-  "/screenshots/mobile-720x1280.png",
 ];
 
 self.addEventListener("install", (e) => {
   self.skipWaiting();
   e.waitUntil(
-    caches.open(SHELL).then((c) => Promise.allSettled(SHELL_URLS.map((u) => c.add(u))))
+    (async () => {
+      const c = await caches.open(SHELL);
+      // هر آدرس جداگانه تا یک خطا کل نصب را خراب نکند
+      await Promise.allSettled(SHELL_URLS.map((u) => c.add(new Request(u, { cache: "reload" }))));
+    })()
   );
 });
 
 self.addEventListener("activate", (e) => {
   e.waitUntil(
     (async () => {
+      if (self.registration.navigationPreload) {
+        try {
+          await self.registration.navigationPreload.enable();
+        } catch {}
+      }
       const keys = await caches.keys();
       await Promise.all(keys.filter((k) => !k.startsWith(VERSION)).map((k) => caches.delete(k)));
       await self.clients.claim();
@@ -59,7 +96,7 @@ function timeoutFetch(req, ms) {
   });
 }
 
-// ---- صف درخواست‌های آفلاین (IndexedDB) ----
+/* ---------------- صف آفلاین (IndexedDB) ---------------- */
 const DB_NAME = "sek-queue";
 function idb() {
   return new Promise((res, rej) => {
@@ -111,68 +148,83 @@ async function flushQueue() {
       if (r.ok) {
         await queueDel(it.id);
         sent++;
+      } else if (r.status >= 400 && r.status < 500) {
+        await queueDel(it.id); // درخواست نامعتبر — از صف حذف شود
       }
     } catch {
-      break; // هنوز آفلاین است
+      break;
     }
   }
-  if (sent > 0) {
-    const cs = await self.clients.matchAll();
-    cs.forEach((c) => c.postMessage({ type: "queue-flushed", count: sent }));
-  }
+  const cs = await self.clients.matchAll();
+  cs.forEach((c) => c.postMessage({ type: "queue-status", pending: items.length - sent, sent }));
   return sent;
 }
 
 self.addEventListener("message", (e) => {
   if (e.data === "flush") e.waitUntil(flushQueue());
   if (e.data === "skipWaiting") self.skipWaiting();
+  if (e.data === "queue-count")
+    e.waitUntil(
+      queueAll().then(async (q) => {
+        const cs = await self.clients.matchAll();
+        cs.forEach((c) => c.postMessage({ type: "queue-status", pending: q.length, sent: 0 }));
+      })
+    );
 });
 self.addEventListener("sync", (e) => {
   if (e.tag === "sek-sync") e.waitUntil(flushQueue());
 });
 
+/* ---------------- راهبرد واکشی ---------------- */
 self.addEventListener("fetch", (event) => {
   const req = event.request;
   const url = new URL(req.url);
   if (url.origin !== self.location.origin) return;
+  if (url.pathname === "/api/ping") return;
 
-  // نوشتن آفلاین → صف
+  /* نوشتن (POST/PATCH/DELETE) → آفلاین در صف */
   if (req.method !== "GET") {
-    if (url.pathname.startsWith("/api/")) {
-      event.respondWith(
-        (async () => {
-          try {
-            return await fetch(req.clone());
-          } catch {
-            const body = await req.clone().text();
-            const headers = {};
-            req.headers.forEach((v, k) => (headers[k] = v));
-            await queueAdd({ url: req.url, method: req.method, headers, body, at: Date.now() });
-            if ("sync" in self.registration) {
-              try {
-                await self.registration.sync.register("sek-sync");
-              } catch {}
-            }
-            return new Response(
-              JSON.stringify({
-                queued: true,
-                ok: true,
-                offline: true,
-                message: "به دلیل قطع اینترنت، اطلاعات ذخیره شد و به‌محض اتصال خودکار ارسال می‌شود.",
-              }),
-              { status: 202, headers: { "Content-Type": "application/json; charset=utf-8" } }
-            );
+    if (!url.pathname.startsWith("/api/")) return;
+    event.respondWith(
+      (async () => {
+        try {
+          return await fetch(req.clone());
+        } catch {
+          // ورود/خروج قابل صف‌بندی نیست
+          if (url.pathname.startsWith("/api/auth")) {
+            return new Response(JSON.stringify({ error: "📴 برای ورود، اتصال اینترنت لازم است." }), {
+              status: 503,
+              headers: { "Content-Type": "application/json; charset=utf-8" },
+            });
           }
-        })()
-      );
-    }
+          const body = await req.clone().text();
+          const headers = {};
+          req.headers.forEach((v, k) => (headers[k] = v));
+          await queueAdd({ url: req.url, method: req.method, headers, body, at: Date.now() });
+          if (self.registration.sync) {
+            try {
+              await self.registration.sync.register("sek-sync");
+            } catch {}
+          }
+          const cs = await self.clients.matchAll();
+          cs.forEach((c) => c.postMessage({ type: "queued" }));
+          return new Response(
+            JSON.stringify({
+              ok: true,
+              queued: true,
+              offline: true,
+              message: "📴 اینترنت قطع است؛ اطلاعات ذخیره شد و به‌محض اتصال خودکار ارسال می‌شود.",
+            }),
+            { status: 202, headers: { "Content-Type": "application/json; charset=utf-8" } }
+          );
+        }
+      })()
+    );
     return;
   }
 
-  // GET های API: شبکه با تایم‌اوت، سپس کش
-  if (url.pathname === "/api/ping") return;
+  /* GET روی API → شبکه با مهلت کوتاه، سپس کش */
   if (url.pathname.startsWith("/api/")) {
-    // ورود/خروج همیشه آنلاین، اما وضعیت نشست (me) کش می‌شود تا برنامه آفلاین باز شود
     if (
       url.pathname.startsWith("/api/auth/login") ||
       url.pathname.startsWith("/api/auth/logout") ||
@@ -180,6 +232,7 @@ self.addEventListener("fetch", (event) => {
       url.pathname.startsWith("/api/auth/check-username")
     )
       return;
+
     event.respondWith(
       (async () => {
         try {
@@ -197,8 +250,8 @@ self.addEventListener("fetch", (event) => {
             return new Response(await cached.blob(), { status: 200, headers: h });
           }
           return new Response(
-            JSON.stringify({ offline: true, rows: [], logs: [], reps: [], error: "آفلاین — داده ذخیره‌شده موجود نیست" }),
-            { status: 200, headers: { "Content-Type": "application/json; charset=utf-8" } },
+            JSON.stringify({ offline: true, rows: [], logs: [], reps: [], error: "آفلاین" }),
+            { status: 200, headers: { "Content-Type": "application/json; charset=utf-8" } }
           );
         }
       })()
@@ -206,30 +259,70 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  // صفحات و استاتیک: کش-اول + بروزرسانی پس‌زمینه
+  /* ناوبری صفحات → کش-اول (فوری روی هر اینترنتی) */
+  if (req.mode === "navigate") {
+    event.respondWith(
+      (async () => {
+        const cached = await caches.match(req, { ignoreSearch: true });
+        const network = (async () => {
+          try {
+            const preload = await event.preloadResponse;
+            const res = preload || (await timeoutFetch(req, PAGE_TIMEOUT));
+            if (res && res.ok) {
+              const c = await caches.open(SHELL);
+              c.put(req, res.clone());
+            }
+            return res;
+          } catch {
+            return null;
+          }
+        })();
+
+        if (cached) {
+          event.waitUntil(network);
+          return cached;
+        }
+        const res = await network;
+        if (res) return res;
+        return (
+          (await caches.match("/offline")) ||
+          (await caches.match("/")) ||
+          new Response("<h1 dir=rtl style='font-family:Tahoma;text-align:center;padding:40px'>آفلاین هستید</h1>", {
+            headers: { "Content-Type": "text/html; charset=utf-8" },
+          })
+        );
+      })()
+    );
+    return;
+  }
+
+  /* سایر منابع (JS/CSS/تصویر) → کش-اول */
   event.respondWith(
     (async () => {
       const cached = await caches.match(req);
-      const network = timeoutFetch(req, NET_TIMEOUT)
-        .then(async (res) => {
-          if (res && res.ok) {
-            const c = await caches.open(SHELL);
-            c.put(req, res.clone());
-          }
-          return res;
-        })
-        .catch(() => null);
       if (cached) {
-        event.waitUntil(network);
+        event.waitUntil(
+          timeoutFetch(req, PAGE_TIMEOUT)
+            .then(async (res) => {
+              if (res && res.ok) {
+                const c = await caches.open(SHELL);
+                c.put(req, res.clone());
+              }
+            })
+            .catch(() => null)
+        );
         return cached;
       }
-      const res = await network;
-      if (res) return res;
-      if (req.mode === "navigate") {
-        return (await caches.match("/offline")) || (await caches.match("/")) ||
-          new Response("<h1 dir=rtl>آفلاین هستید</h1>", { headers: { "Content-Type": "text/html; charset=utf-8" } });
+      try {
+        const res = await timeoutFetch(req, PAGE_TIMEOUT);
+        if (res && res.ok) {
+          const c = await caches.open(SHELL);
+          c.put(req, res.clone());
+        }
+        return res;
+      } catch {
+        return new Response("", { status: 504 });
       }
-      return new Response("", { status: 504 });
     })()
   );
 });

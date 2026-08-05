@@ -125,29 +125,24 @@ export async function POST(req: Request) {
       return Response.json(
         {
           error:
-            "⛔ این حساب به گوشی دیگری (با سیم‌کارت ثبت‌شده) متصل است. ورود از این دستگاه مجاز نیست. برای تعویض گوشی، از مدیر بخواهید دستگاه را آزاد کند.",
+            "⛔ این حساب به گوشی دیگری متصل است. اگر سیم‌کارت شما در همین گوشی است، با کد تایید پیامکی ادامه دهید؛ در غیر این صورت از مدیر بخواهید دستگاه را آزاد کند.",
+          needOtp: true,
+          reason: "device-mismatch",
         },
         { status: 403 },
       );
     }
     if (!user.deviceId) {
-      await db
-        .update(users)
-        .set({
-          deviceId,
-          deviceInfo: String(body.deviceInfo ?? "").slice(0, 200),
-          deviceBoundAt: new Date(),
-        })
-        .where(eq(users.id, user.id));
-      await db
-        .insert(activityLogs)
-        .values({
-          userId: user.id,
-          userName: user.fullName,
-          action: "اتصال دستگاه",
-          detail: `${String(body.deviceInfo ?? "").slice(0, 120)} | ${phone}`,
-        })
-        .catch(() => undefined);
+      // اولین ورود روی این دستگاه → اثبات در دسترس بودن سیم‌کارت با کد پیامکی
+      return Response.json(
+        {
+          error:
+            "🔐 برای اطمینان از فعال بودن سیم‌کارت روی همین گوشی، کد تایید پیامکی لازم است.",
+          needOtp: true,
+          reason: "first-device",
+        },
+        { status: 403 },
+      );
     }
   }
 

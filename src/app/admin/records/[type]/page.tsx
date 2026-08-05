@@ -1,10 +1,17 @@
 import { notFound } from "next/navigation";
 import RecordScreen, { type RecordType } from "@/components/RecordScreen";
 
-export const dynamic = "force-dynamic";
+const TYPES = ["pharmacies", "doctors", "orders"] as const;
+
+/** پیش‌ساخت هر سه صفحه تا بدون سرور و کاملاً آفلاین باز شوند */
+export function generateStaticParams() {
+  return TYPES.map((type) => ({ type }));
+}
+
+export const dynamicParams = false;
 
 export default async function AdminRecordsPage({ params }: { params: Promise<{ type: string }> }) {
   const { type } = await params;
-  if (!["pharmacies", "doctors", "orders"].includes(type)) notFound();
+  if (!TYPES.includes(type as RecordType)) notFound();
   return <RecordScreen type={type as RecordType} isAdmin />;
 }

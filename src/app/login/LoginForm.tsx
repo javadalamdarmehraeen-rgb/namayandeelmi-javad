@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Alert, Button, Field, Input } from "@/components/ui";
+import { toPersianDigits } from "@/lib/jalali";
 import { patchFetch, setTabToken } from "@/components/SessionProvider";
 import { cacheUser, getCachedUser } from "@/lib/offline-session";
 import {
@@ -36,6 +37,11 @@ export default function LoginForm() {
   const [regMask, setRegMask] = useState("");
   const [deviceBound, setDeviceBound] = useState(false);
   const [netType, setNetType] = useState("");
+  const [otpStep, setOtpStep] = useState(false);
+  const [otpCode, setOtpCode] = useState("");
+  const [otpMsg, setOtpMsg] = useState("");
+  const [otpBusy, setOtpBusy] = useState(false);
+  const [otpLeft, setOtpLeft] = useState(0);
   const [info, setInfo] = useState("");
 
   useEffect(() => {
@@ -124,6 +130,64 @@ export default function LoginForm() {
     return () => clearTimeout(t);
   }, [username, mode]);
 
+  const requestOtp = async () => {
+    setOtpBusy(true);
+    const res = await fetch("/api/auth/otp", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action: "request", username, password, deviceId: getDeviceId() }),
+    }).catch(() => null);
+    setOtpBusy(false);
+    const d = await res?.json().catch(() => ({}));
+    setOtpMsg(d?.message ?? d?.error ?? "ارسال کد انجام نشد");
+    if (d?.ok) {
+      setOtpLeft(180);
+      const iv = setInterval(() => {
+        setOtpLeft((v) => {
+          if (v <= 1) {
+            clearInterval(iv);
+            return 0;
+          }
+          return v - 1;
+        });
+      }, 1000);
+    }
+  };
+
+  const verifyOtp = async () => {
+    if (otpCode.trim().length < 4) {
+      setOtpMsg("کد تایید را کامل وارد کنید");
+      return;
+    }
+    setOtpBusy(true);
+    const res = await fetch("/api/auth/otp", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        action: "verify",
+        username,
+        password,
+        code: otpCode.trim(),
+        deviceId: getDeviceId(),
+        deviceInfo: getDeviceInfo(),
+        remember: true,
+      }),
+    });
+    setOtpBusy(false);
+    const d = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      setOtpMsg(d.error ?? "کد نامعتبر است");
+      return;
+    }
+    if (d.token) setTabToken(d.token, true);
+    if (d.user) cacheUser(d.user);
+    if (phone) {
+      localStorage.setItem("sek_phone", phone);
+      setDeviceSim(normalizePhone(phone));
+    }
+    router.replace(d.user?.role === "rep" ? "/panel" : "/admin");
+  };
+
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
@@ -170,6 +234,13 @@ export default function LoginForm() {
     setBusy(false);
     const data = await res.json().catch(() => ({}));
     if (!res.ok) {
+      if (data.needOtp) {
+        setError("");
+        setOtpMsg(data.error ?? "");
+        setOtpStep(true);
+        requestOtp();
+        return;
+      }
       setError(data.error ?? "خطا در ورود");
       return;
     }
@@ -186,6 +257,51 @@ export default function LoginForm() {
   return (
     <main className="flex min-h-screen items-center justify-center bg-gradient-to-b from-teal-700 via-teal-600 to-slate-100 p-4">
       <div className="w-full max-w-md">
+        {otpStep ? (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/70 p-4">
+            <div className="fade-in w-full max-w-sm rounded-2xl bg-white p-4">
+              <h3 className="mb-1 text-sm font-black text-slate-800">🔐 تایید سیم‌کارت</h3>
+              <p className="mb-3 text-[11px] leading-6 text-slate-600">
+                برای اطمینان از اینکه سیم‌کارت ثبت‌شده توسط مدیر <b>واقعاً داخل همین گوشی</b> است، کد پیامک‌شده را وارد
+                کنید. اگر پیامک را دریافت نکردید، یعنی سیم‌کارت در این گوشی فعال نیست.
+              </p>
+              {otpMsg ? (
+                <div className="mb-2">
+                  <Alert kind={otpMsg.includes("ارسال شد") ? "success" : "info"}>{otpMsg}</Alert>
+                </div>
+              ) : null}
+              <Field label="کد تایید" required>
+                <Input
+                  inputMode="numeric"
+                  value={otpCode}
+                  onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
+                  placeholder="_ _ _ _ _"
+                  className="text-center text-lg tracking-[0.5em]"
+                  autoFocus
+                />
+              </Field>
+              <div className="mt-3 flex flex-wrap gap-2">
+                <Button onClick={verifyOtp} disabled={otpBusy}>
+                  {otpBusy ? "..." : "✅ تایید و ورود"}
+                </Button>
+                <Button variant="soft" onClick={requestOtp} disabled={otpBusy || otpLeft > 0}>
+                  {otpLeft > 0 ? `ارسال مجدد (${toPersianDigits(otpLeft)})` : "🔄 ارسال مجدد کد"}
+                </Button>
+                <Button
+                  variant="ghost"
+                  onClick={() => {
+                    setOtpStep(false);
+                    setOtpCode("");
+                    setOtpMsg("");
+                  }}
+                >
+                  بازگشت
+                </Button>
+              </div>
+            </div>
+          </div>
+        ) : null}
+
         {forgot ? (
           <div
             className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4"

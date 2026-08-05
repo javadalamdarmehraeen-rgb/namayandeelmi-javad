@@ -22,15 +22,22 @@ export async function GET(req: Request) {
   const rows = await db.select().from(settings);
   const map: Record<string, unknown> = { ...FALLBACK };
   for (const r of rows) map[r.key] = r.value;
+  if (user.role !== "admin") delete map["sms"];
   if (key) return Response.json({ key, value: map[key] ?? null });
   return Response.json({ values: map });
 }
 
 export async function PUT(req: Request) {
   const user = await getSessionUser();
-  if (!user || (user.role !== "admin" && !user.permissions.includes("columns"))) {
-    return Response.json({ error: "دسترسی غیرمجاز" }, { status: 401 });
-  }
+  const b0 = user ? null : null;
+  void b0;
+  if (!user) return Response.json({ error: "دسترسی غیرمجاز" }, { status: 401 });
+  const allowed =
+    user.role === "admin" ||
+    user.permissions.includes("columns") ||
+    user.permissions.includes("messengers") ||
+    user.permissions.includes("users");
+  if (!allowed) return Response.json({ error: "دسترسی غیرمجاز" }, { status: 401 });
   const b = await req.json().catch(() => ({}));
   const key = String(b.key ?? "");
   if (!key || b.value === undefined) return Response.json({ error: "ورودی نامعتبر" }, { status: 400 });
