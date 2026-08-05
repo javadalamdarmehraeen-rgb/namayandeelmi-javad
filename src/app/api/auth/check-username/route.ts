@@ -12,7 +12,12 @@ export async function POST(req: Request) {
   const username = String(b.username ?? "").trim().toLowerCase();
   if (!username) return Response.json({ exists: false });
   const rows = await db
-    .select({ role: users.role, requirePhone: users.requirePhone })
+    .select({
+      role: users.role,
+      requirePhone: users.requirePhone,
+      phone: users.phone,
+      deviceId: users.deviceId,
+    })
     .from(users)
     .where(eq(users.username, username))
     .limit(1);
@@ -23,5 +28,15 @@ export async function POST(req: Request) {
     const r = (await db.select().from(roles).where(eq(roles.key, u.role)).limit(1))[0];
     base = r?.base ?? "rep";
   }
-  return Response.json({ exists: true, kind: base === "rep" ? "rep" : "admin", requirePhone: u.requirePhone });
+  const digits = String(u.phone ?? "").replace(/\D/g, "");
+  // فقط نقاب شماره برگردانده می‌شود تا کاربر مغایرت را در لحظه ببیند بدون افشای شماره کامل
+  const phoneMask = digits.length >= 8 ? `${digits.slice(0, 4)}***${digits.slice(-4)}` : "";
+  return Response.json({
+    exists: true,
+    kind: base === "rep" ? "rep" : "admin",
+    requirePhone: u.requirePhone,
+    hasPhone: digits.length >= 10,
+    phoneMask,
+    deviceBound: Boolean(u.deviceId),
+  });
 }

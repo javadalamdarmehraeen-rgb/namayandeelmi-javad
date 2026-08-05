@@ -4,7 +4,7 @@
    - درخواست‌های GET سرور: network-first با تایم‌اوت و برگشت به کش
    - درخواست‌های POST/PATCH آفلاین: در صف ذخیره و بعداً خودکار ارسال می‌شوند
 */
-const VERSION = "sek-v6";
+const VERSION = "sek-v7";
 const SHELL = `${VERSION}-shell`;
 const DATA = `${VERSION}-data`;
 const NET_TIMEOUT = 9000;   // مهلت شبکه برای اینترنت‌های کند
@@ -170,8 +170,16 @@ self.addEventListener("fetch", (event) => {
   }
 
   // GET های API: شبکه با تایم‌اوت، سپس کش
+  if (url.pathname === "/api/ping") return;
   if (url.pathname.startsWith("/api/")) {
-    if (url.pathname.startsWith("/api/auth")) return; // احراز هویت همیشه آنلاین
+    // ورود/خروج همیشه آنلاین، اما وضعیت نشست (me) کش می‌شود تا برنامه آفلاین باز شود
+    if (
+      url.pathname.startsWith("/api/auth/login") ||
+      url.pathname.startsWith("/api/auth/logout") ||
+      url.pathname.startsWith("/api/auth/forgot") ||
+      url.pathname.startsWith("/api/auth/check-username")
+    )
+      return;
     event.respondWith(
       (async () => {
         try {

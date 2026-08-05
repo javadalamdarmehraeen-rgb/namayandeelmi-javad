@@ -100,3 +100,46 @@ export function normalizePhone(p: string) {
     .replace(/^0098/, "0")
     .replace(/^98/, "0");
 }
+
+const DEVICE_ID_KEY = "sek_device_id";
+
+/** شناسه پایدار همین دستگاه (برای تشخیص تعویض گوشی/سیم‌کارت) */
+export function getDeviceId(): string {
+  try {
+    let id = localStorage.getItem(DEVICE_ID_KEY);
+    if (!id) {
+      const rnd =
+        typeof crypto !== "undefined" && "randomUUID" in crypto
+          ? crypto.randomUUID()
+          : `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 12)}`;
+      id = rnd.replace(/-/g, "").slice(0, 32);
+      localStorage.setItem(DEVICE_ID_KEY, id);
+    }
+    return id;
+  } catch {
+    return "";
+  }
+}
+
+/** توضیح کوتاه دستگاه برای نمایش به مدیر */
+export function getDeviceInfo(): string {
+  if (typeof navigator === "undefined") return "";
+  const ua = navigator.userAgent;
+  const os = /Android/i.test(ua)
+    ? "اندروید"
+    : /iPhone|iPad|iPod/i.test(ua)
+      ? "iOS"
+      : /Windows/i.test(ua)
+        ? "ویندوز"
+        : /Mac/i.test(ua)
+          ? "مک"
+          : "نامشخص";
+  const br = /Chrome/i.test(ua) ? "Chrome" : /Safari/i.test(ua) ? "Safari" : /Firefox/i.test(ua) ? "Firefox" : "مرورگر";
+  return `${os} — ${br}`.slice(0, 200);
+}
+
+/** نقاب شماره مثل 0912***1111 برای مقایسه امن */
+export function maskPhone(p: string) {
+  const d = normalizePhone(p);
+  return d.length >= 8 ? `${d.slice(0, 4)}***${d.slice(-4)}` : "";
+}

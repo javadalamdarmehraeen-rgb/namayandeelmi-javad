@@ -22,6 +22,9 @@ type User = {
   role: string;
   active: boolean;
   requirePhone: boolean;
+  deviceId?: string;
+  deviceInfo?: string;
+  deviceBoundAt?: string | null;
   permissions: string[];
   passwordPlain: string;
   lastSeenAt: string | null;
@@ -563,6 +566,38 @@ export default function UsersPage() {
               >
                 {u.requirePhone ? "✅ اجباری" : "⛔ غیرفعال (ورود بدون شماره)"}
               </button>
+              <span className="mx-1 h-5 w-px bg-slate-200" />
+              <span className="text-[11px] font-bold text-slate-500">گوشی متصل:</span>
+              {u.deviceId ? (
+                <>
+                  <span className="rounded-lg bg-emerald-100 px-2 py-1 text-[11px] font-bold text-emerald-700">
+                    🔒 {u.deviceInfo || "متصل"}
+                    {u.deviceBoundAt ? ` — ${tehranDateTime(u.deviceBoundAt)}` : ""}
+                  </span>
+                  <button
+                    onClick={async () => {
+                      if (
+                        !(await confirm({
+                          title: "آزادسازی گوشی",
+                          message: `اتصال حساب «${u.fullName}» به گوشی فعلی آزاد شود؟ پس از آن می‌تواند از یک گوشی جدید وارد شود.`,
+                          confirmText: "آزاد کن",
+                          danger: true,
+                        }))
+                      )
+                        return;
+                      patch({ id: u.id, releaseDevice: true });
+                    }}
+                    className="rounded-lg bg-amber-100 px-2 py-1 text-[11px] font-bold text-amber-700"
+                  >
+                    آزادسازی گوشی
+                  </button>
+                </>
+              ) : (
+                <span className="rounded-lg bg-slate-200 px-2 py-1 text-[11px] font-bold text-slate-600">
+                  آزاد — اولین ورود، گوشی را قفل می‌کند
+                </span>
+              )}
+              <span className="mx-1 h-5 w-px bg-slate-200" />
               <span className="text-[11px] font-bold text-slate-500">نقش:</span>
               <select
                 value={u.role}

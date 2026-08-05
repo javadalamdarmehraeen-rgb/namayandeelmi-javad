@@ -21,6 +21,9 @@ export const users = pgTable("users", {
   role: varchar("role", { length: 20 }).notNull().default("rep"), // admin | supervisor | rep
   active: boolean("active").notNull().default(true),
   requirePhone: boolean("require_phone").notNull().default(true),
+  deviceId: varchar("device_id", { length: 80 }).notNull().default(""),
+  deviceInfo: varchar("device_info", { length: 200 }).notNull().default(""),
+  deviceBoundAt: timestamp("device_bound_at", { withTimezone: true }),
   permissions: jsonb("permissions")
     .$type<string[]>()
     .notNull()

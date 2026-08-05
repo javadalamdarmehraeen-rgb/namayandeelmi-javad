@@ -4,7 +4,18 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Alert, Button, Field, Input } from "@/components/ui";
 import { patchFetch, setTabToken } from "@/components/SessionProvider";
-import { getDeviceSim, isMobileDevice, normalizePhone, setDeviceSim, watchSim, type SimStatus } from "@/lib/device";
+import { cacheUser, getCachedUser } from "@/lib/offline-session";
+import {
+  getDeviceId,
+  getDeviceInfo,
+  getDeviceSim,
+  isMobileDevice,
+  maskPhone,
+  normalizePhone,
+  setDeviceSim,
+  watchSim,
+  type SimStatus,
+} from "@/lib/device";
 
 export default function LoginForm() {
   const router = useRouter();
@@ -22,6 +33,9 @@ export default function LoginForm() {
   const [simWarn, setSimWarn] = useState("");
   const [forgot, setForgot] = useState(false);
   const [simMismatch, setSimMismatch] = useState("");
+  const [regMask, setRegMask] = useState("");
+  const [deviceBound, setDeviceBound] = useState(false);
+  const [netType, setNetType] = useState("");
   const [info, setInfo] = useState("");
 
   useEffect(() => {
@@ -31,24 +45,47 @@ export default function LoginForm() {
     const stop = watchSim((s: SimStatus) => {
       setSimOk(s.ok);
       setSimWarn(s.ok ? "" : s.detail);
+      setNetType(
+        s.type === "cellular"
+          ? "اینترنت سیم‌کارت (Cellular)"
+          : s.type === "wifi"
+            ? "وای‌فای"
+            : s.online
+              ? "متصل"
+              : "قطع",
+      );
     });
     return stop;
   }, []);
 
-  // مغایرت شماره واردشده با سیم‌کارت تاییدشده این گوشی
+  // بررسی لحظه‌ای مغایرت سیم‌کارت
   useEffect(() => {
-    if (mode !== "rep") {
+    if (mode !== "rep" || !needPhone) {
       setSimMismatch("");
       return;
     }
-    const deviceSim = getDeviceSim();
     const entered = normalizePhone(phone);
-    if (deviceSim && entered.length === 11 && entered !== deviceSim) {
+    if (entered.length < 11) {
+      setSimMismatch("");
+      return;
+    }
+    // ۱) مغایرت با شماره‌ای که مدیر برای این کاربر ثبت کرده
+    if (regMask && maskPhone(entered) !== regMask) {
       setSimMismatch(
-        `⚠️ شماره واردشده با سیم‌کارت فعال روی این گوشی (${deviceSim.replace(/(\d{4})(\d{3})(\d{4})/, "$1***$3")}) مغایرت دارد. ورود فقط با گوشی حاوی سیم‌کارت ثبت‌شده مجاز است.`,
+        `⛔ مغایرت سیم‌کارت: شماره ثبت‌شده توسط مدیر برای این کاربر «${regMask}» است، اما شما «${maskPhone(entered)}» وارد کرده‌اید. ورود فقط با سیم‌کارت ثبت‌شده مجاز است.`,
       );
-    } else setSimMismatch("");
-  }, [phone, mode]);
+      return;
+    }
+    // ۲) مغایرت با سیم‌کارتی که قبلاً روی همین گوشی تایید شده
+    const deviceSim = getDeviceSim();
+    if (deviceSim && entered !== deviceSim) {
+      setSimMismatch(
+        `⛔ روی این گوشی سیم‌کارت «${maskPhone(deviceSim)}» فعال و تاییدشده است. ورود با شماره دیگر مجاز نیست.`,
+      );
+      return;
+    }
+    setSimMismatch("");
+  }, [phone, mode, needPhone, regMask]);
 
   // با تایپ نام کاربری، تب صحیح و نیاز به شماره همراه تشخیص داده می‌شود
   useEffect(() => {
@@ -69,9 +106,13 @@ export default function LoginForm() {
       if (!d.exists) {
         setHint("");
         setNeedPhone(true);
+        setRegMask("");
+        setDeviceBound(false);
         return;
       }
       setNeedPhone(Boolean(d.requirePhone));
+      setRegMask(d.phoneMask ?? "");
+      setDeviceBound(Boolean(d.deviceBound));
       if (d.kind !== mode) {
         setHint(
           d.kind === "admin"
@@ -98,6 +139,16 @@ export default function LoginForm() {
       setError("⚠️ شماره همراه فعال روی این گوشی را ۱۱ رقمی وارد کنید (نمونه: ۰۹۱۲۳۴۵۶۷۸۹)");
       return;
     }
+    // ورود آفلاین: اگر اینترنت نیست ولی قبلاً با همین کاربر وارد شده‌اید
+    if (!navigator.onLine) {
+      const cached = getCachedUser();
+      if (cached && cached.username === username.trim().toLowerCase()) {
+        router.replace(cached.role === "rep" ? "/panel" : "/admin");
+        return;
+      }
+      setError("📴 اینترنت قطع است. برای اولین ورود روی این دستگاه، اتصال اینترنت لازم است.");
+      return;
+    }
     setBusy(true);
     const res = await fetch("/api/auth/login", {
       method: "POST",
@@ -111,6 +162,8 @@ export default function LoginForm() {
         simActive: navigator.onLine,
         simActiveOnDevice: simOk && !simMismatch,
         deviceSim: getDeviceSim(),
+        deviceId: getDeviceId(),
+        deviceInfo: getDeviceInfo(),
         isMobile: isMobileDevice(),
       }),
     });
@@ -120,7 +173,8 @@ export default function LoginForm() {
       setError(data.error ?? "خطا در ورود");
       return;
     }
-    if (data.token) setTabToken(data.token);
+    if (data.token) setTabToken(data.token, true);
+    if (data.user) cacheUser(data.user);
     if (phone) {
       localStorage.setItem("sek_phone", phone);
       // این شماره به‌عنوان سیم‌کارت تاییدشده همین دستگاه ثبت می‌شود
@@ -256,6 +310,30 @@ export default function LoginForm() {
             </div>
           </Field>
 
+          {mode === "rep" && needPhone ? (
+            <div
+              className={`rounded-xl px-3 py-2 text-[11px] font-bold ring-1 ${
+                simMismatch
+                  ? "bg-rose-50 text-rose-800 ring-rose-300"
+                  : !simOk
+                    ? "bg-amber-50 text-amber-800 ring-amber-300"
+                    : "bg-emerald-50 text-emerald-800 ring-emerald-200"
+              }`}
+            >
+              <div className="flex flex-wrap items-center gap-2">
+                <span>{simMismatch ? "⛔" : simOk ? "✅" : "⚠️"} وضعیت سیم‌کارت این دستگاه</span>
+                {netType ? <span className="rounded bg-white/70 px-2 py-0.5">شبکه: {netType}</span> : null}
+                {regMask ? <span className="rounded bg-white/70 px-2 py-0.5">شماره مجاز: {regMask}</span> : null}
+                {deviceBound ? <span className="rounded bg-white/70 px-2 py-0.5">🔒 متصل به یک گوشی</span> : null}
+              </div>
+              {!simMismatch && simOk ? (
+                <div className="mt-1 font-normal">
+                  ورود فقط با گوشی حاوی سیم‌کارت ثبت‌شده توسط مدیر امکان‌پذیر است.
+                </div>
+              ) : null}
+            </div>
+          ) : null}
+
           {needPhone ? (
             <Field label="شماره همراه فعال روی این گوشی" required hint="در صورت غیرفعال بودن توسط مدیر، نمایش داده نمی‌شود">
               <Input
@@ -292,7 +370,7 @@ export default function LoginForm() {
             مرا به خاطر بسپار (در غیر این صورت هر تب جدید نیاز به ورود مجدد دارد)
           </label>
 
-          <Button type="submit" disabled={busy} className="w-full">
+          <Button type="submit" disabled={busy || (mode === "rep" && needPhone && !!simMismatch)} className="w-full">
             {busy ? "در حال ورود..." : mode === "admin" ? "🔐 ورود به داشبورد مدیر" : "🚀 ورود به پنل نماینده"}
           </Button>
 

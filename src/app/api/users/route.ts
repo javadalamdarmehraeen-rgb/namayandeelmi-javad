@@ -27,6 +27,9 @@ export async function GET() {
       permissions: users.permissions,
       passwordPlain: users.passwordPlain,
       requirePhone: users.requirePhone,
+      deviceId: users.deviceId,
+      deviceInfo: users.deviceInfo,
+      deviceBoundAt: users.deviceBoundAt,
       lastSeenAt: users.lastSeenAt,
       createdAt: users.createdAt,
     })
@@ -77,6 +80,12 @@ export async function PATCH(req: Request) {
   if (typeof b.role === "string" && b.role.trim()) patch.role = b.role.trim().slice(0, 40);
   if (typeof b.active === "boolean") patch.active = b.active;
   if (typeof b.requirePhone === "boolean") patch.requirePhone = b.requirePhone;
+  // آزادسازی دستگاه متصل (تعویض گوشی نماینده)
+  if (b.releaseDevice === true) {
+    patch.deviceId = "";
+    patch.deviceInfo = "";
+    patch.deviceBoundAt = null;
+  }
   if (Array.isArray(b.permissions)) patch.permissions = b.permissions;
   if (typeof b.password === "string" && b.password.length >= 4) {
     patch.passwordHash = hashPassword(b.password);

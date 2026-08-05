@@ -26,7 +26,7 @@ export default function Shell({
 }) {
   const pathname = usePathname();
   const router = useRouter();
-  const { logout: sessionLogout } = useSession();
+  const { logout: sessionLogout, offline: sessionOffline } = useSession();
   const [online, setOnline] = useState(true);
   const [open, setOpen] = useState(false);
 
@@ -70,10 +70,15 @@ export default function Shell({
           </div>
           <span
             className={`rounded-lg px-2 py-1 text-[10px] font-bold ${
-              online ? "bg-emerald-400/20 text-emerald-50" : "bg-amber-400/25 text-amber-50"
+              online && !sessionOffline ? "bg-emerald-400/20 text-emerald-50" : "bg-amber-400/25 text-amber-50"
             }`}
+            title={
+              online && !sessionOffline
+                ? "متصل به سرور"
+                : "حالت آفلاین — اطلاعات ذخیره و بعداً ارسال می‌شود"
+            }
           >
-            {online ? "آنلاین" : "آفلاین"}
+            {online && !sessionOffline ? "آنلاین" : "آفلاین"}
           </span>
           <NotificationBell basePath={showPanelLink ? "/admin" : "/panel"} />
           {showAdminLink ? (

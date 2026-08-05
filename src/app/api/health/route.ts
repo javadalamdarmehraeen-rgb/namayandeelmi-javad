@@ -12,7 +12,11 @@ export async function GET() {
     );
   }
   try {
-    await db.execute(sql`select 1`);
+    // مهلت کوتاه تا healthcheck روی دیتابیس کند/سرد گیر نکند
+    await Promise.race([
+      db.execute(sql`select 1`),
+      new Promise((_, rej) => setTimeout(() => rej(new Error("db timeout")), 8000)),
+    ]);
     await ensureSeed();
     return Response.json({ ok: true, db: true });
   } catch (err) {

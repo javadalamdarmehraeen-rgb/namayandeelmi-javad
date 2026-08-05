@@ -112,6 +112,45 @@ export async function POST(req: Request) {
     }
   }
 
+  // ---- اتصال دستگاه (Device Binding) برای نمایندگان ----
+  const deviceId = String(body.deviceId ?? "").replace(/[^a-zA-Z0-9]/g, "").slice(0, 80);
+  if (user.requirePhone && !isManagerAccount) {
+    if (!deviceId) {
+      return Response.json(
+        { error: "⚠️ شناسه دستگاه دریافت نشد. لطفاً حافظه مرورگر را فعال کرده و دوباره تلاش کنید." },
+        { status: 400 },
+      );
+    }
+    if (user.deviceId && user.deviceId !== deviceId) {
+      return Response.json(
+        {
+          error:
+            "⛔ این حساب به گوشی دیگری (با سیم‌کارت ثبت‌شده) متصل است. ورود از این دستگاه مجاز نیست. برای تعویض گوشی، از مدیر بخواهید دستگاه را آزاد کند.",
+        },
+        { status: 403 },
+      );
+    }
+    if (!user.deviceId) {
+      await db
+        .update(users)
+        .set({
+          deviceId,
+          deviceInfo: String(body.deviceInfo ?? "").slice(0, 200),
+          deviceBoundAt: new Date(),
+        })
+        .where(eq(users.id, user.id));
+      await db
+        .insert(activityLogs)
+        .values({
+          userId: user.id,
+          userName: user.fullName,
+          action: "اتصال دستگاه",
+          detail: `${String(body.deviceInfo ?? "").slice(0, 120)} | ${phone}`,
+        })
+        .catch(() => undefined);
+    }
+  }
+
   const token = createToken(user.id);
   if (remember) {
     const store = await cookies();
@@ -137,6 +176,9 @@ export async function POST(req: Request) {
       fullName: user.fullName,
       role: baseRole,
       roleKey: user.role,
+      roleLabel: baseRole === "admin" ? "مدیر سیستم" : baseRole === "supervisor" ? "سرپرست" : "نماینده علمی",
+      phone: user.phone,
+      requirePhone: user.requirePhone,
       permissions: user.permissions,
     },
   });

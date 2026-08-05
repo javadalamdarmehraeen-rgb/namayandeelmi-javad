@@ -33,6 +33,12 @@ export default function ServiceWorker() {
         }
       });
 
+      // بیدار نگه‌داشتن سرور رایگان تا درخواست‌های بعدی روی اینترنت موبایل سریع باشند
+      const ping = () => {
+        if (navigator.onLine && !document.hidden) fetch("/api/ping", { cache: "no-store" }).catch(() => undefined);
+      };
+      const pingIv = setInterval(ping, 4 * 60 * 1000);
+
       const flush = () => navigator.serviceWorker.controller?.postMessage("flush");
       window.addEventListener("online", flush);
       window.addEventListener("focus", flush);
@@ -42,6 +48,7 @@ export default function ServiceWorker() {
 
       return () => {
         clearInterval(iv);
+        clearInterval(pingIv);
         window.removeEventListener("online", setState);
         window.removeEventListener("offline", setState);
         window.removeEventListener("online", flush);
