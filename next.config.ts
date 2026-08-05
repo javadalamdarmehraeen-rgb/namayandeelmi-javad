@@ -23,6 +23,17 @@ const nextConfig: NextConfig = {
         ],
       },
       {
+        source: "/logo.svg",
+        headers: [{ key: "Access-Control-Allow-Origin", value: "*" }],
+      },
+      {
+        source: "/apple-touch-icon.png",
+        headers: [
+          { key: "Cache-Control", value: "public, max-age=31536000, immutable" },
+          { key: "Access-Control-Allow-Origin", value: "*" },
+        ],
+      },
+      {
         source: "/icons/:path*",
         headers: [
           { key: "Cache-Control", value: "public, max-age=31536000, immutable" },

@@ -14,15 +14,10 @@
       <feDropShadow dx="0" dy="10" stdDeviation="16" flood-color="#8b1141" flood-opacity=".28"/>
     </filter>
   </defs>
-
-  <!-- کپسول اریب با گرادیان نارنجی → صورتی -->
   <g transform="translate(256 256) rotate(-45)" filter="url(#soft)">
     <rect x="-168" y="-84" width="336" height="168" rx="84" ry="84" fill="url(#pill)"/>
-    <!-- خط جداکننده دو نیمه کپسول -->
     <line x1="0" y1="-84" x2="0" y2="84" stroke="#ffffff" stroke-opacity=".35" stroke-width="6"/>
-    <!-- براقیت بالای کپسول -->
     <rect x="-160" y="-76" width="320" height="80" rx="40" ry="40" fill="url(#glossTop)"/>
-    <!-- نقطه درخشان -->
     <circle cx="104" cy="-30" r="18" fill="#ffffff" fill-opacity=".92"/>
     <circle cx="-96" cy="34" r="10" fill="#ffffff" fill-opacity=".28"/>
   </g>
