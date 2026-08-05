@@ -119,6 +119,8 @@ export const options = pgTable("options", {
   id: serial("id").primaryKey(),
   category: varchar("category", { length: 40 }).notNull(),
   value: varchar("value", { length: 200 }).notNull(),
+  /** مقدار والد: شهر ← استان، منطقه ← شهر */
+  parent: varchar("parent", { length: 200 }).notNull().default(""),
   createdBy: varchar("created_by", { length: 160 }).notNull().default(""),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });

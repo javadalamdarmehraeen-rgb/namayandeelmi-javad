@@ -96,6 +96,7 @@ export default function RecordScreen({ type, isAdmin = false }: { type: RecordTy
   const [loc, setLoc] = useState<LatLng>({ lat: null, lng: null, accuracy: null });
   const [rows, setRows] = useState<Row[]>([]);
   const [opts, setOpts] = useState<Record<string, string[]>>({});
+  const [optRows, setOptRows] = useState<{ category: string; value: string; parent?: string }[]>([]);
   const [msg, setMsg] = useState<{ kind: "error" | "success" | "info"; text: string } | null>(null);
   const [busy, setBusy] = useState(false);
   const [selected, setSelected] = useState<number[]>([]);
@@ -122,9 +123,11 @@ export default function RecordScreen({ type, isAdmin = false }: { type: RecordTy
     const res = await fetch("/api/options", { cache: "no-store" });
     if (!res.ok) return;
     const data = await res.json();
+    const rows = (data.rows ?? []) as { category: string; value: string; parent?: string }[];
     const grouped: Record<string, string[]> = {};
-    for (const o of data.rows as { category: string; value: string }[]) (grouped[o.category] ??= []).push(o.value);
+    for (const o of rows) (grouped[o.category] ??= []).push(o.value);
     setOpts(grouped);
+    setOptRows(rows);
   }, []);
 
   const loadSettings = useCallback(async () => {
@@ -145,6 +148,22 @@ export default function RecordScreen({ type, isAdmin = false }: { type: RecordTy
   useLive(loadRows, 15000, tab === "list");
 
   const recordName = type === "orders" ? form.pharmacyName : form.name;
+
+  // فهرست‌های وابسته: شهرهای استان انتخاب‌شده و مناطق شهر انتخاب‌شده
+  const cityOptions = useMemo(
+    () =>
+      optRows
+        .filter((o) => o.category === "city" && (!form.province || o.parent === form.province))
+        .map((o) => o.value),
+    [optRows, form.province],
+  );
+  const regionOptions = useMemo(
+    () =>
+      optRows
+        .filter((o) => o.category === "region" && (!form.city || o.parent === form.city))
+        .map((o) => o.value),
+    [optRows, form.city],
+  );
 
   const submit = async () => {
     if (!isValidJalali(form.dateShamsi)) {
@@ -407,28 +426,37 @@ export default function RecordScreen({ type, isAdmin = false }: { type: RecordTy
                 <Field label="نام استان" hint="کشویی + جستجو + افزودن لحظه‌ای">
                   <Combobox
                     value={form.province}
-                    onChange={(v) => set("province", v)}
+                    onChange={(v) => setForm((f) => ({ ...f, province: v, city: "", region: "" }))}
                     options={opts.province ?? []}
                     category="province"
                     onAdded={onAdded}
                   />
                 </Field>
-                <Field label="شهر">
+                <Field
+                  label="شهر"
+                  hint={form.province ? `شهرهای استان ${form.province}` : "ابتدا استان را انتخاب کنید"}
+                >
                   <Combobox
                     value={form.city}
-                    onChange={(v) => set("city", v)}
-                    options={opts.city ?? []}
+                    onChange={(v) => setForm((f) => ({ ...f, city: v, region: "" }))}
+                    options={cityOptions}
                     category="city"
+                    parent={form.province}
+                    disabled={!form.province}
                     onAdded={onAdded}
+                    emptyHint={`شهری برای «${form.province}» ثبت نشده — تایپ کنید و ➕ بزنید`}
                   />
                 </Field>
-                <Field label="منطقه">
+                <Field label="منطقه" hint={form.city ? `مناطق ${form.city}` : "ابتدا شهر را انتخاب کنید"}>
                   <Combobox
                     value={form.region}
                     onChange={(v) => set("region", v)}
-                    options={opts.region ?? []}
+                    options={regionOptions}
                     category="region"
+                    parent={form.city}
+                    disabled={!form.city}
                     onAdded={onAdded}
+                    emptyHint={`منطقه‌ای برای «${form.city}» ثبت نشده — تایپ کنید و ➕ بزنید`}
                   />
                 </Field>
               </>

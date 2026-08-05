@@ -13,10 +13,13 @@ export async function GET(req: Request) {
   await ensureSeed();
   const user = await getSessionUser();
   if (!user) return Response.json({ error: "دسترسی غیرمجاز" }, { status: 401 });
-  const category = new URL(req.url).searchParams.get("category");
-  const rows = category
+  const url = new URL(req.url);
+  const category = url.searchParams.get("category");
+  const parent = url.searchParams.get("parent");
+  let rows = category
     ? await db.select().from(options).where(eq(options.category, category)).orderBy(asc(options.value))
     : await db.select().from(options).orderBy(asc(options.category), asc(options.value));
+  if (parent) rows = rows.filter((r) => r.parent === parent);
   return Response.json({ rows });
 }
 
@@ -30,16 +33,27 @@ export async function POST(req: Request) {
   const body = await req.json().catch(() => ({}));
   const category = String(body.category ?? "").trim();
   const value = String(body.value ?? "").trim().slice(0, 200);
+  const parent = String(body.parent ?? "").trim().slice(0, 200);
   if (!VALID.includes(category) || !value) return Response.json({ error: "مقدار نامعتبر" }, { status: 400 });
+  // شهر باید زیرمجموعه استان و منطقه زیرمجموعه شهر باشد
+  if ((category === "city" || category === "region") && !parent) {
+    return Response.json(
+      { error: category === "city" ? "ابتدا استان را انتخاب کنید" : "ابتدا شهر را انتخاب کنید" },
+      { status: 400 },
+    );
+  }
 
-  const exists = await db
-    .select()
-    .from(options)
-    .where(and(eq(options.category, category), eq(options.value, value)))
-    .limit(1);
+  const dupWhere =
+    parent
+      ? and(eq(options.category, category), eq(options.value, value), eq(options.parent, parent))
+      : and(eq(options.category, category), eq(options.value, value));
+  const exists = await db.select().from(options).where(dupWhere).limit(1);
   if (exists.length) return Response.json({ row: exists[0], duplicate: true });
 
-  const [row] = await db.insert(options).values({ category, value, createdBy: user.fullName }).returning();
+  const [row] = await db
+    .insert(options)
+    .values({ category, value, parent, createdBy: user.fullName })
+    .returning();
   await db
     .insert(activityLogs)
     .values({ userId: user.id, userName: user.fullName, action: "افزودن مقدار کشویی", detail: `${category}: ${value}` })

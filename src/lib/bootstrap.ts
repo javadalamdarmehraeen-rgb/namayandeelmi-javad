@@ -109,6 +109,7 @@ async function migrate() {
       id serial PRIMARY KEY,
       category varchar(40) NOT NULL,
       value varchar(200) NOT NULL,
+      parent varchar(200) NOT NULL DEFAULT '',
       created_by varchar(160) NOT NULL DEFAULT '',
       created_at timestamptz NOT NULL DEFAULT now()
     );
@@ -285,6 +286,7 @@ async function migrate() {
     `ALTER TABLE doctors ADD COLUMN IF NOT EXISTS accuracy double precision`,
     `ALTER TABLE orders ADD COLUMN IF NOT EXISTS accuracy double precision`,
     `ALTER TABLE options ADD COLUMN IF NOT EXISTS created_by varchar(160) NOT NULL DEFAULT ''`,
+    `ALTER TABLE options ADD COLUMN IF NOT EXISTS parent varchar(200) NOT NULL DEFAULT ''`,
     `ALTER TABLE pharmacies ADD COLUMN IF NOT EXISTS is_percent boolean NOT NULL DEFAULT false`,
     `ALTER TABLE pharmacies ADD COLUMN IF NOT EXISTS percent_value varchar(40) NOT NULL DEFAULT ''`,
     `ALTER TABLE doctors ADD COLUMN IF NOT EXISTS is_percent boolean NOT NULL DEFAULT false`,
@@ -409,8 +411,18 @@ async function seed() {
     await db.insert(options).values([
       ...DEFAULT_SPECIALTIES.map((v) => ({ category: "specialty", value: v })),
       ...DEFAULT_PROVINCES.map((v) => ({ category: "province", value: v })),
-      { category: "city", value: "تهران" },
-      { category: "region", value: "منطقه ۱" },
+      { category: "city", value: "تهران", parent: "تهران" },
+      { category: "city", value: "اسلامشهر", parent: "تهران" },
+      { category: "city", value: "شهریار", parent: "تهران" },
+      { category: "city", value: "کرج", parent: "البرز" },
+      { category: "city", value: "اصفهان", parent: "اصفهان" },
+      { category: "city", value: "شیراز", parent: "فارس" },
+      { category: "city", value: "مشهد", parent: "خراسان رضوی" },
+      ...Array.from({ length: 22 }, (_, i) => ({
+        category: "region",
+        value: `منطقه ${i + 1}`,
+        parent: "تهران",
+      })),
       { category: "distributor", value: "پخش سراسری" },
       { category: "distributor", value: "پخش هجرت" },
       { category: "visitor", value: "ویزیتور ۱" },
