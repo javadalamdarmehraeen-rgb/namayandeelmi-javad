@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import dynamic from "next/dynamic";
+import { useLive } from "@/lib/useLive";
 
 const MapBox = dynamic(() => import("@/components/MapBox"), { ssr: false });
 import { Badge, Button, Card, SectionTitle } from "@/components/ui";
@@ -42,11 +43,7 @@ export default function AdminTrips() {
       .catch(() => undefined);
   }, []);
 
-  useEffect(() => {
-    loadTrips();
-    const t = setInterval(loadTrips, 25000);
-    return () => clearInterval(t);
-  }, [loadTrips]);
+  useLive(loadTrips, 15000);
 
   useEffect(() => {
     if (sel === null) return;

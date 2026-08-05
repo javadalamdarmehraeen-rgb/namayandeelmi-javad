@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Alert, Button, Field, Input } from "@/components/ui";
 import { patchFetch, setTabToken } from "@/components/SessionProvider";
+import { getDeviceSim, isMobileDevice, normalizePhone, setDeviceSim, watchSim, type SimStatus } from "@/lib/device";
 
 export default function LoginForm() {
   const router = useRouter();
@@ -20,41 +21,34 @@ export default function LoginForm() {
   const [simOk, setSimOk] = useState(true);
   const [simWarn, setSimWarn] = useState("");
   const [forgot, setForgot] = useState(false);
+  const [simMismatch, setSimMismatch] = useState("");
   const [info, setInfo] = useState("");
 
   useEffect(() => {
     patchFetch();
     const saved = localStorage.getItem("sek_phone");
     if (saved) setPhone(saved);
-
-    // بررسی فعال بودن شبکه سیم‌کارت روی همین گوشی
-    const check = () => {
-      type Conn = { type?: string; effectiveType?: string; downlink?: number };
-      const nav = navigator as Navigator & { connection?: Conn };
-      const conn = nav.connection;
-      if (!navigator.onLine) {
-        setSimOk(false);
-        setSimWarn("⚠️ این دستگاه به شبکه متصل نیست. سیم‌کارت ثبت‌شده را فعال کنید.");
-        return;
-      }
-      // در موبایل اگر نوع اتصال مشخص و غیر از cellular/wifi بود هشدار می‌دهیم
-      const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
-      if (isMobile && conn?.type && !["cellular", "wifi", "unknown"].includes(conn.type)) {
-        setSimOk(false);
-        setSimWarn("⚠️ اتصال سیم‌کارت روی این گوشی فعال نیست.");
-        return;
-      }
-      setSimOk(true);
-      setSimWarn("");
-    };
-    check();
-    window.addEventListener("online", check);
-    window.addEventListener("offline", check);
-    return () => {
-      window.removeEventListener("online", check);
-      window.removeEventListener("offline", check);
-    };
+    const stop = watchSim((s: SimStatus) => {
+      setSimOk(s.ok);
+      setSimWarn(s.ok ? "" : s.detail);
+    });
+    return stop;
   }, []);
+
+  // مغایرت شماره واردشده با سیم‌کارت تاییدشده این گوشی
+  useEffect(() => {
+    if (mode !== "rep") {
+      setSimMismatch("");
+      return;
+    }
+    const deviceSim = getDeviceSim();
+    const entered = normalizePhone(phone);
+    if (deviceSim && entered.length === 11 && entered !== deviceSim) {
+      setSimMismatch(
+        `⚠️ شماره واردشده با سیم‌کارت فعال روی این گوشی (${deviceSim.replace(/(\d{4})(\d{3})(\d{4})/, "$1***$3")}) مغایرت دارد. ورود فقط با گوشی حاوی سیم‌کارت ثبت‌شده مجاز است.`,
+      );
+    } else setSimMismatch("");
+  }, [phone, mode]);
 
   // با تایپ نام کاربری، تب صحیح و نیاز به شماره همراه تشخیص داده می‌شود
   useEffect(() => {
@@ -96,6 +90,10 @@ export default function LoginForm() {
       setError(simWarn || "⚠️ سیم‌کارت فعالی روی این گوشی شناسایی نشد.");
       return;
     }
+    if (mode === "rep" && needPhone && simMismatch) {
+      setError(simMismatch);
+      return;
+    }
     if (needPhone && !/^0\d{10}$/.test(phone.replace(/\D/g, ""))) {
       setError("⚠️ شماره همراه فعال روی این گوشی را ۱۱ رقمی وارد کنید (نمونه: ۰۹۱۲۳۴۵۶۷۸۹)");
       return;
@@ -111,7 +109,9 @@ export default function LoginForm() {
         mode,
         remember,
         simActive: navigator.onLine,
-        simActiveOnDevice: simOk,
+        simActiveOnDevice: simOk && !simMismatch,
+        deviceSim: getDeviceSim(),
+        isMobile: isMobileDevice(),
       }),
     });
     setBusy(false);
@@ -121,7 +121,11 @@ export default function LoginForm() {
       return;
     }
     if (data.token) setTabToken(data.token);
-    if (phone) localStorage.setItem("sek_phone", phone);
+    if (phone) {
+      localStorage.setItem("sek_phone", phone);
+      // این شماره به‌عنوان سیم‌کارت تاییدشده همین دستگاه ثبت می‌شود
+      if (data.user?.role === "rep") setDeviceSim(normalizePhone(phone));
+    }
     router.replace(data.user?.role === "rep" ? "/panel" : "/admin");
   };
 
@@ -218,6 +222,7 @@ export default function LoginForm() {
           </div>
 
           {mode === "rep" && simWarn ? <Alert kind="error">{simWarn}</Alert> : null}
+          {mode === "rep" && simMismatch ? <Alert kind="error">{simMismatch}</Alert> : null}
           {hint ? <Alert kind="info">{hint}</Alert> : null}
           {error ? <Alert kind="error">{error}</Alert> : null}
 

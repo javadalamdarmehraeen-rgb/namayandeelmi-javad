@@ -248,3 +248,14 @@ export const attachments = pgTable(
   },
   (t) => [index("attach_owner_idx").on(t.ownerType, t.ownerId)],
 );
+
+/** سمت‌های سازمانی قابل تعریف توسط مدیر (نماینده علمی، کارشناس فروش، سرپرست و ...) */
+export const roles = pgTable("roles", {
+  id: serial("id").primaryKey(),
+  key: varchar("key", { length: 40 }).notNull().unique(),
+  label: varchar("label", { length: 120 }).notNull(),
+  base: varchar("base", { length: 20 }).notNull().default("rep"), // admin | supervisor | rep
+  permissions: jsonb("permissions").$type<string[]>().notNull().default([]),
+  builtin: boolean("builtin").notNull().default(false),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+});

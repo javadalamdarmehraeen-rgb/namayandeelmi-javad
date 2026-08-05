@@ -1,10 +1,11 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Card, Field, SectionTitle } from "@/components/ui";
+import { Button, Card, Field, SectionTitle } from "@/components/ui";
 import { BarChart, DonutChart, LineChart } from "@/components/Charts";
 import JalaliDateInput from "@/components/JalaliDateInput";
-import { JALALI_MONTHS, toPersianDigits } from "@/lib/jalali";
+import { JALALI_MONTHS, toPersianDigits, todayJalali } from "@/lib/jalali";
+import { Alert } from "@/components/ui";
 import { DEFAULT_PRODUCTS, type ProductConfig } from "@/lib/defaults";
 
 type Row = {
@@ -29,6 +30,9 @@ export default function ChartsPanel({ scope = "rep" }: { scope?: "rep" | "admin"
   const [rep, setRep] = useState("");
   const [from, setFrom] = useState("");
   const [to, setTo] = useState("");
+  // بازه اعمال‌شده فقط با فشردن دکمه «اعمال بازه» تغییر می‌کند
+  const [applied, setApplied] = useState<{ from: string; to: string; rep: string }>({ from: "", to: "", rep: "" });
+  const [msg, setMsg] = useState("");
 
   const load = useCallback(async () => {
     const [r1, r2] = await Promise.all([
@@ -56,17 +60,55 @@ export default function ChartsPanel({ scope = "rep" }: { scope?: "rep" | "admin"
 
   const inRange = useCallback(
     (period: string) => {
-      if (from && period < from.slice(0, 7)) return false;
-      if (to && period > to.slice(0, 7)) return false;
+      if (applied.from && period < applied.from.slice(0, 7)) return false;
+      if (applied.to && period > applied.to.slice(0, 7)) return false;
       return true;
     },
-    [from, to],
+    [applied],
   );
 
   const scoped = useMemo(
-    () => rows.filter((r) => (!rep || r.repName === rep) && inRange(r.period)),
-    [rows, rep, inRange],
+    () => rows.filter((r) => (!applied.rep || r.repName === applied.rep) && inRange(r.period)),
+    [rows, applied.rep, inRange],
   );
+
+  const apply = () => {
+    if (from && to && from > to) {
+      setMsg("⚠️ «از تاریخ» نمی‌تواند بزرگ‌تر از «تا تاریخ» باشد");
+      return;
+    }
+    setApplied({ from, to, rep });
+    setMsg(
+      from || to || rep
+        ? `✅ بازه اعمال شد${from ? ` — از ${toPersianDigits(from)}` : ""}${to ? ` تا ${toPersianDigits(to)}` : ""}${rep ? ` | ${rep}` : ""}`
+        : "✅ نمایش همه بازه‌ها",
+    );
+    load();
+  };
+
+  const reset = () => {
+    setFrom("");
+    setTo("");
+    setRep("");
+    setApplied({ from: "", to: "", rep: "" });
+    setMsg("بازه پاک شد — همه داده‌ها نمایش داده می‌شوند");
+  };
+
+  const quick = (months: number) => {
+    const t = todayJalali();
+    const [jy, jm] = t.split("/").map(Number);
+    let y = jy;
+    let m = jm - months + 1;
+    while (m <= 0) {
+      m += 12;
+      y -= 1;
+    }
+    const f = `${y}/${String(m).padStart(2, "0")}/01`;
+    setFrom(f);
+    setTo(t);
+    setApplied({ from: f, to: t, rep });
+    setMsg(`✅ ${toPersianDigits(months)} ماه اخیر`);
+  };
 
   const metricLabel: Record<string, string> = {
     units: "تعداد اقلام فروخته‌شده",
@@ -100,14 +142,14 @@ export default function ChartsPanel({ scope = "rep" }: { scope?: "rep" | "admin"
 
   // سهم هر محصول
   const productShare = useMemo(() => {
-    const filtered = byRep.filter((r) => (!rep || r.repName === rep) && inRange(r.period));
+    const filtered = byRep.filter((r) => (!applied.rep || r.repName === applied.rep) && inRange(r.period));
     return products
       .map((p) => ({
         label: p.label,
         value: filtered.reduce((a, r) => a + (r.items[p.key] ?? 0), 0),
       }))
       .filter((d) => d.value > 0);
-  }, [byRep, products, rep, inRange]);
+  }, [byRep, products, applied.rep, inRange]);
 
   // مقایسه نمایندگان (فقط مدیر)
   const repCompare = useMemo(() => {
@@ -170,6 +212,31 @@ export default function ChartsPanel({ scope = "rep" }: { scope?: "rep" | "admin"
             <JalaliDateInput value={to} onChange={setTo} placeholder="۱۴۰۵/۱۲/۲۹" />
           </Field>
         </div>
+
+        <div className="mt-3 flex flex-wrap items-center gap-2">
+          <Button onClick={apply}>🔍 اعمال بازه و بررسی</Button>
+          <Button variant="ghost" onClick={reset}>
+            پاک کردن بازه
+          </Button>
+          <span className="mx-1 h-6 w-px bg-slate-200" />
+          <Button variant="soft" onClick={() => quick(1)}>
+            این ماه
+          </Button>
+          <Button variant="soft" onClick={() => quick(3)}>
+            ۳ ماه اخیر
+          </Button>
+          <Button variant="soft" onClick={() => quick(6)}>
+            ۶ ماه اخیر
+          </Button>
+          <Button variant="soft" onClick={() => quick(12)}>
+            یک سال اخیر
+          </Button>
+        </div>
+        {msg ? (
+          <div className="mt-2">
+            <Alert kind={msg.startsWith("⚠️") ? "error" : "success"}>{msg}</Alert>
+          </div>
+        ) : null}
 
         <div className="mt-3 grid grid-cols-3 gap-2 sm:grid-cols-6">
           {[

@@ -1,5 +1,5 @@
 import { db } from "@/db";
-import { activityLogs, users } from "@/db/schema";
+import { activityLogs, roles, users } from "@/db/schema";
 import { SESSION_COOKIE, createToken, verifyPassword } from "@/lib/auth";
 import { ensureSeed } from "@/lib/bootstrap";
 import { eq } from "drizzle-orm";
@@ -47,7 +47,16 @@ export async function POST(req: Request) {
   if (!user.active) return Response.json({ error: "حساب کاربری غیرفعال است" }, { status: 403 });
 
   // ✅ تفکیک کامل ورود مدیر و نماینده
-  const isManagerAccount = user.role === "admin" || user.role === "supervisor";
+  let baseRole: string = user.role;
+  if (!["admin", "supervisor", "rep"].includes(user.role)) {
+    try {
+      const r = (await db.select().from(roles).where(eq(roles.key, user.role)).limit(1))[0];
+      baseRole = r?.base ?? "rep";
+    } catch {
+      baseRole = "rep";
+    }
+  }
+  const isManagerAccount = baseRole === "admin" || baseRole === "supervisor";
   if (mode === "admin" && !isManagerAccount) {
     return Response.json(
       { error: "⛔ این حساب کاربری نماینده است. لطفاً از تب «ورود نماینده علمی» وارد شوید." },
@@ -76,7 +85,17 @@ export async function POST(req: Request) {
       return Response.json(
         {
           error:
-            "⚠️ شماره همراه ثبت‌شده روی این گوشی فعال نیست. ورود فقط با گوشی حاوی سیم‌کارت همان شماره مجاز است.",
+            "⚠️ سیم‌کارت فعال روی این گوشی با شماره ثبت‌شده مغایرت دارد. ورود فقط با گوشی حاوی سیم‌کارت همان شماره مجاز است.",
+        },
+        { status: 403 },
+      );
+    }
+    // سیم‌کارت تاییدشده قبلی روی همین دستگاه
+    const deviceSim = normalizePhone(body.deviceSim ?? "");
+    if (deviceSim && deviceSim !== phone) {
+      return Response.json(
+        {
+          error: `⚠️ روی این گوشی سیم‌کارت دیگری (${deviceSim.slice(0, 4)}***${deviceSim.slice(-4)}) ثبت شده است. برای تغییر، با مدیر تماس بگیرید.`,
         },
         { status: 403 },
       );
@@ -116,7 +135,8 @@ export async function POST(req: Request) {
       id: user.id,
       username: user.username,
       fullName: user.fullName,
-      role: user.role,
+      role: baseRole,
+      roleKey: user.role,
       permissions: user.permissions,
     },
   });

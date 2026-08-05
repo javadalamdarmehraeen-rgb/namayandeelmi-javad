@@ -1,5 +1,5 @@
 import { db } from "@/db";
-import { users } from "@/db/schema";
+import { roles, users } from "@/db/schema";
 import { ensureSeed } from "@/lib/bootstrap";
 import { eq } from "drizzle-orm";
 
@@ -18,5 +18,10 @@ export async function POST(req: Request) {
     .limit(1);
   const u = rows[0];
   if (!u) return Response.json({ exists: false });
-  return Response.json({ exists: true, kind: u.role === "rep" ? "rep" : "admin", requirePhone: u.requirePhone });
+  let base: string = u.role;
+  if (!["admin", "supervisor", "rep"].includes(u.role)) {
+    const r = (await db.select().from(roles).where(eq(roles.key, u.role)).limit(1))[0];
+    base = r?.base ?? "rep";
+  }
+  return Response.json({ exists: true, kind: base === "rep" ? "rep" : "admin", requirePhone: u.requirePhone });
 }

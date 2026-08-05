@@ -4,6 +4,8 @@ import { useCallback, useEffect, useState } from "react";
 import { Alert, Badge, Button, Card, Field, Input, SectionTitle, TextArea } from "@/components/ui";
 import { useSession } from "@/components/SessionProvider";
 import { tehranDateTime, toPersianDigits } from "@/lib/jalali";
+import { useLive } from "@/lib/useLive";
+import { useConfirm } from "@/components/Confirm";
 
 type N = {
   id: number;
@@ -24,17 +26,14 @@ export default function NotificationScreen() {
   const [body, setBody] = useState("");
   const [to, setTo] = useState("0");
   const [msg, setMsg] = useState("");
+  const confirm = useConfirm();
 
   const load = useCallback(async () => {
     const res = await fetch("/api/notifications", { cache: "no-store" });
     if (res.ok) setRows((await res.json()).rows ?? []);
   }, []);
 
-  useEffect(() => {
-    load();
-    const t = setInterval(load, 25000);
-    return () => clearInterval(t);
-  }, [load]);
+  useLive(load, 15000);
 
   useEffect(() => {
     if (me && me.role !== "rep") {
@@ -47,6 +46,14 @@ export default function NotificationScreen() {
 
   const send = async () => {
     if (!title.trim()) return;
+    if (
+      !(await confirm({
+        title: "ارسال پیام",
+        message: isRep ? "پیام برای مدیر ارسال شود؟" : Number(to) ? "پیام برای این کاربر ارسال شود؟" : "پیام برای همه نمایندگان ارسال شود؟",
+        confirmText: "ارسال",
+      }))
+    )
+      return;
     const res = await fetch("/api/notifications", {
       method: "POST",
       headers: { "Content-Type": "application/json" },

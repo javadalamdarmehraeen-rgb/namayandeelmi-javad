@@ -1,10 +1,16 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import { Badge, Card, SectionTitle } from "@/components/ui";
-import ChartsPanel from "@/components/screens/ChartsPanel";
+import dynamic from "next/dynamic";
+
+const ChartsPanel = dynamic(() => import("@/components/screens/ChartsPanel"), {
+  ssr: false,
+  loading: () => <div className="rounded-2xl bg-white p-6 text-center text-xs text-slate-400">در حال بارگذاری نمودارها...</div>,
+});
 import { tehranDateTime, toPersianDigits } from "@/lib/jalali";
+import { useLive } from "@/lib/useLive";
 
 type Counts = {
   pharmacies: number;
@@ -47,12 +53,7 @@ export default function AdminDashboard() {
     setByRep(d.byRep ?? {});
   }, []);
 
-  useEffect(() => {
-    load();
-    if (!live) return;
-    const t = setInterval(load, 30000); // سبک: هر ۳۰ ثانیه
-    return () => clearInterval(t);
-  }, [load, live]);
+  useLive(load, 20000, live);
 
   const tiles = [
     { label: "داروخانه‌ها", value: counts?.pharmacies ?? 0, icon: "🏥", href: "/admin/records/pharmacies" },

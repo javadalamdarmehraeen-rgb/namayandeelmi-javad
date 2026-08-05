@@ -4,10 +4,11 @@
    - درخواست‌های GET سرور: network-first با تایم‌اوت و برگشت به کش
    - درخواست‌های POST/PATCH آفلاین: در صف ذخیره و بعداً خودکار ارسال می‌شوند
 */
-const VERSION = "sek-v5";
+const VERSION = "sek-v6";
 const SHELL = `${VERSION}-shell`;
 const DATA = `${VERSION}-data`;
-const NET_TIMEOUT = 12000;
+const NET_TIMEOUT = 9000;   // مهلت شبکه برای اینترنت‌های کند
+const API_TIMEOUT = 7000;   // مهلت کوتاه‌تر برای داده تا سریع به کش برگردد
 
 const SHELL_URLS = [
   "/",
@@ -174,7 +175,7 @@ self.addEventListener("fetch", (event) => {
     event.respondWith(
       (async () => {
         try {
-          const res = await timeoutFetch(req, NET_TIMEOUT);
+          const res = await timeoutFetch(req, API_TIMEOUT);
           if (res.ok) {
             const c = await caches.open(DATA);
             c.put(req, res.clone());
@@ -187,10 +188,10 @@ self.addEventListener("fetch", (event) => {
             h.set("x-from-cache", "1");
             return new Response(await cached.blob(), { status: 200, headers: h });
           }
-          return new Response(JSON.stringify({ offline: true, rows: [], error: "آفلاین" }), {
-            status: 200,
-            headers: { "Content-Type": "application/json; charset=utf-8" },
-          });
+          return new Response(
+            JSON.stringify({ offline: true, rows: [], logs: [], reps: [], error: "آفلاین — داده ذخیره‌شده موجود نیست" }),
+            { status: 200, headers: { "Content-Type": "application/json; charset=utf-8" } },
+          );
         }
       })()
     );

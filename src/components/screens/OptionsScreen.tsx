@@ -3,7 +3,9 @@
 import { useCallback, useEffect, useState } from "react";
 import { Alert, Button, Card, Input, SectionTitle } from "@/components/ui";
 import { OPTION_CATEGORIES } from "@/lib/constants";
+import { useConfirm } from "@/components/Confirm";
 import { toPersianDigits } from "@/lib/jalali";
+import { useLive } from "@/lib/useLive";
 
 type Opt = { id: number; category: string; value: string; createdBy: string };
 
@@ -13,19 +15,22 @@ export default function OptionsScreen({ canDelete = false }: { canDelete?: boole
   const [draft, setDraft] = useState<Record<string, string>>({});
   const [msg, setMsg] = useState<{ kind: "success" | "error"; text: string } | null>(null);
   const [q, setQ] = useState("");
+  const [editing, setEditing] = useState<{ id: number; value: string } | null>(null);
+  const confirm = useConfirm();
 
   const load = useCallback(async () => {
     const res = await fetch("/api/options", { cache: "no-store" });
     if (res.ok) setRows((await res.json()).rows ?? []);
   }, []);
 
-  useEffect(() => {
-    load();
-  }, [load]);
+  useLive(load, 20000);
 
   const add = async (category: string) => {
     const value = (draft[category] ?? "").trim();
     if (!value) return;
+    const label = OPTION_CATEGORIES.find((c) => c.key === category)?.label ?? category;
+    if (!(await confirm({ title: "افزودن مقدار جدید", message: `«${value}» به لیست «${label}» اضافه شود؟`, confirmText: "افزودن" })))
+      return;
     const res = await fetch("/api/options", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -42,12 +47,40 @@ export default function OptionsScreen({ canDelete = false }: { canDelete?: boole
     } else setMsg({ kind: "error", text: d.error ?? "خطا در افزودن" });
   };
 
-  const remove = async (id: number) => {
+  const remove = async (id: number, value: string) => {
+    if (
+      !(await confirm({
+        title: "حذف مقدار",
+        message: `«${value}» حذف شود؟ این عمل قابل بازگشت نیست.`,
+        confirmText: "حذف",
+        danger: true,
+      }))
+    )
+      return;
     const res = await fetch(`/api/options?id=${id}`, { method: "DELETE" });
     if (res.ok) {
       setMsg({ kind: "success", text: "🗑 حذف شد" });
       load();
-    }
+    } else setMsg({ kind: "error", text: "حذف ناموفق بود" });
+  };
+
+  const saveEdit = async () => {
+    if (!editing) return;
+    const value = editing.value.trim();
+    if (!value) return;
+    if (!(await confirm({ title: "ذخیره ویرایش", message: `مقدار به «${value}» تغییر کند؟`, confirmText: "ذخیره" })))
+      return;
+    const res = await fetch("/api/options", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id: editing.id, value }),
+    });
+    const d = await res.json().catch(() => ({}));
+    if (res.ok) {
+      setMsg({ kind: "success", text: "✏️ ویرایش ذخیره شد" });
+      setEditing(null);
+      load();
+    } else setMsg({ kind: "error", text: d.error ?? "ویرایش ناموفق" });
   };
 
   return (
@@ -78,19 +111,52 @@ export default function OptionsScreen({ canDelete = false }: { canDelete?: boole
                 <Button onClick={() => add(cat.key)}>افزودن</Button>
               </div>
               <ul className="max-h-60 space-y-1 overflow-y-auto">
-                {items.map((it) => (
-                  <li key={it.id} className="flex items-center justify-between rounded-lg bg-slate-50 px-3 py-1.5 text-sm">
-                    <span>
-                      {it.value}
-                      {it.createdBy ? <span className="mr-2 text-[10px] text-slate-400">({it.createdBy})</span> : null}
-                    </span>
-                    {canDelete ? (
-                      <button onClick={() => remove(it.id)} className="text-xs font-bold text-rose-600">
-                        حذف
+                {items.map((it) =>
+                  editing?.id === it.id ? (
+                    <li key={it.id} className="flex items-center gap-1 rounded-lg bg-amber-50 px-2 py-1.5">
+                      <Input
+                        value={editing.value}
+                        onChange={(e) => setEditing({ ...editing, value: e.target.value })}
+                        className="px-2 py-1 text-xs"
+                        autoFocus
+                      />
+                      <button onClick={saveEdit} className="rounded-lg bg-emerald-600 px-2 py-1 text-[11px] font-bold text-white">
+                        ذخیره
                       </button>
-                    ) : null}
-                  </li>
-                ))}
+                      <button
+                        onClick={() => setEditing(null)}
+                        className="rounded-lg bg-slate-200 px-2 py-1 text-[11px] font-bold text-slate-700"
+                      >
+                        لغو
+                      </button>
+                    </li>
+                  ) : (
+                    <li key={it.id} className="flex items-center justify-between gap-2 rounded-lg bg-slate-50 px-3 py-1.5 text-sm">
+                      <span className="min-w-0 truncate">
+                        {it.value}
+                        {it.createdBy ? <span className="mr-2 text-[10px] text-slate-400">({it.createdBy})</span> : null}
+                      </span>
+                      <span className="flex shrink-0 gap-1">
+                        {canDelete ? (
+                          <>
+                            <button
+                              onClick={() => setEditing({ id: it.id, value: it.value })}
+                              className="rounded-lg bg-sky-100 px-2 py-0.5 text-[11px] font-bold text-sky-700"
+                            >
+                              ✏️ ویرایش
+                            </button>
+                            <button
+                              onClick={() => remove(it.id, it.value)}
+                              className="rounded-lg bg-rose-100 px-2 py-0.5 text-[11px] font-bold text-rose-700"
+                            >
+                              حذف
+                            </button>
+                          </>
+                        ) : null}
+                      </span>
+                    </li>
+                  ),
+                )}
                 {items.length === 0 ? <li className="text-xs text-slate-400">موردی نیست</li> : null}
               </ul>
             </Card>

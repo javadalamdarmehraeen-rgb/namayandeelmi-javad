@@ -3,6 +3,12 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   poweredByHeader: false,
   compress: true,
+  reactStrictMode: true,
+  // بسته‌بندی سبک‌تر برای اینترنت‌های کند (موبایل / اینترنت ملی)
+  experimental: {
+    optimizePackageImports: ["leaflet"],
+  },
+  productionBrowserSourceMaps: false,
   async headers() {
     return [
       {

@@ -6,6 +6,7 @@ import dynamic from "next/dynamic";
 const MapBox = dynamic(() => import("@/components/MapBox"), { ssr: false });
 import { Alert, Badge, Button, Card, SectionTitle } from "@/components/ui";
 import { tehranTime, toPersianDigits, todayJalali } from "@/lib/jalali";
+import { useConfirm } from "@/components/Confirm";
 
 type QPoint = { lat: number; lng: number; accuracy?: number; kind: string; note?: string; recordedAt: string };
 
@@ -34,6 +35,7 @@ export default function TripPage() {
   const [startedAt, setStartedAt] = useState<string>("");
   const [home, setHome] = useState<{ lat: number; lng: number; title: string } | null>(null);
   const watchRef = useRef<number | null>(null);
+  const confirm = useConfirm();
   const lastSaved = useRef<number>(0);
 
   const flush = useCallback(async () => {
@@ -140,6 +142,8 @@ export default function TripPage() {
     });
 
   const startTrip = async () => {
+    if (!(await confirm({ title: "شروع ویزیت", message: "GPS فعال شود و ثبت مسیر شروع شود؟", confirmText: "شروع ویزیت" })))
+      return;
     setMsg({ kind: "info", text: "در حال فعال‌سازی GPS..." });
     const pos = await currentPosition();
     if (!pos) {
@@ -167,6 +171,8 @@ export default function TripPage() {
   };
 
   const markPause = async () => {
+    if (!(await confirm({ title: "ثبت وقفه", message: "وقفه در موقعیت فعلی ثبت شود؟", confirmText: "ثبت وقفه" })))
+      return;
     const pos = (await currentPosition()) ?? path[path.length - 1];
     if (!pos) return;
     pushPoint({
@@ -181,6 +187,15 @@ export default function TripPage() {
   };
 
   const endTrip = async () => {
+    if (
+      !(await confirm({
+        title: "پایان ویزیت",
+        message: "سفر پایان یابد و GPS و نقشه غیرفعال شوند؟",
+        confirmText: "پایان ویزیت",
+        danger: true,
+      }))
+    )
+      return;
     const pos = await currentPosition();
     await flush();
     if (tripId) {

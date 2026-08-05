@@ -4,6 +4,8 @@ import { useCallback, useEffect, useState } from "react";
 import { Alert, Badge, Button, Card, Field, Input, SectionTitle } from "@/components/ui";
 import { PLATFORMS } from "@/lib/constants";
 import { tehranDateTime } from "@/lib/jalali";
+import { useConfirm } from "@/components/Confirm";
+import { useLive } from "@/lib/useLive";
 
 type M = {
   id: number;
@@ -32,6 +34,7 @@ export default function MessengersPage() {
   const [sysTokens, setSysTokens] = useState<Record<string, string>>({});
   const [workerVersion, setWorkerVersion] = useState<"new" | "old" | "down" | "">("");
   const [workerCode, setWorkerCode] = useState("");
+  const confirm = useConfirm();
 
   const load = useCallback(async () => {
     const res = await fetch("/api/messengers", { cache: "no-store" });
@@ -43,13 +46,14 @@ export default function MessengersPage() {
     }
   }, []);
 
+  useLive(load, 30000);
+
   useEffect(() => {
-    load();
     fetch("/api/messengers/updates", { cache: "no-store" })
       .then((r) => (r.ok ? r.json() : null))
       .then((d) => setSysTokens(d?.tokens ?? {}))
       .catch(() => undefined);
-  }, [load]);
+  }, []);
 
   const discover = async () => {
     setChatBusy(true);
@@ -71,6 +75,8 @@ export default function MessengersPage() {
   };
 
   const saveProxy = async (next: Proxy) => {
+    if (!(await confirm({ title: "ذخیره تنظیمات پروکسی", message: "تنظیمات پروکسی ذخیره شود؟", confirmText: "ذخیره" })))
+      return;
     setProxy(next);
     const res = await fetch("/api/settings", {
       method: "PUT",
@@ -81,6 +87,12 @@ export default function MessengersPage() {
   };
 
   const add = async () => {
+    if (!form.target.trim()) {
+      setMsg("✖ شناسه مقصد (chat_id) الزامی است");
+      return;
+    }
+    if (!(await confirm({ title: "افزودن مقصد پیام‌رسان", message: `مقصد «${form.label || form.target}» اضافه شود؟`, confirmText: "افزودن" })))
+      return;
     const res = await fetch("/api/messengers", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -103,6 +115,8 @@ export default function MessengersPage() {
   };
 
   const remove = async (id: number) => {
+    if (!(await confirm({ title: "حذف مقصد", message: "این مقصد پیام‌رسان حذف شود؟", confirmText: "حذف", danger: true })))
+      return;
     await fetch(`/api/messengers?id=${id}`, { method: "DELETE" });
     load();
   };

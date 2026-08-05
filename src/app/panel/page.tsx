@@ -3,7 +3,12 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useSession } from "@/components/SessionProvider";
-import ChartsPanel from "@/components/screens/ChartsPanel";
+import dynamic from "next/dynamic";
+
+const ChartsPanel = dynamic(() => import("@/components/screens/ChartsPanel"), {
+  ssr: false,
+  loading: () => <div className="rounded-2xl bg-white p-6 text-center text-xs text-slate-400">در حال بارگذاری نمودارها...</div>,
+});
 import { toPersianDigits, todayJalali } from "@/lib/jalali";
 
 export default function PanelHome() {

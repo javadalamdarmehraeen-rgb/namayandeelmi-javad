@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState, type ReactNode } from "react";
 import NotificationBell from "./NotificationBell";
+import BackButton from "./BackButton";
 import { useSession } from "./SessionProvider";
 
 export type NavItem = { href: string; label: string; icon: string };
@@ -109,7 +110,10 @@ export default function Shell({
           </div>
         </nav>
       </header>
-      <main className="mx-auto max-w-6xl p-3 sm:p-5">{children}</main>
+      <main className="mx-auto max-w-6xl p-3 sm:p-5">
+        <BackButton />
+        {children}
+      </main>
       <footer className="pb-6 text-center text-[11px] text-slate-400">
         نسخه سبک وب‌اپلیکیشن — قابل نصب روی ویندوز و موبایل
       </footer>

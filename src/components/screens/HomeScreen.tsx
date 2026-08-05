@@ -4,6 +4,8 @@ import { useCallback, useEffect, useState } from "react";
 import dynamic from "next/dynamic";
 import LocationPicker, { type LatLng } from "@/components/LocationPicker";
 import { Alert, Button, Card, Field, Input, SectionTitle, TextArea } from "@/components/ui";
+import { useLive } from "@/lib/useLive";
+import { useConfirm } from "@/components/Confirm";
 
 const MapBox = dynamic(() => import("@/components/MapBox"), { ssr: false });
 
@@ -23,17 +25,22 @@ export default function HomeScreen({ isAdmin = false }: { isAdmin?: boolean }) {
   const [address, setAddress] = useState("");
   const [loc, setLoc] = useState<LatLng>({ lat: null, lng: null, accuracy: null });
   const [msg, setMsg] = useState<{ kind: "success" | "error"; text: string } | null>(null);
+  const confirm = useConfirm();
 
   const load = useCallback(async () => {
     const res = await fetch("/api/homes", { cache: "no-store" });
     if (res.ok) setRows((await res.json()).rows ?? []);
   }, []);
 
-  useEffect(() => {
-    load();
-  }, [load]);
+  useLive(load, 25000);
 
   const save = async () => {
+    if (!loc.lat || !loc.lng) {
+      setMsg({ kind: "error", text: "ابتدا لوکیشن منزل را روی نقشه مشخص کنید" });
+      return;
+    }
+    if (!(await confirm({ title: "ثبت لوکیشن منزل", message: `«${title}» با موقعیت انتخاب‌شده ثبت شود؟`, confirmText: "ثبت" })))
+      return;
     const res = await fetch("/api/homes", {
       method: "POST",
       headers: { "Content-Type": "application/json" },

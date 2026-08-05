@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Alert, Badge, Button, Card, Field, Input, SectionTitle } from "@/components/ui";
 import { tehranDateTime, toPersianDigits } from "@/lib/jalali";
+import { useConfirm } from "@/components/Confirm";
 
 type Cfg = { enabled: boolean; minutes: number; withFiles: boolean; folderName: string };
 
@@ -45,6 +46,8 @@ export default function BackupPage() {
   const [busy, setBusy] = useState(false);
   const [log, setLog] = useState<string[]>([]);
   const timer = useRef<ReturnType<typeof setInterval> | null>(null);
+  const [dirName, setDirName] = useState("");
+  const confirm = useConfirm();
   const supportsFs = typeof window !== "undefined" && "showDirectoryPicker" in window;
 
   const load = useCallback(async () => {
@@ -54,7 +57,9 @@ export default function BackupPage() {
       if (d.value) setCfg({ ...DEFAULT_CFG, ...(d.value as Cfg) });
     }
     setLast(localStorage.getItem("sek_backup_last") ?? "");
-    setDirOk(Boolean(await loadHandle()));
+    const h = await loadHandle();
+    setDirOk(Boolean(h));
+    setDirName(h?.name ?? localStorage.getItem("sek_backup_dir") ?? "");
   }, []);
 
   useEffect(() => {
@@ -79,14 +84,16 @@ export default function BackupPage() {
       const handle = await w.showDirectoryPicker({ mode: "readwrite" });
       await saveHandle(handle);
       setDirOk(true);
-      setMsg("✅ پوشه مقصد انتخاب شد. فایل‌های پشتیبان مستقیم در همین پوشه ذخیره می‌شوند.");
+      setDirName(handle.name ?? "");
+      localStorage.setItem("sek_backup_dir", handle.name ?? "");
+      setMsg(`✅ پوشه «${handle.name}» انتخاب شد. همه پشتیبان‌ها مستقیم در همین پوشه ذخیره می‌شوند (بدون رفتن به Downloads).`);
     } catch {
       setMsg("انتخاب پوشه لغو شد");
     }
   };
 
   const runBackup = useCallback(
-    async (auto = false) => {
+    async (auto = false, forceDownload = false) => {
       setBusy(true);
       try {
         const res = await fetch(`/api/backup${cfg.withFiles ? "?files=1" : ""}`, { cache: "no-store" });
@@ -95,7 +102,7 @@ export default function BackupPage() {
         const stamp = new Date().toISOString().replace(/[:.]/g, "-").slice(0, 16);
         const name = `namayandeelmi-backup-${stamp}.json`;
 
-        const handle = await loadHandle();
+        const handle = forceDownload ? null : await loadHandle();
         if (handle) {
           const perm = await (
             handle as unknown as { queryPermission: (o: { mode: string }) => Promise<string> }
@@ -110,6 +117,33 @@ export default function BackupPage() {
           await ws.write(blob);
           await ws.close();
           setLog((l) => [`✅ ${tehranDateTime(new Date())} — ذخیره در پوشه: ${name}`, ...l].slice(0, 20));
+        } else if (forceDownload) {
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement("a");
+          a.href = url;
+          a.download = name;
+          a.click();
+          URL.revokeObjectURL(url);
+          setLog((l) => [`⬇️ ${tehranDateTime(new Date())} — دانلود شد: ${name}`, ...l].slice(0, 20));
+        } else if (supportsFs) {
+          // پوشه انتخاب نشده: از کاربر می‌خواهیم مسیر ذخیره را انتخاب کند (بدون رفتن به Downloads)
+          try {
+            const w = window as unknown as {
+              showSaveFilePicker: (o: unknown) => Promise<FileSystemFileHandle>;
+            };
+            const fh = await w.showSaveFilePicker({
+              suggestedName: name,
+              types: [{ description: "فایل پشتیبان JSON", accept: { "application/json": [".json"] } }],
+            });
+            const ws = await fh.createWritable();
+            await ws.write(blob);
+            await ws.close();
+            setLog((l) => [`✅ ${tehranDateTime(new Date())} — ذخیره در مسیر انتخابی: ${name}`, ...l].slice(0, 20));
+          } catch {
+            setBusy(false);
+            setMsg("ذخیره لغو شد");
+            return;
+          }
         } else {
           const url = URL.createObjectURL(blob);
           const a = document.createElement("a");
@@ -129,7 +163,7 @@ export default function BackupPage() {
         setBusy(false);
       }
     },
-    [cfg.withFiles],
+    [cfg.withFiles, supportsFs],
   );
 
   // زمان‌بند خودکار
@@ -170,12 +204,30 @@ echo backup saved to %DEST%
 
       <Card>
         <div className="flex flex-wrap items-center gap-2">
-          <Button onClick={() => runBackup(false)} disabled={busy}>
-            {busy ? "⏳ در حال تهیه..." : "💾 پشتیبان‌گیری همین حالا"}
+          <Button
+            onClick={async () => {
+              if (
+                !(await confirm({
+                  title: "پشتیبان‌گیری",
+                  message: dirOk
+                    ? `فایل پشتیبان در پوشه «${dirName}» ذخیره شود؟`
+                    : "پنجره انتخاب مسیر باز شود تا محل ذخیره فایل را انتخاب کنید؟",
+                  confirmText: "شروع",
+                }))
+              )
+                return;
+              runBackup(false);
+            }}
+            disabled={busy}
+          >
+            {busy ? "⏳ در حال تهیه..." : "💾 پشتیبان‌گیری در پوشه"}
+          </Button>
+          <Button variant="ghost" onClick={() => runBackup(false, true)} disabled={busy}>
+            ⬇️ دانلود ساده
           </Button>
           {supportsFs ? (
             <Button variant={dirOk ? "success" : "soft"} onClick={pickFolder}>
-              {dirOk ? "✅ پوشه مقصد انتخاب شده — تغییر" : "📁 انتخاب پوشه مقصد"}
+              {dirOk ? `✅ پوشه: ${dirName || "انتخاب‌شده"} — تغییر` : "📁 انتخاب پوشه مقصد"}
             </Button>
           ) : null}
           <Badge tone={last ? "green" : "amber"}>
@@ -183,6 +235,12 @@ echo backup saved to %DEST%
           </Badge>
         </div>
 
+        {!dirOk ? (
+          <Alert kind="error">
+            ⚠️ هنوز پوشه مقصد انتخاب نشده است. تا زمانی که پوشه را انتخاب نکنید، هنگام پشتیبان‌گیری پنجره انتخاب مسیر
+            باز می‌شود. برای ذخیره خودکار، یک‌بار دکمه «📁 انتخاب پوشه مقصد» را بزنید.
+          </Alert>
+        ) : null}
         <Alert kind="info">
           <b>راهنمای مسیر E:\porozheha\backup\{cfg.folderName}</b> — چون برنامه در مرورگر اجرا می‌شود، برای نوشتن
           مستقیم روی درایو ویندوز یک بار باید پوشه را انتخاب کنید: دکمه «📁 انتخاب پوشه مقصد» را بزنید و مسیر
@@ -227,7 +285,23 @@ echo backup saved to %DEST%
           </div>
         </div>
         <div className="mt-3 flex flex-wrap gap-2">
-          <Button onClick={() => saveCfg(cfg)}>💾 ذخیره تنظیمات</Button>
+          <Button
+            onClick={async () => {
+              if (
+                !(await confirm({
+                  title: "ذخیره تنظیمات پشتیبان‌گیری",
+                  message: cfg.enabled
+                    ? `پشتیبان‌گیری خودکار هر ${cfg.minutes} دقیقه فعال شود؟`
+                    : "پشتیبان‌گیری خودکار غیرفعال شود؟",
+                  confirmText: "ذخیره",
+                }))
+              )
+                return;
+              saveCfg(cfg);
+            }}
+          >
+            💾 ذخیره تنظیمات
+          </Button>
           <Badge tone={cfg.enabled ? "green" : "slate"}>
             {cfg.enabled ? `فعال — هر ${toPersianDigits(cfg.minutes)} دقیقه` : "غیرفعال"}
           </Badge>

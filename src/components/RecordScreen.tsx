@@ -16,7 +16,9 @@ import {
   type ProductConfig,
   type ColumnConfig,
 } from "@/lib/defaults";
-import { isValidJalali, toPersianDigits, todayJalali } from "@/lib/jalali";
+import { isValidJalali, tehranDateTime, toPersianDigits, todayJalali } from "@/lib/jalali";
+import { useConfirm } from "@/components/Confirm";
+import { useLive } from "@/lib/useLive";
 
 const MapBox = dynamicImport(() => import("./MapBox"), { ssr: false });
 
@@ -52,6 +54,7 @@ export type Row = {
   notes?: string;
   sent?: boolean;
   sendStatus?: string;
+  createdAt?: string;
 };
 
 type Form = Record<string, string> & { items?: never };
@@ -107,6 +110,7 @@ export default function RecordScreen({ type, isAdmin = false }: { type: RecordTy
   const [detailFiles, setDetailFiles] = useState<Att[]>([]);
   const [columns, setColumns] = useState<ColumnConfig[]>(DEFAULT_COLUMNS[type]);
 
+  const confirm = useConfirm();
   const set = (k: string, v: string) => setForm((f) => ({ ...f, [k]: v }));
 
   const loadRows = useCallback(async () => {
@@ -133,10 +137,12 @@ export default function RecordScreen({ type, isAdmin = false }: { type: RecordTy
   }, [type]);
 
   useEffect(() => {
-    loadRows();
     loadOptions();
     loadSettings();
-  }, [loadRows, loadOptions, loadSettings]);
+  }, [loadOptions, loadSettings]);
+
+  // بروزرسانی لحظه‌ای لیست بدون نیاز به رفرش دستی
+  useLive(loadRows, 15000, tab === "list");
 
   const recordName = type === "orders" ? form.pharmacyName : form.name;
 
@@ -149,6 +155,14 @@ export default function RecordScreen({ type, isAdmin = false }: { type: RecordTy
       setMsg({ kind: "error", text: `${meta.nameLabel} الزامی است` });
       return;
     }
+    if (
+      !(await confirm({
+        title: "ثبت اطلاعات",
+        message: `«${recordName.trim()}» با تاریخ ${toPersianDigits(form.dateShamsi)} ثبت شود؟`,
+        confirmText: "ثبت کن",
+      }))
+    )
+      return;
     setBusy(true);
     setMsg(null);
     const res = await fetch(`/api/records/${type}`, {
@@ -189,6 +203,14 @@ export default function RecordScreen({ type, isAdmin = false }: { type: RecordTy
       setMsg({ kind: "info", text: "رکورد ارسال‌نشده‌ای وجود ندارد" });
       return;
     }
+    if (
+      !(await confirm({
+        title: "ارسال اطلاعات به مدیر",
+        message: `${toPersianDigits(ids.length)} رکورد ارسال شود؟${type === "orders" ? " سفارش‌ها به پیام‌رسان‌های فعال هم ارسال می‌شوند." : ""}`,
+        confirmText: "ارسال",
+      }))
+    )
+      return;
     setBusy(true);
     const res = await fetch(`/api/records/${type}/send`, {
       method: "POST",
@@ -306,6 +328,20 @@ export default function RecordScreen({ type, isAdmin = false }: { type: RecordTy
         return r.sent ? <Badge tone="green">ارسال شد</Badge> : <Badge tone="amber">در انتظار</Badge>;
       case "nav":
         return <NavButton lat={r.lat} lng={r.lng} label={nameOf(r)} />;
+      case "totalUnits":
+        return toPersianDigits(products.reduce((a, p) => a + Number(r.items?.[p.key] ?? 0), 0));
+      case "totalBonus":
+        return toPersianDigits(products.reduce((a, p) => a + Number(r.items?.[bonusKeyOf(p.key)] ?? 0), 0));
+      case "files":
+        return (
+          <button onClick={() => setDetail(r)} className="text-[11px] font-bold text-sky-700 underline">
+            📎 مشاهده
+          </button>
+        );
+      case "createdAt":
+        return <span className="text-[10px] text-slate-500">{r.createdAt ? tehranDateTime(r.createdAt) : "—"}</span>;
+      case "percentValue":
+        return r.percentValue || "—";
       case "isPercent":
         return r.isPercent ? (
           <Badge tone="green">بله{r.percentValue ? ` (${r.percentValue})` : ""}</Badge>

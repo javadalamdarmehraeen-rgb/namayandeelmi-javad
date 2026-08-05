@@ -1,5 +1,5 @@
 import { db } from "@/db";
-import { options, users } from "@/db/schema";
+import { options, roles, users } from "@/db/schema";
 import { eq, sql } from "drizzle-orm";
 import { hashPassword } from "./auth";
 import { DEFAULT_PROVINCES, DEFAULT_SPECIALTIES } from "./constants";
@@ -232,6 +232,17 @@ async function migrate() {
     );
   `);
   await db.execute(sql`
+    CREATE TABLE IF NOT EXISTS roles (
+      id serial PRIMARY KEY,
+      key varchar(40) NOT NULL UNIQUE,
+      label varchar(120) NOT NULL,
+      base varchar(20) NOT NULL DEFAULT 'rep',
+      permissions jsonb NOT NULL DEFAULT '[]'::jsonb,
+      builtin boolean NOT NULL DEFAULT false,
+      created_at timestamptz NOT NULL DEFAULT now()
+    );
+  `);
+  await db.execute(sql`
     CREATE TABLE IF NOT EXISTS settings (
       key varchar(80) PRIMARY KEY,
       value jsonb NOT NULL,
@@ -323,6 +334,16 @@ async function seed() {
       },
     ]);
   }
+  const rl = await db.select().from(roles).limit(1);
+  if (rl.length === 0) {
+    await db.insert(roles).values([
+      { key: "admin", label: "مدیر سیستم", base: "admin", permissions: ALL_PERMISSION_KEYS, builtin: true },
+      { key: "supervisor", label: "سرپرست", base: "supervisor", permissions: SUPERVISOR_DEFAULT_PERMISSIONS, builtin: true },
+      { key: "rep", label: "نماینده علمی", base: "rep", permissions: REP_DEFAULT_PERMISSIONS, builtin: true },
+      { key: "sales", label: "کارشناس فروش", base: "rep", permissions: REP_DEFAULT_PERMISSIONS, builtin: false },
+    ]);
+  }
+
   const st = await db.select().from(settings).limit(1);
   if (st.length === 0) {
     await db.insert(settings).values([

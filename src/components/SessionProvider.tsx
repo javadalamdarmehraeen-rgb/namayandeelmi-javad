@@ -8,6 +8,8 @@ export type Me = {
   username: string;
   fullName: string;
   role: "admin" | "supervisor" | "rep";
+  roleKey: string;
+  roleLabel: string;
   phone: string;
   requirePhone: boolean;
   permissions: string[];

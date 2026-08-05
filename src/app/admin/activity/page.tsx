@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { Badge, Button, Card, Input, SectionTitle } from "@/components/ui";
 import { BarChart } from "@/components/Charts";
 import { tehranDateTime, toPersianDigits } from "@/lib/jalali";
+import { useLive } from "@/lib/useLive";
 
 type Log = { id: number; userId: number | null; userName: string; action: string; detail: string; createdAt: string };
 type Rep = {
@@ -36,12 +37,7 @@ export default function ActivityPage() {
     setReps(d.reps ?? []);
   }, []);
 
-  useEffect(() => {
-    load();
-    if (!live) return;
-    const t = setInterval(load, 15000);
-    return () => clearInterval(t);
-  }, [load, live]);
+  useLive(load, 12000, live);
 
   const filtered = useMemo(
     () =>

@@ -9,6 +9,7 @@ import {
   notifications,
   options,
   orders,
+  roles,
   pharmacies,
   settings,
   tripPoints,
@@ -39,6 +40,7 @@ export async function GET(req: Request) {
     notificationsRows,
     settingsRows,
     activityRows,
+    rolesRows,
   ] = await Promise.all([
     db.select().from(users),
     db.select().from(pharmacies),
@@ -53,6 +55,7 @@ export async function GET(req: Request) {
     db.select().from(notifications),
     db.select().from(settings),
     db.select().from(activityLogs),
+    db.select().from(roles),
   ]);
 
   const files = withFiles
@@ -96,6 +99,7 @@ export async function GET(req: Request) {
       messengers: messengersRows,
       notifications: notificationsRows,
       settings: settingsRows,
+      roles: rolesRows,
       activityLogs: activityRows,
       attachments: files,
     },

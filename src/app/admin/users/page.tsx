@@ -9,6 +9,10 @@ import {
   SUPERVISOR_DEFAULT_PERMISSIONS,
 } from "@/lib/defaults";
 import { tehranDateTime, toPersianDigits } from "@/lib/jalali";
+import { useConfirm } from "@/components/Confirm";
+import { useLive } from "@/lib/useLive";
+
+type Role = { id: number; key: string; label: string; base: string; permissions: string[]; builtin: boolean };
 
 type User = {
   id: number;
@@ -33,7 +37,7 @@ const blank = {
   permissions: [...REP_DEFAULT_PERMISSIONS] as string[],
 };
 
-const roleLabel = (r: string) => (r === "admin" ? "مدیر" : r === "supervisor" ? "سرپرست" : "نماینده علمی");
+
 
 export default function UsersPage() {
   const [rows, setRows] = useState<User[]>([]);
@@ -44,6 +48,10 @@ export default function UsersPage() {
   const [showPass, setShowPass] = useState<Record<number, boolean>>({});
   const [pwDraft, setPwDraft] = useState<Record<number, string>>({});
   const [busy, setBusy] = useState(false);
+  const [roles, setRoles] = useState<Role[]>([]);
+  const [roleForm, setRoleForm] = useState({ label: "", key: "", base: "rep" });
+  const [showRoles, setShowRoles] = useState(false);
+  const confirm = useConfirm();
 
   const load = useCallback(async () => {
     const res = await fetch("/api/users", { cache: "no-store" });
@@ -55,11 +63,30 @@ export default function UsersPage() {
     } else setMsg({ kind: "error", text: "خطا در دریافت کاربران — دوباره وارد شوید" });
   }, []);
 
+  const loadRoles = useCallback(async () => {
+    const res = await fetch("/api/roles", { cache: "no-store" });
+    if (res.ok) setRoles((await res.json()).rows ?? []);
+  }, []);
+
   useEffect(() => {
-    load();
-  }, [load]);
+    loadRoles();
+  }, [loadRoles]);
+
+  useLive(load, 20000);
 
   const create = async () => {
+    if (!form.fullName.trim() || !form.username.trim() || !form.password.trim()) {
+      setMsg({ kind: "error", text: "نام، نام کاربری و رمز عبور الزامی است" });
+      return;
+    }
+    if (
+      !(await confirm({
+        title: "ایجاد کاربر جدید",
+        message: `کاربر «${form.fullName}» با سمت «${roles.find((r) => r.key === form.role)?.label ?? form.role}» ایجاد شود؟`,
+        confirmText: "ایجاد",
+      }))
+    )
+      return;
     setBusy(true);
     const res = await fetch("/api/users", {
       method: "POST",
@@ -96,8 +123,16 @@ export default function UsersPage() {
     }
   };
 
-  const remove = async (id: number) => {
-    if (!confirm("حذف این کاربر؟")) return;
+  const remove = async (id: number, name: string) => {
+    if (
+      !(await confirm({
+        title: "حذف کاربر",
+        message: `کاربر «${name}» برای همیشه حذف شود؟ این عمل قابل بازگشت نیست.`,
+        confirmText: "حذف",
+        danger: true,
+      }))
+    )
+      return;
     const res = await fetch(`/api/users?id=${id}`, { method: "DELETE" });
     if (res.ok) load();
   };
@@ -113,6 +148,14 @@ export default function UsersPage() {
       setMsg({ kind: "error", text: "رمز باید حداقل ۴ کاراکتر باشد" });
       return;
     }
+    if (
+      !(await confirm({
+        title: "تغییر رمز عبور",
+        message: `رمز عبور «${u.fullName}» به «${pw}» تغییر کند؟`,
+        confirmText: "تغییر بده",
+      }))
+    )
+      return;
     await patch({ id: u.id, password: pw });
     setPwDraft({ ...pwDraft, [u.id]: "" });
     setShowPass((s) => ({ ...s, [u.id]: true }));
@@ -154,27 +197,38 @@ export default function UsersPage() {
             />
           </Field>
           <Field label="نقش">
-            <select
-              value={form.role}
-              onChange={(e) => {
-                const role = e.target.value;
-                setForm({
-                  ...form,
-                  role,
-                  permissions:
-                    role === "admin"
-                      ? [...ALL_PERMISSION_KEYS]
-                      : role === "supervisor"
-                        ? [...SUPERVISOR_DEFAULT_PERMISSIONS]
-                        : [...REP_DEFAULT_PERMISSIONS],
-                });
-              }}
-              className="w-full rounded-xl border border-slate-300 px-3 py-2.5 text-sm"
-            >
-              <option value="rep">نماینده علمی</option>
-              <option value="supervisor">سرپرست</option>
-              <option value="admin">مدیر</option>
-            </select>
+            <div className="flex gap-1">
+              <select
+                value={form.role}
+                onChange={(e) => {
+                  const role = e.target.value;
+                  const r = roles.find((x) => x.key === role);
+                  const perms = r?.permissions?.length
+                    ? r.permissions
+                    : r?.base === "admin"
+                      ? ALL_PERMISSION_KEYS
+                      : r?.base === "supervisor"
+                        ? SUPERVISOR_DEFAULT_PERMISSIONS
+                        : REP_DEFAULT_PERMISSIONS;
+                  setForm({ ...form, role, permissions: [...perms] });
+                }}
+                className="w-full rounded-xl border border-slate-300 px-3 py-2.5 text-sm"
+              >
+                {roles.map((r) => (
+                  <option key={r.key} value={r.key}>
+                    {r.label}
+                  </option>
+                ))}
+              </select>
+              <button
+                type="button"
+                onClick={() => setShowRoles((v) => !v)}
+                title="مدیریت سمت‌ها"
+                className="shrink-0 rounded-xl bg-teal-50 px-3 text-sm font-bold text-teal-700 ring-1 ring-teal-200"
+              >
+                ➕
+              </button>
+            </div>
           </Field>
         </div>
 
@@ -245,6 +299,146 @@ export default function UsersPage() {
         </div>
       </Card>
 
+      {showRoles ? (
+        <Card>
+          <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+            <h3 className="text-sm font-bold text-slate-700">🏷 مدیریت سمت‌های سازمانی</h3>
+            <Button variant="ghost" onClick={() => setShowRoles(false)}>
+              بستن
+            </Button>
+          </div>
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-4">
+            <Field label="عنوان سمت" required>
+              <Input
+                value={roleForm.label}
+                onChange={(e) => setRoleForm({ ...roleForm, label: e.target.value })}
+                placeholder="مثلاً کارشناس فروش"
+              />
+            </Field>
+            <Field label="شناسه انگلیسی (اختیاری)">
+              <Input
+                value={roleForm.key}
+                onChange={(e) => setRoleForm({ ...roleForm, key: e.target.value })}
+                placeholder="sales"
+                className="text-left"
+              />
+            </Field>
+            <Field label="نقش پایه (کنترل دسترسی)">
+              <select
+                value={roleForm.base}
+                onChange={(e) => setRoleForm({ ...roleForm, base: e.target.value })}
+                className="w-full rounded-xl border border-slate-300 px-3 py-2.5 text-sm"
+              >
+                <option value="rep">هم‌سطح نماینده (ورود از تب نماینده)</option>
+                <option value="supervisor">هم‌سطح سرپرست (ورود از تب مدیر)</option>
+                <option value="admin">هم‌سطح مدیر</option>
+              </select>
+            </Field>
+            <div className="flex items-end">
+              <Button
+                onClick={async () => {
+                  if (!roleForm.label.trim()) return;
+                  if (
+                    !(await confirm({
+                      title: "افزودن سمت جدید",
+                      message: `سمت «${roleForm.label}» ایجاد شود؟`,
+                      confirmText: "ایجاد",
+                    }))
+                  )
+                    return;
+                  const res = await fetch("/api/roles", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(roleForm),
+                  });
+                  const d = await res.json().catch(() => ({}));
+                  if (res.ok) {
+                    setMsg({ kind: "success", text: "✅ سمت جدید ایجاد شد" });
+                    setRoleForm({ label: "", key: "", base: "rep" });
+                    loadRoles();
+                  } else setMsg({ kind: "error", text: d.error ?? "خطا" });
+                }}
+                className="w-full"
+              >
+                ➕ افزودن سمت
+              </Button>
+            </div>
+          </div>
+
+          <ul className="mt-3 space-y-1">
+            {roles.map((r) => (
+              <li key={r.id} className="flex flex-wrap items-center gap-2 rounded-xl bg-slate-50 px-3 py-2 text-xs">
+                <Input
+                  value={r.label}
+                  onChange={(e) => setRoles((p) => p.map((x) => (x.id === r.id ? { ...x, label: e.target.value } : x)))}
+                  className="max-w-[180px] px-2 py-1 text-xs"
+                />
+                <span className="text-[10px] text-slate-400" dir="ltr">
+                  {r.key}
+                </span>
+                <select
+                  value={r.base}
+                  onChange={(e) => setRoles((p) => p.map((x) => (x.id === r.id ? { ...x, base: e.target.value } : x)))}
+                  className="rounded-lg border border-slate-200 px-2 py-1 text-[11px]"
+                >
+                  <option value="rep">پایه: نماینده</option>
+                  <option value="supervisor">پایه: سرپرست</option>
+                  <option value="admin">پایه: مدیر</option>
+                </select>
+                {r.builtin ? <Badge tone="slate">پایه سیستم</Badge> : null}
+                <span className="mr-auto flex gap-1">
+                  <button
+                    onClick={async () => {
+                      if (!(await confirm({ title: "ذخیره سمت", message: `تغییرات «${r.label}» ذخیره شود؟`, confirmText: "ذخیره" })))
+                        return;
+                      const res = await fetch("/api/roles", {
+                        method: "PATCH",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ id: r.id, label: r.label, base: r.base }),
+                      });
+                      setMsg(
+                        res.ok
+                          ? { kind: "success", text: "✅ ذخیره شد" }
+                          : { kind: "error", text: "ذخیره ناموفق" },
+                      );
+                      loadRoles();
+                      load();
+                    }}
+                    className="rounded-lg bg-emerald-100 px-2 py-1 text-[11px] font-bold text-emerald-700"
+                  >
+                    ذخیره
+                  </button>
+                  {!r.builtin ? (
+                    <button
+                      onClick={async () => {
+                        if (
+                          !(await confirm({
+                            title: "حذف سمت",
+                            message: `سمت «${r.label}» حذف شود؟`,
+                            confirmText: "حذف",
+                            danger: true,
+                          }))
+                        )
+                          return;
+                        const res = await fetch(`/api/roles?id=${r.id}`, { method: "DELETE" });
+                        const d = await res.json().catch(() => ({}));
+                        setMsg(
+                          res.ok ? { kind: "success", text: "🗑 حذف شد" } : { kind: "error", text: d.error ?? "خطا" },
+                        );
+                        loadRoles();
+                      }}
+                      className="rounded-lg bg-rose-100 px-2 py-1 text-[11px] font-bold text-rose-700"
+                    >
+                      حذف
+                    </button>
+                  ) : null}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </Card>
+      ) : null}
+
       {rows.length === 0 ? <Card>کاربری یافت نشد.</Card> : null}
 
       {rows.map((u, i) => {
@@ -256,7 +450,7 @@ export default function UsersPage() {
               <span className="text-xs text-slate-400">{toPersianDigits(i + 1)}</span>
               <span className="text-sm font-black text-slate-800">{u.fullName}</span>
               <Badge tone={u.role === "admin" ? "green" : u.role === "supervisor" ? "amber" : "slate"}>
-                {roleLabel(u.role)}
+                {roles.find((r) => r.key === u.role)?.label ?? u.role}
               </Badge>
               {!u.active ? <Badge tone="amber">غیرفعال</Badge> : null}
               <span className="text-[11px] text-slate-400">
@@ -278,7 +472,7 @@ export default function UsersPage() {
                   {u.active ? "غیرفعال کن" : "فعال کن"}
                 </button>
                 <button
-                  onClick={() => remove(u.id)}
+                  onClick={() => remove(u.id, u.fullName)}
                   className="rounded-lg bg-rose-100 px-2 py-1 text-[11px] font-bold text-rose-700"
                 >
                   حذف
@@ -375,9 +569,11 @@ export default function UsersPage() {
                 onChange={(e) => patch({ id: u.id, role: e.target.value })}
                 className="rounded-lg border border-slate-200 px-2 py-1 text-[11px]"
               >
-                <option value="rep">نماینده علمی</option>
-                <option value="supervisor">سرپرست</option>
-                <option value="admin">مدیر</option>
+                {roles.map((r) => (
+                  <option key={r.key} value={r.key}>
+                    {r.label}
+                  </option>
+                ))}
               </select>
             </div>
 

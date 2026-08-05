@@ -1,7 +1,7 @@
 import { createHmac, randomBytes, scryptSync, timingSafeEqual } from "crypto";
 import { cookies, headers } from "next/headers";
 import { db } from "@/db";
-import { users } from "@/db/schema";
+import { roles, users } from "@/db/schema";
 import { eq } from "drizzle-orm";
 
 const SECRET = process.env.APP_SECRET || "sabt-etelaat-kol-default-secret-key";
@@ -12,7 +12,11 @@ export type SessionUser = {
   id: number;
   username: string;
   fullName: string;
+  /** نقش پایه برای کنترل دسترسی */
   role: "admin" | "supervisor" | "rep";
+  /** کلید سمت سازمانی (ممکن است سفارشی باشد مثل sales) */
+  roleKey: string;
+  roleLabel: string;
   phone: string;
   requirePhone: boolean;
   permissions: string[];
@@ -65,11 +69,30 @@ export async function userFromId(id: number): Promise<SessionUser | null> {
   }
   const u = rows[0];
   if (!u || !u.active) return null;
+
+  // نقش می‌تواند یک سمت سفارشی باشد؛ نقش پایه آن از جدول roles خوانده می‌شود
+  let base: "admin" | "supervisor" | "rep" =
+    u.role === "admin" ? "admin" : u.role === "supervisor" ? "supervisor" : "rep";
+  let roleLabel = base === "admin" ? "مدیر سیستم" : base === "supervisor" ? "سرپرست" : "نماینده علمی";
+  if (!["admin", "supervisor", "rep"].includes(u.role)) {
+    try {
+      const r = (await db.select().from(roles).where(eq(roles.key, u.role)).limit(1))[0];
+      if (r) {
+        base = r.base === "admin" ? "admin" : r.base === "supervisor" ? "supervisor" : "rep";
+        roleLabel = r.label;
+      }
+    } catch {
+      /* ignore */
+    }
+  }
+
   return {
     id: u.id,
     username: u.username,
     fullName: u.fullName,
-    role: u.role === "admin" ? "admin" : u.role === "supervisor" ? "supervisor" : "rep",
+    role: base,
+    roleKey: u.role,
+    roleLabel,
     phone: u.phone,
     requirePhone: u.requirePhone,
     permissions: Array.isArray(u.permissions) ? u.permissions : [],

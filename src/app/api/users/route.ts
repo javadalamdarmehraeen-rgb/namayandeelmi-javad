@@ -55,7 +55,7 @@ export async function POST(req: Request) {
       passwordPlain: password,
       fullName,
       phone: String(b.phone ?? "").trim(),
-      role: ["admin", "supervisor", "rep"].includes(b.role) ? b.role : "rep",
+      role: String(b.role ?? "rep").slice(0, 40),
       active: b.active !== false,
       requirePhone: b.requirePhone !== false,
       permissions: Array.isArray(b.permissions) && b.permissions.length ? b.permissions : ALL_PERMISSION_KEYS,
@@ -74,7 +74,7 @@ export async function PATCH(req: Request) {
   if (typeof b.fullName === "string" && b.fullName.trim()) patch.fullName = b.fullName.trim();
   if (typeof b.phone === "string") patch.phone = b.phone.trim();
   if (typeof b.username === "string" && b.username.trim()) patch.username = b.username.trim().toLowerCase();
-  if (typeof b.role === "string") patch.role = ["admin", "supervisor", "rep"].includes(b.role) ? b.role : "rep";
+  if (typeof b.role === "string" && b.role.trim()) patch.role = b.role.trim().slice(0, 40);
   if (typeof b.active === "boolean") patch.active = b.active;
   if (typeof b.requirePhone === "boolean") patch.requirePhone = b.requirePhone;
   if (Array.isArray(b.permissions)) patch.permissions = b.permissions;

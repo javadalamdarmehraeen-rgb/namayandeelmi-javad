@@ -47,9 +47,28 @@ export async function POST(req: Request) {
   return Response.json({ row });
 }
 
+export async function PATCH(req: Request) {
+  const user = await getSessionUser();
+  if (!user) return Response.json({ error: "دسترسی غیرمجاز" }, { status: 401 });
+  const canEdit = user.role === "admin" || user.permissions.includes("optionsDelete");
+  if (!canEdit) return Response.json({ error: "شما اجازه ویرایش ندارید" }, { status: 403 });
+  const b = await req.json().catch(() => ({}));
+  const id = Number(b.id);
+  const value = String(b.value ?? "").trim().slice(0, 200);
+  if (!Number.isFinite(id) || !value) return Response.json({ error: "ورودی نامعتبر" }, { status: 400 });
+  await db.update(options).set({ value }).where(eq(options.id, id));
+  await db
+    .insert(activityLogs)
+    .values({ userId: user.id, userName: user.fullName, action: "ویرایش مقدار کشویی", detail: value })
+    .catch(() => undefined);
+  return Response.json({ ok: true });
+}
+
 export async function DELETE(req: Request) {
   const user = await getSessionUser();
-  if (!user || user.role !== "admin") return Response.json({ error: "فقط مدیر می‌تواند حذف کند" }, { status: 401 });
+  if (!user || (user.role !== "admin" && !user.permissions.includes("optionsDelete"))) {
+    return Response.json({ error: "شما اجازه حذف ندارید" }, { status: 401 });
+  }
   const id = Number(new URL(req.url).searchParams.get("id"));
   if (!Number.isFinite(id)) return Response.json({ error: "شناسه نامعتبر" }, { status: 400 });
   await db.delete(options).where(eq(options.id, id));

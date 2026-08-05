@@ -2,7 +2,14 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { Alert, Button, Card, Input, SectionTitle } from "@/components/ui";
-import { DEFAULT_COLUMNS, DEFAULT_PRODUCTS, type ColumnConfig, type ProductConfig } from "@/lib/defaults";
+import {
+  AVAILABLE_COLUMNS,
+  DEFAULT_COLUMNS,
+  DEFAULT_PRODUCTS,
+  type ColumnConfig,
+  type ProductConfig,
+} from "@/lib/defaults";
+import { useConfirm } from "@/components/Confirm";
 import { toPersianDigits } from "@/lib/jalali";
 
 const TABLES = [
@@ -17,6 +24,8 @@ export default function ColumnsPage() {
   const [tab, setTab] = useState("pharmacies");
   const [msg, setMsg] = useState("");
   const [newProduct, setNewProduct] = useState("");
+  const [addCol, setAddCol] = useState("");
+  const confirm = useConfirm();
 
   const load = useCallback(async () => {
     const res = await fetch("/api/settings", { cache: "no-store" });
@@ -36,6 +45,8 @@ export default function ColumnsPage() {
   }, [load]);
 
   const save = async (key: string, value: unknown) => {
+    if (!(await confirm({ title: "ذخیره تغییرات", message: "تغییرات ذخیره و بلافاصله در همه صفحات اعمال شود؟", confirmText: "ذخیره" })))
+      return;
     const res = await fetch("/api/settings", {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
@@ -121,16 +132,70 @@ export default function ColumnsPage() {
                 >
                   ↓
                 </button>
+                <button
+                  onClick={async () => {
+                    if (
+                      !(await confirm({
+                        title: "حذف ستون",
+                        message: `ستون «${c.label}» از این جدول حذف شود؟ بعداً می‌توانید دوباره اضافه کنید.`,
+                        confirmText: "حذف",
+                        danger: true,
+                      }))
+                    )
+                      return;
+                    setCols({ ...cols, [tab]: current.filter((_, x) => x !== i) });
+                  }}
+                  className="rounded-lg bg-rose-100 px-2 py-1 text-xs font-bold text-rose-700"
+                >
+                  حذف
+                </button>
               </div>
             </li>
           ))}
         </ul>
 
+        <div className="mt-3 flex flex-wrap items-center gap-2 rounded-xl bg-slate-50 p-2 ring-1 ring-slate-200">
+          <span className="text-[11px] font-bold text-slate-600">افزودن ستون:</span>
+          <select
+            value={addCol}
+            onChange={(e) => setAddCol(e.target.value)}
+            className="rounded-xl border border-slate-300 px-2 py-2 text-xs"
+          >
+            <option value="">انتخاب ستون...</option>
+            {(AVAILABLE_COLUMNS[tab] ?? [])
+              .filter((a) => !current.some((c) => c.key === a.key))
+              .map((a) => (
+                <option key={a.key} value={a.key}>
+                  {a.label}
+                </option>
+              ))}
+          </select>
+          <Button
+            variant="soft"
+            onClick={() => {
+              const found = (AVAILABLE_COLUMNS[tab] ?? []).find((a) => a.key === addCol);
+              if (!found) return;
+              setCols({ ...cols, [tab]: [...current, { ...found, visible: true }] });
+              setAddCol("");
+            }}
+          >
+            ➕ افزودن
+          </Button>
+          <span className="text-[10px] text-slate-400">
+            {toPersianDigits((AVAILABLE_COLUMNS[tab] ?? []).filter((a) => !current.some((c) => c.key === a.key)).length)}{" "}
+            ستون قابل افزودن
+          </span>
+        </div>
+
         <div className="mt-3 flex gap-2">
           <Button onClick={() => save(`columns.${tab}`, current)}>💾 ذخیره ترتیب ستون‌ها</Button>
           <Button
             variant="ghost"
-            onClick={() => setCols({ ...cols, [tab]: DEFAULT_COLUMNS[tab] })}
+            onClick={async () => {
+              if (!(await confirm({ title: "بازگردانی پیش‌فرض", message: "ستون‌های این جدول به حالت اولیه برگردند؟", confirmText: "بازگردانی" })))
+                return;
+              setCols({ ...cols, [tab]: DEFAULT_COLUMNS[tab] });
+            }}
           >
             بازگردانی پیش‌فرض
           </Button>
@@ -179,7 +244,18 @@ export default function ColumnsPage() {
                   ↓
                 </button>
                 <button
-                  onClick={() => setProducts(products.filter((_, x) => x !== i))}
+                  onClick={async () => {
+                    if (
+                      !(await confirm({
+                        title: "حذف کالا",
+                        message: `کالای «${p.label}» حذف شود؟`,
+                        confirmText: "حذف",
+                        danger: true,
+                      }))
+                    )
+                      return;
+                    setProducts(products.filter((_, x) => x !== i));
+                  }}
                   className="rounded-lg bg-rose-100 px-2 py-1 text-xs font-bold text-rose-700"
                 >
                   حذف

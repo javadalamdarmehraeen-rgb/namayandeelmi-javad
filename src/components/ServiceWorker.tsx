@@ -35,15 +35,17 @@ export default function ServiceWorker() {
 
       const flush = () => navigator.serviceWorker.controller?.postMessage("flush");
       window.addEventListener("online", flush);
+      window.addEventListener("focus", flush);
       const iv = setInterval(() => {
         if (navigator.onLine) flush();
-      }, 30000);
+      }, 20000);
 
       return () => {
         clearInterval(iv);
         window.removeEventListener("online", setState);
         window.removeEventListener("offline", setState);
         window.removeEventListener("online", flush);
+        window.removeEventListener("focus", flush);
         void reg;
       };
     }
