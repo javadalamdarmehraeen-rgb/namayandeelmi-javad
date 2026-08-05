@@ -42,7 +42,7 @@ export default function NotificationBell({ basePath }: { basePath: string }) {
       }
       if (typeof Notification !== "undefined" && Notification.permission === "granted") {
         try {
-          new Notification("🔔 اعلان جدید", { body: top.title, icon: "/icon.svg" });
+          new Notification("🔔 اعلان جدید", { body: top.title, icon: "/icons/icon-192.png", badge: "/icons/icon-192.png" });
         } catch {
           /* ignore */
         }

@@ -4,7 +4,7 @@
    - درخواست‌های GET سرور: network-first با تایم‌اوت و برگشت به کش
    - درخواست‌های POST/PATCH آفلاین: در صف ذخیره و بعداً خودکار ارسال می‌شوند
 */
-const VERSION = "sek-v4";
+const VERSION = "sek-v5";
 const SHELL = `${VERSION}-shell`;
 const DATA = `${VERSION}-data`;
 const NET_TIMEOUT = 12000;
@@ -16,7 +16,13 @@ const SHELL_URLS = [
   "/admin",
   "/offline",
   "/manifest.webmanifest",
-  "/icon.svg",
+  "/logo.svg",
+  "/icons/icon-192.png",
+  "/icons/icon-512.png",
+  "/icons/maskable-512.png",
+  "/apple-touch-icon.png",
+  "/screenshots/desktop-1280x720.png",
+  "/screenshots/mobile-720x1280.png",
 ];
 
 self.addEventListener("install", (e) => {

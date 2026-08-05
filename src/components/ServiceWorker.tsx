@@ -17,15 +17,14 @@ export default function ServiceWorker() {
 
     let reg: ServiceWorkerRegistration | undefined;
     if ("serviceWorker" in navigator) {
-      const t = setTimeout(() => {
-        navigator.serviceWorker
-          .register("/sw.js", { updateViaCache: "none" })
-          .then((r) => {
-            reg = r;
-            r.update().catch(() => undefined);
-          })
-          .catch(() => undefined);
-      }, 1200);
+      // ثبت فوری سرویس‌ورکر (لازم برای تشخیص توسط PWABuilder و کارکرد آفلاین)
+      navigator.serviceWorker
+        .register("/sw.js", { scope: "/", updateViaCache: "none" })
+        .then((r) => {
+          reg = r;
+          r.update().catch(() => undefined);
+        })
+        .catch(() => undefined);
 
       navigator.serviceWorker.addEventListener("message", (e: MessageEvent) => {
         if (e.data?.type === "queue-flushed" && e.data.count > 0) {
@@ -41,7 +40,6 @@ export default function ServiceWorker() {
       }, 30000);
 
       return () => {
-        clearTimeout(t);
         clearInterval(iv);
         window.removeEventListener("online", setState);
         window.removeEventListener("offline", setState);
