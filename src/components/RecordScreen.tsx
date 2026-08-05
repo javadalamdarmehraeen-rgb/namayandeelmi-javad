@@ -7,6 +7,7 @@ import Combobox from "./Combobox";
 import LocationPicker, { type LatLng } from "./LocationPicker";
 import FileUploader, { FileList, type Att } from "./FileUploader";
 import ShareBox from "./ShareBox";
+import NavButton from "./NavButton";
 import { Alert, Badge, Button, Card, Field, Input, SectionTitle, TextArea } from "./ui";
 import {
   DEFAULT_PRODUCTS,
@@ -227,8 +228,9 @@ export default function RecordScreen({ type, isAdmin = false }: { type: RecordTy
   const pageRows = filtered.slice(0, page * PAGE);
 
   useEffect(() => {
-    if (detail && type === "doctors") {
-      fetch(`/api/attachments?ownerType=doctor&ownerId=${detail.id}`, { cache: "no-store" })
+    if (detail && type !== "orders") {
+      const ot = type === "doctors" ? "doctor" : "pharmacy";
+      fetch(`/api/attachments?ownerType=${ot}&ownerId=${detail.id}`, { cache: "no-store" })
         .then((r) => (r.ok ? r.json() : null))
         .then((d) => setDetailFiles(d?.rows ?? []))
         .catch(() => setDetailFiles([]));
@@ -302,6 +304,8 @@ export default function RecordScreen({ type, isAdmin = false }: { type: RecordTy
         );
       case "sent":
         return r.sent ? <Badge tone="green">ارسال شد</Badge> : <Badge tone="amber">در انتظار</Badge>;
+      case "nav":
+        return <NavButton lat={r.lat} lng={r.lng} label={nameOf(r)} />;
       case "isPercent":
         return r.isPercent ? (
           <Badge tone="green">بله{r.percentValue ? ` (${r.percentValue})` : ""}</Badge>
@@ -590,10 +594,12 @@ export default function RecordScreen({ type, isAdmin = false }: { type: RecordTy
             </div>
           ) : null}
 
-          {type === "doctors" ? (
+          {type !== "orders" ? (
             <div className="mt-4">
-              <SectionTitle icon="📎">بارگذاری عکس یا فایل پزشک</SectionTitle>
-              <FileUploader ownerType="doctor" onChangeIds={setFileIds} />
+              <SectionTitle icon="📎">
+                بارگذاری عکس یا فایل {type === "doctors" ? "پزشک" : "داروخانه"}
+              </SectionTitle>
+              <FileUploader ownerType={type === "doctors" ? "doctor" : "pharmacy"} onChangeIds={setFileIds} />
             </div>
           ) : null}
 
@@ -769,7 +775,7 @@ export default function RecordScreen({ type, isAdmin = false }: { type: RecordTy
                 </>
               ) : null}
             </dl>
-            {type === "doctors" ? (
+            {type !== "orders" ? (
               <div className="mt-3">
                 <h4 className="mb-2 text-sm font-bold text-slate-700">📎 فایل‌ها و تصاویر</h4>
                 <FileList files={detailFiles} />
@@ -796,14 +802,14 @@ export default function RecordScreen({ type, isAdmin = false }: { type: RecordTy
                       },
                     ]}
                   />
-                  <a
-                    className="mt-2 inline-block text-xs font-bold text-teal-700 underline"
-                    href={`https://www.google.com/maps?q=${detail.lat},${detail.lng}`}
-                    target="_blank"
-                    rel="noreferrer"
-                  >
-                    باز کردن در گوگل مپ / مسیریابی
-                  </a>
+                  <div className="mt-2">
+                    <NavButton
+                      lat={detail.lat}
+                      lng={detail.lng}
+                      label={detail.locationLabel || nameOf(detail)}
+                      compact={false}
+                    />
+                  </div>
                 </>
               ) : (
                 <Alert kind="info">لوکیشنی برای این رکورد ثبت نشده است.</Alert>

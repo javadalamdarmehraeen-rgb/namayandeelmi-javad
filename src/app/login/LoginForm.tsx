@@ -19,6 +19,8 @@ export default function LoginForm() {
   const [busy, setBusy] = useState(false);
   const [simOk, setSimOk] = useState(true);
   const [simWarn, setSimWarn] = useState("");
+  const [forgot, setForgot] = useState(false);
+  const [info, setInfo] = useState("");
 
   useEffect(() => {
     patchFetch();
@@ -126,6 +128,59 @@ export default function LoginForm() {
   return (
     <main className="flex min-h-screen items-center justify-center bg-gradient-to-b from-teal-700 via-teal-600 to-slate-100 p-4">
       <div className="w-full max-w-md">
+        {forgot ? (
+          <div
+            className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4"
+            onClick={() => setForgot(false)}
+          >
+            <div
+              className="fade-in w-full max-w-sm rounded-2xl bg-white p-4"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <h3 className="mb-2 text-sm font-black text-slate-800">🔑 بازیابی رمز عبور</h3>
+              <p className="mb-3 text-[11px] text-slate-500">
+                نام کاربری و شماره همراه خود را وارد کنید. درخواست برای مدیر سیستم ارسال می‌شود و رمز جدید به شما
+                اعلام خواهد شد.
+              </p>
+              {info ? (
+                <div className="mb-2">
+                  <Alert kind="success">{info}</Alert>
+                </div>
+              ) : null}
+              <div className="space-y-2">
+                <Field label="نام کاربری" required>
+                  <Input value={username} onChange={(e) => setUsername(e.target.value)} className="text-left" />
+                </Field>
+                <Field label="شماره همراه">
+                  <Input
+                    inputMode="numeric"
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value.replace(/\D/g, "").slice(0, 11))}
+                  />
+                </Field>
+              </div>
+              <div className="mt-3 flex gap-2">
+                <Button
+                  onClick={async () => {
+                    const res = await fetch("/api/auth/forgot", {
+                      method: "POST",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({ username, phone }),
+                    });
+                    const d = await res.json().catch(() => ({}));
+                    setInfo(d.message ?? d.error ?? "ارسال شد");
+                  }}
+                >
+                  ارسال درخواست
+                </Button>
+                <Button variant="ghost" onClick={() => setForgot(false)}>
+                  بستن
+                </Button>
+              </div>
+            </div>
+          </div>
+        ) : null}
+
         <div className="mb-4 text-center text-white">
           <div className="mx-auto mb-3 flex size-14 items-center justify-center rounded-2xl bg-white/15 text-2xl ring-1 ring-white/30">
             📋
@@ -208,6 +263,19 @@ export default function LoginForm() {
           ) : (
             <Alert kind="info">برای این کاربر ورود بدون شماره همراه فعال شده است.</Alert>
           )}
+
+          <div className="flex items-center justify-between">
+            <button
+              type="button"
+              onClick={() => {
+                setForgot(true);
+                setInfo("");
+              }}
+              className="text-[11px] font-bold text-teal-700 underline"
+            >
+              🔑 رمز عبور را فراموش کرده‌ام
+            </button>
+          </div>
 
           <label className="flex items-center gap-2 text-xs font-bold text-slate-600">
             <input

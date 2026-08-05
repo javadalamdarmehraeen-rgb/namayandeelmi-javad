@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import { Badge, Card, SectionTitle } from "@/components/ui";
-import ReportScreen from "@/components/screens/ReportScreen";
+import ChartsPanel from "@/components/screens/ChartsPanel";
 import { tehranDateTime, toPersianDigits } from "@/lib/jalali";
 
 type Counts = {
@@ -90,7 +90,15 @@ export default function AdminDashboard() {
       </div>
 
       <Card>
-        <SectionTitle icon="🕒">فعالیت لحظه‌ای — به تفکیک هر نماینده</SectionTitle>
+        <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+          <SectionTitle icon="🕒">فعالیت لحظه‌ای — به تفکیک هر نماینده</SectionTitle>
+          <Link
+            href="/admin/activity"
+            className="rounded-xl bg-teal-600 px-3 py-2 text-xs font-bold text-white hover:bg-teal-700"
+          >
+            🔎 صفحه کامل فعالیت لحظه‌ای
+          </Link>
+        </div>
         <div className="grid grid-cols-1 gap-2 lg:grid-cols-2">
           {reps.map((r) => {
             const logs = byRep[r.fullName] ?? [];
@@ -154,6 +162,12 @@ export default function AdminDashboard() {
       <Card>
         <SectionTitle icon="⬇️">خروجی اکسل</SectionTitle>
         <div className="flex flex-wrap gap-2">
+          <a
+            href="/admin/backup"
+            className="rounded-xl bg-indigo-50 px-3 py-2 text-xs font-bold text-indigo-800 ring-1 ring-indigo-200 hover:bg-indigo-100"
+          >
+            💾 پشتیبان‌گیری
+          </a>
           {[
             ["pharmacies", "داروخانه‌ها"],
             ["doctors", "پزشکان"],
@@ -174,8 +188,7 @@ export default function AdminDashboard() {
         </div>
       </Card>
 
-      <SectionTitle icon="📈">گزارش ماهانه همه نمایندگان</SectionTitle>
-      <ReportScreen compact />
+      <ChartsPanel scope="admin" />
     </div>
   );
 }

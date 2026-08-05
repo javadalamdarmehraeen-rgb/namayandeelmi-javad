@@ -8,6 +8,7 @@ export const metadata: Metadata = {
   description: "سامانه ثبت اطلاعات داروخانه، پزشک، سفارشات و تردد نمایندگان علمی",
   manifest: "/manifest.webmanifest",
   appleWebApp: { capable: true, title: "ثبت اطلاعات کل", statusBarStyle: "default" },
+  other: { "mobile-web-app-capable": "yes", "format-detection": "telephone=no" },
 };
 
 export const viewport: Viewport = {

@@ -11,7 +11,10 @@ const num = (v: unknown): number | null => {
   const n = Number(v);
   return Number.isFinite(n) && n !== 0 ? n : null;
 };
-const str = (v: unknown, max = 500) => String(v ?? "").trim().slice(0, max);
+const str = (v: unknown, max = 0) => {
+  const t = String(v ?? "").trim();
+  return max > 0 ? t.slice(0, max) : t; // max=0 یعنی بدون محدودیت کاراکتر
+};
 
 export async function GET(req: Request, ctx: Ctx) {
   const user = await getSessionUser();
@@ -68,7 +71,7 @@ export async function POST(req: Request, ctx: Ctx) {
     lat: num(body.lat),
     lng: num(body.lng),
     accuracy: num(body.accuracy),
-    locationLabel: str(body.locationLabel, 200),
+    locationLabel: str(body.locationLabel),
   };
 
   try {
@@ -83,17 +86,26 @@ export async function POST(req: Request, ctx: Ctx) {
           province: str(body.province, 100),
           city: str(body.city, 100),
           region: str(body.region, 100),
-          name: str(body.name, 200),
+          name: str(body.name),
           landline: str(body.landline, 20),
           managerName: str(body.managerName, 160),
           managerPhone: str(body.managerPhone, 20),
-          address: str(body.address, 1000),
+          address: str(body.address),
           isPercent: body.isPercent === true,
-          percentValue: str(body.percentValue, 40),
-          locationLabel: base.locationLabel || str(body.name, 200),
+          percentValue: str(body.percentValue),
+          locationLabel: base.locationLabel || str(body.name),
         })
         .returning();
-      await log(user.id, user.fullName, "ثبت داروخانه", str(body.name, 200));
+      const phFiles: number[] = Array.isArray(body.fileIds)
+        ? body.fileIds.map(Number).filter((n: number) => Number.isFinite(n))
+        : [];
+      if (phFiles.length) {
+        await db
+          .update(attachments)
+          .set({ ownerId: row.id })
+          .where(and(inArray(attachments.id, phFiles), eq(attachments.userId, user.id)));
+      }
+      await log(user.id, user.fullName, "ثبت داروخانه", str(body.name));
       return Response.json({ row });
     }
     if (type === "doctors") {
@@ -107,16 +119,16 @@ export async function POST(req: Request, ctx: Ctx) {
           province: str(body.province, 100),
           city: str(body.city, 100),
           region: str(body.region, 100),
-          name: str(body.name, 200),
+          name: str(body.name),
           specialty: str(body.specialty, 160),
           phone: str(body.phone, 20),
           secretaryName: str(body.secretaryName, 160),
           secretaryPhone: str(body.secretaryPhone, 20),
-          address: str(body.address, 1000),
-          otherAddresses: str(body.otherAddresses, 2000),
+          address: str(body.address),
+          otherAddresses: str(body.otherAddresses),
           isPercent: body.isPercent === true,
-          percentValue: str(body.percentValue, 40),
-          locationLabel: base.locationLabel || str(body.name, 200),
+          percentValue: str(body.percentValue),
+          locationLabel: base.locationLabel || str(body.name),
         })
         .returning();
       const fileIds: number[] = Array.isArray(body.fileIds)
@@ -128,7 +140,7 @@ export async function POST(req: Request, ctx: Ctx) {
           .set({ ownerId: row.id })
           .where(and(inArray(attachments.id, fileIds), eq(attachments.userId, user.id)));
       }
-      await log(user.id, user.fullName, "ثبت پزشک", str(body.name, 200));
+      await log(user.id, user.fullName, "ثبت پزشک", str(body.name));
       return Response.json({ row });
     }
     if (type === "orders") {
@@ -144,18 +156,18 @@ export async function POST(req: Request, ctx: Ctx) {
         .insert(orders)
         .values({
           ...base,
-          pharmacyName: str(body.pharmacyName, 200),
+          pharmacyName: str(body.pharmacyName),
           managerName: str(body.managerName, 160),
           managerPhone: str(body.managerPhone, 20),
-          address: str(body.address, 1000),
-          locationLabel: base.locationLabel || str(body.pharmacyName, 200),
+          address: str(body.address),
+          locationLabel: base.locationLabel || str(body.pharmacyName),
           items,
           distributor: str(body.distributor, 160),
           visitor: str(body.visitor, 160),
-          notes: str(body.notes, 2000),
+          notes: str(body.notes),
         })
         .returning();
-      await log(user.id, user.fullName, "ثبت سفارش", str(body.pharmacyName, 200));
+      await log(user.id, user.fullName, "ثبت سفارش", str(body.pharmacyName));
       return Response.json({ row });
     }
   } catch {

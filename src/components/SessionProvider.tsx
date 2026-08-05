@@ -48,11 +48,21 @@ export function patchFetch() {
     const url = typeof input === "string" ? input : input instanceof URL ? input.toString() : input.url;
     if (url.startsWith("/api") || url.startsWith(window.location.origin + "/api")) {
       const token = getTabToken();
-      if (token) {
-        const headers = new Headers(init?.headers ?? (input instanceof Request ? input.headers : undefined));
-        headers.set("x-auth-token", token);
-        return original(input, { ...init, headers });
-      }
+      const headers = new Headers(init?.headers ?? (input instanceof Request ? input.headers : undefined));
+      if (token) headers.set("x-auth-token", token);
+      // تلاش مجدد خودکار روی اینترنت‌های ضعیف/ناپایدار (موبایل، اینترنت ملی، VPN)
+      const attempt = async (n: number): Promise<Response> => {
+        try {
+          return await original(input, { ...init, headers, cache: init?.cache ?? "no-store" });
+        } catch (err) {
+          if (n < 2 && typeof navigator !== "undefined" && navigator.onLine) {
+            await new Promise((r) => setTimeout(r, 900 * (n + 1)));
+            return attempt(n + 1);
+          }
+          throw err;
+        }
+      };
+      return attempt(0);
     }
     return original(input, init);
   };

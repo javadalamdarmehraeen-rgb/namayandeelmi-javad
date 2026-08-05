@@ -28,6 +28,7 @@ export const DEFAULT_COLUMNS: Record<string, ColumnConfig[]> = {
     { key: "address", label: "آدرس", visible: false },
     { key: "isPercent", label: "درصدی؟", visible: true },
     { key: "location", label: "لوکیشن", visible: true },
+    { key: "nav", label: "مسیریابی", visible: true },
     { key: "sent", label: "وضعیت ارسال", visible: true },
   ],
   doctors: [
@@ -45,6 +46,7 @@ export const DEFAULT_COLUMNS: Record<string, ColumnConfig[]> = {
     { key: "address", label: "آدرس مطب", visible: false },
     { key: "isPercent", label: "درصدی؟", visible: true },
     { key: "location", label: "لوکیشن", visible: true },
+    { key: "nav", label: "مسیریابی", visible: true },
     { key: "sent", label: "وضعیت ارسال", visible: true },
   ],
   orders: [
@@ -60,6 +62,7 @@ export const DEFAULT_COLUMNS: Record<string, ColumnConfig[]> = {
     { key: "visitor", label: "نام ویزیتور", visible: true },
     { key: "notes", label: "توضیحات", visible: false },
     { key: "location", label: "لوکیشن", visible: true },
+    { key: "nav", label: "مسیریابی", visible: true },
     { key: "sent", label: "وضعیت ارسال", visible: true },
   ],
 };

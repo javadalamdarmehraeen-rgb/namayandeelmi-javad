@@ -34,8 +34,11 @@ export async function POST(req: Request) {
       kind: String(b.kind ?? "روزانه").slice(0, 30),
       fromDate,
       toDate,
-      days: Math.max(1, Number(b.days) || 1),
-      reason: String(b.reason ?? "").slice(0, 1000),
+      days: Math.max(0, Number(b.days) || 0),
+      fromTime: String(b.fromTime ?? "").slice(0, 5),
+      toTime: String(b.toTime ?? "").slice(0, 5),
+      hours: Math.max(0, Number(b.hours) || 0),
+      reason: String(b.reason ?? ""),
     })
     .returning();
   await db
@@ -70,7 +73,7 @@ export async function PATCH(req: Request) {
   const id = Number(b.id);
   const status = b.status === "approved" ? "approved" : b.status === "rejected" ? "rejected" : null;
   if (!Number.isFinite(id) || !status) return Response.json({ error: "ورودی نامعتبر" }, { status: 400 });
-  const note = String(b.note ?? "").slice(0, 300);
+  const note = String(b.note ?? "");
 
   const patch =
     user.role === "supervisor"

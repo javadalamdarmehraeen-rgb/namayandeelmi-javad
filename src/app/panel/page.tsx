@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useSession } from "@/components/SessionProvider";
+import ChartsPanel from "@/components/screens/ChartsPanel";
 import { toPersianDigits, todayJalali } from "@/lib/jalali";
 
 export default function PanelHome() {
@@ -78,6 +79,8 @@ export default function PanelHome() {
           </Link>
         ))}
       </div>
+
+      {has("reports") ? <ChartsPanel scope="rep" /> : null}
 
       {main.length + more.length === 0 ? (
         <div className="rounded-2xl bg-amber-50 p-4 text-sm text-amber-800 ring-1 ring-amber-200">

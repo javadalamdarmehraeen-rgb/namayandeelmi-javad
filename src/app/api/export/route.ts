@@ -152,7 +152,7 @@ export async function GET(req: Request) {
     const data = await db.select().from(leaves).where(w).orderBy(desc(leaves.id));
     const fa = (s: string) => (s === "approved" ? "تایید" : s === "rejected" ? "رد" : "در انتظار");
     rows = [
-      ["ردیف", "نام نماینده", "نوع", "از تاریخ", "تا تاریخ", "تعداد روز", "علت", "تایید سرپرست", "تایید مدیر"],
+      ["ردیف", "نام نماینده", "نوع", "از تاریخ", "تا تاریخ", "تعداد روز", "از ساعت", "تا ساعت", "مدت (ساعت)", "علت", "تایید سرپرست", "تایید مدیر"],
       ...data.map((r, i) => [
         i + 1,
         r.repName,
@@ -160,6 +160,9 @@ export async function GET(req: Request) {
         r.fromDate,
         r.toDate,
         r.days,
+        r.fromTime,
+        r.toTime,
+        r.hours,
         r.reason,
         fa(r.supervisorStatus),
         fa(r.managerStatus),

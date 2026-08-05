@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { tehranDateTime, toPersianDigits } from "@/lib/jalali";
+import { playNotificationSound, vibrate } from "@/lib/sound";
 
 type N = {
   id: number;
@@ -20,6 +21,7 @@ export default function NotificationBell({ basePath }: { basePath: string }) {
   const [unread, setUnread] = useState(0);
   const [open, setOpen] = useState(false);
   const [toast, setToast] = useState<N | null>(null);
+  const [muted, setMuted] = useState(false);
   const lastId = useRef<number>(0);
   const initialized = useRef(false);
 
@@ -33,11 +35,17 @@ export default function NotificationBell({ basePath }: { basePath: string }) {
     const top = list[0];
     if (top && initialized.current && top.id > lastId.current && !top.readAt) {
       setToast(top);
-      setTimeout(() => setToast(null), 8000);
-      try {
-        if ("vibrate" in navigator) navigator.vibrate?.(200);
-      } catch {
-        /* ignore */
+      setTimeout(() => setToast(null), 10000);
+      if (localStorage.getItem("sek_mute") !== "1") {
+        playNotificationSound();
+        vibrate();
+      }
+      if (typeof Notification !== "undefined" && Notification.permission === "granted") {
+        try {
+          new Notification("🔔 اعلان جدید", { body: top.title, icon: "/icon.svg" });
+        } catch {
+          /* ignore */
+        }
       }
     }
     if (top) lastId.current = Math.max(lastId.current, top.id);
@@ -45,10 +53,33 @@ export default function NotificationBell({ basePath }: { basePath: string }) {
   }, []);
 
   useEffect(() => {
+    setMuted(localStorage.getItem("sek_mute") === "1");
     load();
     const t = setInterval(load, 20000);
     return () => clearInterval(t);
   }, [load]);
+
+  const markOne = async (id: number) => {
+    await fetch("/api/notifications", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ ids: [id] }),
+    });
+    load();
+  };
+
+  const toggleMute = () => {
+    const next = !muted;
+    setMuted(next);
+    localStorage.setItem("sek_mute", next ? "1" : "0");
+    if (!next) playNotificationSound();
+  };
+
+  const askPermission = async () => {
+    if (typeof Notification !== "undefined" && Notification.permission === "default") {
+      await Notification.requestPermission().catch(() => undefined);
+    }
+  };
 
   const markAll = async () => {
     await fetch("/api/notifications", {
@@ -63,7 +94,10 @@ export default function NotificationBell({ basePath }: { basePath: string }) {
     <>
       <div className="relative">
         <button
-          onClick={() => setOpen((v) => !v)}
+          onClick={() => {
+            setOpen((v) => !v);
+            askPermission();
+          }}
           className="relative rounded-lg bg-white/15 px-2 py-1.5 text-sm hover:bg-white/25"
           title="اعلان‌ها"
         >
@@ -81,9 +115,14 @@ export default function NotificationBell({ basePath }: { basePath: string }) {
             <div className="fade-in absolute left-0 z-40 mt-2 max-h-80 w-72 overflow-y-auto rounded-2xl bg-white p-2 text-slate-800 shadow-2xl ring-1 ring-slate-200">
               <div className="mb-1 flex items-center justify-between px-2">
                 <span className="text-xs font-bold text-slate-600">اعلان‌ها</span>
-                <button onClick={markAll} className="text-[11px] font-bold text-teal-700">
-                  خواندن همه
-                </button>
+                <div className="flex items-center gap-2">
+                  <button onClick={toggleMute} className="text-[11px] font-bold text-slate-500" title="صدای اعلان">
+                    {muted ? "🔕 صدا خاموش" : "🔊 صدا روشن"}
+                  </button>
+                  <button onClick={markAll} className="text-[11px] font-bold text-teal-700">
+                    خواندن همه
+                  </button>
+                </div>
               </div>
               {rows.length === 0 ? (
                 <p className="px-2 py-6 text-center text-xs text-slate-400">اعلانی وجود ندارد</p>
@@ -91,9 +130,13 @@ export default function NotificationBell({ basePath }: { basePath: string }) {
                 rows.slice(0, 12).map((n) => (
                   <div
                     key={n.id}
-                    className={`mb-1 rounded-xl px-2.5 py-2 text-xs ${n.readAt ? "bg-slate-50" : "bg-teal-50 ring-1 ring-teal-200"}`}
+                    onClick={() => !n.readAt && markOne(n.id)}
+                    className={`mb-1 cursor-pointer rounded-xl px-2.5 py-2 text-xs ${n.readAt ? "bg-slate-50" : "bg-teal-50 ring-1 ring-teal-200"}`}
                   >
-                    <div className="font-bold text-slate-800">{n.title}</div>
+                    <div className="font-bold text-slate-800">
+                      {n.title}
+                      {!n.readAt ? <span className="mr-1 text-[9px] text-teal-600">(برای خواندن کلیک کنید)</span> : null}
+                    </div>
                     {n.body ? <div className="mt-0.5 text-[11px] text-slate-600">{n.body}</div> : null}
                     <div className="mt-1 text-[10px] text-slate-400">
                       {n.fromName ? `${n.fromName} — ` : ""}
@@ -119,9 +162,20 @@ export default function NotificationBell({ basePath }: { basePath: string }) {
           <div className="text-xs font-black text-amber-300">🔔 اعلان جدید</div>
           <div className="mt-1 text-sm font-bold">{toast.title}</div>
           {toast.body ? <div className="text-xs text-slate-200">{toast.body}</div> : null}
-          <button onClick={() => setToast(null)} className="mt-2 text-[11px] font-bold text-teal-300">
-            بستن
-          </button>
+          <div className="mt-2 flex gap-3">
+            <button
+              onClick={() => {
+                markOne(toast.id);
+                setToast(null);
+              }}
+              className="text-[11px] font-bold text-emerald-300"
+            >
+              ✔ خواندم
+            </button>
+            <button onClick={() => setToast(null)} className="text-[11px] font-bold text-teal-300">
+              بستن
+            </button>
+          </div>
         </div>
       ) : null}
     </>
