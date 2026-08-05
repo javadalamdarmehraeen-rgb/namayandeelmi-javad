@@ -2,7 +2,8 @@ import { db } from "@/db";
 import { options, roles, users } from "@/db/schema";
 import { eq, sql } from "drizzle-orm";
 import { hashPassword } from "./auth";
-import { DEFAULT_PROVINCES, DEFAULT_SPECIALTIES } from "./constants";
+import { DEFAULT_SPECIALTIES } from "./constants";
+import { IRAN, PROVINCES, REGIONS } from "./iran";
 import {
   ALL_PERMISSION_KEYS,
   DEFAULT_COLUMNS,
@@ -408,25 +409,22 @@ async function seed() {
 
   const existing = await db.select().from(options).limit(1);
   if (existing.length === 0) {
-    await db.insert(options).values([
-      ...DEFAULT_SPECIALTIES.map((v) => ({ category: "specialty", value: v })),
-      ...DEFAULT_PROVINCES.map((v) => ({ category: "province", value: v })),
-      { category: "city", value: "تهران", parent: "تهران" },
-      { category: "city", value: "اسلامشهر", parent: "تهران" },
-      { category: "city", value: "شهریار", parent: "تهران" },
-      { category: "city", value: "کرج", parent: "البرز" },
-      { category: "city", value: "اصفهان", parent: "اصفهان" },
-      { category: "city", value: "شیراز", parent: "فارس" },
-      { category: "city", value: "مشهد", parent: "خراسان رضوی" },
-      ...Array.from({ length: 22 }, (_, i) => ({
-        category: "region",
-        value: `منطقه ${i + 1}`,
-        parent: "تهران",
-      })),
-      { category: "distributor", value: "پخش سراسری" },
-      { category: "distributor", value: "پخش هجرت" },
-      { category: "visitor", value: "ویزیتور ۱" },
-    ]);
+    const values: { category: string; value: string; parent: string }[] = [];
+    for (const v of DEFAULT_SPECIALTIES) values.push({ category: "specialty", value: v, parent: "" });
+    for (const p of PROVINCES) {
+      values.push({ category: "province", value: p, parent: "" });
+      for (const c of IRAN[p]) {
+        values.push({ category: "city", value: c, parent: p });
+        for (const r of REGIONS[c] ?? []) values.push({ category: "region", value: r, parent: c });
+      }
+    }
+    values.push({ category: "distributor", value: "پخش سراسری", parent: "" });
+    values.push({ category: "distributor", value: "پخش هجرت", parent: "" });
+    values.push({ category: "visitor", value: "ویزیتور ۱", parent: "" });
+    // درج دسته‌ای برای سرعت
+    for (let i = 0; i < values.length; i += 300) {
+      await db.insert(options).values(values.slice(i, i + 300));
+    }
   }
 }
 

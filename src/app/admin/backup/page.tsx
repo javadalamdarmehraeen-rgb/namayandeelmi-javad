@@ -5,24 +5,9 @@ import { Alert, Badge, Button, Card, Field, Input, SectionTitle } from "@/compon
 import { tehranDateTime, toPersianDigits } from "@/lib/jalali";
 import { useConfirm } from "@/components/Confirm";
 
-type Cfg = {
-  enabled: boolean;
-  minutes: number;
-  withFiles: boolean;
-  folderName: string;
-  /** یک فایل ثابت که هر بار جایگزین می‌شود (بدون انباشت فایل) */
-  overwrite: boolean;
-  fileName: string;
-};
+type Cfg = { enabled: boolean; minutes: number; withFiles: boolean; folderName: string };
 
-const DEFAULT_CFG: Cfg = {
-  enabled: false,
-  minutes: 30,
-  withFiles: false,
-  folderName: "namayandeelmi-javad",
-  overwrite: true,
-  fileName: "namayandeelmi-backup.json",
-};
+const DEFAULT_CFG: Cfg = { enabled: false, minutes: 30, withFiles: false, folderName: "namayandeelmi-javad" };
 const IDB = "sek-backup";
 
 // ذخیره دسترسی پوشه انتخاب‌شده برای دفعات بعد
@@ -62,10 +47,6 @@ export default function BackupPage() {
   const [log, setLog] = useState<string[]>([]);
   const timer = useRef<ReturnType<typeof setInterval> | null>(null);
   const [dirName, setDirName] = useState("");
-  const [restoring, setRestoring] = useState(false);
-  const [restoreMsg, setRestoreMsg] = useState("");
-  const [restoreMode, setRestoreMode] = useState<"replace" | "merge">("replace");
-  const fileRef = useRef<HTMLInputElement>(null);
   const confirm = useConfirm();
   const supportsFs = typeof window !== "undefined" && "showDirectoryPicker" in window;
 
@@ -119,10 +100,7 @@ export default function BackupPage() {
         if (!res.ok) throw new Error("خطا در دریافت پشتیبان");
         const blob = await res.blob();
         const stamp = new Date().toISOString().replace(/[:.]/g, "-").slice(0, 16);
-        // در حالت جایگزینی، نام فایل ثابت است تا فایل قبلی بازنویسی شود
-        const name = cfg.overwrite
-          ? cfg.fileName || "namayandeelmi-backup.json"
-          : `namayandeelmi-backup-${stamp}.json`;
+        const name = `namayandeelmi-backup-${stamp}.json`;
 
         const handle = forceDownload ? null : await loadHandle();
         if (handle) {
@@ -135,16 +113,10 @@ export default function BackupPage() {
             ).requestPermission({ mode: "readwrite" });
           }
           const fh = await handle.getFileHandle(name, { create: true });
-          // keepExistingData=false ⇒ محتوای قبلی کامل پاک و جایگزین می‌شود
-          const ws = await fh.createWritable({ keepExistingData: false });
+          const ws = await fh.createWritable();
           await ws.write(blob);
           await ws.close();
-          setLog((l) =>
-            [
-              `✅ ${tehranDateTime(new Date())} — ${cfg.overwrite ? "جایگزین شد" : "ذخیره شد"}: ${name}`,
-              ...l,
-            ].slice(0, 20),
-          );
+          setLog((l) => [`✅ ${tehranDateTime(new Date())} — ذخیره در پوشه: ${name}`, ...l].slice(0, 20));
         } else if (forceDownload) {
           const url = URL.createObjectURL(blob);
           const a = document.createElement("a");
@@ -191,7 +163,7 @@ export default function BackupPage() {
         setBusy(false);
       }
     },
-    [cfg.withFiles, cfg.overwrite, cfg.fileName, supportsFs],
+    [cfg.withFiles, supportsFs],
   );
 
   // زمان‌بند خودکار
@@ -207,54 +179,6 @@ export default function BackupPage() {
       if (timer.current) clearInterval(timer.current);
     };
   }, [cfg.enabled, cfg.minutes, runBackup]);
-
-  const restore = async (file: File, mode: "replace" | "merge") => {
-    setRestoreMsg("");
-    let payload: unknown;
-    try {
-      payload = JSON.parse(await file.text());
-    } catch {
-      setRestoreMsg("✖ فایل انتخابی JSON معتبر نیست");
-      return;
-    }
-    const p = payload as { counts?: Record<string, number>; dateShamsi?: string; data?: unknown };
-    if (!p?.data) {
-      setRestoreMsg("✖ ساختار فایل پشتیبان شناسایی نشد");
-      return;
-    }
-    const c = p.counts ?? {};
-    const summary = Object.entries(c)
-      .map(([k, v]) => `${k}: ${v}`)
-      .join(" | ");
-    if (
-      !(await confirm({
-        title: mode === "replace" ? "بازیابی کامل (جایگزینی)" : "بازیابی (ادغام)",
-        message:
-          (mode === "replace"
-            ? "⚠️ همه اطلاعات فعلی پاک و با محتوای فایل جایگزین می‌شود.\n"
-            : "اطلاعات فایل به داده‌های فعلی اضافه می‌شود.\n") +
-          `تاریخ پشتیبان: ${p.dateShamsi ?? "نامشخص"}\n${summary}`,
-        confirmText: "بازیابی کن",
-        danger: mode === "replace",
-      }))
-    )
-      return;
-
-    setRestoring(true);
-    setRestoreMsg("⏳ در حال بازیابی اطلاعات...");
-    const res = await fetch("/api/backup/restore", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ ...(payload as object), mode }),
-    }).catch(() => null);
-    setRestoring(false);
-    const d = await res?.json().catch(() => ({}));
-    if (res?.ok) {
-      setRestoreMsg(`✅ بازیابی انجام شد — ${JSON.stringify(d.report ?? {})}`);
-      setLog((l) => [`♻️ ${tehranDateTime(new Date())} — بازیابی از ${file.name}`, ...l].slice(0, 20));
-      setTimeout(() => window.location.reload(), 2500);
-    } else setRestoreMsg(`✖ ${d?.error ?? "بازیابی ناموفق بود"}`);
-  };
 
   const winScript = `@echo off
 rem ============================================================
@@ -327,63 +251,6 @@ echo backup saved to %DEST%
       </Card>
 
       <Card>
-        <h3 className="mb-2 text-sm font-bold text-slate-700">♻️ بازیابی فایل پشتیبان</h3>
-        {restoreMsg ? (
-          <div className="mb-2">
-            <Alert kind={restoreMsg.startsWith("✖") ? "error" : "success"}>{restoreMsg}</Alert>
-          </div>
-        ) : null}
-        <Alert kind="info">
-          فایل پشتیبان (با پسوند <span dir="ltr">.json</span>) را انتخاب کنید تا اطلاعات بازگردانده شود. در حالت
-          «جایگزینی کامل» همه داده‌های فعلی پاک و دقیقاً محتوای فایل جایگزین می‌شود؛ در حالت «ادغام» فقط رکوردهای
-          جدید اضافه می‌شوند.
-        </Alert>
-        <div className="mt-3 flex flex-wrap items-center gap-2">
-          <select
-            value={restoreMode}
-            onChange={(e) => setRestoreMode(e.target.value as "replace" | "merge")}
-            className="rounded-xl border border-slate-300 px-3 py-2.5 text-sm"
-          >
-            <option value="replace">جایگزینی کامل (توصیه‌شده)</option>
-            <option value="merge">ادغام با داده‌های فعلی</option>
-          </select>
-          <input
-            ref={fileRef}
-            type="file"
-            accept="application/json,.json"
-            className="hidden"
-            onChange={(e) => {
-              const f = e.target.files?.[0];
-              if (f) restore(f, restoreMode);
-              if (fileRef.current) fileRef.current.value = "";
-            }}
-          />
-          <Button variant="danger" onClick={() => fileRef.current?.click()} disabled={restoring}>
-            {restoring ? "⏳ در حال بازیابی..." : "📂 انتخاب فایل و بازیابی"}
-          </Button>
-          {dirOk ? (
-            <Button
-              variant="soft"
-              disabled={restoring}
-              onClick={async () => {
-                const handle = await loadHandle();
-                if (!handle) return;
-                try {
-                  const fh = await handle.getFileHandle(cfg.fileName || "namayandeelmi-backup.json");
-                  const f = await fh.getFile();
-                  restore(f, restoreMode);
-                } catch {
-                  setRestoreMsg("✖ فایل پشتیبان در پوشه انتخاب‌شده پیدا نشد");
-                }
-              }}
-            >
-              📁 بازیابی از پوشه پشتیبان
-            </Button>
-          ) : null}
-        </div>
-      </Card>
-
-      <Card>
         <h3 className="mb-2 text-sm font-bold text-slate-700">⏱ پشتیبان‌گیری خودکار</h3>
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
           <Field label="هر چند دقیقه یک‌بار؟">
@@ -393,12 +260,8 @@ echo backup saved to %DEST%
               onChange={(e) => setCfg({ ...cfg, minutes: Number(e.target.value.replace(/\D/g, "")) || 1 })}
             />
           </Field>
-          <Field label="نام فایل پشتیبان">
-            <Input
-              value={cfg.fileName}
-              onChange={(e) => setCfg({ ...cfg, fileName: e.target.value })}
-              className="text-left"
-            />
+          <Field label="نام پوشه مقصد">
+            <Input value={cfg.folderName} onChange={(e) => setCfg({ ...cfg, folderName: e.target.value })} />
           </Field>
           <div className="flex flex-col justify-end gap-2">
             <label className="flex items-center gap-2 text-xs font-bold text-slate-600">
@@ -408,7 +271,7 @@ echo backup saved to %DEST%
                 checked={cfg.withFiles}
                 onChange={(e) => setCfg({ ...cfg, withFiles: e.target.checked })}
               />
-              شامل فایل‌ها و تصاویر (برای بازیابی کامل توصیه می‌شود)
+              شامل فایل‌ها و تصاویر (حجیم‌تر)
             </label>
             <label className="flex items-center gap-2 text-xs font-bold text-slate-600">
               <input
@@ -418,15 +281,6 @@ echo backup saved to %DEST%
                 onChange={(e) => setCfg({ ...cfg, enabled: e.target.checked })}
               />
               پشتیبان‌گیری خودکار فعال باشد
-            </label>
-            <label className="flex items-center gap-2 text-xs font-bold text-slate-600">
-              <input
-                type="checkbox"
-                className="size-4 accent-teal-600"
-                checked={cfg.overwrite}
-                onChange={(e) => setCfg({ ...cfg, overwrite: e.target.checked })}
-              />
-              جایگزینی فایل قبلی (فقط یک فایل نگهداری شود)
             </label>
           </div>
         </div>

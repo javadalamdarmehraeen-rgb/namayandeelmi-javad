@@ -16,10 +16,18 @@ export async function GET(req: Request) {
   const url = new URL(req.url);
   const category = url.searchParams.get("category");
   const parent = url.searchParams.get("parent");
-  let rows = category
-    ? await db.select().from(options).where(eq(options.category, category)).orderBy(asc(options.value))
-    : await db.select().from(options).orderBy(asc(options.category), asc(options.value));
-  if (parent) rows = rows.filter((r) => r.parent === parent);
+  const where =
+    category && parent !== null
+      ? and(eq(options.category, category), eq(options.parent, parent))
+      : category
+        ? eq(options.category, category)
+        : undefined;
+  const rows = await db
+    .select()
+    .from(options)
+    .where(where)
+    .orderBy(asc(options.category), asc(options.value))
+    .limit(5000);
   return Response.json({ rows });
 }
 
@@ -34,8 +42,8 @@ export async function POST(req: Request) {
   const category = String(body.category ?? "").trim();
   const value = String(body.value ?? "").trim().slice(0, 200);
   const parent = String(body.parent ?? "").trim().slice(0, 200);
-  if (!VALID.includes(category) || !value) return Response.json({ error: "مقدار نامعتبر" }, { status: 400 });
-  // شهر باید زیرمجموعه استان و منطقه زیرمجموعه شهر باشد
+  if (!VALID.includes(category)) return Response.json({ error: "دسته نامعتبر" }, { status: 400 });
+  if (value.length < 2) return Response.json({ error: "مقدار باید حداقل ۲ حرف باشد" }, { status: 400 });
   if ((category === "city" || category === "region") && !parent) {
     return Response.json(
       { error: category === "city" ? "ابتدا استان را انتخاب کنید" : "ابتدا شهر را انتخاب کنید" },
@@ -43,11 +51,11 @@ export async function POST(req: Request) {
     );
   }
 
-  const dupWhere =
-    parent
-      ? and(eq(options.category, category), eq(options.value, value), eq(options.parent, parent))
-      : and(eq(options.category, category), eq(options.value, value));
-  const exists = await db.select().from(options).where(dupWhere).limit(1);
+  const exists = await db
+    .select()
+    .from(options)
+    .where(and(eq(options.category, category), eq(options.value, value), eq(options.parent, parent)))
+    .limit(1);
   if (exists.length) return Response.json({ row: exists[0], duplicate: true });
 
   const [row] = await db

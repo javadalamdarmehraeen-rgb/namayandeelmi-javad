@@ -1,12 +1,18 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useConfirm } from "./Confirm";
+
+export type Opt = { value: string; parent?: string };
 
 /**
- * کشویی قابل تایپ با جستجوی پیشرفته + افزودن لحظه‌ای.
+ * کشویی قابل تایپ با جستجوی پیشرفته و «افزودن کنترل‌شده».
  *
- * نکته مهم: وقتی مقداری از قبل انتخاب شده باشد، تا زمانی که کاربر چیزی تایپ نکند
- * کل فهرست نمایش داده می‌شود (نه فقط موردِ انتخاب‌شده) تا امکان تعویض انتخاب باشد.
+ * قواعد مهم:
+ *  - تایپ کردن هرگز باعث ذخیره نمی‌شود؛ فقط مقدار فرم را پر می‌کند.
+ *  - افزودن به لیست فقط با فشردن دکمه «افزودن» و تایید کاربر انجام می‌شود.
+ *  - حداقل ۲ حرف لازم است و دکمه افزودن پس از توقف تایپ ظاهر می‌شود.
+ *  - در حالت وابسته (شهر به استان)، تا انتخاب نشدن والد، فیلد غیرفعال است.
  */
 export default function Combobox({
   value,
@@ -15,10 +21,11 @@ export default function Combobox({
   category,
   onAdded,
   canAdd = true,
-  disabled = false,
-  parent,
   placeholder = "انتخاب یا تایپ کنید...",
-  emptyHint,
+  parent = "",
+  parentLabel = "",
+  requireParent = false,
+  disabled = false,
 }: {
   value: string;
   onChange: (v: string) => void;
@@ -26,157 +33,152 @@ export default function Combobox({
   category?: string;
   onAdded?: (v: string) => void;
   canAdd?: boolean;
-  disabled?: boolean;
-  /** مقدار والد برای دسته‌های وابسته (شهر ← استان، منطقه ← شهر) */
-  parent?: string;
   placeholder?: string;
-  emptyHint?: string;
+  /** مقدار والد (مثلاً نام استان برای فیلد شهر) */
+  parent?: string;
+  parentLabel?: string;
+  requireParent?: boolean;
+  disabled?: boolean;
 }) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState(value);
-  /** آیا کاربر در حال تایپ است؟ تا وقتی تایپ نکرده، همه گزینه‌ها نمایش داده می‌شوند */
-  const [typing, setTyping] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [typing, setTyping] = useState(false);
+  const [note, setNote] = useState("");
   const ref = useRef<HTMLDivElement>(null);
+  const typingTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const confirm = useConfirm();
 
-  useEffect(() => {
-    setQuery(value);
-    setTyping(false);
-  }, [value]);
+  const blocked = disabled || (requireParent && !parent.trim());
+
+  useEffect(() => setQuery(value), [value]);
 
   useEffect(() => {
     if (!open) return;
     const handler = (e: MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node)) {
-        setOpen(false);
-        setTyping(false);
-        setQuery(value);
-      }
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
     };
     document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
-  }, [open, value]);
+  }, [open]);
+
+  useEffect(
+    () => () => {
+      if (typingTimer.current) clearTimeout(typingTimer.current);
+    },
+    [],
+  );
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
-    // بدون تایپ (یا وقتی متن دقیقاً همان مقدار انتخاب‌شده است) → کل فهرست
-    if (!typing || !q) return options.slice(0, 200);
+    if (!q) return options.slice(0, 80);
     const words = q.split(/\s+/);
-    return options.filter((o) => words.every((w) => o.toLowerCase().includes(w))).slice(0, 200);
-  }, [query, options, typing]);
+    return options.filter((o) => words.every((w) => o.toLowerCase().includes(w))).slice(0, 80);
+  }, [query, options]);
 
-  const exact = options.some((o) => o.trim() === query.trim());
-  const showAdd = canAdd && !!category && !disabled && typing && query.trim().length > 0 && !exact;
+  const trimmed = query.trim();
+  const exact = options.some((o) => o.trim() === trimmed);
+  // دکمه افزودن فقط با ۲ حرف یا بیشتر و پس از توقف تایپ نمایش داده می‌شود
+  const showAdd = canAdd && !!category && !blocked && trimmed.length >= 2 && !exact && !typing;
+
+  const markTyping = () => {
+    setTyping(true);
+    if (typingTimer.current) clearTimeout(typingTimer.current);
+    typingTimer.current = setTimeout(() => setTyping(false), 700);
+  };
 
   const addNow = async () => {
-    const v = query.trim();
-    if (!v || !category) return;
+    if (!trimmed || !category || saving) return;
+    const ok = await confirm({
+      title: "افزودن مقدار جدید",
+      message: `«${trimmed}»${parent ? ` برای «${parent}»` : ""} به لیست اضافه شود؟\nاین مقدار برای همه کاربران قابل انتخاب خواهد بود.`,
+      confirmText: "افزودن به لیست",
+    });
+    if (!ok) return;
+
     setSaving(true);
     const res = await fetch("/api/options", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ category, value: v, parent: parent ?? "" }),
+      body: JSON.stringify({ category, value: trimmed, parent }),
     }).catch(() => null);
     setSaving(false);
-    if (res?.ok) {
-      onChange(v);
-      onAdded?.(v);
-      setOpen(false);
-      setTyping(false);
-    }
-  };
 
-  const pick = (o: string) => {
-    onChange(o);
-    setQuery(o);
-    setTyping(false);
-    setOpen(false);
+    const data = await res?.json().catch(() => ({}));
+    if (res?.ok) {
+      onChange(trimmed);
+      onAdded?.(trimmed);
+      setOpen(false);
+      setNote(data?.duplicate ? "این مقدار از قبل وجود داشت" : "✅ به لیست اضافه شد");
+      setTimeout(() => setNote(""), 2500);
+    } else {
+      setNote(data?.error ?? "افزودن ناموفق بود");
+      setTimeout(() => setNote(""), 3500);
+    }
   };
 
   return (
     <div className="relative" ref={ref}>
       <div className="flex gap-1">
-        <div className="relative flex-1">
-          <input
-            value={query}
-            placeholder={placeholder}
-            disabled={disabled}
-            onFocus={() => {
-              if (!disabled) {
-                setOpen(true);
-                setTyping(false);
-              }
-            }}
-            onClick={() => {
-              if (!disabled) setOpen(true);
-            }}
-            onChange={(e) => {
-              setQuery(e.target.value);
-              setTyping(true);
-              setOpen(true);
-              onChange(e.target.value);
-            }}
-            className="w-full rounded-xl border border-slate-300 bg-white py-2.5 pr-3 pl-8 text-sm outline-none transition focus:border-teal-500 focus:ring-2 focus:ring-teal-100 disabled:bg-slate-100 disabled:text-slate-400"
-          />
-          <button
-            type="button"
-            tabIndex={-1}
-            disabled={disabled}
-            onClick={() => {
-              if (disabled) return;
-              setTyping(false);
-              setOpen((v) => !v);
-            }}
-            className="absolute left-1 top-1/2 -translate-y-1/2 rounded-lg px-2 py-1 text-xs text-slate-400 hover:bg-slate-100"
-            title="نمایش فهرست"
-          >
-            ▾
-          </button>
-        </div>
+        <input
+          value={query}
+          placeholder={blocked ? `ابتدا ${parentLabel || "مورد بالا"} را انتخاب کنید` : placeholder}
+          disabled={blocked}
+          onFocus={() => !blocked && setOpen(true)}
+          onChange={(e) => {
+            setQuery(e.target.value);
+            setOpen(true);
+            markTyping();
+            onChange(e.target.value); // فقط مقدار فرم؛ هیچ ذخیره‌ای انجام نمی‌شود
+          }}
+          onKeyDown={(e) => {
+            // Enter نباید فرم را ارسال یا مقدار را ذخیره کند
+            if (e.key === "Enter") e.preventDefault();
+            if (e.key === "Escape") setOpen(false);
+          }}
+          className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none transition focus:border-teal-500 focus:ring-2 focus:ring-teal-100 disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-400"
+        />
         {showAdd ? (
           <button
             type="button"
             onClick={addNow}
             disabled={saving}
-            title="افزودن به لیست"
-            className="shrink-0 rounded-xl bg-emerald-600 px-3 text-sm font-bold text-white hover:bg-emerald-700 disabled:opacity-50"
+            title={`افزودن «${trimmed}» به لیست`}
+            className="shrink-0 rounded-xl bg-emerald-600 px-3 text-xs font-bold text-white hover:bg-emerald-700 disabled:opacity-50"
           >
-            {saving ? "..." : "➕"}
+            {saving ? "..." : "➕ افزودن"}
           </button>
         ) : null}
       </div>
 
-      {open && !disabled ? (
-        <div className="fade-in absolute z-40 mt-1 max-h-56 w-full overflow-y-auto rounded-xl bg-white py-1 shadow-xl ring-1 ring-slate-200">
-          {showAdd ? (
-            <button
-              type="button"
-              onMouseDown={(e) => e.preventDefault()}
-              onClick={addNow}
-              className="block w-full bg-emerald-50 px-3 py-2 text-right text-xs font-bold text-emerald-800"
-            >
-              ➕ افزودن «{query.trim()}» به لیست
-            </button>
+      {note ? <p className="mt-1 text-[10px] font-bold text-emerald-700">{note}</p> : null}
+
+      {open && !blocked ? (
+        <div className="fade-in absolute z-30 mt-1 max-h-56 w-full overflow-y-auto rounded-xl bg-white py-1 shadow-xl ring-1 ring-slate-200">
+          {filtered.length === 0 ? (
+            <div className="px-3 py-2 text-[11px] text-slate-400">
+              {trimmed.length >= 2
+                ? "موردی یافت نشد — با دکمه «➕ افزودن» می‌توانید ثبت کنید"
+                : "برای جستجو تایپ کنید"}
+            </div>
           ) : null}
           {filtered.map((o) => (
             <button
               key={o}
               type="button"
               onMouseDown={(e) => e.preventDefault()}
-              onClick={() => pick(o)}
+              onClick={() => {
+                onChange(o);
+                setQuery(o);
+                setOpen(false);
+              }}
               className={`block w-full px-3 py-2 text-right text-sm hover:bg-teal-50 ${
                 o === value ? "bg-teal-50 font-bold text-teal-700" : "text-slate-700"
               }`}
             >
-              {o === value ? "✓ " : ""}
               {o}
             </button>
           ))}
-          {filtered.length === 0 && !showAdd ? (
-            <div className="px-3 py-3 text-center text-xs text-slate-400">
-              {emptyHint ?? "موردی یافت نشد"}
-            </div>
-          ) : null}
         </div>
       ) : null}
     </div>

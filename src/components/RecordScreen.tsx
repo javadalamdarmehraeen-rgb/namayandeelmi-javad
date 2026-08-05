@@ -96,7 +96,7 @@ export default function RecordScreen({ type, isAdmin = false }: { type: RecordTy
   const [loc, setLoc] = useState<LatLng>({ lat: null, lng: null, accuracy: null });
   const [rows, setRows] = useState<Row[]>([]);
   const [opts, setOpts] = useState<Record<string, string[]>>({});
-  const [optRows, setOptRows] = useState<{ category: string; value: string; parent?: string }[]>([]);
+  const [optTree, setOptTree] = useState<Record<string, Record<string, string[]>>>({});
   const [msg, setMsg] = useState<{ kind: "error" | "success" | "info"; text: string } | null>(null);
   const [busy, setBusy] = useState(false);
   const [selected, setSelected] = useState<number[]>([]);
@@ -125,9 +125,14 @@ export default function RecordScreen({ type, isAdmin = false }: { type: RecordTy
     const data = await res.json();
     const rows = (data.rows ?? []) as { category: string; value: string; parent?: string }[];
     const grouped: Record<string, string[]> = {};
-    for (const o of rows) (grouped[o.category] ??= []).push(o.value);
+    const tree: Record<string, Record<string, string[]>> = {};
+    for (const o of rows) {
+      (grouped[o.category] ??= []).push(o.value);
+      const par = o.parent ?? "";
+      ((tree[o.category] ??= {})[par] ??= []).push(o.value);
+    }
     setOpts(grouped);
-    setOptRows(rows);
+    setOptTree(tree);
   }, []);
 
   const loadSettings = useCallback(async () => {
@@ -148,22 +153,6 @@ export default function RecordScreen({ type, isAdmin = false }: { type: RecordTy
   useLive(loadRows, 15000, tab === "list");
 
   const recordName = type === "orders" ? form.pharmacyName : form.name;
-
-  // فهرست‌های وابسته: شهرهای استان انتخاب‌شده و مناطق شهر انتخاب‌شده
-  const cityOptions = useMemo(
-    () =>
-      optRows
-        .filter((o) => o.category === "city" && (!form.province || o.parent === form.province))
-        .map((o) => o.value),
-    [optRows, form.province],
-  );
-  const regionOptions = useMemo(
-    () =>
-      optRows
-        .filter((o) => o.category === "region" && (!form.city || o.parent === form.city))
-        .map((o) => o.value),
-    [optRows, form.city],
-  );
 
   const submit = async () => {
     if (!isValidJalali(form.dateShamsi)) {
@@ -423,40 +412,50 @@ export default function RecordScreen({ type, isAdmin = false }: { type: RecordTy
 
             {type !== "orders" ? (
               <>
-                <Field label="نام استان" hint="کشویی + جستجو + افزودن لحظه‌ای">
+                <Field label="نام استان" hint="فهرست کامل استان‌های ایران">
                   <Combobox
                     value={form.province}
-                    onChange={(v) => setForm((f) => ({ ...f, province: v, city: "", region: "" }))}
+                    onChange={(v) => {
+                      set("province", v);
+                      // با تغییر استان، شهر و منطقه پاک می‌شوند
+                      if (v !== form.province) {
+                        set("city", "");
+                        set("region", "");
+                      }
+                    }}
                     options={opts.province ?? []}
                     category="province"
                     onAdded={onAdded}
+                    placeholder="انتخاب استان..."
                   />
                 </Field>
-                <Field
-                  label="شهر"
-                  hint={form.province ? `شهرهای استان ${form.province}` : "ابتدا استان را انتخاب کنید"}
-                >
+                <Field label="شهر" hint="فهرست شهرهای همان استان">
                   <Combobox
                     value={form.city}
-                    onChange={(v) => setForm((f) => ({ ...f, city: v, region: "" }))}
-                    options={cityOptions}
+                    onChange={(v) => {
+                      set("city", v);
+                      if (v !== form.city) set("region", "");
+                    }}
+                    options={optTree.city?.[form.province] ?? []}
                     category="city"
                     parent={form.province}
-                    disabled={!form.province}
+                    parentLabel="استان"
+                    requireParent
                     onAdded={onAdded}
-                    emptyHint={`شهری برای «${form.province}» ثبت نشده — تایپ کنید و ➕ بزنید`}
+                    placeholder="انتخاب شهر..."
                   />
                 </Field>
-                <Field label="منطقه" hint={form.city ? `مناطق ${form.city}` : "ابتدا شهر را انتخاب کنید"}>
+                <Field label="منطقه" hint="مناطق همان شهر">
                   <Combobox
                     value={form.region}
                     onChange={(v) => set("region", v)}
-                    options={regionOptions}
+                    options={optTree.region?.[form.city] ?? []}
                     category="region"
                     parent={form.city}
-                    disabled={!form.city}
+                    parentLabel="شهر"
+                    requireParent
                     onAdded={onAdded}
-                    emptyHint={`منطقه‌ای برای «${form.city}» ثبت نشده — تایپ کنید و ➕ بزنید`}
+                    placeholder="انتخاب منطقه..."
                   />
                 </Field>
               </>
