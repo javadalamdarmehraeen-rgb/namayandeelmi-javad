@@ -1,28 +1,40 @@
-import { db, hasDatabaseUrl } from "@/db";
+import { checkDatabase, dbInfo, hasDatabaseUrl } from "@/db";
 import { ensureSeed } from "@/lib/bootstrap";
-import { sql } from "drizzle-orm";
 
 export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
+/**
+ * Health check — با Retry داخلی و مهلت کوتاه.
+ * برخلاف /ping این مسیر اتصال دیتابیس را هم بررسی می‌کند.
+ */
 export async function GET() {
   if (!hasDatabaseUrl) {
     return Response.json(
       { ok: false, db: false, reason: "DATABASE_URL تنظیم نشده است" },
-      { status: 500 },
+      { status: 500, headers: { "Cache-Control": "no-store" } },
     );
   }
-  try {
-    // مهلت کوتاه تا healthcheck روی دیتابیس کند/سرد گیر نکند
-    await Promise.race([
-      db.execute(sql`select 1`),
-      new Promise((_, rej) => setTimeout(() => rej(new Error("db timeout")), 8000)),
-    ]);
-    await ensureSeed();
-    return Response.json({ ok: true, db: true });
-  } catch (err) {
+
+  const health = await checkDatabase();
+  if (!health.ok) {
     return Response.json(
-      { ok: false, db: false, reason: err instanceof Error ? err.message : "خطای ناشناخته" },
-      { status: 500 },
+      { ok: false, db: false, latencyMs: health.latencyMs, reason: health.detail, pooler: dbInfo.usedPooler },
+      { status: 503, headers: { "Cache-Control": "no-store" } },
     );
   }
+
+  // ساخت جدول‌ها / داده اولیه در پس‌زمینه؛ پاسخ health را معطل نمی‌کند
+  void ensureSeed();
+
+  return Response.json(
+    {
+      ok: true,
+      db: true,
+      latencyMs: health.latencyMs,
+      pooler: dbInfo.usedPooler,
+      connectTimeoutSec: dbInfo.connectTimeoutSec,
+    },
+    { headers: { "Cache-Control": "no-store" } },
+  );
 }

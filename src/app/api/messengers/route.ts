@@ -37,9 +37,11 @@ export async function POST(req: Request) {
     .values({
       platform,
       label: String(b.label ?? "").trim().slice(0, 160),
-      targetType: b.targetType === "group" ? "group" : "phone",
-      target: String(b.target ?? "").trim().slice(0, 200),
+      targetType: ["group", "channel", "phone"].includes(b.targetType) ? b.targetType : "phone",
+      target: String(b.target ?? "").trim(),
       token: String(b.token ?? "").trim(),
+      provider: String(b.provider ?? "").trim().slice(0, 30),
+      apiUrl: String(b.apiUrl ?? "").trim(),
       enabled: b.enabled !== false,
     })
     .returning();
@@ -55,8 +57,12 @@ export async function PATCH(req: Request) {
   const patch: Record<string, unknown> = {};
   if (typeof b.label === "string") patch.label = b.label.trim();
   if (typeof b.target === "string") patch.target = b.target.trim();
-  if (typeof b.targetType === "string") patch.targetType = b.targetType === "group" ? "group" : "phone";
-  if (typeof b.token === "string" && b.token) patch.token = b.token.trim();
+  if (typeof b.targetType === "string" && ["group", "channel", "phone"].includes(b.targetType)) {
+    patch.targetType = b.targetType;
+  }
+  if (typeof b.token === "string") patch.token = b.token.trim();
+  if (typeof b.provider === "string") patch.provider = b.provider.trim().slice(0, 30);
+  if (typeof b.apiUrl === "string") patch.apiUrl = b.apiUrl.trim();
   if (typeof b.enabled === "boolean") patch.enabled = b.enabled;
   if (Object.keys(patch).length === 0) return Response.json({ error: "تغییری ارسال نشد" }, { status: 400 });
   await db.update(messengers).set(patch).where(eq(messengers.id, id));

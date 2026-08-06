@@ -188,12 +188,25 @@ export const tripPoints = pgTable(
 
 export const messengers = pgTable("messengers", {
   id: serial("id").primaryKey(),
+  /** telegram | bale | eitaa | whatsapp */
   platform: varchar("platform", { length: 20 }).notNull(),
   label: varchar("label", { length: 160 }).notNull().default(""),
+  /** phone | group | channel */
   targetType: varchar("target_type", { length: 20 }).notNull().default("phone"),
-  target: varchar("target", { length: 200 }).notNull().default(""),
+  /** chat_id، شماره تلفن یا آیدی گروه/کانال */
+  target: text("target").notNull().default(""),
+  /** توکن ربات یا کلید API سرویس واسط */
   token: text("token").notNull().default(""),
+  /** ارائه‌دهنده واسط واتساپ: whatsiplus | cloudapi | ultramsg | custom */
+  provider: varchar("provider", { length: 30 }).notNull().default(""),
+  /** آدرس سفارشی برای سرویس‌های واسط (اختیاری) */
+  apiUrl: text("api_url").notNull().default(""),
   enabled: boolean("enabled").notNull().default(true),
+  /** آخرین وضعیت ارسال برای نمایش در پنل */
+  lastStatus: text("last_status").notNull().default(""),
+  lastOkAt: timestamp("last_ok_at", { withTimezone: true }),
+  lastErrorAt: timestamp("last_error_at", { withTimezone: true }),
+  sortOrder: integer("sort_order").notNull().default(0),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
 

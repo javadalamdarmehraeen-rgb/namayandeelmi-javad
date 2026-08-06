@@ -1,6 +1,6 @@
 import { createHmac, randomBytes, scryptSync, timingSafeEqual } from "crypto";
 import { cookies, headers } from "next/headers";
-import { db } from "@/db";
+import { db, dbRetry } from "@/db";
 import { roles, users } from "@/db/schema";
 import { eq } from "drizzle-orm";
 
@@ -62,7 +62,7 @@ export function readToken(token: string | undefined | null): number | null {
 export async function userFromId(id: number): Promise<SessionUser | null> {
   let rows: (typeof users.$inferSelect)[] = [];
   try {
-    rows = await db.select().from(users).where(eq(users.id, id)).limit(1);
+    rows = await dbRetry(() => db.select().from(users).where(eq(users.id, id)).limit(1), "session:user");
   } catch (err) {
     console.error("session db error", err);
     return null;
@@ -76,7 +76,7 @@ export async function userFromId(id: number): Promise<SessionUser | null> {
   let roleLabel = base === "admin" ? "مدیر سیستم" : base === "supervisor" ? "سرپرست" : "نماینده علمی";
   if (!["admin", "supervisor", "rep"].includes(u.role)) {
     try {
-      const r = (await db.select().from(roles).where(eq(roles.key, u.role)).limit(1))[0];
+      const r = (await dbRetry(() => db.select().from(roles).where(eq(roles.key, u.role)).limit(1), "session:role"))[0];
       if (r) {
         base = r.base === "admin" ? "admin" : r.base === "supervisor" ? "supervisor" : "rep";
         roleLabel = r.label;

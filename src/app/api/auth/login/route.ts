@@ -1,4 +1,4 @@
-import { db } from "@/db";
+import { db, dbRetry } from "@/db";
 import { activityLogs, roles, users } from "@/db/schema";
 import { SESSION_COOKIE, createToken, verifyPassword } from "@/lib/auth";
 import { ensureSeed } from "@/lib/bootstrap";
@@ -31,7 +31,7 @@ export async function POST(req: Request) {
 
   let rows: (typeof users.$inferSelect)[] = [];
   try {
-    rows = await db.select().from(users).where(eq(users.username, username)).limit(1);
+    rows = await dbRetry(() => db.select().from(users).where(eq(users.username, username)).limit(1), "login:user");
   } catch (err) {
     console.error("login db error", err);
     return Response.json(
@@ -50,7 +50,7 @@ export async function POST(req: Request) {
   let baseRole: string = user.role;
   if (!["admin", "supervisor", "rep"].includes(user.role)) {
     try {
-      const r = (await db.select().from(roles).where(eq(roles.key, user.role)).limit(1))[0];
+      const r = (await dbRetry(() => db.select().from(roles).where(eq(roles.key, user.role)).limit(1), "login:role"))[0];
       baseRole = r?.base ?? "rep";
     } catch {
       baseRole = "rep";

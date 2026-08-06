@@ -1,4 +1,4 @@
-import { db } from "@/db";
+import { db, dbRetry } from "@/db";
 import { doctors, orders, pharmacies, trips } from "@/db/schema";
 import { getSessionUser } from "@/lib/auth";
 import { bonusKeyOf } from "@/lib/defaults";
@@ -32,7 +32,7 @@ export async function GET(req: Request) {
   const wT: SQL | undefined = scopeId ? eq(trips.userId, scopeId) : undefined;
 
   const PRODUCTS = await getProducts();
-  const [ph, dr, or, tr] = await Promise.all([
+  const [ph, dr, or, tr] = await dbRetry(() => Promise.all([
     db
       .select({ d: pharmacies.dateShamsi, rep: pharmacies.repName })
       .from(pharmacies)
@@ -45,7 +45,7 @@ export async function GET(req: Request) {
       .where(wO)
       .limit(5000),
     db.select({ d: trips.dateShamsi, rep: trips.repName }).from(trips).where(wT).limit(5000),
-  ]);
+  ]), "reports:load");
 
   const map = new Map<string, MonthlyRow>();
   const key = (d: string, rep: string) => `${d.slice(0, 7)}|${rep}`;

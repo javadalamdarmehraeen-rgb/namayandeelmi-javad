@@ -62,18 +62,8 @@ export default function ServiceWorker() {
     };
   }, []);
 
-  return (
-    <>
-      {offline ? (
-        <div className="fixed bottom-0 left-0 right-0 z-50 bg-amber-500 px-3 py-2 text-center text-xs font-bold text-white">
-          📴 اینترنت قطع است — برنامه در حالت آفلاین کار می‌کند و اطلاعات پس از اتصال خودکار ارسال می‌شود
-        </div>
-      ) : null}
-      {flash ? (
-        <div className="fixed bottom-3 left-3 right-3 z-50 mx-auto max-w-sm rounded-xl bg-emerald-600 px-3 py-2 text-center text-xs font-bold text-white shadow-lg">
-          {flash}
-        </div>
-      ) : null}
-    </>
-  );
+  // نمایش وضعیت اتصال به عهده ConnectionStatus است (پیام واضح + صف ارسال)
+  void offline;
+  void flash;
+  return null;
 }

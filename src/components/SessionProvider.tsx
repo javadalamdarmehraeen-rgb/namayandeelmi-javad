@@ -170,6 +170,11 @@ export default function SessionProvider({
       <div className="flex min-h-screen flex-col items-center justify-center gap-3 bg-slate-100 p-6 text-center">
         <div className="size-10 animate-spin rounded-full border-4 border-teal-200 border-t-teal-600" />
         <p className="text-sm text-slate-500">{loading ? "در حال بارگذاری..." : "در حال انتقال به صفحه ورود..."}</p>
+        {offline ? (
+          <p className="max-w-xs text-xs leading-6 text-amber-700">
+            ارتباط با سرور برقرار نیست. اگر قبلاً وارد شده‌اید، برنامه به‌صورت آفلاین باز می‌شود.
+          </p>
+        ) : null}
       </div>
     );
   }

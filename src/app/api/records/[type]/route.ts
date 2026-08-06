@@ -1,4 +1,4 @@
-import { db } from "@/db";
+import { db, dbRetry } from "@/db";
 import { activityLogs, attachments, doctors, orders, pharmacies } from "@/db/schema";
 import { getSessionUser } from "@/lib/auth";
 import { and, desc, eq, inArray, SQL } from "drizzle-orm";
@@ -32,7 +32,10 @@ export async function GET(req: Request, ctx: Ctx) {
         : userIdFilter
           ? eq(pharmacies.userId, Number(userIdFilter))
           : undefined;
-      const rows = await db.select().from(pharmacies).where(w).orderBy(desc(pharmacies.id)).limit(limit);
+      const rows = await dbRetry(
+        () => db.select().from(pharmacies).where(w).orderBy(desc(pharmacies.id)).limit(limit),
+        "pharmacies:list",
+      );
       return Response.json({ rows });
     }
     if (type === "doctors") {
@@ -41,7 +44,10 @@ export async function GET(req: Request, ctx: Ctx) {
         : userIdFilter
           ? eq(doctors.userId, Number(userIdFilter))
           : undefined;
-      const rows = await db.select().from(doctors).where(w).orderBy(desc(doctors.id)).limit(limit);
+      const rows = await dbRetry(
+        () => db.select().from(doctors).where(w).orderBy(desc(doctors.id)).limit(limit),
+        "doctors:list",
+      );
       return Response.json({ rows });
     }
     if (type === "orders") {
@@ -50,7 +56,10 @@ export async function GET(req: Request, ctx: Ctx) {
         : userIdFilter
           ? eq(orders.userId, Number(userIdFilter))
           : undefined;
-      const rows = await db.select().from(orders).where(w).orderBy(desc(orders.id)).limit(limit);
+      const rows = await dbRetry(
+        () => db.select().from(orders).where(w).orderBy(desc(orders.id)).limit(limit),
+        "orders:list",
+      );
       return Response.json({ rows });
     }
   } catch {
@@ -79,7 +88,8 @@ export async function POST(req: Request, ctx: Ctx) {
       if (!base.dateShamsi || !str(body.name)) {
         return Response.json({ error: "تاریخ و نام داروخانه الزامی است" }, { status: 400 });
       }
-      const [row] = await db
+      const [row] = await dbRetry(() =>
+        db
         .insert(pharmacies)
         .values({
           ...base,
@@ -95,7 +105,9 @@ export async function POST(req: Request, ctx: Ctx) {
           percentValue: str(body.percentValue),
           locationLabel: base.locationLabel || str(body.name),
         })
-        .returning();
+        .returning(),
+        "pharmacies:create",
+      );
       const phFiles: number[] = Array.isArray(body.fileIds)
         ? body.fileIds.map(Number).filter((n: number) => Number.isFinite(n))
         : [];

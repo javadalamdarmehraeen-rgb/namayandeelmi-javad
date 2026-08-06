@@ -13,10 +13,20 @@ const DATA = `sek-data-${BUILD}`;
 
 const API_TIMEOUT = 6000;
 const ASSET_TIMEOUT = 20000;
+const NAV_TIMEOUT = 5000; // مهلت کوتاه برای HTML تا کاربر روی اینترنت کند معطل نماند
+
+/** پاسخ کش‌شده را با هدر نشانه‌گذاری می‌کند تا رابط کاربری بداند آفلاین است */
+function offlineFlagged(res) {
+  const h = new Headers(res.headers);
+  h.set("x-sek-offline", "1");
+  return new Response(res.body, { status: res.status, statusText: res.statusText, headers: h });
+}
 
 const PAGES = __PAGES__;
 const ASSETS = __ASSETS__;
 const EXTRAS = __EXTRAS__;
+const RSC_PAGES = __RSC_PAGES__;
+void RSC_PAGES;
 
 /* ---------------- نصب: پیش‌کش کامل ---------------- */
 self.addEventListener("install", (e) => {
@@ -211,6 +221,30 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
+  /* درخواست‌های RSC (ناوبری داخلی Next) → شبکه با مهلت، سپس کش
+   * بدون این بخش، جابه‌جایی بین صفحات در حالت آفلاین کار نمی‌کند. */
+  const isRsc = url.searchParams.has("_rsc") || req.headers.get("RSC") === "1";
+  if (isRsc) {
+    event.respondWith(
+      (async () => {
+        try {
+          const res = await timeoutFetch(req, NAV_TIMEOUT);
+          if (res && res.ok) {
+            const c = await caches.open(SHELL);
+            c.put(req, res.clone());
+          }
+          return res;
+        } catch {
+          const cached = await caches.match(req);
+          if (cached) return cached;
+          // بدون RSC، Next خودش به ناوبری کامل صفحه برمی‌گردد (که از کش سرو می‌شود)
+          return new Response("", { status: 504 });
+        }
+      })()
+    );
+    return;
+  }
+
   /* فایل‌های استاتیک Next → کش-اول و همیشگی (نسخه‌دار هستند) */
   if (url.pathname.startsWith("/_next/static/")) {
     event.respondWith(
@@ -259,48 +293,68 @@ self.addEventListener("fetch", (event) => {
             h.set("x-from-cache", "1");
             return new Response(await cached.blob(), { status: 200, headers: h });
           }
-          return new Response(JSON.stringify({ offline: true, rows: [], logs: [], reps: [], error: "آفلاین" }), {
-            status: 200,
-            headers: { "Content-Type": "application/json; charset=utf-8" },
-          });
+          return new Response(
+            JSON.stringify({
+              offline: true,
+              rows: [],
+              logs: [],
+              reps: [],
+              error: "ارتباط با سرور برقرار نیست",
+            }),
+            { status: 200, headers: { "Content-Type": "application/json; charset=utf-8", "x-sek-offline": "1" } }
+          );
         }
       })()
     );
     return;
   }
 
-  /* ناوبری صفحات → کش-اول */
+  /* ============================================================
+   *  ناوبری صفحات → «شبکه-اول» (Network First)
+   *
+   *  چرا؟ اگر HTML کش‌شده را زودتر برگردانیم، کاربر ممکن است نسخه
+   *  قدیمی برنامه را ببیند. پس همیشه اول شبکه امتحان می‌شود؛
+   *  فقط اگر شبکه در دسترس نبود، پوسته اپ از کش برمی‌گردد تا
+   *  برنامه آفلاین هم کامل بالا بیاید (نه صفحه بن‌بست).
+   * ============================================================ */
   if (req.mode === "navigate") {
     event.respondWith(
       (async () => {
-        const cached =
-          (await caches.match(req, { ignoreSearch: true })) || (await caches.match(url.pathname, { ignoreSearch: true }));
-        const network = (async () => {
-          try {
-            const preload = await event.preloadResponse;
-            const res = preload || (await timeoutFetch(req, ASSET_TIMEOUT));
-            if (res && res.ok) {
-              const c = await caches.open(SHELL);
-              c.put(url.pathname, res.clone());
-            }
+        // ❶ تلاش برای شبکه با مهلت کوتاه
+        try {
+          const preload = await event.preloadResponse;
+          const res = preload || (await timeoutFetch(new Request(req, { cache: "no-store" }), NAV_TIMEOUT));
+          if (res && res.ok) {
+            const c = await caches.open(SHELL);
+            c.put(url.pathname, res.clone()); // فقط به‌عنوان پشتیبان آفلاین
             return res;
-          } catch {
-            return null;
           }
-        })();
-
-        if (cached) {
-          event.waitUntil(network);
-          return cached;
+          if (res) return res; // خطای واقعی سرور (۴۰۴/۵۰۰) را همان‌طور نشان بده
+        } catch {
+          /* شبکه در دسترس نیست → ادامه به کش */
         }
-        const res = await network;
-        if (res) return res;
+
+        // ❷ آفلاین: همان صفحه از کش (برنامه کامل کار می‌کند)
+        const cachedPage =
+          (await caches.match(url.pathname, { ignoreSearch: true })) ||
+          (await caches.match(req, { ignoreSearch: true }));
+        if (cachedPage) return offlineFlagged(cachedPage);
+
+        // ❸ اگر آن صفحه کش نشده، پوسته اپ را بده تا مسیریابی سمت کلاینت ادامه یابد
+        const shell =
+          (await caches.match("/panel")) || (await caches.match("/")) || (await caches.match("/login"));
+        if (shell) return offlineFlagged(shell);
+
+        // ❹ آخرین راه: صفحه راهنمای آفلاین
         return (
           (await caches.match("/offline")) ||
-          (await caches.match("/")) ||
-          new Response("<h1 dir=rtl style='font-family:Tahoma;text-align:center;padding:40px'>آفلاین هستید</h1>", {
-            headers: { "Content-Type": "text/html; charset=utf-8" },
-          })
+          new Response(
+            "<html dir=rtl><meta charset=utf-8><body style='font-family:Tahoma;text-align:center;padding:40px'>" +
+              "<h2>ارتباط با سرور برقرار نیست</h2><p>لطفاً اتصال اینترنت خود را بررسی کنید.</p>" +
+              "<button onclick='location.reload()' style='padding:10px 24px;border-radius:10px;background:#0f766e;color:#fff;border:0'>تلاش مجدد</button>" +
+              "</body></html>",
+            { status: 200, headers: { "Content-Type": "text/html; charset=utf-8" } }
+          )
         );
       })()
     );

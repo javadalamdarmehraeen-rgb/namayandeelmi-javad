@@ -38,26 +38,70 @@ export const OPTION_CATEGORIES: { key: string; label: string }[] = [
   { key: "visitor", label: "نام ویزیتور" },
 ];
 
-export const PLATFORMS: { key: string; label: string; hint: string }[] = [
+export const PLATFORMS: {
+  key: string;
+  label: string;
+  icon: string;
+  needsToken: boolean;
+  tokenHint: string;
+  targetHint: string;
+  guide: string[];
+}[] = [
   {
     key: "telegram",
     label: "تلگرام",
-    hint: "توکن ربات از @BotFather. مقصد: chat_id عددی کاربر یا گروه (گروه‌ها با منفی شروع می‌شوند)",
+    icon: "🔵",
+    needsToken: true,
+    tokenHint: "توکن ربات از @BotFather (مثل 123456:ABC-DEF...)",
+    targetHint: "chat_id عددی؛ گروه‌ها با منفی شروع می‌شوند مثل -1001234567890",
+    guide: [
+      "در تلگرام به @BotFather پیام دهید و دستور /newbot را بزنید.",
+      "نام و آیدی ربات را وارد کنید تا توکن به شما داده شود.",
+      "ربات را در گروه عضو کنید و یک پیام بفرستید.",
+      "دکمه «دریافت خودکار chat_id» را بزنید یا آدرس api.telegram.org/bot<TOKEN>/getUpdates را باز کنید.",
+    ],
   },
   {
     key: "bale",
     label: "بله",
-    hint: "توکن ربات بله (از @BotFather بله). مقصد: chat_id عددی کاربر یا گروه (گروه با منفی)",
+    icon: "🟣",
+    needsToken: true,
+    tokenHint: "توکن ربات بله از @BotFather داخل بله",
+    targetHint: "chat_id عددی کاربر یا گروه",
+    guide: [
+      "در پیام‌رسان بله به @BotFather پیام دهید و /newbot را بزنید.",
+      "توکن دریافتی را اینجا وارد کنید.",
+      "ربات را در گروه عضو کرده و یک پیام بفرستید.",
+      "دکمه «دریافت خودکار chat_id» را بزنید.",
+    ],
   },
   {
     key: "eitaa",
     label: "ایتا",
-    hint: "توکن سرویس eitaayar.ir. مقصد: نام کانال با @ یا chat_id",
+    icon: "🟠",
+    needsToken: true,
+    tokenHint: "توکن سرویس ایتایار از eitaayar.ir",
+    targetHint: "نام کانال با @ یا chat_id",
+    guide: [
+      "در سایت eitaayar.ir ثبت‌نام کنید.",
+      "توکن رایگان را از بخش «توکن من» کپی کنید.",
+      "ربات ایتایار را در کانال/گروه خود ادمین کنید.",
+      "آیدی کانال را با @ در فیلد مقصد وارد کنید.",
+    ],
   },
   {
     key: "whatsapp",
     label: "واتساپ",
-    hint: "توکن به صورت phoneNumberId:accessToken (WhatsApp Cloud API). مقصد: شماره با کد کشور مثل 989120000000",
+    icon: "🟢",
+    needsToken: true,
+    tokenHint: "کلید API سرویس واسط (whatsiplus / UltraMsg / Cloud API)",
+    targetHint: "شماره مقصد؛ برای whatsiplus با ۰ و برای بقیه با کد کشور ۹۸",
+    guide: [
+      "در whatsiplus.ir ثبت‌نام کرده و شماره واتساپ خود را متصل کنید.",
+      "کلید API را از پنل کپی کرده و اینجا وارد کنید.",
+      "نوع سرویس واسط را از فهرست «ارائه‌دهنده» انتخاب کنید.",
+      "شماره مقصد را وارد کرده و «تست ارسال» بزنید.",
+    ],
   },
 ];
 

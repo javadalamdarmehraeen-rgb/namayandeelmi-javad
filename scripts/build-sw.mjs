@@ -83,10 +83,14 @@ function main() {
   const total = walk(NEXT_STATIC, "/_next/static").reduce((s, a) => s + a.size, 0);
   const build = `${Date.now().toString(36)}-${assets.length}`;
 
+  // نسخه RSC صفحات هم پیش‌کش می‌شود تا ناوبری داخلی آفلاین کار کند
+  const rscPages = PAGES.map((p) => `${p}${p.includes("?") ? "&" : "?"}_rsc=offline`);
+
   let sw = readFileSync(SW_SRC, "utf8");
   sw = sw
     .replace("__BUILD_ID__", build)
     .replace("__PAGES__", JSON.stringify(PAGES, null, 2))
+    .replace("__RSC_PAGES__", JSON.stringify(rscPages, null, 2))
     .replace("__ASSETS__", JSON.stringify(assets, null, 2))
     .replace("__EXTRAS__", JSON.stringify(EXTRAS, null, 2));
 

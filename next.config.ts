@@ -1,22 +1,44 @@
 import type { NextConfig } from "next";
 
+/**
+ * راهبرد کش:
+ *  - صفحات HTML  → هرگز کش نشوند (no-store) تا مرورگر همیشه نسخه تازه بگیرد
+ *  - فایل‌های /_next/static → کش دائمی (نام‌شان هش‌دار است و با هر build عوض می‌شود)
+ *  - sw.js → همیشه تازه، وگرنه نسخه قدیمی سرویس‌ورکر گیر می‌کند
+ */
+const NO_STORE = "no-cache, no-store, must-revalidate, max-age=0";
+
 const nextConfig: NextConfig = {
   poweredByHeader: false,
   compress: true,
   reactStrictMode: true,
-  // بسته‌بندی سبک‌تر برای اینترنت‌های کند (موبایل / اینترنت ملی)
   experimental: {
     optimizePackageImports: ["leaflet"],
   },
   productionBrowserSourceMaps: false,
+
   async headers() {
     return [
       {
-        // سرویس‌ورکر باید همیشه تازه باشد و اجازه اسکوپ کامل داشته باشد
+        // ❶ همه صفحات HTML: هیچ‌گاه در کش مرورگر نمانند
+        source: "/:path*",
+        headers: [
+          { key: "Cache-Control", value: NO_STORE },
+          { key: "Pragma", value: "no-cache" },
+          { key: "Expires", value: "0" },
+          { key: "X-Content-Type-Options", value: "nosniff" },
+        ],
+      },
+      {
+        // ❷ استثنا: فایل‌های استاتیک نسخه‌دار باید کش دائمی داشته باشند
+        source: "/_next/static/:path*",
+        headers: [{ key: "Cache-Control", value: "public, max-age=31536000, immutable" }],
+      },
+      {
         source: "/sw.js",
         headers: [
           { key: "Content-Type", value: "application/javascript; charset=utf-8" },
-          { key: "Cache-Control", value: "public, max-age=0, must-revalidate" },
+          { key: "Cache-Control", value: NO_STORE },
           { key: "Service-Worker-Allowed", value: "/" },
         ],
       },
@@ -30,7 +52,10 @@ const nextConfig: NextConfig = {
       },
       {
         source: "/logo.svg",
-        headers: [{ key: "Access-Control-Allow-Origin", value: "*" }],
+        headers: [
+          { key: "Cache-Control", value: "public, max-age=604800" },
+          { key: "Access-Control-Allow-Origin", value: "*" },
+        ],
       },
       {
         source: "/apple-touch-icon.png",
@@ -52,6 +77,11 @@ const nextConfig: NextConfig = {
           { key: "Cache-Control", value: "public, max-age=604800" },
           { key: "Access-Control-Allow-Origin", value: "*" },
         ],
+      },
+      {
+        // API ها هرگز کش نشوند
+        source: "/api/:path*",
+        headers: [{ key: "Cache-Control", value: NO_STORE }],
       },
     ];
   },

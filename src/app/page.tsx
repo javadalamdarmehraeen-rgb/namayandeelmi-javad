@@ -25,7 +25,9 @@ export default function Home() {
       return;
     }
 
-    const slowTimer = setTimeout(() => setSlow(true), 6000);
+    const slowTimer = setTimeout(() => setSlow(true), 5000);
+    // اگر ظرف ۱۲ ثانیه پاسخی نیامد، به صفحه ورود می‌رویم تا کاربر معطل نماند
+    const bail = setTimeout(() => router.replace("/login"), 12000);
     // بیدارکردن سرور (Render رایگان بعد از بی‌کاری خاموش می‌شود)
     fetch("/api/ping", { cache: "no-store" }).catch(() => undefined);
 
@@ -33,9 +35,15 @@ export default function Home() {
       .then((r) => (r.ok ? r.json() : null))
       .then((d) => router.replace(!d?.user ? "/login" : d.user.role === "rep" ? "/panel" : "/admin"))
       .catch(() => router.replace("/login"))
-      .finally(() => clearTimeout(slowTimer));
+      .finally(() => {
+        clearTimeout(slowTimer);
+        clearTimeout(bail);
+      });
 
-    return () => clearTimeout(slowTimer);
+    return () => {
+      clearTimeout(slowTimer);
+      clearTimeout(bail);
+    };
   }, [router]);
 
   return (
@@ -44,7 +52,7 @@ export default function Home() {
       <p className="text-sm font-bold text-slate-600">در حال بارگذاری «ثبت اطلاعات کل»...</p>
       {slow ? (
         <p className="max-w-xs text-xs leading-6 text-slate-500">
-          اینترنت کند است یا سرور در حال بیدار شدن. چند لحظه صبر کنید — برنامه به‌صورت خودکار ادامه می‌دهد.
+          ارتباط با سرور کند است یا سرور در حال بیدار شدن. چند لحظه صبر کنید — برنامه خودکار ادامه می‌دهد.
         </p>
       ) : null}
       <a href="/login" className="mt-2 text-xs font-bold text-teal-700 underline">

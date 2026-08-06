@@ -98,7 +98,7 @@ export default {
           result = await sendEitaa(text, chatId, token);
           break;
         case "whatsapp":
-          result = await sendWhatsapp(text, chatId, token);
+          result = await sendWhatsapp(text, chatId, token, body.provider);
           break;
         default:
           return json({ success: false, error: "پیام‌رسان پشتیبانی نمی‌شود" }, 400);
@@ -174,10 +174,43 @@ async function sendEitaa(text, chatId, token) {
   return data;
 }
 
-async function sendWhatsapp(text, to, token) {
+async function sendWhatsapp(text, to, token, provider) {
+  const p = (provider || "cloudapi").toLowerCase();
+  const digits = String(to || CONFIG.WHATSAPP_TO || "").replace(/\D/g, "");
   const tk = token || CONFIG.WHATSAPP_TOKEN;
-  const target = (to || CONFIG.WHATSAPP_TO || "").replace(/\D/g, "");
-  const i = tk.indexOf(":");
+
+  if (p === "whatsiplus") {
+    const r = await fetch(
+      `https://api.whatsiplus.com/sendMsg/${tk}?phonenumber=${encodeURIComponent(digits)}&message=${encodeURIComponent(text)}`
+    );
+    const raw = await r.text();
+    let d;
+    try { d = JSON.parse(raw); } catch { d = { raw }; }
+    const okFlag = String(d.success ?? d.status ?? "").toLowerCase();
+    if (!r.ok || okFlag === "false" || okFlag === "error") throw new Error(d.message || raw.slice(0, 180));
+    return d;
+  }
+
+  if (p === "ultramsg") {
+    const [instance, apiToken] = String(tk).split(":");
+    if (!instance || !apiToken) throw new Error("توکن UltraMsg باید instanceId:token باشد");
+    const r = await fetch(`https://api.ultramsg.com/${instance}/messages/chat`, {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: new URLSearchParams({ token: apiToken, to: digits, body: text }).toString(),
+    });
+    const raw = await r.text();
+    if (!r.ok) throw new Error(raw.slice(0, 180));
+    try { return JSON.parse(raw); } catch { return { raw }; }
+  }
+
+  return sendWhatsappCloud(text, digits, tk);
+}
+
+async function sendWhatsappCloud(text, to, token) {
+  const tk = token || CONFIG.WHATSAPP_TOKEN;
+  const target = String(to || CONFIG.WHATSAPP_TO || "").replace(/\D/g, "");
+  const i = String(tk).indexOf(":");
   const phoneNumberId = i > 0 ? tk.slice(0, i) : "";
   const accessToken = i > 0 ? tk.slice(i + 1) : "";
   if (!phoneNumberId || !accessToken) throw new Error("توکن واتساپ باید phoneNumberId:accessToken باشد");

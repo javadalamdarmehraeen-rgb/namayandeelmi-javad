@@ -1,4 +1,4 @@
-import { db } from "@/db";
+import { db, dbRetry } from "@/db";
 import { options, roles, users } from "@/db/schema";
 import { eq, sql } from "drizzle-orm";
 import { hashPassword } from "./auth";
@@ -181,9 +181,15 @@ async function migrate() {
       platform varchar(20) NOT NULL,
       label varchar(160) NOT NULL DEFAULT '',
       target_type varchar(20) NOT NULL DEFAULT 'phone',
-      target varchar(200) NOT NULL DEFAULT '',
+      target text NOT NULL DEFAULT '',
       token text NOT NULL DEFAULT '',
+      provider varchar(30) NOT NULL DEFAULT '',
+      api_url text NOT NULL DEFAULT '',
       enabled boolean NOT NULL DEFAULT true,
+      last_status text NOT NULL DEFAULT '',
+      last_ok_at timestamptz,
+      last_error_at timestamptz,
+      sort_order integer NOT NULL DEFAULT 0,
       created_at timestamptz NOT NULL DEFAULT now()
     );
   `);
@@ -290,6 +296,13 @@ async function migrate() {
     `ALTER TABLE orders ADD COLUMN IF NOT EXISTS accuracy double precision`,
     `ALTER TABLE options ADD COLUMN IF NOT EXISTS created_by varchar(160) NOT NULL DEFAULT ''`,
     `ALTER TABLE options ADD COLUMN IF NOT EXISTS parent varchar(200) NOT NULL DEFAULT ''`,
+    `ALTER TABLE messengers ADD COLUMN IF NOT EXISTS provider varchar(30) NOT NULL DEFAULT ''`,
+    `ALTER TABLE messengers ADD COLUMN IF NOT EXISTS api_url text NOT NULL DEFAULT ''`,
+    `ALTER TABLE messengers ADD COLUMN IF NOT EXISTS last_status text NOT NULL DEFAULT ''`,
+    `ALTER TABLE messengers ADD COLUMN IF NOT EXISTS last_ok_at timestamptz`,
+    `ALTER TABLE messengers ADD COLUMN IF NOT EXISTS last_error_at timestamptz`,
+    `ALTER TABLE messengers ADD COLUMN IF NOT EXISTS sort_order integer NOT NULL DEFAULT 0`,
+    `ALTER TABLE messengers ALTER COLUMN target TYPE text`,
     `ALTER TABLE pharmacies ADD COLUMN IF NOT EXISTS is_percent boolean NOT NULL DEFAULT false`,
     `ALTER TABLE pharmacies ADD COLUMN IF NOT EXISTS percent_value varchar(40) NOT NULL DEFAULT ''`,
     `ALTER TABLE doctors ADD COLUMN IF NOT EXISTS is_percent boolean NOT NULL DEFAULT false`,
@@ -448,8 +461,9 @@ export async function ensureSeed() {
   if (running) return running;
   running = (async () => {
     try {
-      await migrate();
-      await seed();
+      // مهاجرت و داده اولیه با تلاش مجدد — روی Neon سرد ممکن است اولین اتصال شکست بخورد
+      await dbRetry(() => migrate(), "bootstrap:migrate");
+      await dbRetry(() => seed(), "bootstrap:seed");
       done = true;
     } catch (err) {
       console.error("bootstrap error", err);

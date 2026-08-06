@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 import "./globals.css";
 import ServiceWorker from "@/components/ServiceWorker";
 import ConfirmProvider from "@/components/Confirm";
+import ConnectionStatus from "@/components/ConnectionStatus";
 
 export const metadata: Metadata = {
   title: "ثبت اطلاعات کل",
@@ -44,6 +45,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
       <body className="min-h-screen bg-slate-100 text-slate-900 antialiased">
         <ConfirmProvider>{children}</ConfirmProvider>
         <ServiceWorker />
+        <ConnectionStatus />
       </body>
     </html>
   );

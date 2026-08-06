@@ -1,4 +1,4 @@
-import { db } from "@/db";
+import { db, dbRetry } from "@/db";
 import { activityLogs, doctors, leaves, orders, pharmacies, trips, users } from "@/db/schema";
 import { getSessionUser } from "@/lib/auth";
 import { count, desc, eq, sql } from "drizzle-orm";
@@ -11,7 +11,7 @@ export async function GET() {
     return Response.json({ error: "دسترسی غیرمجاز" }, { status: 401 });
   }
 
-  const [logs, userRows, phG, drG, orG, trG, activeG, pendingLeaves] = await Promise.all([
+  const [logs, userRows, phG, drG, orG, trG, activeG, pendingLeaves] = await dbRetry(() => Promise.all([
     db.select().from(activityLogs).orderBy(desc(activityLogs.id)).limit(200),
     db
       .select({
@@ -33,7 +33,7 @@ export async function GET() {
       .where(eq(trips.status, "active"))
       .groupBy(trips.userId),
     db.select({ c: count() }).from(leaves).where(eq(leaves.managerStatus, "pending")),
-  ]);
+  ]), "activity:load");
 
   const toMap = (rows: { uid: number; c: number }[]) => {
     const m = new Map<number, number>();

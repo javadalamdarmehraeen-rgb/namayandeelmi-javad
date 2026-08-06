@@ -3,6 +3,7 @@ import { db } from "@/db";
 import { messengers, otpCodes, settings } from "@/db/schema";
 import { and, desc, eq, gt } from "drizzle-orm";
 import { sendOne } from "./messaging";
+import { fetchWithRetry } from "./retry";
 
 export const OTP_TTL_MS = 3 * 60 * 1000; // ۳ دقیقه
 export const OTP_MAX_ATTEMPTS = 5;
@@ -44,14 +45,9 @@ export async function getSmsConfig(): Promise<SmsConfig> {
   };
 }
 
+/** ارسال مقاوم به درگاه پیامک با تلاش مجدد خودکار */
 async function post(url: string, init?: RequestInit, ms = 12000) {
-  const ctrl = new AbortController();
-  const t = setTimeout(() => ctrl.abort(), ms);
-  try {
-    return await fetch(url, { ...init, signal: ctrl.signal, cache: "no-store" });
-  } finally {
-    clearTimeout(t);
-  }
+  return fetchWithRetry(url, init ?? {}, { timeoutMs: ms, retries: 3, baseDelayMs: 900, maxDelayMs: 6_000, label: "sms" });
 }
 
 /** ارسال پیامک از طریق سرویس‌دهنده‌های رایج ایرانی */
