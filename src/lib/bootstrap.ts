@@ -407,24 +407,37 @@ async function seed() {
     /* ignore */
   }
 
-  const existing = await db.select().from(options).limit(1);
-  if (existing.length === 0) {
-    const values: { category: string; value: string; parent: string }[] = [];
-    for (const v of DEFAULT_SPECIALTIES) values.push({ category: "specialty", value: v, parent: "" });
-    for (const p of PROVINCES) {
-      values.push({ category: "province", value: p, parent: "" });
-      for (const c of IRAN[p]) {
-        values.push({ category: "city", value: c, parent: p });
-        for (const r of REGIONS[c] ?? []) values.push({ category: "region", value: r, parent: c });
-      }
+  // ---- درج داده‌های پایه به‌صورت افزایشی (حتی روی دیتابیس‌های موجود) ----
+  const current = await db.select({ category: options.category, value: options.value, parent: options.parent }).from(options);
+  const seen = new Set(current.map((r) => `${r.category}|${r.value}|${r.parent ?? ""}`));
+
+  const wanted: { category: string; value: string; parent: string }[] = [];
+  for (const v of DEFAULT_SPECIALTIES) wanted.push({ category: "specialty", value: v, parent: "" });
+  for (const p of PROVINCES) {
+    wanted.push({ category: "province", value: p, parent: "" });
+    for (const c of IRAN[p]) {
+      wanted.push({ category: "city", value: c, parent: p });
+      for (const r of REGIONS[c] ?? []) wanted.push({ category: "region", value: r, parent: c });
     }
-    values.push({ category: "distributor", value: "پخش سراسری", parent: "" });
-    values.push({ category: "distributor", value: "پخش هجرت", parent: "" });
-    values.push({ category: "visitor", value: "ویزیتور ۱", parent: "" });
-    // درج دسته‌ای برای سرعت
-    for (let i = 0; i < values.length; i += 300) {
-      await db.insert(options).values(values.slice(i, i + 300));
+  }
+  if (!seen.has("distributor|پخش سراسری|")) wanted.push({ category: "distributor", value: "پخش سراسری", parent: "" });
+  if (!seen.has("distributor|پخش هجرت|")) wanted.push({ category: "distributor", value: "پخش هجرت", parent: "" });
+  if (!seen.has("visitor|ویزیتور ۱|")) wanted.push({ category: "visitor", value: "ویزیتور ۱", parent: "" });
+
+  const missing = wanted.filter((w) => !seen.has(`${w.category}|${w.value}|${w.parent}`));
+  if (missing.length > 0) {
+    for (let i = 0; i < missing.length; i += 300) {
+      await db.insert(options).values(missing.slice(i, i + 300));
     }
+    console.log(`✅ ${missing.length} مقدار پایه (استان/شهر/منطقه/تخصص) به لیست‌ها اضافه شد`);
+  }
+
+  // استان‌های قدیمی بدون شهر که با نسخه‌های قبلی ثبت شده‌اند پاک نمی‌شوند،
+  // اما شهرهای بدون والد (داده ناقص نسخه قبل) اصلاح می‌شوند.
+  try {
+    await db.execute(sql`DELETE FROM options WHERE category IN ('city','region') AND (parent IS NULL OR parent = '')`);
+  } catch {
+    /* ignore */
   }
 }
 

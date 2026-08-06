@@ -412,24 +412,22 @@ export default function RecordScreen({ type, isAdmin = false }: { type: RecordTy
 
             {type !== "orders" ? (
               <>
-                <Field label="نام استان" hint="فهرست کامل استان‌های ایران">
+                <Field label="نام استان" required hint="۳۱ استان کشور — فقط انتخاب کنید">
                   <Combobox
                     value={form.province}
                     onChange={(v) => {
                       set("province", v);
-                      // با تغییر استان، شهر و منطقه پاک می‌شوند
                       if (v !== form.province) {
                         set("city", "");
                         set("region", "");
                       }
                     }}
                     options={opts.province ?? []}
-                    category="province"
-                    onAdded={onAdded}
+                    selectOnly
                     placeholder="انتخاب استان..."
                   />
                 </Field>
-                <Field label="شهر" hint="فهرست شهرهای همان استان">
+                <Field label="شهر" hint="شهرهای همان استان — فقط انتخاب کنید">
                   <Combobox
                     value={form.city}
                     onChange={(v) => {
@@ -437,24 +435,22 @@ export default function RecordScreen({ type, isAdmin = false }: { type: RecordTy
                       if (v !== form.city) set("region", "");
                     }}
                     options={optTree.city?.[form.province] ?? []}
-                    category="city"
+                    selectOnly
                     parent={form.province}
                     parentLabel="استان"
                     requireParent
-                    onAdded={onAdded}
                     placeholder="انتخاب شهر..."
                   />
                 </Field>
-                <Field label="منطقه" hint="مناطق همان شهر">
+                <Field label="منطقه" hint="مناطق همان شهر — فقط انتخاب کنید">
                   <Combobox
                     value={form.region}
                     onChange={(v) => set("region", v)}
                     options={optTree.region?.[form.city] ?? []}
-                    category="region"
+                    selectOnly
                     parent={form.city}
                     parentLabel="شهر"
                     requireParent
-                    onAdded={onAdded}
                     placeholder="انتخاب منطقه..."
                   />
                 </Field>

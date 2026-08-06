@@ -26,6 +26,7 @@ export default function Combobox({
   parentLabel = "",
   requireParent = false,
   disabled = false,
+  selectOnly = false,
 }: {
   value: string;
   onChange: (v: string) => void;
@@ -39,6 +40,8 @@ export default function Combobox({
   parentLabel?: string;
   requireParent?: boolean;
   disabled?: boolean;
+  /** فقط انتخاب از فهرست — امکان افزودن یا ثبت مقدار دلخواه وجود ندارد */
+  selectOnly?: boolean;
 }) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState(value);
@@ -79,7 +82,7 @@ export default function Combobox({
   const trimmed = query.trim();
   const exact = options.some((o) => o.trim() === trimmed);
   // دکمه افزودن فقط با ۲ حرف یا بیشتر و پس از توقف تایپ نمایش داده می‌شود
-  const showAdd = canAdd && !!category && !blocked && trimmed.length >= 2 && !exact && !typing;
+  const showAdd = !selectOnly && canAdd && !!category && !blocked && trimmed.length >= 2 && !exact && !typing;
 
   const markTyping = () => {
     setTyping(true);
@@ -129,7 +132,12 @@ export default function Combobox({
             setQuery(e.target.value);
             setOpen(true);
             markTyping();
-            onChange(e.target.value); // فقط مقدار فرم؛ هیچ ذخیره‌ای انجام نمی‌شود
+            // در حالت «فقط انتخاب»، تایپ صرفاً جستجو می‌کند و مقدار فرم را تغییر نمی‌دهد
+            if (!selectOnly) onChange(e.target.value);
+          }}
+          onBlur={() => {
+            // اگر کاربر متنی تایپ کرد ولی از فهرست انتخاب نکرد، به مقدار معتبر برمی‌گردیم
+            if (selectOnly) setTimeout(() => setQuery(value), 150);
           }}
           onKeyDown={(e) => {
             // Enter نباید فرم را ارسال یا مقدار را ذخیره کند
@@ -152,14 +160,19 @@ export default function Combobox({
       </div>
 
       {note ? <p className="mt-1 text-[10px] font-bold text-emerald-700">{note}</p> : null}
+      {selectOnly && !blocked && options.length > 0 ? (
+        <p className="mt-1 text-[10px] text-slate-400">{options.length.toLocaleString("fa-IR")} گزینه موجود است</p>
+      ) : null}
 
       {open && !blocked ? (
         <div className="fade-in absolute z-30 mt-1 max-h-56 w-full overflow-y-auto rounded-xl bg-white py-1 shadow-xl ring-1 ring-slate-200">
           {filtered.length === 0 ? (
             <div className="px-3 py-2 text-[11px] text-slate-400">
-              {trimmed.length >= 2
-                ? "موردی یافت نشد — با دکمه «➕ افزودن» می‌توانید ثبت کنید"
-                : "برای جستجو تایپ کنید"}
+              {selectOnly
+                ? "موردی یافت نشد — نام دیگری جستجو کنید"
+                : trimmed.length >= 2
+                  ? "موردی یافت نشد — با دکمه «➕ افزودن» می‌توانید ثبت کنید"
+                  : "برای جستجو تایپ کنید"}
             </div>
           ) : null}
           {filtered.map((o) => (
