@@ -26,6 +26,7 @@ function Inner({ children }: { children: ReactNode }) {
     { href: "/admin/messengers", label: "پیام‌رسان‌ها", icon: "📨", perm: "messengers" },
     { href: "/admin/backup", label: "پشتیبان‌گیری", icon: "💾", perm: "users" },
     { href: "/install", label: "نصب اپ", icon: "📲" },
+    { href: "/diagnostics", label: "عیب‌یابی", icon: "🩺" },
   ]
     .filter((n) => !n.perm || has(n.perm))
     .map(({ href, label, icon }) => ({ href, label, icon }));

@@ -30,6 +30,7 @@ export async function GET() {
       deviceId: users.deviceId,
       deviceInfo: users.deviceInfo,
       deviceBoundAt: users.deviceBoundAt,
+      simMode: users.simMode,
       lastSeenAt: users.lastSeenAt,
       createdAt: users.createdAt,
     })
@@ -61,6 +62,7 @@ export async function POST(req: Request) {
       role: String(b.role ?? "rep").slice(0, 40),
       active: b.active !== false,
       requirePhone: b.requirePhone !== false,
+      simMode: ["off", "phone", "device", "otp"].includes(b.simMode) ? b.simMode : "device",
       permissions: Array.isArray(b.permissions) && b.permissions.length ? b.permissions : ALL_PERMISSION_KEYS,
     })
     .returning();
@@ -80,6 +82,9 @@ export async function PATCH(req: Request) {
   if (typeof b.role === "string" && b.role.trim()) patch.role = b.role.trim().slice(0, 40);
   if (typeof b.active === "boolean") patch.active = b.active;
   if (typeof b.requirePhone === "boolean") patch.requirePhone = b.requirePhone;
+  if (typeof b.simMode === "string" && ["off", "phone", "device", "otp"].includes(b.simMode)) {
+    patch.simMode = b.simMode;
+  }
   // آزادسازی دستگاه متصل (تعویض گوشی نماینده)
   if (b.releaseDevice === true) {
     patch.deviceId = "";

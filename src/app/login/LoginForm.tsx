@@ -242,6 +242,7 @@ export default function LoginForm() {
         return;
       }
       setError(data.error ?? "خطا در ورود");
+      if (data.simError) setSimMismatch(data.error ?? "");
       return;
     }
     if (data.token) setTabToken(data.token, true);
@@ -489,6 +490,12 @@ export default function LoginForm() {
           <Button type="submit" disabled={busy || (mode === "rep" && needPhone && !!simMismatch)} className="w-full">
             {busy ? "در حال ورود..." : mode === "admin" ? "🔐 ورود به داشبورد مدیر" : "🚀 ورود به پنل نماینده"}
           </Button>
+
+          <div className="pt-1 text-center">
+            <a href="/diagnostics" className="text-[11px] font-bold text-teal-700 underline">
+              🩺 مشکل در ورود یا اینترنت؟ عیب‌یابی کنید
+            </a>
+          </div>
 
           <p className="pt-1 text-center text-[11px] leading-5 text-slate-400">
             مدیر: admin / admin1234 — سرپرست: sarparast / sar1234 — نماینده: rep1 / rep1234

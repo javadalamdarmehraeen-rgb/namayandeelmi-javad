@@ -7,95 +7,16 @@
  *  این فایل توسط scripts/build-sw.mjs پس از هر build تولید می‌شود.
  * ============================================================ */
 
-const BUILD = "mshv0hk1-41";
+const BUILD = "__BUILD_ID__";
 const SHELL = `sek-shell-${BUILD}`;
 const DATA = `sek-data-${BUILD}`;
 
 const API_TIMEOUT = 6000;
 const ASSET_TIMEOUT = 20000;
 
-const PAGES = [
-  "/",
-  "/login",
-  "/offline",
-  "/install",
-  "/diagnostics",
-  "/panel",
-  "/panel/pharmacies",
-  "/panel/doctors",
-  "/panel/orders",
-  "/panel/trip",
-  "/panel/home",
-  "/panel/leaves",
-  "/panel/notifications",
-  "/panel/options",
-  "/panel/reports",
-  "/admin",
-  "/admin/activity",
-  "/admin/records/pharmacies",
-  "/admin/records/doctors",
-  "/admin/records/orders",
-  "/admin/trips",
-  "/admin/homes",
-  "/admin/leaves",
-  "/admin/notifications",
-  "/admin/reports",
-  "/admin/options",
-  "/admin/columns",
-  "/admin/users",
-  "/admin/messengers",
-  "/admin/backup"
-];
-const ASSETS = [
-  "/_next/static/chunks/0.36gc1~ed3ge.js",
-  "/_next/static/chunks/0006z568g9~h0.js",
-  "/_next/static/chunks/00j8bzodjupn6.js",
-  "/_next/static/chunks/00vklh6m983wh.js",
-  "/_next/static/chunks/01xlw8hd842-c.js",
-  "/_next/static/chunks/02t_wxwzroaiz.js",
-  "/_next/static/chunks/03h9eo09svijh.js",
-  "/_next/static/chunks/03~yq9q893hmn.js",
-  "/_next/static/chunks/05yr_la_4t~21.css",
-  "/_next/static/chunks/06ncwop4zq2q0.js",
-  "/_next/static/chunks/06r9_3ub2r-4z.js",
-  "/_next/static/chunks/07lhk_q6pmm3r.js",
-  "/_next/static/chunks/07uz2g0_38qia.js",
-  "/_next/static/chunks/08g-5kea7g6.h.js",
-  "/_next/static/chunks/09d9~nyan0vc-.js",
-  "/_next/static/chunks/0a6fznmb06a1s.js",
-  "/_next/static/chunks/0bkphebfjqx-q.js",
-  "/_next/static/chunks/0cp3p4d9zxeqi.js",
-  "/_next/static/chunks/0d3shmwh5_nmn.js",
-  "/_next/static/chunks/0iodf9drzb52f.js",
-  "/_next/static/chunks/0jly0f1mstxpa.js",
-  "/_next/static/chunks/0jxiqmsruxaus.js",
-  "/_next/static/chunks/0ky2yvr~wmqlr.js",
-  "/_next/static/chunks/0m7-1y0haw-6y.js",
-  "/_next/static/chunks/0mkdhkpipl3ae.js",
-  "/_next/static/chunks/0n1bpogj.il~n.js",
-  "/_next/static/chunks/0o6ud.l0h210r.js",
-  "/_next/static/chunks/0sr2rkfl_5-4n.js",
-  "/_next/static/chunks/0t.kl08cbz2tx.js",
-  "/_next/static/chunks/0t2_-iyb.y0t-.js",
-  "/_next/static/chunks/0t48hzs_6fshe.css",
-  "/_next/static/chunks/0uh4e2v8-yv0m.js",
-  "/_next/static/chunks/0ze4gu236oq96.js",
-  "/_next/static/chunks/0zzukhsbgm0t9.js",
-  "/_next/static/chunks/0~e6i9nwvxzzi.js",
-  "/_next/static/chunks/11vlk_b7odc0i.js",
-  "/_next/static/chunks/176ztuhghbfr1.js",
-  "/_next/static/chunks/turbopack-0ngnbt.drh_yz.js",
-  "/_next/static/d3mukVEyrwzX_yW-9TObw/_buildManifest.js",
-  "/_next/static/d3mukVEyrwzX_yW-9TObw/_clientMiddlewareManifest.js",
-  "/_next/static/d3mukVEyrwzX_yW-9TObw/_ssgManifest.js"
-];
-const EXTRAS = [
-  "/manifest.webmanifest",
-  "/logo.svg",
-  "/icons/icon-192.png",
-  "/icons/icon-512.png",
-  "/apple-touch-icon.png"
-];
+const PAGES = __PAGES__;
+const ASSETS = __ASSETS__;
+const EXTRAS = __EXTRAS__;
 
 /* ---------------- نصب: پیش‌کش کامل ---------------- */
 self.addEventListener("install", (e) => {

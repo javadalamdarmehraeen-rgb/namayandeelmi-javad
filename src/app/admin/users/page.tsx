@@ -25,6 +25,7 @@ type User = {
   deviceId?: string;
   deviceInfo?: string;
   deviceBoundAt?: string | null;
+  simMode?: string;
   permissions: string[];
   passwordPlain: string;
   lastSeenAt: string | null;
@@ -557,14 +558,25 @@ export default function UsersPage() {
             </div>
 
             <div className="mt-2 flex flex-wrap items-center gap-2">
-              <span className="text-[11px] font-bold text-slate-500">ورود با شماره همراه:</span>
+              <span className="text-[11px] font-bold text-slate-500">کنترل سیم‌کارت:</span>
+              <select
+                value={u.simMode ?? "device"}
+                onChange={(e) => patch({ id: u.id, simMode: e.target.value })}
+                className="rounded-lg border border-slate-200 px-2 py-1 text-[11px] font-bold"
+                title="سطح سخت‌گیری بررسی سیم‌کارت"
+              >
+                <option value="off">بدون بررسی</option>
+                <option value="phone">تطبیق شماره</option>
+                <option value="device">قفل گوشی (توصیه‌شده)</option>
+                <option value="otp">تایید پیامکی (سخت‌گیرانه)</option>
+              </select>
               <button
                 onClick={() => patch({ id: u.id, requirePhone: !u.requirePhone })}
                 className={`rounded-lg px-3 py-1 text-[11px] font-bold ${
                   u.requirePhone ? "bg-emerald-100 text-emerald-700" : "bg-slate-200 text-slate-600"
                 }`}
               >
-                {u.requirePhone ? "✅ اجباری" : "⛔ غیرفعال (ورود بدون شماره)"}
+                {u.requirePhone ? "✅ شماره اجباری" : "⛔ بدون شماره"}
               </button>
               <span className="mx-1 h-5 w-px bg-slate-200" />
               <span className="text-[11px] font-bold text-slate-500">گوشی متصل:</span>

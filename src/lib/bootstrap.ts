@@ -31,6 +31,7 @@ async function migrate() {
       device_id varchar(80) NOT NULL DEFAULT '',
       device_info varchar(200) NOT NULL DEFAULT '',
       device_bound_at timestamptz,
+      sim_mode varchar(12) NOT NULL DEFAULT 'device',
       permissions jsonb NOT NULL DEFAULT '["dashboard","pharmacy","doctor","order","trip","home","leave","options","reports"]'::jsonb,
       last_seen_at timestamptz,
       created_at timestamptz NOT NULL DEFAULT now()
@@ -276,6 +277,7 @@ async function migrate() {
     `ALTER TABLE users ADD COLUMN IF NOT EXISTS device_id varchar(80) NOT NULL DEFAULT ''`,
     `ALTER TABLE users ADD COLUMN IF NOT EXISTS device_info varchar(200) NOT NULL DEFAULT ''`,
     `ALTER TABLE users ADD COLUMN IF NOT EXISTS device_bound_at timestamptz`,
+    `ALTER TABLE users ADD COLUMN IF NOT EXISTS sim_mode varchar(12) NOT NULL DEFAULT 'device'`,
     `ALTER TABLE pharmacies ADD COLUMN IF NOT EXISTS province varchar(100) NOT NULL DEFAULT ''`,
     `ALTER TABLE pharmacies ADD COLUMN IF NOT EXISTS city varchar(100) NOT NULL DEFAULT ''`,
     `ALTER TABLE pharmacies ADD COLUMN IF NOT EXISTS region varchar(100) NOT NULL DEFAULT ''`,

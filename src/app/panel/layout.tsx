@@ -21,6 +21,7 @@ function Inner({ children }: { children: ReactNode }) {
     { href: "/panel/options", label: "افزودن‌ها", icon: "➕", perm: "options" },
     { href: "/panel/reports", label: "گزارش ماهانه", icon: "📈", perm: "reports" },
     { href: "/install", label: "نصب اپ", icon: "📲" },
+    { href: "/diagnostics", label: "عیب‌یابی", icon: "🩺" },
   ];
   const nav = all.filter((n) => !n.perm || has(n.perm)).map(({ href, label, icon }) => ({ href, label, icon }));
 

@@ -24,6 +24,8 @@ export const users = pgTable("users", {
   deviceId: varchar("device_id", { length: 80 }).notNull().default(""),
   deviceInfo: varchar("device_info", { length: 200 }).notNull().default(""),
   deviceBoundAt: timestamp("device_bound_at", { withTimezone: true }),
+  /** off = بدون بررسی | phone = فقط تطبیق شماره | device = قفل گوشی | otp = تایید پیامکی */
+  simMode: varchar("sim_mode", { length: 12 }).notNull().default("device"),
   permissions: jsonb("permissions")
     .$type<string[]>()
     .notNull()

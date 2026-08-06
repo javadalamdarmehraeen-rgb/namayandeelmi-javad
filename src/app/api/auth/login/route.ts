@@ -70,54 +70,52 @@ export async function POST(req: Request) {
     );
   }
 
-  // ✅ بررسی سیم‌کارت فقط برای نماینده علمی (مدیر و سرپرست معاف هستند)
-  if (user.requirePhone && !isManagerAccount) {
+  /* ============================================================
+   *  کنترل سیم‌کارت — چهار حالت که مدیر برای هر کاربر تعیین می‌کند:
+   *    off    → بدون هیچ بررسی
+   *    phone  → فقط شماره واردشده باید با شماره ثبت‌شده یکی باشد
+   *    device → علاوه بر شماره، حساب به یک گوشی قفل می‌شود (پیش‌فرض)
+   *    otp    → سخت‌گیرانه: اثبات حضور سیم‌کارت با کد پیامکی
+   * ============================================================ */
+  const simMode = isManagerAccount ? "off" : (user.simMode ?? "device");
+  const deviceId = String(body.deviceId ?? "").replace(/[^a-zA-Z0-9]/g, "").slice(0, 80);
+
+  if (simMode !== "off" && user.requirePhone) {
     if (!deviceOnline) {
       return Response.json(
+        { error: "⚠️ دستگاه به شبکه متصل نیست. سیم‌کارت یا اینترنت را فعال کنید.", simError: true },
+        { status: 403 },
+      );
+    }
+    if (!/^0\d{10}$/.test(phone)) {
+      return Response.json(
+        { error: "⚠️ شماره همراه فعال روی این گوشی را ۱۱ رقمی وارد کنید", simError: true },
+        { status: 400 },
+      );
+    }
+    const registered = normalizePhone(user.phone);
+    if (registered && phone !== registered) {
+      return Response.json(
         {
-          error:
-            "⚠️ سیم‌کارت فعالی روی این گوشی شناسایی نشد. لطفاً سیم‌کارت ثبت‌شده را فعال کرده و دوباره تلاش کنید.",
+          error: `⛔ مغایرت سیم‌کارت: شماره ثبت‌شده توسط مدیر برای شما «${registered.slice(0, 4)}***${registered.slice(-4)}» است، اما «${phone.slice(0, 4)}***${phone.slice(-4)}» وارد کردید.`,
+          simError: true,
+          reason: "phone-mismatch",
         },
         { status: 403 },
       );
     }
     if (body.simActiveOnDevice === false) {
       return Response.json(
-        {
-          error:
-            "⚠️ سیم‌کارت فعال روی این گوشی با شماره ثبت‌شده مغایرت دارد. ورود فقط با گوشی حاوی سیم‌کارت همان شماره مجاز است.",
-        },
-        { status: 403 },
-      );
-    }
-    // سیم‌کارت تاییدشده قبلی روی همین دستگاه
-    const deviceSim = normalizePhone(body.deviceSim ?? "");
-    if (deviceSim && deviceSim !== phone) {
-      return Response.json(
-        {
-          error: `⚠️ روی این گوشی سیم‌کارت دیگری (${deviceSim.slice(0, 4)}***${deviceSim.slice(-4)}) ثبت شده است. برای تغییر، با مدیر تماس بگیرید.`,
-        },
-        { status: 403 },
-      );
-    }
-    if (!/^0\d{10}$/.test(phone)) {
-      return Response.json({ error: "⚠️ شماره همراه فعال روی این گوشی را وارد کنید" }, { status: 400 });
-    }
-    const registered = normalizePhone(user.phone);
-    if (registered && phone !== registered) {
-      return Response.json(
-        { error: "⚠️ شماره همراه وارد شده با شماره ثبت‌شده برای این کاربر مطابقت ندارد." },
+        { error: "⚠️ سیم‌کارت فعالی روی این گوشی شناسایی نشد.", simError: true, reason: "no-sim" },
         { status: 403 },
       );
     }
   }
 
-  // ---- اتصال دستگاه (Device Binding) برای نمایندگان ----
-  const deviceId = String(body.deviceId ?? "").replace(/[^a-zA-Z0-9]/g, "").slice(0, 80);
-  if (user.requirePhone && !isManagerAccount) {
+  if ((simMode === "device" || simMode === "otp") && !isManagerAccount) {
     if (!deviceId) {
       return Response.json(
-        { error: "⚠️ شناسه دستگاه دریافت نشد. لطفاً حافظه مرورگر را فعال کرده و دوباره تلاش کنید." },
+        { error: "⚠️ شناسه دستگاه دریافت نشد. حافظه مرورگر را فعال کنید یا از حالت ناشناس خارج شوید.", simError: true },
         { status: 400 },
       );
     }
@@ -125,24 +123,43 @@ export async function POST(req: Request) {
       return Response.json(
         {
           error:
-            "⛔ این حساب به گوشی دیگری متصل است. اگر سیم‌کارت شما در همین گوشی است، با کد تایید پیامکی ادامه دهید؛ در غیر این صورت از مدیر بخواهید دستگاه را آزاد کند.",
+            "⛔ این حساب به گوشی دیگری قفل شده است. اگر سیم‌کارت شما داخل همین گوشی است، با «تایید پیامکی» ادامه دهید؛ در غیر این صورت از مدیر بخواهید گوشی را آزاد کند.",
           needOtp: true,
+          simError: true,
           reason: "device-mismatch",
         },
         { status: 403 },
       );
     }
     if (!user.deviceId) {
-      // اولین ورود روی این دستگاه → اثبات در دسترس بودن سیم‌کارت با کد پیامکی
-      return Response.json(
-        {
-          error:
-            "🔐 برای اطمینان از فعال بودن سیم‌کارت روی همین گوشی، کد تایید پیامکی لازم است.",
-          needOtp: true,
-          reason: "first-device",
-        },
-        { status: 403 },
-      );
+      if (simMode === "otp") {
+        return Response.json(
+          {
+            error: "🔐 برای اطمینان از حضور سیم‌کارت در همین گوشی، کد تایید پیامکی لازم است.",
+            needOtp: true,
+            reason: "first-device",
+          },
+          { status: 403 },
+        );
+      }
+      // حالت device: اولین گوشی به‌صورت خودکار قفل می‌شود
+      await db
+        .update(users)
+        .set({
+          deviceId,
+          deviceInfo: String(body.deviceInfo ?? "").slice(0, 200),
+          deviceBoundAt: new Date(),
+        })
+        .where(eq(users.id, user.id));
+      await db
+        .insert(activityLogs)
+        .values({
+          userId: user.id,
+          userName: user.fullName,
+          action: "قفل شدن گوشی",
+          detail: `${String(body.deviceInfo ?? "").slice(0, 120)} | ${phone}`,
+        })
+        .catch(() => undefined);
     }
   }
 
