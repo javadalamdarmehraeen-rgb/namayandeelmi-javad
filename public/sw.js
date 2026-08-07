@@ -7,7 +7,7 @@
  *  این فایل توسط scripts/build-sw.mjs پس از هر build تولید می‌شود.
  * ============================================================ */
 
-const BUILD = "msi6oqrh-42";
+const BUILD = "msiuhyks-44";
 const SHELL = `sek-shell-${BUILD}`;
 const DATA = `sek-data-${BUILD}`;
 
@@ -55,9 +55,10 @@ const PAGES = [
   "/admin/backup"
 ];
 const ASSETS = [
-  "/_next/static/c1AiZVXF0AqaJYAeC-p3X/_buildManifest.js",
-  "/_next/static/c1AiZVXF0AqaJYAeC-p3X/_clientMiddlewareManifest.js",
-  "/_next/static/c1AiZVXF0AqaJYAeC-p3X/_ssgManifest.js",
+  "/_next/static/YOMjAJn79xalwTW1BSkMU/_buildManifest.js",
+  "/_next/static/YOMjAJn79xalwTW1BSkMU/_clientMiddlewareManifest.js",
+  "/_next/static/YOMjAJn79xalwTW1BSkMU/_ssgManifest.js",
+  "/_next/static/chunks/0-yvehd2.pc8b.js",
   "/_next/static/chunks/0.__2~vg1zfx-.js",
   "/_next/static/chunks/00bwe0zb6r87f.js",
   "/_next/static/chunks/00j8bzodjupn6.js",
@@ -67,15 +68,17 @@ const ASSETS = [
   "/_next/static/chunks/03~yq9q893hmn.js",
   "/_next/static/chunks/04z2e~awa-gwd.js",
   "/_next/static/chunks/06r9_3ub2r-4z.js",
+  "/_next/static/chunks/07df90r8w-0_w.js",
   "/_next/static/chunks/07lhk_q6pmm3r.js",
   "/_next/static/chunks/07ol~8c6r993t.js",
   "/_next/static/chunks/07uz2g0_38qia.js",
-  "/_next/static/chunks/08_1ijbg-ui3o.js",
+  "/_next/static/chunks/08c23zmk-fr_l.js",
   "/_next/static/chunks/08g-5kea7g6.h.js",
   "/_next/static/chunks/08g4dhgfb3-g1.js",
+  "/_next/static/chunks/08knf~nps_ax5.js",
   "/_next/static/chunks/08~kq0~0qge7..js",
-  "/_next/static/chunks/0_qnuoctlpv-a.js",
   "/_next/static/chunks/0a6fznmb06a1s.js",
+  "/_next/static/chunks/0amv7qth8c0wt.js",
   "/_next/static/chunks/0an995q9rgmye.js",
   "/_next/static/chunks/0d3shmwh5_nmn.js",
   "/_next/static/chunks/0gyt0px_yi~~h.js",
@@ -84,17 +87,16 @@ const ASSETS = [
   "/_next/static/chunks/0m7-1y0haw-6y.js",
   "/_next/static/chunks/0mkdhkpipl3ae.js",
   "/_next/static/chunks/0n1bpogj.il~n.js",
-  "/_next/static/chunks/0p62z8q~1lwkj.css",
-  "/_next/static/chunks/0rmdnecqpagy~.js",
+  "/_next/static/chunks/0ov4nyfm5pzpu.js",
   "/_next/static/chunks/0t.kl08cbz2tx.js",
   "/_next/static/chunks/0t48hzs_6fshe.css",
   "/_next/static/chunks/0uh4e2v8-yv0m.js",
   "/_next/static/chunks/0wxhwo2i~7vvo.js",
-  "/_next/static/chunks/0xzq36uuc.mb-.js",
   "/_next/static/chunks/0ze4gu236oq96.js",
-  "/_next/static/chunks/0zy7uf.6ktaeh.js",
   "/_next/static/chunks/0~e6i9nwvxzzi.js",
-  "/_next/static/chunks/11vlk_b7odc0i.js",
+  "/_next/static/chunks/0~o2d5~bok6p7.js",
+  "/_next/static/chunks/102jj0xa8nazx.css",
+  "/_next/static/chunks/13cs9bj_g1co0.js",
   "/_next/static/chunks/176ztuhghbfr1.js",
   "/_next/static/chunks/turbopack-0ngnbt.drh_yz.js"
 ];

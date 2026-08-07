@@ -20,6 +20,7 @@ function Inner({ children }: { children: ReactNode }) {
     { href: "/admin/leaves", label: "مرخصی‌ها", icon: "📝", perm: "leave" },
     { href: "/admin/notifications", label: "اعلان‌ها", icon: "🔔" },
     { href: "/admin/reports", label: "گزارش ماهانه", icon: "📈", perm: "reports" },
+    { href: "/admin/targets", label: "تارگت فروش", icon: "🎯", perm: "users" },
     { href: "/admin/options", label: "افزودن‌ها", icon: "➕", perm: "options" },
     { href: "/admin/columns", label: "ستون‌ها و کالاها", icon: "🧱", perm: "columns" },
     { href: "/admin/users", label: "کاربران و دسترسی", icon: "👤", perm: "users" },

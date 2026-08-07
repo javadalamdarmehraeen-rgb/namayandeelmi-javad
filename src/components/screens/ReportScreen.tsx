@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Card, SectionTitle } from "@/components/ui";
+import TargetPanel from "@/components/screens/TargetPanel";
 import { JALALI_MONTHS, toPersianDigits } from "@/lib/jalali";
 import { DEFAULT_PRODUCTS, type ProductConfig } from "@/lib/defaults";
 
@@ -89,6 +90,8 @@ export default function ReportScreen({ compact = false }: { compact?: boolean })
   return (
     <div className="space-y-4">
       {!compact ? <SectionTitle icon="📈">گزارش عملکرد به تفکیک ماه و سال</SectionTitle> : null}
+
+      <TargetPanel />
 
       <Card>
         <div className="mb-3 flex flex-wrap items-center gap-2">

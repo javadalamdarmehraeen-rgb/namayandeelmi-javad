@@ -315,3 +315,29 @@ export const mobileNonces = pgTable(
   },
   (t) => [index("nonce_idx").on(t.nonce)],
 );
+
+/**
+ * تارگت فروش هر نماینده به تفکیک کالا و دوره (ماه شمسی)
+ * قیمت‌ها برای محاسبه ارزش ریالی تارگت و فروش استفاده می‌شوند.
+ */
+export const targets = pgTable(
+  "targets",
+  {
+    id: serial("id").primaryKey(),
+    userId: integer("user_id").notNull(),
+    repName: varchar("rep_name", { length: 160 }).notNull().default(""),
+    /** دوره به صورت 1405/06 — خالی یعنی تارگت دائمی */
+    period: varchar("period", { length: 7 }).notNull().default(""),
+    productKey: varchar("product_key", { length: 60 }).notNull(),
+    productLabel: varchar("product_label", { length: 160 }).notNull().default(""),
+    /** تعداد هدف */
+    quantity: integer("quantity").notNull().default(0),
+    /** قیمت پخش (ریال) */
+    priceDistributor: doublePrecision("price_distributor").notNull().default(0),
+    /** قیمت داروخانه (ریال) */
+    pricePharmacy: doublePrecision("price_pharmacy").notNull().default(0),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [index("targets_user_idx").on(t.userId, t.period)],
+);

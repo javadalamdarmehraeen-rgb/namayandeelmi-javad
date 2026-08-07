@@ -164,6 +164,12 @@ export default function AdminDashboard() {
         <SectionTitle icon="⬇️">خروجی اکسل</SectionTitle>
         <div className="flex flex-wrap gap-2">
           <a
+            href="/admin/targets"
+            className="rounded-xl bg-amber-50 px-3 py-2 text-xs font-bold text-amber-800 ring-1 ring-amber-200 hover:bg-amber-100"
+          >
+            🎯 تارگت فروش
+          </a>
+          <a
             href="/admin/backup"
             className="rounded-xl bg-indigo-50 px-3 py-2 text-xs font-bold text-indigo-800 ring-1 ring-indigo-200 hover:bg-indigo-100"
           >

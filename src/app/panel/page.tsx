@@ -5,6 +5,8 @@ import { useEffect, useState } from "react";
 import { useSession } from "@/components/SessionProvider";
 import dynamic from "next/dynamic";
 
+const TargetPanel = dynamic(() => import("@/components/screens/TargetPanel"), { ssr: false });
+
 const ChartsPanel = dynamic(() => import("@/components/screens/ChartsPanel"), {
   ssr: false,
   loading: () => <div className="rounded-2xl bg-white p-6 text-center text-xs text-slate-400">در حال بارگذاری نمودارها...</div>,
@@ -84,6 +86,8 @@ export default function PanelHome() {
           </Link>
         ))}
       </div>
+
+      {has("order") ? <TargetPanel /> : null}
 
       {has("reports") ? <ChartsPanel scope="rep" /> : null}
 

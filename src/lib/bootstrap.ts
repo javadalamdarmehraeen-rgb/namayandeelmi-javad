@@ -244,6 +244,24 @@ async function migrate() {
     );
   `);
   await db.execute(sql`
+    CREATE TABLE IF NOT EXISTS targets (
+      id serial PRIMARY KEY,
+      user_id integer NOT NULL,
+      rep_name varchar(160) NOT NULL DEFAULT '',
+      period varchar(7) NOT NULL DEFAULT '',
+      product_key varchar(60) NOT NULL,
+      product_label varchar(160) NOT NULL DEFAULT '',
+      quantity integer NOT NULL DEFAULT 0,
+      price_distributor double precision NOT NULL DEFAULT 0,
+      price_pharmacy double precision NOT NULL DEFAULT 0,
+      created_at timestamptz NOT NULL DEFAULT now(),
+      updated_at timestamptz NOT NULL DEFAULT now()
+    );
+  `);
+  await db.execute(sql`
+    CREATE UNIQUE INDEX IF NOT EXISTS targets_unique_idx ON targets (user_id, period, product_key);
+  `);
+  await db.execute(sql`
     CREATE TABLE IF NOT EXISTS mobile_nonces (
       id serial PRIMARY KEY,
       nonce varchar(64) NOT NULL UNIQUE,

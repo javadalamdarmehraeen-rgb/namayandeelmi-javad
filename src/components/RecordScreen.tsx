@@ -59,6 +59,47 @@ export type Row = {
 
 type Form = Record<string, string> & { items?: never };
 
+type DupRow = {
+  id: number;
+  name: string;
+  specialty?: string;
+  phone?: string;
+  city?: string;
+  province?: string;
+  region?: string;
+  landline?: string;
+  managerName?: string;
+  managerPhone?: string;
+  address?: string;
+  lat?: number | null;
+  lng?: number | null;
+  accuracy?: number | null;
+  isPercent?: boolean;
+  percentValue?: string;
+  repName: string;
+  dateShamsi: string;
+  mine: boolean;
+};
+
+type OrderHistory = {
+  orderCount: number;
+  lastDate: string;
+  lastRep: string;
+  totalUnits: number;
+  totalBonus: number;
+  items: { key: string; label: string; qty: number; bonus: number }[];
+  recent: { id: number; dateShamsi: string; repName: string; units: number }[];
+};
+
+type TargetRow = {
+  productKey: string;
+  productLabel: string;
+  quantity: number;
+  sold: number;
+  remaining: number;
+  percent: number;
+};
+
 const emptyForm = (): Record<string, string> => ({
   dateShamsi: todayJalali(),
   province: "",
@@ -109,6 +150,11 @@ export default function RecordScreen({ type, isAdmin = false }: { type: RecordTy
   const [percentValue, setPercentValue] = useState("");
   const [fileIds, setFileIds] = useState<number[]>([]);
   const [detailFiles, setDetailFiles] = useState<Att[]>([]);
+  const [dupes, setDupes] = useState<DupRow[]>([]);
+  const [history, setHistory] = useState<OrderHistory | null>(null);
+  const [suggestion, setSuggestion] = useState<Record<string, unknown> | null>(null);
+  const [autofilled, setAutofilled] = useState(false);
+  const [targets, setTargets] = useState<TargetRow[]>([]);
   const [columns, setColumns] = useState<ColumnConfig[]>(DEFAULT_COLUMNS[type]);
 
   const confirm = useConfirm();
@@ -163,6 +209,19 @@ export default function RecordScreen({ type, isAdmin = false }: { type: RecordTy
       setMsg({ kind: "error", text: `${meta.nameLabel} الزامی است` });
       return;
     }
+    // هشدار تکراری بودن پیش از ثبت
+    if (type !== "orders" && dupes.length > 0) {
+      const ok = await confirm({
+        title: "⚠️ رکورد تکراری",
+        message:
+          `«${dupes[0].name}» قبلاً ${dupes[0].mine ? "توسط خودتان" : `توسط ${dupes[0].repName}`} در تاریخ ` +
+          `${toPersianDigits(dupes[0].dateShamsi)} ثبت شده است.\nآیا مطمئنید می‌خواهید دوباره ثبت کنید؟`,
+        confirmText: "بله، ثبت کن",
+        cancelText: "انصراف",
+        danger: true,
+      });
+      if (!ok) return;
+    }
     if (
       !(await confirm({
         title: "ثبت اطلاعات",
@@ -197,7 +256,10 @@ export default function RecordScreen({ type, isAdmin = false }: { type: RecordTy
       setFileIds([]);
       setLoc({ lat: null, lng: null, accuracy: null });
       setMsg({ kind: "success", text: "✅ ثبت شد. برای ارسال به مدیر به تب «لیست ثبت‌شده‌ها» بروید." });
+      setDupes([]);
+      setHistory(null);
       loadRows();
+      loadTargets();
       setTab("list");
     } else {
       const d = await res.json().catch(() => ({}));
@@ -288,6 +350,72 @@ export default function RecordScreen({ type, isAdmin = false }: { type: RecordTy
     lines.push(`نام ویزیتور: ${r.visitor ?? ""}`);
     if (r.notes) lines.push(`توضیحات: ${r.notes}`);
     return lines.join("\n");
+  };
+
+  /* ---- بارگذاری تارگت‌ها برای نمایش کنار هر کالا ---- */
+  const loadTargets = useCallback(async () => {
+    if (type !== "orders") return;
+    const res = await fetch("/api/targets", { cache: "no-store" });
+    if (res.ok) {
+      const d = await res.json();
+      setTargets(d.progress ?? []);
+    }
+  }, [type]);
+
+  useEffect(() => {
+    loadTargets();
+  }, [loadTargets]);
+
+  /* ---- تشخیص تکراری + پرکردن خودکار از سابقه ---- */
+  const lookupName = type === "orders" ? form.pharmacyName : form.name;
+  const lookupPhone = type === "doctors" ? form.phone : form.managerPhone;
+
+  useEffect(() => {
+    if (tab !== "form") return;
+    const n = (lookupName ?? "").trim();
+    if (n.length < 2) {
+      setDupes([]);
+      setHistory(null);
+      setSuggestion(null);
+      return;
+    }
+    const t = setTimeout(async () => {
+      const q = new URLSearchParams({ type, name: n, phone: lookupPhone ?? "" });
+      const res = await fetch(`/api/records/lookup?${q}`, { cache: "no-store" }).catch(() => null);
+      if (!res?.ok) return;
+      const d = await res.json();
+      setDupes(d.duplicates ?? []);
+      setHistory(d.history ?? null);
+      setSuggestion(d.suggestion ?? null);
+    }, 600);
+    return () => clearTimeout(t);
+  }, [lookupName, lookupPhone, type, tab]);
+
+  /** پرکردن خودکار فیلدها از سابقه داروخانه */
+  const applySuggestion = (src?: Record<string, unknown> | DupRow) => {
+    const s = (src ?? suggestion) as Record<string, unknown> | null;
+    if (!s) return;
+    setForm((f) => ({
+      ...f,
+      pharmacyName: String(s.pharmacyName ?? s.name ?? f.pharmacyName),
+      name: type === "orders" ? f.name : String(s.name ?? f.name),
+      managerName: String(s.managerName ?? f.managerName),
+      managerPhone: String(s.managerPhone ?? f.managerPhone),
+      address: String(s.address ?? f.address),
+      province: String(s.province ?? f.province),
+      city: String(s.city ?? f.city),
+      region: String(s.region ?? f.region),
+      landline: String(s.landline ?? f.landline),
+      distributor: String(s.distributor ?? f.distributor),
+      visitor: String(s.visitor ?? f.visitor),
+    }));
+    const la = Number(s.lat);
+    const ln = Number(s.lng);
+    if (Number.isFinite(la) && Number.isFinite(ln) && la && ln) {
+      setLoc({ lat: la, lng: ln, accuracy: Number(s.accuracy) || null });
+    }
+    setAutofilled(true);
+    setTimeout(() => setAutofilled(false), 4000);
   };
 
   const onAdded = () => loadOptions();
@@ -553,13 +681,137 @@ export default function RecordScreen({ type, isAdmin = false }: { type: RecordTy
             )}
           </div>
 
+          {/* ---------- هشدار تکراری بودن ---------- */}
+          {dupes.length > 0 ? (
+            <div className="mt-3 rounded-2xl bg-amber-50 p-3 ring-1 ring-amber-300">
+              <div className="mb-1 text-xs font-black text-amber-900">
+                ⚠️ {type === "doctors" ? "این پزشک قبلاً ثبت شده است" : "این داروخانه قبلاً ثبت شده است"} (
+                {toPersianDigits(dupes.length)} مورد)
+              </div>
+              <div className="space-y-1">
+                {dupes.map((d) => (
+                  <div key={d.id} className="flex flex-wrap items-center gap-2 rounded-lg bg-white px-2 py-1.5 text-[11px]">
+                    <span className="font-bold text-slate-800">{d.name}</span>
+                    {d.specialty ? <span className="text-slate-500">{d.specialty}</span> : null}
+                    {d.city ? <span className="text-slate-500">{d.city}</span> : null}
+                    {d.managerPhone || d.phone ? (
+                      <span className="text-slate-500">{toPersianDigits(d.managerPhone || d.phone || "")}</span>
+                    ) : null}
+                    <Badge tone={d.mine ? "green" : "amber"}>
+                      {d.mine ? "ثبت خودتان" : `ثبت ${d.repName}`}
+                    </Badge>
+                    <span className="text-slate-400">{toPersianDigits(d.dateShamsi)}</span>
+                    {type !== "doctors" ? (
+                      <button
+                        type="button"
+                        onClick={() => applySuggestion(d)}
+                        className="mr-auto rounded-lg bg-teal-600 px-2 py-1 text-[10px] font-bold text-white"
+                      >
+                        استفاده از این اطلاعات
+                      </button>
+                    ) : null}
+                  </div>
+                ))}
+              </div>
+              <p className="mt-1 text-[10px] text-amber-800">
+                اگر مطمئن هستید مورد جدیدی است، می‌توانید ادامه دهید؛ در غیر این صورت از ثبت تکراری خودداری کنید.
+              </p>
+            </div>
+          ) : null}
+
+          {/* ---------- سابقه سفارش داروخانه ---------- */}
+          {type === "orders" && history && history.orderCount > 0 ? (
+            <div className="mt-3 rounded-2xl bg-sky-50 p-3 ring-1 ring-sky-300">
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="text-xs font-black text-sky-900">
+                  📊 سابقه این داروخانه: {toPersianDigits(history.orderCount)} سفارش
+                </span>
+                <Badge tone="green">جمع کالا: {toPersianDigits(history.totalUnits)}</Badge>
+                <Badge tone="amber">جمع جایزه: {toPersianDigits(history.totalBonus)}</Badge>
+                {history.lastDate ? (
+                  <span className="text-[11px] text-sky-800">
+                    آخرین سفارش: {toPersianDigits(history.lastDate)} توسط {history.lastRep}
+                  </span>
+                ) : null}
+                {suggestion ? (
+                  <button
+                    type="button"
+                    onClick={() => applySuggestion()}
+                    className="mr-auto rounded-lg bg-sky-700 px-2 py-1 text-[10px] font-bold text-white"
+                  >
+                    📥 پرکردن خودکار فیلدها
+                  </button>
+                ) : null}
+              </div>
+              {history.items.length ? (
+                <div className="mt-2 flex flex-wrap gap-1">
+                  {history.items.map((it) => (
+                    <span key={it.key} className="rounded-lg bg-white px-2 py-1 text-[10px] text-slate-700 ring-1 ring-sky-200">
+                      {it.label}: <b>{toPersianDigits(it.qty)}</b>
+                      {it.bonus ? <span className="text-emerald-600"> +{toPersianDigits(it.bonus)}</span> : null}
+                    </span>
+                  ))}
+                </div>
+              ) : null}
+            </div>
+          ) : null}
+
+          {autofilled ? (
+            <div className="mt-2">
+              <Alert kind="success">✅ اطلاعات از سابقه این داروخانه پر شد — در صورت نیاز ویرایش کنید.</Alert>
+            </div>
+          ) : null}
+
           {type === "orders" ? (
             <div className="mt-4">
               <SectionTitle icon="💊">اقلام سفارش</SectionTitle>
               <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4">
-                {products.map((p) => (
+                {products.map((p) => {
+                  const tg = targets.find((t) => t.productKey === p.key);
+                  const typed = Number(items[p.key] ?? 0);
+                  const remainAfter = tg ? Math.max(0, tg.quantity - tg.sold - typed) : 0;
+                  return (
                   <div key={p.key} className="rounded-xl bg-slate-50 p-2.5 ring-1 ring-slate-200">
-                    <div className="mb-1.5 text-xs font-bold text-slate-700">{p.label}</div>
+                    <div className="mb-1.5 flex items-center justify-between gap-1">
+                      <span className="text-xs font-bold text-slate-700">{p.label}</span>
+                      {tg && tg.quantity > 0 ? (
+                        <span
+                          className={`rounded px-1.5 py-0.5 text-[9px] font-black ${
+                            tg.percent >= 100
+                              ? "bg-emerald-100 text-emerald-700"
+                              : tg.percent >= 60
+                                ? "bg-sky-100 text-sky-700"
+                                : "bg-amber-100 text-amber-700"
+                          }`}
+                        >
+                          {toPersianDigits(tg.percent)}٪
+                        </span>
+                      ) : null}
+                    </div>
+                    {tg && tg.quantity > 0 ? (
+                      <div className="mb-1.5 rounded-lg bg-white px-1.5 py-1 text-[9px] leading-4 text-slate-600 ring-1 ring-slate-200">
+                        <div className="flex justify-between">
+                          <span>تارگت:</span>
+                          <b className="text-slate-800">{toPersianDigits(tg.quantity)}</b>
+                        </div>
+                        <div className="flex justify-between">
+                          <span>فروخته:</span>
+                          <b className="text-teal-700">{toPersianDigits(tg.sold)}</b>
+                        </div>
+                        <div className="flex justify-between">
+                          <span>باقیمانده:</span>
+                          <b className={remainAfter === 0 ? "text-emerald-700" : "text-rose-700"}>
+                            {toPersianDigits(remainAfter)}
+                          </b>
+                        </div>
+                        <div className="mt-1 h-1 overflow-hidden rounded bg-slate-200">
+                          <div
+                            className={`h-full ${tg.percent >= 100 ? "bg-emerald-500" : "bg-teal-500"}`}
+                            style={{ width: `${Math.min(100, tg.percent)}%` }}
+                          />
+                        </div>
+                      </div>
+                    ) : null}
                     <div className="grid grid-cols-2 gap-1.5">
                       <label>
                         <span className="mb-1 block text-[10px] text-slate-500">تعداد</span>
@@ -585,7 +837,8 @@ export default function RecordScreen({ type, isAdmin = false }: { type: RecordTy
                       </label>
                     </div>
                   </div>
-                ))}
+                  );
+                })}
               </div>
               <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-3">
                 <Field label="نام پخش" hint="کشویی + جستجو + افزودن لحظه‌ای">
