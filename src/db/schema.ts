@@ -26,6 +26,10 @@ export const users = pgTable("users", {
   deviceBoundAt: timestamp("device_bound_at", { withTimezone: true }),
   /** off = بدون بررسی | phone = فقط تطبیق شماره | device = قفل گوشی | otp = تایید پیامکی */
   simMode: varchar("sim_mode", { length: 12 }).notNull().default("device"),
+  /** اثر انگشت سیم‌کارت گزارش‌شده توسط اپ موبایل (ICCID/IMSI هش‌شده یا carrier+mcc/mnc) */
+  simFingerprint: varchar("sim_fingerprint", { length: 128 }).notNull().default(""),
+  simCarrier: varchar("sim_carrier", { length: 80 }).notNull().default(""),
+  simVerifiedAt: timestamp("sim_verified_at", { withTimezone: true }),
   permissions: jsonb("permissions")
     .$type<string[]>()
     .notNull()
@@ -296,4 +300,18 @@ export const otpCodes = pgTable(
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (t) => [index("otp_user_idx").on(t.userId)],
+);
+
+/** nonceهای یکبارمصرف برای جلوگیری از Replay Attack در ورود اپ موبایل */
+export const mobileNonces = pgTable(
+  "mobile_nonces",
+  {
+    id: serial("id").primaryKey(),
+    nonce: varchar("nonce", { length: 64 }).notNull().unique(),
+    deviceId: varchar("device_id", { length: 80 }).notNull().default(""),
+    used: boolean("used").notNull().default(false),
+    expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [index("nonce_idx").on(t.nonce)],
 );

@@ -244,6 +244,16 @@ async function migrate() {
     );
   `);
   await db.execute(sql`
+    CREATE TABLE IF NOT EXISTS mobile_nonces (
+      id serial PRIMARY KEY,
+      nonce varchar(64) NOT NULL UNIQUE,
+      device_id varchar(80) NOT NULL DEFAULT '',
+      used boolean NOT NULL DEFAULT false,
+      expires_at timestamptz NOT NULL,
+      created_at timestamptz NOT NULL DEFAULT now()
+    );
+  `);
+  await db.execute(sql`
     CREATE TABLE IF NOT EXISTS otp_codes (
       id serial PRIMARY KEY,
       user_id integer NOT NULL,
@@ -284,6 +294,9 @@ async function migrate() {
     `ALTER TABLE users ADD COLUMN IF NOT EXISTS device_info varchar(200) NOT NULL DEFAULT ''`,
     `ALTER TABLE users ADD COLUMN IF NOT EXISTS device_bound_at timestamptz`,
     `ALTER TABLE users ADD COLUMN IF NOT EXISTS sim_mode varchar(12) NOT NULL DEFAULT 'device'`,
+    `ALTER TABLE users ADD COLUMN IF NOT EXISTS sim_fingerprint varchar(128) NOT NULL DEFAULT ''`,
+    `ALTER TABLE users ADD COLUMN IF NOT EXISTS sim_carrier varchar(80) NOT NULL DEFAULT ''`,
+    `ALTER TABLE users ADD COLUMN IF NOT EXISTS sim_verified_at timestamptz`,
     `ALTER TABLE pharmacies ADD COLUMN IF NOT EXISTS province varchar(100) NOT NULL DEFAULT ''`,
     `ALTER TABLE pharmacies ADD COLUMN IF NOT EXISTS city varchar(100) NOT NULL DEFAULT ''`,
     `ALTER TABLE pharmacies ADD COLUMN IF NOT EXISTS region varchar(100) NOT NULL DEFAULT ''`,
