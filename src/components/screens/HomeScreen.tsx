@@ -2,12 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import dynamic from "next/dynamic";
-import type { LatLng } from "@/components/LocationPicker";
-
-const LocationPicker = dynamic(() => import("@/components/LocationPicker"), {
-  ssr: false,
-  loading: () => <div className="h-[260px] rounded-2xl bg-slate-100" />,
-});
+import LocationPicker, { type LatLng } from "@/components/LocationPicker";
 import { Alert, Badge, Button, Card, Field, Input, SectionTitle, TextArea } from "@/components/ui";
 import NavButton from "@/components/NavButton";
 import { toPersianDigits } from "@/lib/jalali";
@@ -88,7 +83,7 @@ export default function HomeScreen({ isAdmin = false }: { isAdmin?: boolean }) {
             </Field>
           </div>
           <div className="mt-3">
-            <LocationPicker value={loc} onChange={setLoc} label={title} />
+            <LocationPicker value={loc} onChange={setLoc} label={title} suggestQuery={address || title} />
           </div>
           <div className="mt-3 flex justify-end">
             <Button onClick={save}>💾 ثبت لوکیشن منزل</Button>
@@ -123,8 +118,6 @@ export default function HomeScreen({ isAdmin = false }: { isAdmin?: boolean }) {
           <>
             <MapBox
               height={300}
-              labels
-              zoom={15}
               points={visible.map((r) => ({
                 lat: r.lat,
                 lng: r.lng,

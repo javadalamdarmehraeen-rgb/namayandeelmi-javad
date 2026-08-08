@@ -224,8 +224,6 @@ export default function AdminTrips() {
 
               <MapBox
                 height={380}
-                labels
-                zoom={15}
                 path={points.map((p) => ({ lat: p.lat, lng: p.lng }))}
                 points={[
                   ...places,
@@ -262,7 +260,7 @@ export default function AdminTrips() {
               <p className="mb-2 text-center text-sm text-slate-400">
                 یک سفر را از فهرست انتخاب کنید — نقشه زیر همه داروخانه‌ها، پزشکان و منازل را نشان می‌دهد
               </p>
-              <MapBox height={400} points={places} labels zoom={11} />
+              <MapBox height={400} points={places} />
             </>
           )}
         </Card>

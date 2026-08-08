@@ -15,10 +15,6 @@ const nextConfig: NextConfig = {
   experimental: {
     optimizePackageImports: ["leaflet"],
   },
-  // حذف console.log از خروجی نهایی (سبک‌تر شدن bundle)
-  compiler: {
-    removeConsole: process.env.NODE_ENV === "production" ? { exclude: ["error", "warn"] } : false,
-  },
   productionBrowserSourceMaps: false,
 
   async headers() {

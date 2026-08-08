@@ -151,7 +151,7 @@ export default function LivePage() {
             ) : null}
           </div>
 
-          <MapBox height={430} points={mapPoints} follow={!!focused} labels zoom={focused ? 16 : 11} />
+          <MapBox height={430} points={mapPoints} follow={!!focused} />
 
           {focused ? (
             <div className="mt-3 grid grid-cols-2 gap-2 text-center text-[11px] sm:grid-cols-4">

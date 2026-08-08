@@ -33,10 +33,18 @@ export default function ColumnsPage() {
     const d = await res.json();
     const v = d.values ?? {};
     setProducts((v.products as ProductConfig[]) ?? DEFAULT_PRODUCTS);
+
+    /** ستون‌های جدید برنامه به تنظیمات ذخیره‌شده اضافه می‌شوند */
+    const merge = (key: string, def: ColumnConfig[]) => {
+      const stored = v[key] as ColumnConfig[] | undefined;
+      if (!Array.isArray(stored) || stored.length === 0) return def;
+      const have = new Set(stored.map((c) => c.key));
+      return [...stored, ...def.filter((c) => !have.has(c.key))];
+    };
     setCols({
-      pharmacies: (v["columns.pharmacies"] as ColumnConfig[]) ?? DEFAULT_COLUMNS.pharmacies,
-      doctors: (v["columns.doctors"] as ColumnConfig[]) ?? DEFAULT_COLUMNS.doctors,
-      orders: (v["columns.orders"] as ColumnConfig[]) ?? DEFAULT_COLUMNS.orders,
+      pharmacies: merge("columns.pharmacies", DEFAULT_COLUMNS.pharmacies),
+      doctors: merge("columns.doctors", DEFAULT_COLUMNS.doctors),
+      orders: merge("columns.orders", DEFAULT_COLUMNS.orders),
     });
   }, []);
 

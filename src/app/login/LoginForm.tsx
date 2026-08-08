@@ -356,13 +356,11 @@ export default function LoginForm() {
           </div>
         ) : null}
 
-        <div className="mb-5 text-center text-white">
-          {/* لوگوی کپسول برنامه */}
-          <div className="mx-auto mb-3 flex size-24 items-center justify-center rounded-3xl bg-white/95 p-3 shadow-2xl ring-1 ring-white/40">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/logo.svg" alt="ثبت اطلاعات کل" className="size-full object-contain drop-shadow-md" />
+        <div className="mb-4 text-center text-white">
+          <div className="mx-auto mb-3 flex size-14 items-center justify-center rounded-2xl bg-white/15 text-2xl ring-1 ring-white/30">
+            📋
           </div>
-          <h1 className="text-2xl font-black drop-shadow">ثبت اطلاعات کل</h1>
+          <h1 className="text-2xl font-black">ثبت اطلاعات کل</h1>
           <p className="mt-1 text-xs text-teal-50/90">سامانه نمایندگان علمی — وب، ویندوز و موبایل</p>
         </div>
 

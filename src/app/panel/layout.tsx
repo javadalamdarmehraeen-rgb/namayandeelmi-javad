@@ -15,7 +15,6 @@ function Inner({ children }: { children: ReactNode }) {
     { href: "/panel/doctors", label: "ثبت پزشک", icon: "🩺", perm: "doctor" },
     { href: "/panel/orders", label: "ثبت سفارشات", icon: "🧾", perm: "order" },
     { href: "/panel/trip", label: "تردد و ویزیت", icon: "🗺️", perm: "trip" },
-    { href: "/panel/map", label: "نقشه ایران", icon: "🌍" },
     { href: "/panel/home", label: "لوکیشن منزل", icon: "🏡", perm: "home" },
     { href: "/panel/leaves", label: "مرخصی", icon: "📝", perm: "leave" },
     { href: "/panel/notifications", label: "اعلان‌ها", icon: "🔔" },
