@@ -5,6 +5,7 @@ import { Alert, Badge, Button, Card, Field, Input, SectionTitle } from "@/compon
 import { useConfirm } from "@/components/Confirm";
 import { useLive } from "@/lib/useLive";
 import { orderedEndpoints, pickFastestEndpoint } from "@/lib/endpoints";
+import { downloadFile } from "@/lib/download";
 import { tehranDateTime, toPersianDigits } from "@/lib/jalali";
 
 type Peer = {
@@ -42,6 +43,8 @@ export default function SyncPage() {
   const [busy, setBusy] = useState(false);
   const [form, setForm] = useState({ peer: "", peerUrl: "" });
   const [speeds, setSpeeds] = useState<{ url: string; ms: number | null }[]>([]);
+  const [srcInfo, setSrcInfo] = useState<{ count: number } | null>(null);
+  const [dlBusy, setDlBusy] = useState(false);
   const confirm = useConfirm();
 
   const load = useCallback(async () => {
@@ -110,6 +113,47 @@ export default function SyncPage() {
         </div>
       </div>
       {msg ? <Alert kind={msg.startsWith("✖") ? "error" : "success"}>{msg}</Alert> : null}
+
+      {/* ---------- دانلود سورس برای انتقال به GitHub / GitLab ---------- */}
+      <Card>
+        <h3 className="mb-2 text-sm font-black text-slate-800">📦 دریافت سورس کد برنامه</h3>
+        <Alert kind="info">
+          کدهای برنامه روی این سرور به‌روز هستند. برای اینکه در <b>GitHub</b> و <b>GitLab</b> هم ثبت شوند، فایل ZIP
+          زیر را دانلود کنید، محتوای آن را در پوشه پروژه روی سیستم خود کپی کنید و سپس
+          <span dir="ltr"> git add -A && git commit && git push </span> بزنید. راهنمای کامل داخل خود فایل قرار دارد.
+        </Alert>
+        <div className="mt-3 flex flex-wrap items-center gap-2">
+          <Button
+            onClick={async () => {
+              setDlBusy(true);
+              setMsg("⏳ در حال آماده‌سازی آرشیو سورس...");
+              const r = await downloadFile("/api/source", "namayandeelmi-source.zip");
+              setDlBusy(false);
+              setMsg(r);
+            }}
+            disabled={dlBusy}
+          >
+            {dlBusy ? "⏳ در حال ساخت..." : "📦 دانلود سورس کامل (ZIP)"}
+          </Button>
+          <Button
+            variant="ghost"
+            onClick={async () => {
+              const r = await fetch("/api/source?list=1", { cache: "no-store" });
+              if (!r.ok) return setMsg("✖ دریافت فهرست ناموفق بود");
+              const d = await r.json();
+              setSrcInfo({ count: d.count });
+              setMsg(`✅ ${d.count} فایل روی سرور موجود است`);
+            }}
+          >
+            📋 شمارش فایل‌های سرور
+          </Button>
+          {srcInfo ? <Badge tone="green">{toPersianDigits(srcInfo.count)} فایل</Badge> : null}
+        </div>
+        <p className="mt-2 text-[11px] text-slate-500">
+          توجه: پوشه‌های <span dir="ltr">node_modules</span> و <span dir="ltr">.next</span> و فایل
+          <span dir="ltr"> .env </span> در آرشیو نیستند (نیازی نیست و امن‌تر است).
+        </p>
+      </Card>
 
       <Card>
         <h3 className="mb-2 text-sm font-bold text-slate-700">🖥 این سرور</h3>

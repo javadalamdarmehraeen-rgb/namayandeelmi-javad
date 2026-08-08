@@ -448,3 +448,29 @@ PUBLIC_BASE_URL=https://ndcohub.ir
 
 اسرار موردنیاز: `GITLAB_REPO_URL`, `GITLAB_TOKEN`, `RENDER_DEPLOY_HOOK`,
 `NDCOHUB_DEPLOY_HOOK`, `SYNC_SECRET`.
+
+## 📦 انتقال کد از سرور به GitHub / GitLab
+
+اگر `git status` روی سیستم شما «nothing to commit» می‌دهد، یعنی فایل‌های جدید هنوز
+روی سیستم شما نیستند (کدها روی سرور به‌روز شده‌اند، نه روی پوشه محلی شما).
+
+### راه‌حل: دانلود سورس از خود برنامه
+
+1. با حساب **مدیر** وارد شوید.
+2. به **مدیریت → 🔄 همگام‌سازی سرورها** بروید.
+3. دکمه **«📦 دانلود سورس کامل (ZIP)»** را بزنید.
+4. محتوای ZIP را در پوشه پروژه روی سیستم کپی کنید (جایگزین فایل‌های قدیمی).
+5. سپس:
+
+```bash
+git add -A
+git status                       # حالا فایل‌های تغییر یافته را نشان می‌دهد
+git commit -m "به‌روزرسانی کامل برنامه"
+git push origin main
+git push gitlab main             # اگر مخزن GitLab هم دارید
+```
+
+> آرشیو شامل `node_modules`، `.next` و `.env` نیست (نیازی نیست و امن‌تر است).
+> راهنمای گام‌به‌گام داخل فایل `HOW-TO-UPDATE.md` در همان ZIP قرار دارد.
+
+مسیر API: `GET /api/source` (فقط مدیر) — و `GET /api/source?list=1` برای دیدن فهرست فایل‌ها.

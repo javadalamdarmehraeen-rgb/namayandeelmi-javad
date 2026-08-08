@@ -7,7 +7,7 @@
  *  این فایل توسط scripts/build-sw.mjs پس از هر build تولید می‌شود.
  * ============================================================ */
 
-const BUILD = "mskocv8h-46";
+const BUILD = "mskunr62-46";
 const SHELL = `sek-shell-${BUILD}`;
 const DATA = `sek-data-${BUILD}`;
 
@@ -55,6 +55,9 @@ const PAGES = [
   "/admin/backup"
 ];
 const ASSETS = [
+  "/_next/static/6pYN29xF_XSfqONlNrapJ/_buildManifest.js",
+  "/_next/static/6pYN29xF_XSfqONlNrapJ/_clientMiddlewareManifest.js",
+  "/_next/static/6pYN29xF_XSfqONlNrapJ/_ssgManifest.js",
   "/_next/static/chunks/0-npkp6cy67s6.js",
   "/_next/static/chunks/0.7il.jihrkh-.js",
   "/_next/static/chunks/00olq03bmyg~j.js",
@@ -71,9 +74,9 @@ const ASSETS = [
   "/_next/static/chunks/08g-5kea7g6.h.js",
   "/_next/static/chunks/0_v~kvt9uc5or.js",
   "/_next/static/chunks/0asdo24lqpub6.js",
-  "/_next/static/chunks/0c8e51tnfg8mo.js",
   "/_next/static/chunks/0cwkwz77n78-d.js",
   "/_next/static/chunks/0d3shmwh5_nmn.js",
+  "/_next/static/chunks/0fj4o8g_vkr-w.js",
   "/_next/static/chunks/0h7njwe2.s3ht.js",
   "/_next/static/chunks/0lyvt9fwnl.s7.js",
   "/_next/static/chunks/0mkdhkpipl3ae.js",
@@ -97,10 +100,7 @@ const ASSETS = [
   "/_next/static/chunks/13pyciza0m9eu.js",
   "/_next/static/chunks/176ztuhghbfr1.js",
   "/_next/static/chunks/177-oksbd~hr_.js",
-  "/_next/static/chunks/turbopack-0ngnbt.drh_yz.js",
-  "/_next/static/i-4qktcX6Z3XIzoZ7vBjW/_buildManifest.js",
-  "/_next/static/i-4qktcX6Z3XIzoZ7vBjW/_clientMiddlewareManifest.js",
-  "/_next/static/i-4qktcX6Z3XIzoZ7vBjW/_ssgManifest.js"
+  "/_next/static/chunks/turbopack-0ngnbt.drh_yz.js"
 ];
 const EXTRAS = [
   "/manifest.webmanifest",
