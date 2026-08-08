@@ -3,6 +3,26 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 
 /**
+ * واکشی JSON با مدیریت خطا — هرگز throw نمی‌کند.
+ * روی اینترنت ناپایدار به‌جای خطا، مقدار پیش‌فرض برمی‌گرداند.
+ */
+export async function fetchJson<T = unknown>(url: string, fallback: T, init?: RequestInit): Promise<T> {
+  try {
+    const res = await fetch(url, { cache: "no-store", ...init });
+    if (!res.ok) return fallback;
+    return (await res.json()) as T;
+  } catch {
+    return fallback;
+  }
+}
+
+/** واکشی فهرست رکوردها از APIهایی که `{ rows: [...] }` برمی‌گردانند */
+export async function fetchRows<T = Record<string, unknown>>(url: string): Promise<T[]> {
+  const d = await fetchJson<{ rows?: T[] }>(url, {});
+  return Array.isArray(d.rows) ? d.rows : [];
+}
+
+/**
  * بروزرسانی لحظه‌ای هوشمند:
  *  - در حالت آنلاین هر `interval` میلی‌ثانیه داده را تازه می‌کند
  *  - وقتی تب مخفی است، پولینگ متوقف می‌شود (مصرف کمتر باتری و دیتا)

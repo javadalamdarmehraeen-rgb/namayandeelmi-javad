@@ -6,6 +6,9 @@ import type { Map as LeafletMap, Layer } from "leaflet";
 
 export type MapPoint = { lat: number; lng: number; label?: string; color?: string };
 
+/** محدوده‌ای که نقشه باید روی آن متمرکز شود (استان/شهر/منطقه) */
+export type MapArea = { lat: number; lng: number; zoom?: number; radiusKm?: number; name?: string };
+
 /** نقشه سبک مبتنی بر Leaflet + OpenStreetMap (بدون کلید API) */
 export default function MapBox({
   points = [],
@@ -17,6 +20,7 @@ export default function MapBox({
   follow = false,
   accuracy,
   draggable = false,
+  area,
 }: {
   points?: MapPoint[];
   path?: { lat: number; lng: number }[];
@@ -27,6 +31,8 @@ export default function MapBox({
   follow?: boolean;
   accuracy?: number | null;
   draggable?: boolean;
+  /** تمرکز نقشه روی یک محدوده جغرافیایی */
+  area?: MapArea | null;
 }) {
   const divRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<LeafletMap | null>(null);
@@ -37,18 +43,20 @@ export default function MapBox({
   const pointsKey = points.map((p) => `${p.lat.toFixed(6)},${p.lng.toFixed(6)},${p.label ?? ""}`).join(";");
   const pathKey = `${path.length}:${path.length ? `${path[path.length - 1].lat.toFixed(5)},${path[path.length - 1].lng.toFixed(5)}` : ""}`;
   const centerKey = center ? `${center.lat.toFixed(6)},${center.lng.toFixed(6)}` : "";
+  const areaKey = area ? `${area.lat.toFixed(4)},${area.lng.toFixed(4)},${area.zoom ?? ""}` : "";
 
   useEffect(() => {
     let disposed = false;
     (async () => {
       const L = (await import("leaflet")).default;
       if (disposed || !divRef.current || mapRef.current) return;
-      const start = center ?? points[0] ?? path[0] ?? { lat: 35.6892, lng: 51.389 };
+      const start = center ?? points[0] ?? path[0] ?? area ?? { lat: 35.6892, lng: 51.389 };
+      const startZoom = points.length === 0 && path.length === 0 && area?.zoom ? area.zoom : zoom;
       const map = L.map(divRef.current, {
         attributionControl: false,
         zoomControl: true,
         preferCanvas: true,
-      }).setView([start.lat, start.lng], zoom);
+      }).setView([start.lat, start.lng], startZoom);
       L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom: 19, minZoom: 4 }).addTo(map);
       map.on("click", (e: { latlng: { lat: number; lng: number } }) =>
         pickRef.current?.({ lat: e.latlng.lat, lng: e.latlng.lng }),
@@ -72,6 +80,11 @@ export default function MapBox({
       const map = mapRef.current;
       if (!map || cancelled) return;
       draw(L, map);
+      // اگر محدوده مشخص شده و نقطه‌ای وجود ندارد، نقشه روی همان محدوده متمرکز می‌شود
+      if (area && points.length === 0 && path.length === 0) {
+        map.setView([area.lat, area.lng], area.zoom ?? 10);
+        return;
+      }
       const target = center ?? points[points.length - 1] ?? path[path.length - 1];
       if (follow && target) map.setView([target.lat, target.lng], map.getZoom());
     })();
@@ -79,7 +92,7 @@ export default function MapBox({
       cancelled = true;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pointsKey, pathKey, centerKey, accuracy]);
+  }, [pointsKey, pathKey, centerKey, areaKey, accuracy]);
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   function draw(L: any, map: LeafletMap) {

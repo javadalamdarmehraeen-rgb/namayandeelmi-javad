@@ -20,8 +20,9 @@ const nextConfig: NextConfig = {
   async headers() {
     return [
       {
-        // ❶ همه صفحات HTML: هیچ‌گاه در کش مرورگر نمانند
-        source: "/:path*",
+        // ❶ صفحات HTML: هیچ‌گاه در کش مرورگر نمانند
+        // (مسیرهای /_next/* و فایل‌های استاتیک از این قاعده مستثنا هستند)
+        source: "/:path((?!_next/).*)",
         headers: [
           { key: "Cache-Control", value: NO_STORE },
           { key: "Pragma", value: "no-cache" },
@@ -29,11 +30,8 @@ const nextConfig: NextConfig = {
           { key: "X-Content-Type-Options", value: "nosniff" },
         ],
       },
-      {
-        // ❷ استثنا: فایل‌های استاتیک نسخه‌دار باید کش دائمی داشته باشند
-        source: "/_next/static/:path*",
-        headers: [{ key: "Cache-Control", value: "public, max-age=31536000, immutable" }],
-      },
+      // نکته: برای /_next/static هدر سفارشی نمی‌گذاریم؛ خود Next.js آن را
+      // به‌صورت immutable سرو می‌کند و هدر دستی باعث هشدار و اختلال در توسعه می‌شود.
       {
         source: "/sw.js",
         headers: [

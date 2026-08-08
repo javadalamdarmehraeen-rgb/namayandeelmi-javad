@@ -1,5 +1,3 @@
-import { readFile, readdir, stat } from "node:fs/promises";
-import path from "node:path";
 import { getSessionUser } from "@/lib/auth";
 import { createZip, type ZipEntry } from "@/lib/zip";
 
@@ -14,9 +12,12 @@ export const maxDuration = 60;
  *
  * GET /api/source            → همه فایل‌های پروژه
  * GET /api/source?list=1     → فقط فهرست فایل‌ها (JSON)
+ *
+ * نکته فنی: ماژول‌های فایل‌سیستم به‌صورت «داینامیک» و فقط در زمان اجرا
+ * بارگذاری می‌شوند. اگر به‌صورت ثابت import شوند، ابزار ردیابی Turbopack
+ * تصور می‌کند کل پروژه وابستگی این مسیر است و هشدار
+ * «Encountered unexpected file in NFT list» می‌دهد.
  */
-
-const ROOT = process.cwd();
 
 /** پوشه‌هایی که هرگز در آرشیو قرار نمی‌گیرند */
 const SKIP_DIRS = new Set([
@@ -36,27 +37,48 @@ const SKIP_FILES = new Set([".env", ".env.local", ".env.production", "package-lo
 
 const MAX_FILE_BYTES = 3 * 1024 * 1024;
 
-async function walk(dir: string, base = ""): Promise<string[]> {
+type FsApi = {
+  readFile: (p: string) => Promise<Buffer>;
+  readdir: (p: string) => Promise<string[]>;
+  stat: (p: string) => Promise<{ isDirectory: () => boolean; size: number }>;
+  join: (...p: string[]) => string;
+  root: string;
+};
+
+/** بارگذاری ماژول‌های سیستمی در زمان اجرا */
+async function loadFs(): Promise<FsApi> {
+  const fsp = await import("node:fs/promises");
+  const nodePath = await import("node:path");
+  return {
+    readFile: (p: string) => fsp.readFile(p) as unknown as Promise<Buffer>,
+    readdir: (p: string) => fsp.readdir(p),
+    stat: (p: string) => fsp.stat(p),
+    join: (...p: string[]) => nodePath.join(...p),
+    root: process.cwd(),
+  };
+}
+
+async function walk(fs: FsApi, dir: string, base = ""): Promise<string[]> {
   const out: string[] = [];
   let items: string[] = [];
   try {
-    items = await readdir(dir);
+    items = await fs.readdir(dir);
   } catch {
     return out;
   }
   for (const name of items) {
-    if (name.startsWith(".") && (name === ".git" || name === ".next")) continue;
+    if (name === ".git" || name === ".next") continue;
     const rel = base ? `${base}/${name}` : name;
-    const full = path.join(dir, name);
+    const full = fs.join(dir, name);
     let st;
     try {
-      st = await stat(full);
+      st = await fs.stat(full);
     } catch {
       continue;
     }
     if (st.isDirectory()) {
       if (SKIP_DIRS.has(name)) continue;
-      out.push(...(await walk(full, rel)));
+      out.push(...(await walk(fs, full, rel)));
     } else {
       if (SKIP_FILES.has(name)) continue;
       if (st.size > MAX_FILE_BYTES) continue;
@@ -72,7 +94,8 @@ export async function GET(req: Request) {
     return Response.json({ error: "دسترسی غیرمجاز — فقط مدیر" }, { status: 401 });
   }
 
-  const files = (await walk(ROOT)).sort();
+  const fs = await loadFs();
+  const files = (await walk(fs, fs.root)).sort();
 
   if (new URL(req.url).searchParams.get("list") === "1") {
     return Response.json({ count: files.length, files }, { headers: { "Cache-Control": "no-store" } });
@@ -81,13 +104,12 @@ export async function GET(req: Request) {
   const entries: ZipEntry[] = [];
   for (const rel of files) {
     try {
-      entries.push({ path: `namayandeelmi-javad/${rel}`, content: await readFile(path.join(ROOT, rel)) });
+      entries.push({ path: `namayandeelmi-javad/${rel}`, content: await fs.readFile(fs.join(fs.root, rel)) });
     } catch {
       /* فایل خوانده نشد — رد می‌شود */
     }
   }
 
-  // راهنمای کوتاه داخل آرشیو
   entries.push({
     path: "namayandeelmi-javad/HOW-TO-UPDATE.md",
     content: `# نحوه به‌روزرسانی مخزن
@@ -102,8 +124,10 @@ export async function GET(req: Request) {
 2. در همان پوشه اجرا کنید:
 
 \`\`\`bash
+npm install
+npm run build      # برای اطمینان از سالم بودن
 git add -A
-git status          # باید فایل‌های تغییر یافته را نشان دهد
+git status
 git commit -m "به‌روزرسانی کامل برنامه"
 git push origin main
 \`\`\`
