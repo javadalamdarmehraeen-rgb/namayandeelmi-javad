@@ -2,7 +2,9 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Card, SectionTitle } from "@/components/ui";
-import TargetPanel from "@/components/screens/TargetPanel";
+import dynamic from "next/dynamic";
+
+const TargetPanel = dynamic(() => import("@/components/screens/TargetPanel"), { ssr: false });
 import { JALALI_MONTHS, toPersianDigits } from "@/lib/jalali";
 import { DEFAULT_PRODUCTS, type ProductConfig } from "@/lib/defaults";
 import { downloadFile } from "@/lib/download";

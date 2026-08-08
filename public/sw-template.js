@@ -324,7 +324,8 @@ self.addEventListener("fetch", (event) => {
     event.respondWith(
       (async () => {
         try {
-          const res = await timeoutFetch(req, API_TIMEOUT);
+          // درخواست تازه بدون کش HTTP تا داده قدیمی برنگردد
+          const res = await timeoutFetch(new Request(req, { cache: "no-store" }), API_TIMEOUT);
           if (res.ok) {
             const c = await caches.open(DATA);
             c.put(req, res.clone());

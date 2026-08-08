@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import dynamic from "next/dynamic";
 import { Badge, Button, Input } from "./ui";
 import { toPersianDigits } from "@/lib/jalali";
+import { resolveArea } from "@/lib/geo";
 
 const MapBox = dynamic(() => import("./MapBox"), {
   ssr: false,
@@ -26,11 +27,18 @@ export default function LocationPicker({
   onChange,
   label,
   height = 260,
+  province,
+  city,
+  region,
 }: {
   value: LatLng;
   onChange: (v: LatLng) => void;
   label?: string;
   height?: number;
+  /** برای زوم اولیه روی همان شهر/منطقه */
+  province?: string;
+  city?: string;
+  region?: string;
 }) {
   const [status, setStatus] = useState("");
   const [busy, setBusy] = useState(false);
@@ -98,6 +106,8 @@ export default function LocationPicker({
   };
 
   const acc = value.accuracy ?? null;
+  // اگر هنوز نقطه‌ای ثبت نشده، نقشه روی شهر/منطقه انتخاب‌شده باز می‌شود (نه کل کشور)
+  const area = province || city ? resolveArea(province, city, region) : null;
   const accTone = acc === null ? "amber" : acc <= 20 ? "green" : acc <= 60 ? "amber" : "slate";
 
   return (
@@ -127,8 +137,16 @@ export default function LocationPicker({
       <MapBox
         height={height}
         draggable
+        labels
+        zoom={17}
         accuracy={acc}
-        points={value.lat && value.lng ? [{ lat: value.lat, lng: value.lng, label: label || "لوکیشن" }] : []}
+        center={value.lat && value.lng ? { lat: value.lat, lng: value.lng } : area ? { lat: area.lat, lng: area.lng } : null}
+        points={
+          value.lat && value.lng
+            ? [{ lat: value.lat, lng: value.lng, label: label || "لوکیشن", permanent: true }]
+            : []
+        }
+        areas={area ? [{ ...area, label: [city, region].filter(Boolean).join(" — ") || province || "" }] : []}
         onPick={(p) => onChange({ lat: p.lat, lng: p.lng, accuracy: 0 })}
       />
 

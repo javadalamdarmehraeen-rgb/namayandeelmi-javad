@@ -4,8 +4,15 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import dynamicImport from "next/dynamic";
 import JalaliDateInput from "./JalaliDateInput";
 import Combobox from "./Combobox";
-import LocationPicker, { type LatLng } from "./LocationPicker";
-import FileUploader, { FileList, type Att } from "./FileUploader";
+import type { LatLng } from "./LocationPicker";
+
+const LocationPicker = dynamicImport(() => import("./LocationPicker"), {
+  ssr: false,
+  loading: () => <div className="h-[260px] rounded-2xl bg-slate-100" />,
+});
+import { FileList, type Att } from "./FileUploader";
+
+const FileUploader = dynamicImport(() => import("./FileUploader"), { ssr: false });
 import ShareBox from "./ShareBox";
 import NavButton from "./NavButton";
 import { Alert, Badge, Button, Card, Field, Input, SectionTitle, TextArea } from "./ui";
@@ -18,8 +25,9 @@ import {
 } from "@/lib/defaults";
 import { isValidJalali, tehranDateTime, toPersianDigits, todayJalali } from "@/lib/jalali";
 import { useConfirm } from "@/components/Confirm";
-import { useLive } from "@/lib/useLive";
+import { fetchJson, invalidate, useLive } from "@/lib/useLive";
 import { downloadFile } from "@/lib/download";
+import { resolveArea } from "@/lib/geo";
 
 const MapBox = dynamicImport(() => import("./MapBox"), { ssr: false });
 
@@ -165,15 +173,19 @@ export default function RecordScreen({ type, isAdmin = false }: { type: RecordTy
   const set = (k: string, v: string) => setForm((f) => ({ ...f, [k]: v }));
 
   const loadRows = useCallback(async () => {
-    const res = await fetch(`/api/records/${type}`, { cache: "no-store" });
-    if (res.ok) setRows((await res.json()).rows ?? []);
+    const d = await fetchJson<{ rows?: Row[] }>(`/api/records/${type}`);
+    // فقط وقتی پاسخ معتبر رسید جایگزین می‌کنیم تا لیست «پرش» نکند
+    if (d && Array.isArray(d.rows)) setRows(d.rows);
   }, [type]);
 
   const loadOptions = useCallback(async () => {
-    const res = await fetch("/api/options", { cache: "no-store" });
-    if (!res.ok) return;
-    const data = await res.json();
-    const rows = (data.rows ?? []) as { category: string; value: string; parent?: string }[];
+    // لیست‌های کشویی کم‌تغییرند → کش ۲ دقیقه‌ای (سبک‌تر و بدون پرش)
+    const data = await fetchJson<{ rows?: { category: string; value: string; parent?: string }[] }>(
+      "/api/options",
+      120000,
+    );
+    if (!data) return;
+    const rows = data.rows ?? [];
     const grouped: Record<string, string[]> = {};
     const tree: Record<string, Record<string, string[]>> = {};
     for (const o of rows) {
@@ -186,9 +198,8 @@ export default function RecordScreen({ type, isAdmin = false }: { type: RecordTy
   }, []);
 
   const loadSettings = useCallback(async () => {
-    const res = await fetch("/api/settings", { cache: "no-store" });
-    if (!res.ok) return;
-    const d = await res.json();
+    const d = await fetchJson<{ values?: Record<string, unknown> }>("/api/settings", 120000);
+    if (!d) return;
     const v = d.values ?? {};
     setProducts((v.products as ProductConfig[])?.filter((p) => p.enabled) ?? DEFAULT_PRODUCTS);
     setColumns((v[`columns.${type}`] as ColumnConfig[]) ?? DEFAULT_COLUMNS[type]);
@@ -200,7 +211,7 @@ export default function RecordScreen({ type, isAdmin = false }: { type: RecordTy
   }, [loadOptions, loadSettings]);
 
   // بروزرسانی لحظه‌ای لیست بدون نیاز به رفرش دستی
-  useLive(loadRows, 15000, tab === "list");
+  useLive(loadRows, 20000, tab === "list", `records:${type}`);
 
   const recordName = type === "orders" ? form.pharmacyName : form.name;
 
@@ -262,6 +273,8 @@ export default function RecordScreen({ type, isAdmin = false }: { type: RecordTy
       setMsg({ kind: "success", text: "✅ ثبت شد. برای ارسال به مدیر به تب «لیست ثبت‌شده‌ها» بروید." });
       setDupes([]);
       setHistory(null);
+      invalidate(`/api/records/${type}`);
+      invalidate("/api/targets");
       loadRows();
       loadTargets();
       setTab("list");
@@ -359,11 +372,8 @@ export default function RecordScreen({ type, isAdmin = false }: { type: RecordTy
   /* ---- بارگذاری تارگت‌ها برای نمایش کنار هر کالا ---- */
   const loadTargets = useCallback(async () => {
     if (type !== "orders") return;
-    const res = await fetch("/api/targets", { cache: "no-store" });
-    if (res.ok) {
-      const d = await res.json();
-      setTargets(d.progress ?? []);
-    }
+    const d = await fetchJson<{ progress?: TargetRow[] }>("/api/targets", 30000);
+    if (d?.progress) setTargets(d.progress);
   }, [type]);
 
   useEffect(() => {
@@ -470,6 +480,8 @@ export default function RecordScreen({ type, isAdmin = false }: { type: RecordTy
     if (res.ok) {
       setMsg({ kind: "success", text: "✅ ویرایش ذخیره شد" });
       setEditRow(null);
+      invalidate(`/api/records/${type}`);
+      invalidate("/api/targets");
       loadRows();
       loadTargets();
     } else setMsg({ kind: "error", text: d.error ?? "خطا در ویرایش" });
@@ -489,6 +501,8 @@ export default function RecordScreen({ type, isAdmin = false }: { type: RecordTy
     const d = await res.json().catch(() => ({}));
     if (res.ok) {
       setMsg({ kind: "success", text: "🗑 رکورد حذف شد" });
+      invalidate(`/api/records/${type}`);
+      invalidate("/api/targets");
       loadRows();
       loadTargets();
     } else setMsg({ kind: "error", text: d.error ?? "حذف ناموفق بود" });
@@ -1038,7 +1052,14 @@ export default function RecordScreen({ type, isAdmin = false }: { type: RecordTy
               {type === "doctors" ? "لوکیشن مطب" : "لوکیشن داروخانه"}
               {recordName ? ` — ${recordName}` : ""}
             </SectionTitle>
-            <LocationPicker value={loc} onChange={setLoc} label={recordName || "لوکیشن"} />
+            <LocationPicker
+              value={loc}
+              onChange={setLoc}
+              label={recordName || "لوکیشن"}
+              province={form.province}
+              city={form.city}
+              region={form.region}
+            />
           </div>
 
           <div className="mt-4 flex justify-end">
@@ -1386,15 +1407,23 @@ export default function RecordScreen({ type, isAdmin = false }: { type: RecordTy
               {detail.lat && detail.lng ? (
                 <>
                   <MapBox
-                    height={220}
+                    height={240}
+                    zoom={17}
+                    labels
                     accuracy={detail.accuracy ?? null}
                     points={[
                       {
                         lat: detail.lat,
                         lng: detail.lng,
                         label: detail.locationLabel || detail.name || detail.pharmacyName,
+                        permanent: true,
                       },
                     ]}
+                    areas={
+                      detail.city
+                        ? [{ ...resolveArea(detail.province, detail.city, detail.region), label: [detail.city, detail.region].filter(Boolean).join(" — ") }]
+                        : []
+                    }
                   />
                   <div className="relative z-[60] mt-2" onClick={(e) => e.stopPropagation()}>
                     <NavButton

@@ -237,6 +237,8 @@ export default function TripPage() {
         <MapBox
           height={380}
           follow={active}
+          labels
+          zoom={16}
           path={path}
           points={[
             ...places,

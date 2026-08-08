@@ -7,7 +7,7 @@
  *  این فایل توسط scripts/build-sw.mjs پس از هر build تولید می‌شود.
  * ============================================================ */
 
-const BUILD = "mskunr62-46";
+const BUILD = "mskwwkfi-51";
 const SHELL = `sek-shell-${BUILD}`;
 const DATA = `sek-data-${BUILD}`;
 
@@ -33,6 +33,7 @@ const PAGES = [
   "/panel/doctors",
   "/panel/orders",
   "/panel/trip",
+  "/panel/map",
   "/panel/home",
   "/panel/leaves",
   "/panel/notifications",
@@ -43,6 +44,10 @@ const PAGES = [
   "/admin/records/pharmacies",
   "/admin/records/doctors",
   "/admin/records/orders",
+  "/admin/map",
+  "/admin/live",
+  "/admin/targets",
+  "/admin/sync",
   "/admin/trips",
   "/admin/homes",
   "/admin/leaves",
@@ -55,52 +60,57 @@ const PAGES = [
   "/admin/backup"
 ];
 const ASSETS = [
-  "/_next/static/6pYN29xF_XSfqONlNrapJ/_buildManifest.js",
-  "/_next/static/6pYN29xF_XSfqONlNrapJ/_clientMiddlewareManifest.js",
-  "/_next/static/6pYN29xF_XSfqONlNrapJ/_ssgManifest.js",
-  "/_next/static/chunks/0-npkp6cy67s6.js",
-  "/_next/static/chunks/0.7il.jihrkh-.js",
-  "/_next/static/chunks/00olq03bmyg~j.js",
+  "/_next/static/chunks/0-5yd_izimqfg.js",
   "/_next/static/chunks/01xlw8hd842-c.js",
   "/_next/static/chunks/03h9eo09svijh.js",
   "/_next/static/chunks/03~yq9q893hmn.js",
   "/_next/static/chunks/06i1ruokte.eg.js",
-  "/_next/static/chunks/06ic2raj6d0-l.js",
   "/_next/static/chunks/06r9_3ub2r-4z.js",
-  "/_next/static/chunks/07df90r8w-0_w.js",
   "/_next/static/chunks/07lhk_q6pmm3r.js",
   "/_next/static/chunks/07uz2g0_38qia.js",
-  "/_next/static/chunks/08bqkqim.q04a.js",
   "/_next/static/chunks/08g-5kea7g6.h.js",
-  "/_next/static/chunks/0_v~kvt9uc5or.js",
+  "/_next/static/chunks/09_-onakcdqpr.js",
+  "/_next/static/chunks/0_3h2he.nbgls.js",
+  "/_next/static/chunks/0a2ra~4rdmawo.js",
   "/_next/static/chunks/0asdo24lqpub6.js",
-  "/_next/static/chunks/0cwkwz77n78-d.js",
+  "/_next/static/chunks/0biwd_6joaei3.js",
+  "/_next/static/chunks/0bv-iha4iwrxc.js",
   "/_next/static/chunks/0d3shmwh5_nmn.js",
-  "/_next/static/chunks/0fj4o8g_vkr-w.js",
+  "/_next/static/chunks/0do4nd63hpx7-.js",
   "/_next/static/chunks/0h7njwe2.s3ht.js",
-  "/_next/static/chunks/0lyvt9fwnl.s7.js",
-  "/_next/static/chunks/0mkdhkpipl3ae.js",
-  "/_next/static/chunks/0mwzomct90g1i.js",
   "/_next/static/chunks/0n1bpogj.il~n.js",
-  "/_next/static/chunks/0q3ovab3rhqyb.css",
-  "/_next/static/chunks/0rjt6zqfado2i.js",
+  "/_next/static/chunks/0nr78leyav7co.js",
+  "/_next/static/chunks/0p5_hbo3us_6i.js",
   "/_next/static/chunks/0rz3o0743-gv3.js",
-  "/_next/static/chunks/0t.kl08cbz2tx.js",
   "/_next/static/chunks/0t48hzs_6fshe.css",
-  "/_next/static/chunks/0u7bkm2nmt6t2.js",
+  "/_next/static/chunks/0t5kml7d~jdcf.js",
+  "/_next/static/chunks/0tai7rwnzx._w.js",
+  "/_next/static/chunks/0txnr_ae766.b.js",
   "/_next/static/chunks/0uh4e2v8-yv0m.js",
+  "/_next/static/chunks/0urhm7vv_568_.js",
+  "/_next/static/chunks/0wwyj2c9gruhq.js",
   "/_next/static/chunks/0wxhwo2i~7vvo.js",
+  "/_next/static/chunks/0xmo6b7laxg98.js",
   "/_next/static/chunks/0yhud5x-2k8~x.js",
-  "/_next/static/chunks/0z0v650y5rwv2.js",
+  "/_next/static/chunks/0ywn20dose8a_.js",
   "/_next/static/chunks/0ze4gu236oq96.js",
-  "/_next/static/chunks/0~m7_mz9dpodi.js",
-  "/_next/static/chunks/104v4p6z4b.f3.js",
+  "/_next/static/chunks/0znfjmnmfvtin.js",
+  "/_next/static/chunks/0ztrwpvy6bs39.js",
+  "/_next/static/chunks/103~vyop21s1i.js",
   "/_next/static/chunks/10l1in0aeztjv.js",
-  "/_next/static/chunks/120leif2bb6u-.js",
-  "/_next/static/chunks/13pyciza0m9eu.js",
+  "/_next/static/chunks/10rzdj_k56yx2.js",
+  "/_next/static/chunks/10xw_0tz5yeo5.js",
+  "/_next/static/chunks/11tz7yyivc.-6.js",
+  "/_next/static/chunks/120u7f6z_r07l.js",
+  "/_next/static/chunks/132c5s22zzq3v.css",
+  "/_next/static/chunks/14p80sccknkar.js",
+  "/_next/static/chunks/163xv5z6xj1mj.js",
+  "/_next/static/chunks/16zmzz.zo_fpu.js",
   "/_next/static/chunks/176ztuhghbfr1.js",
-  "/_next/static/chunks/177-oksbd~hr_.js",
-  "/_next/static/chunks/turbopack-0ngnbt.drh_yz.js"
+  "/_next/static/chunks/turbopack-0ngnbt.drh_yz.js",
+  "/_next/static/ulg2OlpglWbUjMRL4Vz84/_buildManifest.js",
+  "/_next/static/ulg2OlpglWbUjMRL4Vz84/_clientMiddlewareManifest.js",
+  "/_next/static/ulg2OlpglWbUjMRL4Vz84/_ssgManifest.js"
 ];
 const EXTRAS = [
   "/manifest.webmanifest",
@@ -120,6 +130,7 @@ const RSC_PAGES = [
   "/panel/doctors?_rsc=offline",
   "/panel/orders?_rsc=offline",
   "/panel/trip?_rsc=offline",
+  "/panel/map?_rsc=offline",
   "/panel/home?_rsc=offline",
   "/panel/leaves?_rsc=offline",
   "/panel/notifications?_rsc=offline",
@@ -130,6 +141,10 @@ const RSC_PAGES = [
   "/admin/records/pharmacies?_rsc=offline",
   "/admin/records/doctors?_rsc=offline",
   "/admin/records/orders?_rsc=offline",
+  "/admin/map?_rsc=offline",
+  "/admin/live?_rsc=offline",
+  "/admin/targets?_rsc=offline",
+  "/admin/sync?_rsc=offline",
   "/admin/trips?_rsc=offline",
   "/admin/homes?_rsc=offline",
   "/admin/leaves?_rsc=offline",
@@ -439,7 +454,8 @@ self.addEventListener("fetch", (event) => {
     event.respondWith(
       (async () => {
         try {
-          const res = await timeoutFetch(req, API_TIMEOUT);
+          // درخواست تازه بدون کش HTTP تا داده قدیمی برنگردد
+          const res = await timeoutFetch(new Request(req, { cache: "no-store" }), API_TIMEOUT);
           if (res.ok) {
             const c = await caches.open(DATA);
             c.put(req, res.clone());
