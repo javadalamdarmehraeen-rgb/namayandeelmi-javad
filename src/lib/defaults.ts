@@ -30,6 +30,7 @@ export const DEFAULT_COLUMNS: Record<string, ColumnConfig[]> = {
     { key: "location", label: "لوکیشن", visible: true },
     { key: "nav", label: "مسیریابی", visible: true },
     { key: "sent", label: "وضعیت ارسال", visible: true },
+    { key: "actions", label: "عملیات", visible: true },
   ],
   doctors: [
     { key: "row", label: "ردیف", visible: true },
@@ -48,6 +49,7 @@ export const DEFAULT_COLUMNS: Record<string, ColumnConfig[]> = {
     { key: "location", label: "لوکیشن", visible: true },
     { key: "nav", label: "مسیریابی", visible: true },
     { key: "sent", label: "وضعیت ارسال", visible: true },
+    { key: "actions", label: "عملیات", visible: true },
   ],
   orders: [
     { key: "row", label: "ردیف", visible: true },
@@ -64,6 +66,7 @@ export const DEFAULT_COLUMNS: Record<string, ColumnConfig[]> = {
     { key: "location", label: "لوکیشن", visible: true },
     { key: "nav", label: "مسیریابی", visible: true },
     { key: "sent", label: "وضعیت ارسال", visible: true },
+    { key: "actions", label: "عملیات", visible: true },
   ],
 };
 
@@ -269,6 +272,7 @@ export const AVAILABLE_COLUMNS: Record<string, { key: string; label: string }[]>
     { key: "files", label: "فایل‌ها" },
     { key: "sent", label: "وضعیت ارسال" },
     { key: "createdAt", label: "زمان ثبت" },
+    { key: "actions", label: "عملیات (ویرایش/حذف)" },
   ],
   doctors: [
     { key: "row", label: "ردیف" },
@@ -291,6 +295,7 @@ export const AVAILABLE_COLUMNS: Record<string, { key: string; label: string }[]>
     { key: "files", label: "فایل‌ها" },
     { key: "sent", label: "وضعیت ارسال" },
     { key: "createdAt", label: "زمان ثبت" },
+    { key: "actions", label: "عملیات (ویرایش/حذف)" },
   ],
   orders: [
     { key: "row", label: "ردیف" },
@@ -311,5 +316,6 @@ export const AVAILABLE_COLUMNS: Record<string, { key: string; label: string }[]>
     { key: "sendStatus", label: "وضعیت پیام‌رسان" },
     { key: "sent", label: "وضعیت ارسال" },
     { key: "createdAt", label: "زمان ثبت" },
+    { key: "actions", label: "عملیات (ویرایش/حذف)" },
   ],
 };

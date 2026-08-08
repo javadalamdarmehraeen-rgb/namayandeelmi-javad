@@ -26,12 +26,13 @@ export default function NotificationBell({ basePath }: { basePath: string }) {
   const initialized = useRef(false);
 
   const load = useCallback(async () => {
-    const res = await fetch("/api/notifications", { cache: "no-store" }).catch(() => null);
+    // فقط اعلان‌های خوانده‌نشده در زنگوله نمایش داده می‌شوند
+    const res = await fetch("/api/notifications?unread=1", { cache: "no-store" }).catch(() => null);
     if (!res?.ok) return;
     const d = await res.json();
     const list: N[] = d.rows ?? [];
     setRows(list);
-    setUnread(d.unread ?? 0);
+    setUnread(list.length);
     const top = list[0];
     if (top && initialized.current && top.id > lastId.current && !top.readAt) {
       setToast(top);
@@ -40,13 +41,7 @@ export default function NotificationBell({ basePath }: { basePath: string }) {
         playNotificationSound();
         vibrate();
       }
-      if (typeof Notification !== "undefined" && Notification.permission === "granted") {
-        try {
-          new Notification("🔔 اعلان جدید", { body: top.title, icon: "/icons/icon-192.png", badge: "/icons/icon-192.png" });
-        } catch {
-          /* ignore */
-        }
-      }
+      showSystemNotification(top);
     }
     if (top) lastId.current = Math.max(lastId.current, top.id);
     initialized.current = true;
@@ -56,8 +51,68 @@ export default function NotificationBell({ basePath }: { basePath: string }) {
     setMuted(localStorage.getItem("sek_mute") === "1");
     load();
     const t = setInterval(load, 20000);
-    return () => clearInterval(t);
+
+    // درخواست مجوز اعلان با اولین تعامل کاربر (سیاست مرورگرها)
+    const ask = () => {
+      if (typeof Notification !== "undefined" && Notification.permission === "default") {
+        Notification.requestPermission().catch(() => undefined);
+      }
+      window.removeEventListener("click", ask);
+      window.removeEventListener("touchstart", ask);
+    };
+    window.addEventListener("click", ask, { once: true });
+    window.addEventListener("touchstart", ask, { once: true });
+
+    // کلیک روی نوتیفیکیشن سیستمی از سمت سرویس‌ورکر
+    const onMsg = (e: MessageEvent) => {
+      if (e.data?.type === "notification-click") {
+        if (e.data.id) markOne(Number(e.data.id));
+        load();
+      }
+    };
+    navigator.serviceWorker?.addEventListener("message", onMsg);
+
+    return () => {
+      clearInterval(t);
+      window.removeEventListener("click", ask);
+      window.removeEventListener("touchstart", ask);
+      navigator.serviceWorker?.removeEventListener("message", onMsg);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [load]);
+
+  /** نمایش نوتیفیکیشن سیستمی — روی گوشی هم مثل پیام ظاهر می‌شود */
+  const showSystemNotification = async (n: N) => {
+    if (typeof Notification === "undefined" || Notification.permission !== "granted") return;
+    const payload = {
+      body: n.body || n.title,
+      icon: "/icons/icon-192.png",
+      badge: "/icons/icon-192.png",
+      tag: `sek-${n.id}`,
+      dir: "rtl" as const,
+      lang: "fa",
+      requireInteraction: true,
+      data: { id: n.id, link: n.link || `${basePath}/notifications` },
+      vibrate: [200, 100, 200],
+    };
+    try {
+      // از طریق سرویس‌ورکر تا روی موبایل هم در مرکز اعلان بماند
+      const reg = await navigator.serviceWorker?.getRegistration();
+      if (reg) {
+        await reg.showNotification(`🔔 ${n.title}`, payload as NotificationOptions);
+        return;
+      }
+      const note = new Notification(`🔔 ${n.title}`, payload as NotificationOptions);
+      note.onclick = () => {
+        window.focus();
+        markOne(n.id);
+        window.location.href = payload.data.link;
+        note.close();
+      };
+    } catch {
+      /* ignore */
+    }
+  };
 
   const markOne = async (id: number) => {
     await fetch("/api/notifications", {
@@ -125,7 +180,9 @@ export default function NotificationBell({ basePath }: { basePath: string }) {
                 </div>
               </div>
               {rows.length === 0 ? (
-                <p className="px-2 py-6 text-center text-xs text-slate-400">اعلانی وجود ندارد</p>
+                <p className="px-2 py-6 text-center text-xs text-slate-400">
+                  اعلان خوانده‌نشده‌ای ندارید ✅
+                </p>
               ) : (
                 rows.slice(0, 12).map((n) => (
                   <div

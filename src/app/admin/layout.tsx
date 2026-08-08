@@ -15,6 +15,7 @@ function Inner({ children }: { children: ReactNode }) {
     { href: "/admin/records/doctors", label: "پزشکان", icon: "🩺", perm: "doctor" },
     { href: "/admin/records/orders", label: "سفارشات", icon: "🧾", perm: "order" },
     { href: "/admin/activity", label: "فعالیت لحظه‌ای", icon: "🕒", perm: "dashboard" },
+    { href: "/admin/live", label: "موقعیت زنده", icon: "📍", perm: "monitor" },
     { href: "/admin/trips", label: "رصد تردد", icon: "🗺️", perm: "monitor" },
     { href: "/admin/homes", label: "منزل نمایندگان", icon: "🏡", perm: "home" },
     { href: "/admin/leaves", label: "مرخصی‌ها", icon: "📝", perm: "leave" },
@@ -26,6 +27,7 @@ function Inner({ children }: { children: ReactNode }) {
     { href: "/admin/users", label: "کاربران و دسترسی", icon: "👤", perm: "users" },
     { href: "/admin/messengers", label: "پیام‌رسان‌ها", icon: "📨", perm: "messengers" },
     { href: "/admin/backup", label: "پشتیبان‌گیری", icon: "💾", perm: "users" },
+    { href: "/admin/sync", label: "همگام‌سازی سرورها", icon: "🔄", perm: "users" },
     { href: "/install", label: "نصب اپ", icon: "📲" },
     { href: "/diagnostics", label: "عیب‌یابی", icon: "🩺" },
   ]

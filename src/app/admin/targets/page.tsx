@@ -17,60 +17,86 @@ type Progress = {
   bonus: number;
   remaining: number;
   percent: number;
-  valueDistributor: number;
-  valuePharmacy: number;
-  soldValueDistributor: number;
-  soldValuePharmacy: number;
 };
 
 const money = (n: number) => toPersianDigits(Math.round(n).toLocaleString("en-US"));
-const currentPeriod = () => todayJalali().slice(0, 7);
+const nowYear = () => Number(todayJalali().slice(0, 4));
+const nowMonth = () => Number(todayJalali().slice(5, 7));
 
 export default function TargetsPage() {
   const [users, setUsers] = useState<User[]>([]);
   const [products, setProducts] = useState<ProductConfig[]>(DEFAULT_PRODUCTS);
   const [userId, setUserId] = useState<number | null>(null);
-  const [period, setPeriod] = useState(currentPeriod());
+
+  // ماه و سال جدا
+  const [year, setYear] = useState<number>(nowYear());
+  const [month, setMonth] = useState<number>(nowMonth());
+  const [years, setYears] = useState<number[]>([]);
+  const [newYear, setNewYear] = useState("");
+
   const [rows, setRows] = useState<Progress[]>([]);
   const [msg, setMsg] = useState("");
   const [busy, setBusy] = useState(false);
   const confirm = useConfirm();
 
-  const loadUsers = useCallback(async () => {
+  const period = `${year}/${String(month).padStart(2, "0")}`;
+
+  /* ---------- بارگذاری کاربران، کالاها و سال‌ها ---------- */
+  const loadBase = useCallback(async () => {
     const res = await fetch("/api/users", { cache: "no-store" });
     if (res.ok) {
-      const d = await res.json();
-      const list: User[] = d.rows ?? [];
+      const list: User[] = (await res.json()).rows ?? [];
       setUsers(list);
-      if (!userId && list.length) setUserId(list.find((u) => u.role === "rep")?.id ?? list[0].id);
+      setUserId((cur) => cur ?? list.find((u) => u.role === "rep")?.id ?? list[0]?.id ?? null);
     }
     const pr = await fetch("/api/settings?key=products", { cache: "no-store" });
     if (pr.ok) {
-      const d = await pr.json();
-      const v = d.value as ProductConfig[] | null;
+      const v = (await pr.json()).value as ProductConfig[] | null;
       if (Array.isArray(v) && v.length) setProducts(v.filter((p) => p.enabled !== false));
     }
-  }, [userId]);
+    // سال‌های تعریف‌شده در لیست‌های کشویی
+    const yr = await fetch("/api/options?category=year", { cache: "no-store" });
+    const saved: number[] = yr.ok
+      ? ((await yr.json()).rows ?? []).map((r: { value: string }) => Number(r.value)).filter(Boolean)
+      : [];
+    const base = [nowYear() - 1, nowYear(), nowYear() + 1];
+    setYears([...new Set([...base, ...saved])].sort((a, b) => a - b));
+  }, []);
 
   const loadTargets = useCallback(async () => {
     if (!userId) return;
     const res = await fetch(`/api/targets?userId=${userId}&period=${encodeURIComponent(period)}`, { cache: "no-store" });
-    if (res.ok) {
-      const d = await res.json();
-      setRows(d.progress ?? []);
-    }
+    if (res.ok) setRows((await res.json()).progress ?? []);
   }, [userId, period]);
 
   useEffect(() => {
-    loadUsers();
-  }, [loadUsers]);
-
+    loadBase();
+  }, [loadBase]);
   useEffect(() => {
     loadTargets();
   }, [loadTargets]);
 
-  const setField = (key: string, field: keyof Progress, value: number) =>
+  /** تغییر مقدار یک فیلد — محاسبه ارزش ریالی بلافاصله انجام می‌شود */
+  const setField = (key: string, field: "quantity" | "priceDistributor" | "pricePharmacy", value: number) =>
     setRows((p) => p.map((r) => (r.productKey === key ? { ...r, [field]: value } : r)));
+
+  const addYear = async () => {
+    const y = Number(newYear);
+    if (!y || y < 1300 || y > 1500) return setMsg("✖ سال شمسی معتبر وارد کنید (مثلاً ۱۴۰۶)");
+    if (!(await confirm({ title: "افزودن سال", message: `سال ${toPersianDigits(y)} اضافه شود؟`, confirmText: "افزودن" })))
+      return;
+    const res = await fetch("/api/options", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ category: "year", value: String(y) }),
+    });
+    if (res.ok) {
+      setYears((p) => [...new Set([...p, y])].sort((a, b) => a - b));
+      setYear(y);
+      setNewYear("");
+      setMsg(`✅ سال ${toPersianDigits(y)} اضافه شد`);
+    } else setMsg("✖ افزودن سال ناموفق بود");
+  };
 
   const save = async () => {
     if (!userId) return;
@@ -78,7 +104,7 @@ export default function TargetsPage() {
     if (
       !(await confirm({
         title: "ذخیره تارگت",
-        message: `تارگت «${rep?.fullName}» برای دوره ${toPersianDigits(period)} ذخیره شود؟`,
+        message: `تارگت «${rep?.fullName}» برای ${JALALI_MONTHS[month - 1]} ${toPersianDigits(year)} ذخیره شود؟`,
         confirmText: "ذخیره",
       }))
     )
@@ -99,52 +125,41 @@ export default function TargetsPage() {
       }),
     });
     setBusy(false);
-    setMsg(res.ok ? "✅ تارگت ذخیره شد و بلافاصله در فرم سفارش نماینده نمایش داده می‌شود" : "✖ خطا در ذخیره");
+    setMsg(res.ok ? "✅ تارگت این نماینده ذخیره شد و بلافاصله در فرم سفارش او نمایش داده می‌شود" : "✖ خطا در ذخیره");
     loadTargets();
   };
 
-  /** کپی قیمت‌ها روی همه نمایندگان */
-  const copyPrices = async () => {
-    if (
-      !(await confirm({
-        title: "اعمال قیمت‌ها برای همه",
-        message: "قیمت پخش و داروخانه این جدول برای همه نمایندگان (با حفظ تعداد تارگت هرکدام) اعمال شود؟",
-        confirmText: "اعمال",
-      }))
-    )
-      return;
-    setBusy(true);
-    for (const u of users.filter((x) => x.role === "rep" || x.role === "sales")) {
-      const cur = await fetch(`/api/targets?userId=${u.id}&period=${encodeURIComponent(period)}`, { cache: "no-store" })
-        .then((r) => (r.ok ? r.json() : null))
-        .catch(() => null);
-      const existing: Progress[] = cur?.progress ?? [];
-      await fetch("/api/targets", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          userId: u.id,
-          period,
-          items: rows.map((r) => ({
-            productKey: r.productKey,
-            quantity: existing.find((e) => e.productKey === r.productKey)?.quantity ?? 0,
-            priceDistributor: r.priceDistributor,
-            pricePharmacy: r.pricePharmacy,
-          })),
-        }),
-      });
+  /** کپی تارگت دوره قبل برای همین نماینده */
+  const copyPrev = async () => {
+    if (!userId) return;
+    let pm = month - 1;
+    let py = year;
+    if (pm === 0) {
+      pm = 12;
+      py -= 1;
     }
-    setBusy(false);
-    setMsg("✅ قیمت‌ها برای همه نمایندگان اعمال شد");
+    const prev = `${py}/${String(pm).padStart(2, "0")}`;
+    const res = await fetch(`/api/targets?userId=${userId}&period=${encodeURIComponent(prev)}`, { cache: "no-store" });
+    if (!res.ok) return setMsg("✖ خطا در خواندن دوره قبل");
+    const d = await res.json();
+    const prevRows: Progress[] = d.progress ?? [];
+    setRows((cur) =>
+      cur.map((r) => {
+        const p = prevRows.find((x) => x.productKey === r.productKey);
+        return p ? { ...r, quantity: p.quantity, priceDistributor: p.priceDistributor, pricePharmacy: p.pricePharmacy } : r;
+      }),
+    );
+    setMsg(`📋 تارگت ${JALALI_MONTHS[pm - 1]} ${toPersianDigits(py)} کپی شد — برای ثبت، «ذخیره» را بزنید`);
   };
 
+  /* ---------- محاسبات لحظه‌ای ---------- */
   const totals = useMemo(
     () =>
       rows.reduce(
         (a, r) => ({
           quantity: a.quantity + r.quantity,
           sold: a.sold + r.sold,
-          remaining: a.remaining + r.remaining,
+          remaining: a.remaining + Math.max(0, r.quantity - r.sold),
           valueDistributor: a.valueDistributor + r.quantity * r.priceDistributor,
           valuePharmacy: a.valuePharmacy + r.quantity * r.pricePharmacy,
           soldValueDistributor: a.soldValueDistributor + r.sold * r.priceDistributor,
@@ -162,37 +177,17 @@ export default function TargetsPage() {
       ),
     [rows],
   );
-
-  const periods = useMemo(() => {
-    const [y, m] = currentPeriod().split("/").map(Number);
-    const out: string[] = [];
-    for (let i = -6; i <= 6; i++) {
-      let mm = m + i;
-      let yy = y;
-      while (mm <= 0) {
-        mm += 12;
-        yy -= 1;
-      }
-      while (mm > 12) {
-        mm -= 12;
-        yy += 1;
-      }
-      out.push(`${yy}/${String(mm).padStart(2, "0")}`);
-    }
-    return [...new Set(out)].sort();
-  }, []);
-
-  const label = (p: string) => `${JALALI_MONTHS[Number(p.slice(5, 7)) - 1] ?? ""} ${toPersianDigits(p.slice(0, 4))}`;
   const pct = totals.quantity > 0 ? Math.round((totals.sold / totals.quantity) * 100) : 0;
+  const rep = users.find((u) => u.id === userId);
 
   return (
     <div className="space-y-4">
-      <SectionTitle icon="🎯">تعریف تارگت فروش نمایندگان</SectionTitle>
+      <SectionTitle icon="🎯">تعریف تارگت فروش — به تفکیک هر نماینده</SectionTitle>
       {msg ? <Alert kind={msg.startsWith("✖") ? "error" : "success"}>{msg}</Alert> : null}
 
       <Card>
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-          <Field label="نماینده">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          <Field label="نماینده" required>
             <select
               value={userId ?? ""}
               onChange={(e) => setUserId(Number(e.target.value))}
@@ -205,25 +200,61 @@ export default function TargetsPage() {
               ))}
             </select>
           </Field>
-          <Field label="دوره (ماه شمسی)">
+
+          <Field label="سال">
             <select
-              value={period}
-              onChange={(e) => setPeriod(e.target.value)}
+              value={year}
+              onChange={(e) => setYear(Number(e.target.value))}
               className="w-full rounded-xl border border-slate-300 px-3 py-2.5 text-sm"
             >
-              {periods.map((p) => (
-                <option key={p} value={p}>
-                  {label(p)}
+              {years.map((y) => (
+                <option key={y} value={y}>
+                  {toPersianDigits(y)}
                 </option>
               ))}
-              <option value="">تارگت دائمی (بدون دوره)</option>
             </select>
           </Field>
-          <div className="flex items-end gap-2">
-            <Button onClick={save} disabled={busy} className="flex-1">
-              💾 ذخیره تارگت
-            </Button>
-          </div>
+
+          <Field label="ماه">
+            <select
+              value={month}
+              onChange={(e) => setMonth(Number(e.target.value))}
+              className="w-full rounded-xl border border-slate-300 px-3 py-2.5 text-sm"
+            >
+              {JALALI_MONTHS.map((m, i) => (
+                <option key={m} value={i + 1}>
+                  {m}
+                </option>
+              ))}
+            </select>
+          </Field>
+
+          <Field label="افزودن سال جدید" hint="مثلاً ۱۴۰۶">
+            <div className="flex gap-1">
+              <Input
+                inputMode="numeric"
+                value={newYear}
+                onChange={(e) => setNewYear(e.target.value.replace(/\D/g, "").slice(0, 4))}
+                placeholder="1406"
+                className="text-center"
+              />
+              <Button variant="soft" onClick={addYear}>
+                ➕
+              </Button>
+            </div>
+          </Field>
+        </div>
+
+        <div className="mt-3 flex flex-wrap items-center gap-2">
+          <Badge tone="slate">
+            {rep?.fullName ?? "—"} | {JALALI_MONTHS[month - 1]} {toPersianDigits(year)}
+          </Badge>
+          <Button onClick={save} disabled={busy}>
+            💾 ذخیره تارگت این نماینده
+          </Button>
+          <Button variant="ghost" onClick={copyPrev}>
+            📋 کپی از ماه قبل
+          </Button>
         </div>
 
         <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4">
@@ -242,81 +273,93 @@ export default function TargetsPage() {
       </Card>
 
       <Card>
-        <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
-          <h3 className="text-sm font-bold text-slate-700">تارگت و قیمت هر کالا</h3>
-          <Button variant="soft" onClick={copyPrices} disabled={busy}>
-            📋 اعمال قیمت‌ها برای همه نمایندگان
-          </Button>
-        </div>
+        <h3 className="mb-2 text-sm font-bold text-slate-700">
+          تارگت و قیمت هر کالا — ارزش ریالی به‌صورت لحظه‌ای محاسبه می‌شود
+        </h3>
         <div className="scroll-x">
-          <table className="w-full min-w-[860px] text-right text-xs">
+          <table className="w-full min-w-[980px] text-right text-xs">
             <thead>
               <tr className="bg-slate-100 text-slate-600">
                 <th className="px-2 py-2">کالا</th>
                 <th className="px-2 py-2">تعداد تارگت</th>
                 <th className="px-2 py-2">قیمت پخش (ریال)</th>
                 <th className="px-2 py-2">قیمت داروخانه (ریال)</th>
-                <th className="px-2 py-2">ارزش تارگت (پخش)</th>
-                <th className="px-2 py-2">فروش</th>
-                <th className="px-2 py-2">باقیمانده</th>
-                <th className="px-2 py-2">تحقق</th>
+                <th className="px-2 py-2 text-center">ارزش پخش</th>
+                <th className="px-2 py-2 text-center">ارزش داروخانه</th>
+                <th className="px-2 py-2 text-center">فروش</th>
+                <th className="px-2 py-2 text-center">باقیمانده</th>
+                <th className="px-2 py-2 text-center">تحقق</th>
               </tr>
             </thead>
             <tbody>
-              {rows.map((r) => (
-                <tr key={r.productKey} className="border-b border-slate-100">
-                  <td className="whitespace-nowrap px-2 py-2 font-bold text-slate-800">{r.productLabel}</td>
-                  <td className="px-2 py-2">
-                    <Input
-                      inputMode="numeric"
-                      value={r.quantity || ""}
-                      onChange={(e) => setField(r.productKey, "quantity", Number(e.target.value.replace(/\D/g, "")) || 0)}
-                      className="w-24 px-2 py-1 text-center text-xs"
-                    />
-                  </td>
-                  <td className="px-2 py-2">
-                    <Input
-                      inputMode="numeric"
-                      value={r.priceDistributor || ""}
-                      onChange={(e) =>
-                        setField(r.productKey, "priceDistributor", Number(e.target.value.replace(/\D/g, "")) || 0)
-                      }
-                      className="w-32 px-2 py-1 text-center text-xs"
-                    />
-                  </td>
-                  <td className="px-2 py-2">
-                    <Input
-                      inputMode="numeric"
-                      value={r.pricePharmacy || ""}
-                      onChange={(e) =>
-                        setField(r.productKey, "pricePharmacy", Number(e.target.value.replace(/\D/g, "")) || 0)
-                      }
-                      className="w-32 px-2 py-1 text-center text-xs"
-                    />
-                  </td>
-                  <td className="px-2 py-2 font-bold text-slate-600">{money(r.quantity * r.priceDistributor)}</td>
-                  <td className="px-2 py-2 font-bold text-teal-700">{toPersianDigits(r.sold)}</td>
-                  <td className="px-2 py-2 font-bold text-rose-700">{toPersianDigits(r.remaining)}</td>
-                  <td className="px-2 py-2">
-                    <div className="flex items-center gap-1">
-                      <div className="h-1.5 w-16 overflow-hidden rounded bg-slate-200">
-                        <div
-                          className={`h-full ${r.percent >= 100 ? "bg-emerald-500" : "bg-teal-500"}`}
-                          style={{ width: `${Math.min(100, r.percent)}%` }}
-                        />
+              {rows.map((r) => {
+                const valD = r.quantity * r.priceDistributor;
+                const valP = r.quantity * r.pricePharmacy;
+                const remaining = Math.max(0, r.quantity - r.sold);
+                const percent = r.quantity > 0 ? Math.round((r.sold / r.quantity) * 100) : 0;
+                return (
+                  <tr key={r.productKey} className="border-b border-slate-100">
+                    <td className="whitespace-nowrap px-2 py-2 font-bold text-slate-800">{r.productLabel}</td>
+                    <td className="px-2 py-2">
+                      <Input
+                        inputMode="numeric"
+                        value={r.quantity || ""}
+                        onChange={(e) => setField(r.productKey, "quantity", Number(e.target.value.replace(/\D/g, "")) || 0)}
+                        className="w-24 px-2 py-1 text-center text-xs"
+                        placeholder="0"
+                      />
+                    </td>
+                    <td className="px-2 py-2">
+                      <Input
+                        inputMode="numeric"
+                        value={r.priceDistributor || ""}
+                        onChange={(e) =>
+                          setField(r.productKey, "priceDistributor", Number(e.target.value.replace(/\D/g, "")) || 0)
+                        }
+                        className="w-32 px-2 py-1 text-center text-xs"
+                        placeholder="0"
+                      />
+                    </td>
+                    <td className="px-2 py-2">
+                      <Input
+                        inputMode="numeric"
+                        value={r.pricePharmacy || ""}
+                        onChange={(e) =>
+                          setField(r.productKey, "pricePharmacy", Number(e.target.value.replace(/\D/g, "")) || 0)
+                        }
+                        className="w-32 px-2 py-1 text-center text-xs"
+                        placeholder="0"
+                      />
+                    </td>
+                    {/* ارزش ریالی — لحظه‌ای */}
+                    <td className="px-2 py-2 text-center font-black text-slate-700">
+                      <span className={valD ? "text-sky-700" : "text-slate-300"}>{money(valD)}</span>
+                    </td>
+                    <td className="px-2 py-2 text-center font-black">
+                      <span className={valP ? "text-indigo-700" : "text-slate-300"}>{money(valP)}</span>
+                    </td>
+                    <td className="px-2 py-2 text-center font-bold text-teal-700">{toPersianDigits(r.sold)}</td>
+                    <td className="px-2 py-2 text-center font-bold text-rose-700">{toPersianDigits(remaining)}</td>
+                    <td className="px-2 py-2">
+                      <div className="flex items-center justify-center gap-1">
+                        <div className="h-1.5 w-14 overflow-hidden rounded bg-slate-200">
+                          <div
+                            className={`h-full ${percent >= 100 ? "bg-emerald-500" : "bg-teal-500"}`}
+                            style={{ width: `${Math.min(100, percent)}%` }}
+                          />
+                        </div>
+                        <span className="text-[10px] font-bold">{toPersianDigits(percent)}٪</span>
                       </div>
-                      <span className="text-[10px] font-bold">{toPersianDigits(r.percent)}٪</span>
-                    </div>
-                  </td>
-                </tr>
-              ))}
+                    </td>
+                  </tr>
+                );
+              })}
               <tr className="bg-teal-50 font-black text-teal-800">
                 <td className="px-2 py-2">جمع کل</td>
                 <td className="px-2 py-2 text-center">{toPersianDigits(totals.quantity)}</td>
-                <td className="px-2 py-2" colSpan={2}>
-                  ارزش تارگت داروخانه: {money(totals.valuePharmacy)}
-                </td>
-                <td className="px-2 py-2">{money(totals.valueDistributor)}</td>
+                <td className="px-2 py-2" colSpan={2} />
+                <td className="px-2 py-2 text-center">{money(totals.valueDistributor)}</td>
+                <td className="px-2 py-2 text-center">{money(totals.valuePharmacy)}</td>
                 <td className="px-2 py-2 text-center">{toPersianDigits(totals.sold)}</td>
                 <td className="px-2 py-2 text-center">{toPersianDigits(totals.remaining)}</td>
                 <td className="px-2 py-2 text-center">{toPersianDigits(pct)}٪</td>
@@ -324,13 +367,14 @@ export default function TargetsPage() {
             </tbody>
           </table>
         </div>
+
         <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2">
           <div className="rounded-xl bg-slate-50 p-3 text-xs ring-1 ring-slate-200">
-            <b className="text-slate-700">ارزش فروش انجام‌شده (قیمت پخش):</b>{" "}
+            ارزش فروش انجام‌شده (پخش):{" "}
             <span className="font-black text-teal-700">{money(totals.soldValueDistributor)} ریال</span>
           </div>
           <div className="rounded-xl bg-slate-50 p-3 text-xs ring-1 ring-slate-200">
-            <b className="text-slate-700">ارزش فروش انجام‌شده (قیمت داروخانه):</b>{" "}
+            ارزش فروش انجام‌شده (داروخانه):{" "}
             <span className="font-black text-teal-700">{money(totals.soldValuePharmacy)} ریال</span>
           </div>
         </div>

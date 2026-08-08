@@ -58,6 +58,7 @@ export default function MessengersPage() {
   const [showToken, setShowToken] = useState<Record<number, boolean>>({});
   const [testing, setTesting] = useState<number | null>(null);
   const [workerVersion, setWorkerVersion] = useState<"new" | "old" | "down" | "">("");
+  const [autoSend, setAutoSend] = useState(true);
   const confirm = useConfirm();
 
   const meta = PLATFORMS.find((p) => p.key === tab)!;
@@ -70,6 +71,7 @@ export default function MessengersPage() {
     setLogs(d.logs ?? []);
     if (d.proxy) setProxy(d.proxy);
     if (d.sms) setSms(d.sms);
+    if (typeof d.autoSend === "boolean") setAutoSend(d.autoSend);
   }, []);
 
   useLive(load, 30000);
@@ -226,6 +228,43 @@ export default function MessengersPage() {
         </div>
       </div>
       {msg ? <Alert kind={msg.startsWith("✖") ? "error" : "success"}>{msg}</Alert> : null}
+
+      {/* ------------------ ارسال خودکار ------------------ */}
+      <Card>
+        <div className="flex flex-wrap items-center gap-3">
+          <span className="text-sm font-black text-slate-800">🚀 ارسال خودکار سفارش‌ها</span>
+          <button
+            onClick={async () => {
+              const next = !autoSend;
+              if (
+                !(await confirm({
+                  title: next ? "فعال‌سازی ارسال خودکار" : "غیرفعال‌سازی ارسال خودکار",
+                  message: next
+                    ? "هر سفارش جدید بلافاصله پس از ثبت، خودکار به همه پیام‌رسان‌های فعال ارسال شود؟"
+                    : "ارسال خودکار خاموش شود؟ نمایندگان باید دستی ارسال کنند.",
+                  confirmText: next ? "فعال کن" : "خاموش کن",
+                }))
+              )
+                return;
+              setAutoSend(next);
+              const res = await fetch("/api/settings", {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ key: "autoSendOrders", value: { enabled: next } }),
+              });
+              setMsg(res.ok ? (next ? "✅ ارسال خودکار فعال شد" : "✅ ارسال خودکار خاموش شد") : "✖ خطا");
+            }}
+            className={`rounded-xl px-4 py-2 text-xs font-bold ${
+              autoSend ? "bg-emerald-600 text-white" : "bg-slate-200 text-slate-700"
+            }`}
+          >
+            {autoSend ? "✅ فعال — هر سفارش خودکار ارسال می‌شود" : "⛔ غیرفعال — فقط ارسال دستی"}
+          </button>
+          <span className="text-[11px] text-slate-500">
+            علاوه بر این، نماینده می‌تواند از پنجره جزئیات سفارش، دستی هم ارسال کند.
+          </span>
+        </div>
+      </Card>
 
       {/* ------------------ تب پیام‌رسان‌ها ------------------ */}
       <div className="flex flex-wrap gap-1 rounded-2xl bg-slate-200 p-1">

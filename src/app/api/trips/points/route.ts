@@ -1,7 +1,20 @@
 import { db } from "@/db";
-import { tripPoints, trips } from "@/db/schema";
+import { liveLocations, tripPoints, trips } from "@/db/schema";
 import { getSessionUser } from "@/lib/auth";
 import { asc, eq } from "drizzle-orm";
+
+/** فاصله دو نقطه جغرافیایی بر حسب متر */
+function haversine(a: { lat: number; lng: number }, b: { lat: number; lng: number }) {
+  const R = 6371000;
+  const dLat = ((b.lat - a.lat) * Math.PI) / 180;
+  const dLng = ((b.lng - a.lng) * Math.PI) / 180;
+  const s =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos((a.lat * Math.PI) / 180) * Math.cos((b.lat * Math.PI) / 180) * Math.sin(dLng / 2) ** 2;
+  const d = 2 * R * Math.asin(Math.sqrt(s));
+  // نویز GPS: جابه‌جایی کمتر از ۵ متر نادیده گرفته می‌شود
+  return d < 5 || d > 5000 ? 0 : d;
+}
 
 export const dynamic = "force-dynamic";
 
@@ -39,6 +52,9 @@ export async function POST(req: Request) {
       lat: Number(p.lat),
       lng: Number(p.lng),
       accuracy: Number(p.accuracy) || null,
+      speed: Number(p.speed) || null,
+      stopSeconds: Math.max(0, Math.round(Number(p.stopSeconds) || 0)),
+      gpsOn: p.gpsOn !== false,
       kind: ["start", "move", "pause", "end"].includes(String(p.kind)) ? String(p.kind) : "move",
       note: String(p.note ?? "").slice(0, 200),
       recordedAt: p.recordedAt ? new Date(String(p.recordedAt)) : new Date(),
@@ -46,6 +62,44 @@ export async function POST(req: Request) {
     }))
     .filter((p: { lat: number; lng: number }) => Number.isFinite(p.lat) && Number.isFinite(p.lng))
     .slice(0, 500);
+
   if (values.length) await db.insert(tripPoints).values(values);
+
+  // بازمحاسبه مسافت و مجموع توقف سفر
+  try {
+    const all = await db
+      .select({ lat: tripPoints.lat, lng: tripPoints.lng, stopSeconds: tripPoints.stopSeconds })
+      .from(tripPoints)
+      .where(eq(tripPoints.tripId, tripId))
+      .orderBy(asc(tripPoints.recordedAt));
+
+    let dist = 0;
+    for (let i = 1; i < all.length; i++) dist += haversine(all[i - 1], all[i]);
+    const stops = all.reduce((a, x) => a + (x.stopSeconds ?? 0), 0);
+
+    await db.update(trips).set({ distanceM: Math.round(dist), stopSeconds: stops }).where(eq(trips.id, tripId));
+
+    // آخرین نقطه به‌عنوان موقعیت زنده
+    const last = values[values.length - 1];
+    if (last) {
+      const lv = {
+        userId: user.id,
+        repName: user.fullName,
+        lat: last.lat,
+        lng: last.lng,
+        accuracy: last.accuracy,
+        speed: last.speed,
+        gpsOn: last.gpsOn,
+        online: true,
+        tripId,
+        recordedAt: last.recordedAt,
+        updatedAt: new Date(),
+      };
+      await db.insert(liveLocations).values(lv).onConflictDoUpdate({ target: liveLocations.userId, set: lv });
+    }
+  } catch {
+    /* محاسبه آماری نباید ثبت نقاط را متوقف کند */
+  }
+
   return Response.json({ ok: true, inserted: values.length });
 }

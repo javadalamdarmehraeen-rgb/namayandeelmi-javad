@@ -9,6 +9,7 @@ import Combobox from "@/components/Combobox";
 import { useConfirm } from "@/components/Confirm";
 import { useLive } from "@/lib/useLive";
 import { JALALI_MONTHS } from "@/lib/jalali";
+import { downloadFile } from "@/lib/download";
 
 type Leave = {
   id: number;
@@ -299,9 +300,12 @@ export default function LeaveScreen() {
       <Card>
         <div className="mb-2 flex items-center justify-between">
           <h3 className="text-sm font-bold text-slate-700">لیست درخواست‌ها</h3>
-          <a href="/api/export?type=leaves" className="rounded-lg bg-emerald-600 px-3 py-1.5 text-xs font-bold text-white">
+          <button
+            onClick={async () => setMsg({ kind: "success", text: await downloadFile("/api/export?type=leaves", "leaves.xls") })}
+            className="rounded-lg bg-emerald-600 px-3 py-1.5 text-xs font-bold text-white"
+          >
             ⬇️ خروجی اکسل
-          </a>
+          </button>
         </div>
         <div className="scroll-x">
           <table className="w-full min-w-[820px] text-right text-xs sm:text-sm">

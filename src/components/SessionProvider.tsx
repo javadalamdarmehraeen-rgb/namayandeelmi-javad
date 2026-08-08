@@ -10,6 +10,7 @@ import {
   saveToken,
   type CachedUser,
 } from "@/lib/offline-session";
+import { currentOrigin, orderedEndpoints, setActiveEndpoint } from "@/lib/endpoints";
 
 export type Me = CachedUser;
 
@@ -45,28 +46,54 @@ export function patchFetch() {
     const slow = conn?.saveData || ["slow-2g", "2g", "3g"].includes(conn?.effectiveType ?? "");
     const baseTimeout = slow ? 45000 : 25000;
 
-    const attempt = async (n: number): Promise<Response> => {
+    // مسیر نسبی برای جابه‌جایی بین سرورها
+    const relPath = url.startsWith("http") ? url.replace(currentOrigin(), "") : url;
+
+    const tryOnce = async (target: string, extraMs: number): Promise<Response> => {
+      const isSelf = target === currentOrigin();
       const ctrl = new AbortController();
-      const timer = setTimeout(() => ctrl.abort(), baseTimeout + n * 10000);
+      const timer = setTimeout(() => ctrl.abort(), baseTimeout + extraMs);
       try {
-        const res = await original(input, {
+        return await original(isSelf ? relPath : `${target}${relPath}`, {
           ...init,
           headers,
+          credentials: isSelf ? (init?.credentials ?? "same-origin") : "include",
+          mode: isSelf ? undefined : "cors",
           signal: init?.signal ?? ctrl.signal,
           cache: init?.cache ?? "no-store",
         });
-        return res;
-      } catch (err) {
-        if (n < 2 && navigator.onLine) {
-          await new Promise((r) => setTimeout(r, 1200 * (n + 1)));
-          return attempt(n + 1);
-        }
-        throw err;
       } finally {
         clearTimeout(timer);
       }
     };
-    return attempt(0);
+
+    /**
+     * ابتدا سرور فعلی (با ۲ بار تلاش مجدد)، سپس سرور دیگر.
+     * اگر سرور ایران کند/قطع بود، خودکار روی سرور دیگر می‌رود.
+     */
+    const attempt = async (): Promise<Response> => {
+      const targets = orderedEndpoints();
+      let lastErr: unknown;
+      for (let ti = 0; ti < targets.length; ti++) {
+        const target = targets[ti];
+        const retries = ti === 0 ? 2 : 1; // سرور اول شانس بیشتری دارد
+        for (let n = 0; n <= retries; n++) {
+          try {
+            const res = await tryOnce(target, n * 8000);
+            if (res.status < 500) {
+              if (ti > 0) setActiveEndpoint(target);
+              return res;
+            }
+            lastErr = new Error(`HTTP ${res.status}`);
+          } catch (err) {
+            lastErr = err;
+          }
+          if (n < retries && navigator.onLine) await new Promise((r) => setTimeout(r, 1000 * (n + 1)));
+        }
+      }
+      throw lastErr instanceof Error ? lastErr : new Error("سرور در دسترس نیست");
+    };
+    return attempt();
   };
 }
 

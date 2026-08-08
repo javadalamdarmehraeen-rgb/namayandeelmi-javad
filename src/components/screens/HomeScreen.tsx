@@ -3,7 +3,9 @@
 import { useCallback, useEffect, useState } from "react";
 import dynamic from "next/dynamic";
 import LocationPicker, { type LatLng } from "@/components/LocationPicker";
-import { Alert, Button, Card, Field, Input, SectionTitle, TextArea } from "@/components/ui";
+import { Alert, Badge, Button, Card, Field, Input, SectionTitle, TextArea } from "@/components/ui";
+import NavButton from "@/components/NavButton";
+import { toPersianDigits } from "@/lib/jalali";
 import { useLive } from "@/lib/useLive";
 import { useConfirm } from "@/components/Confirm";
 
@@ -25,6 +27,7 @@ export default function HomeScreen({ isAdmin = false }: { isAdmin?: boolean }) {
   const [address, setAddress] = useState("");
   const [loc, setLoc] = useState<LatLng>({ lat: null, lng: null, accuracy: null });
   const [msg, setMsg] = useState<{ kind: "success" | "error"; text: string } | null>(null);
+  const [repFilter, setRepFilter] = useState("");
   const confirm = useConfirm();
 
   const load = useCallback(async () => {
@@ -33,6 +36,17 @@ export default function HomeScreen({ isAdmin = false }: { isAdmin?: boolean }) {
   }, []);
 
   useLive(load, 25000);
+
+  const reps = [...new Set(rows.map((r) => r.repName))].sort();
+  const visible = rows.filter((r) => !repFilter || r.repName === repFilter);
+  const grouped = (() => {
+    const m = new Map<string, Home[]>();
+    for (const r of visible) {
+      if (!m.has(r.repName)) m.set(r.repName, []);
+      m.get(r.repName)!.push(r);
+    }
+    return [...m.entries()].sort((a, b) => a[0].localeCompare(b[0]));
+  })();
 
   const save = async () => {
     if (!loc.lat || !loc.lng) {
@@ -78,34 +92,58 @@ export default function HomeScreen({ isAdmin = false }: { isAdmin?: boolean }) {
       ) : null}
 
       <Card>
-        <h3 className="mb-2 text-sm font-bold text-slate-700">
-          {isAdmin ? "همه منازل ثبت‌شده" : "منزل ثبت‌شده شما"}
-        </h3>
-        {rows.length === 0 ? (
+        <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+          <h3 className="text-sm font-bold text-slate-700">
+            {isAdmin ? "منازل ثبت‌شده — به تفکیک نماینده" : "منزل ثبت‌شده شما"}
+          </h3>
+          {isAdmin && reps.length > 1 ? (
+            <select
+              value={repFilter}
+              onChange={(e) => setRepFilter(e.target.value)}
+              className="rounded-xl border border-slate-300 px-3 py-2 text-xs"
+            >
+              <option value="">همه نمایندگان ({toPersianDigits(reps.length)})</option>
+              {reps.map((r) => (
+                <option key={r} value={r}>
+                  {r}
+                </option>
+              ))}
+            </select>
+          ) : null}
+        </div>
+
+        {visible.length === 0 ? (
           <p className="text-sm text-slate-400">موردی ثبت نشده است</p>
         ) : (
           <>
             <MapBox
               height={300}
-              points={rows.map((r) => ({ lat: r.lat, lng: r.lng, label: `${r.repName} — ${r.title}`, color: "#7c3aed" }))}
+              points={visible.map((r) => ({
+                lat: r.lat,
+                lng: r.lng,
+                label: `🏠 ${r.title} — ${r.repName}`,
+                color: "#7c3aed",
+              }))}
             />
-            <ul className="mt-3 space-y-1 text-xs">
-              {rows.map((r) => (
-                <li key={r.id} className="flex flex-wrap items-center gap-2 rounded-lg bg-slate-50 px-3 py-2">
-                  <span className="font-bold text-slate-700">{r.repName}</span>
-                  <span className="text-purple-700">🏠 {r.title}</span>
-                  <span className="text-slate-500">{r.address}</span>
-                  <a
-                    className="mr-auto font-bold text-teal-700 underline"
-                    href={`https://www.google.com/maps?q=${r.lat},${r.lng}`}
-                    target="_blank"
-                    rel="noreferrer"
-                  >
-                    نقشه
-                  </a>
-                </li>
+            <div className="mt-3 space-y-2">
+              {grouped.map(([repName, list]) => (
+                <div key={repName}>
+                  <div className="mb-1 flex items-center gap-2 rounded-lg bg-slate-100 px-2 py-1.5">
+                    <span className="text-xs font-black text-slate-800">{repName}</span>
+                    <Badge tone="slate">{toPersianDigits(list.length)} مورد</Badge>
+                  </div>
+                  {list.map((r) => (
+                    <div key={r.id} className="mb-1 flex flex-wrap items-center gap-2 rounded-lg bg-slate-50 px-3 py-2 text-xs">
+                      <span className="font-bold text-purple-700">🏠 {r.title}</span>
+                      <span className="text-slate-500">{r.address}</span>
+                      <span className="mr-auto">
+                        <NavButton lat={r.lat} lng={r.lng} label={`${r.title} — ${r.repName}`} />
+                      </span>
+                    </div>
+                  ))}
+                </div>
               ))}
-            </ul>
+            </div>
           </>
         )}
       </Card>

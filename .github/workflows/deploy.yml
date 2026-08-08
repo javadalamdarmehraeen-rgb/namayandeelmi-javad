@@ -1,0 +1,74 @@
+name: Build & Mirror & Deploy
+
+on:
+  push:
+    branches: [main, master]
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: بررسی و ساخت
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+
+      - run: npm ci --include=dev
+      - run: npx next typegen
+      - run: npx tsc --noEmit
+      - run: npm run build
+        env:
+          NEXT_PUBLIC_ENDPOINTS: ${{ vars.NEXT_PUBLIC_ENDPOINTS || 'https://ndcohub.ir,https://namayandeelmi-javad.onrender.com' }}
+
+  mirror-to-gitlab:
+    name: آینه‌سازی روی GitLab
+    needs: build
+    runs-on: ubuntu-latest
+    if: ${{ github.event_name == 'push' }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Push to GitLab
+        env:
+          GITLAB_URL: ${{ secrets.GITLAB_REPO_URL }}   # https://gitlab.com/user/repo.git
+          GITLAB_TOKEN: ${{ secrets.GITLAB_TOKEN }}
+        run: |
+          if [ -z "$GITLAB_URL" ]; then echo "GITLAB_REPO_URL تنظیم نشده — رد شد"; exit 0; fi
+          AUTH_URL=$(echo "$GITLAB_URL" | sed "s#https://#https://oauth2:${GITLAB_TOKEN}@#")
+          git remote add gitlab "$AUTH_URL" || git remote set-url gitlab "$AUTH_URL"
+          git push gitlab --all --force
+          git push gitlab --tags --force
+
+  deploy:
+    name: انتشار روی هر دو سرور
+    needs: build
+    runs-on: ubuntu-latest
+    if: ${{ github.event_name == 'push' }}
+    steps:
+      - name: Deploy → Render
+        env:
+          HOOK: ${{ secrets.RENDER_DEPLOY_HOOK }}
+        run: |
+          if [ -n "$HOOK" ]; then curl -fsSL -X POST "$HOOK" && echo "✔ Render"; else echo "RENDER_DEPLOY_HOOK تنظیم نشده"; fi
+
+      - name: Deploy → NdcoHub
+        env:
+          HOOK: ${{ secrets.NDCOHUB_DEPLOY_HOOK }}
+        run: |
+          if [ -n "$HOOK" ]; then curl -fsSL -X POST "$HOOK" && echo "✔ NdcoHub"; else echo "NDCOHUB_DEPLOY_HOOK تنظیم نشده"; fi
+
+      - name: همگام‌سازی اولیه پس از انتشار
+        env:
+          KEY: ${{ secrets.SYNC_SECRET }}
+        run: |
+          if [ -z "$KEY" ]; then echo "SYNC_SECRET تنظیم نشده"; exit 0; fi
+          sleep 90
+          curl -fsSL -X POST "https://ndcohub.ir/api/sync/run" -H "x-sync-key: $KEY" || true
+          curl -fsSL -X POST "https://namayandeelmi-javad.onrender.com/api/sync/run" -H "x-sync-key: $KEY" || true

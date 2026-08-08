@@ -11,6 +11,7 @@ const ChartsPanel = dynamic(() => import("@/components/screens/ChartsPanel"), {
 });
 import { tehranDateTime, toPersianDigits } from "@/lib/jalali";
 import { useLive } from "@/lib/useLive";
+import { downloadFile } from "@/lib/download";
 
 type Counts = {
   pharmacies: number;
@@ -43,6 +44,7 @@ export default function AdminDashboard() {
   const [byRep, setByRep] = useState<Record<string, Log[]>>({});
   const [openRep, setOpenRep] = useState<string | null>(null);
   const [live, setLive] = useState(true);
+  const [dl, setDl] = useState("");
 
   const load = useCallback(async () => {
     const res = await fetch("/api/activity", { cache: "no-store" });
@@ -162,6 +164,7 @@ export default function AdminDashboard() {
 
       <Card>
         <SectionTitle icon="⬇️">خروجی اکسل</SectionTitle>
+        {dl ? <p className={`mb-2 text-xs font-bold ${dl.startsWith("✖") ? "text-rose-600" : "text-emerald-600"}`}>{dl}</p> : null}
         <div className="flex flex-wrap gap-2">
           <a
             href="/admin/targets"
@@ -184,13 +187,13 @@ export default function AdminDashboard() {
             ["homes", "منازل"],
             ["users", "کاربران"],
           ].map(([k, l]) => (
-            <a
+            <button
               key={k}
-              href={`/api/export?type=${k}`}
+              onClick={async () => setDl(await downloadFile(`/api/export?type=${k}`, `${k}.xls`))}
               className="rounded-xl bg-emerald-50 px-3 py-2 text-xs font-bold text-emerald-800 ring-1 ring-emerald-200 hover:bg-emerald-100"
             >
               ⬇️ {l}
-            </a>
+            </button>
           ))}
         </div>
       </Card>

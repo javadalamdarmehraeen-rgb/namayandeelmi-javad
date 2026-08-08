@@ -3,6 +3,7 @@ import { options, roles, users } from "@/db/schema";
 import { eq, sql } from "drizzle-orm";
 import { hashPassword } from "./auth";
 import { DEFAULT_SPECIALTIES } from "./constants";
+import { SYNC_TABLES, nodeName } from "./sync-config";
 import { IRAN, PROVINCES, REGIONS } from "./iran";
 import {
   ALL_PERMISSION_KEYS,
@@ -160,6 +161,23 @@ async function migrate() {
       status varchar(20) NOT NULL DEFAULT 'active',
       started_at timestamptz NOT NULL DEFAULT now(),
       ended_at timestamptz
+    );
+  `);
+  await db.execute(sql`
+    CREATE TABLE IF NOT EXISTS live_locations (
+      user_id integer PRIMARY KEY,
+      rep_name varchar(160) NOT NULL DEFAULT '',
+      lat double precision NOT NULL,
+      lng double precision NOT NULL,
+      accuracy double precision,
+      speed double precision,
+      heading double precision,
+      battery integer,
+      gps_on boolean NOT NULL DEFAULT true,
+      online boolean NOT NULL DEFAULT true,
+      trip_id integer,
+      recorded_at timestamptz NOT NULL DEFAULT now(),
+      updated_at timestamptz NOT NULL DEFAULT now()
     );
   `);
   await db.execute(sql`
@@ -334,6 +352,11 @@ async function migrate() {
     `ALTER TABLE messengers ADD COLUMN IF NOT EXISTS last_error_at timestamptz`,
     `ALTER TABLE messengers ADD COLUMN IF NOT EXISTS sort_order integer NOT NULL DEFAULT 0`,
     `ALTER TABLE messengers ALTER COLUMN target TYPE text`,
+    `ALTER TABLE trips ADD COLUMN IF NOT EXISTS distance_m double precision NOT NULL DEFAULT 0`,
+    `ALTER TABLE trips ADD COLUMN IF NOT EXISTS stop_seconds integer NOT NULL DEFAULT 0`,
+    `ALTER TABLE trip_points ADD COLUMN IF NOT EXISTS speed double precision`,
+    `ALTER TABLE trip_points ADD COLUMN IF NOT EXISTS stop_seconds integer NOT NULL DEFAULT 0`,
+    `ALTER TABLE trip_points ADD COLUMN IF NOT EXISTS gps_on boolean NOT NULL DEFAULT true`,
     `ALTER TABLE pharmacies ADD COLUMN IF NOT EXISTS is_percent boolean NOT NULL DEFAULT false`,
     `ALTER TABLE pharmacies ADD COLUMN IF NOT EXISTS percent_value varchar(40) NOT NULL DEFAULT ''`,
     `ALTER TABLE doctors ADD COLUMN IF NOT EXISTS is_percent boolean NOT NULL DEFAULT false`,
@@ -365,8 +388,100 @@ async function migrate() {
   await db.execute(sql`CREATE INDEX IF NOT EXISTS pharmacies_user_idx ON pharmacies (user_id)`);
   await db.execute(sql`CREATE INDEX IF NOT EXISTS doctors_user_idx ON doctors (user_id)`);
   await db.execute(sql`CREATE INDEX IF NOT EXISTS activity_user_idx ON activity_logs (user_id)`);
+  await db.execute(sql`
+    CREATE TABLE IF NOT EXISTS sync_state (
+      id serial PRIMARY KEY,
+      peer varchar(80) NOT NULL UNIQUE,
+      peer_url text NOT NULL DEFAULT '',
+      enabled boolean NOT NULL DEFAULT true,
+      pull_cursor timestamptz,
+      push_cursor timestamptz,
+      last_sync_at timestamptz,
+      last_status text NOT NULL DEFAULT '',
+      last_error text NOT NULL DEFAULT '',
+      pulled integer NOT NULL DEFAULT 0,
+      pushed integer NOT NULL DEFAULT 0,
+      conflicts integer NOT NULL DEFAULT 0,
+      created_at timestamptz NOT NULL DEFAULT now()
+    );
+  `);
+  await db.execute(sql`
+    CREATE TABLE IF NOT EXISTS sync_logs (
+      id serial PRIMARY KEY,
+      peer varchar(80) NOT NULL DEFAULT '',
+      direction varchar(10) NOT NULL DEFAULT 'pull',
+      table_name varchar(40) NOT NULL DEFAULT '',
+      applied integer NOT NULL DEFAULT 0,
+      skipped integer NOT NULL DEFAULT 0,
+      ok boolean NOT NULL DEFAULT true,
+      detail text NOT NULL DEFAULT '',
+      created_at timestamptz NOT NULL DEFAULT now()
+    );
+  `);
+
+  await addSyncColumns();
+
   await db.execute(sql`CREATE INDEX IF NOT EXISTS notif_user_idx ON notifications (to_user_id)`);
   await db.execute(sql`CREATE INDEX IF NOT EXISTS attach_owner_idx ON attachments (owner_type, owner_id)`);
+}
+
+/**
+ * افزودن ستون‌های همگام‌سازی (uid / updated_at / origin) به همه جدول‌های داده
+ * به‌همراه تریگر خودکار برای به‌روزرسانی updated_at در هر UPDATE.
+ */
+async function addSyncColumns() {
+  const node = nodeName();
+
+  // تابع تریگر مشترک — در هر UPDATE زمان را تازه می‌کند
+  // هنگام اعمال داده‌های همگام‌سازی، زمان اصلی رکورد حفظ می‌شود
+  // (وگرنه رکورد دوباره «تغییر یافته» تلقی شده و بین دو سرور پینگ‌پنگ می‌شود)
+  await db.execute(sql`
+    CREATE OR REPLACE FUNCTION sek_touch_updated_at() RETURNS trigger AS $$
+    BEGIN
+      IF coalesce(current_setting('sek.sync', true), '') <> 'on' THEN
+        NEW.updated_at := now();
+      END IF;
+      IF NEW.uid IS NULL OR NEW.uid = '' THEN
+        NEW.uid := gen_random_uuid()::text;
+      END IF;
+      RETURN NEW;
+    END;
+    $$ LANGUAGE plpgsql;
+  `);
+
+  for (const t of SYNC_TABLES) {
+    try {
+      await db.execute(sql.raw(`ALTER TABLE ${t.name} ADD COLUMN IF NOT EXISTS uid varchar(40)`));
+      await db.execute(
+        sql.raw(`ALTER TABLE ${t.name} ADD COLUMN IF NOT EXISTS updated_at timestamptz NOT NULL DEFAULT now()`),
+      );
+      await db.execute(
+        sql.raw(`ALTER TABLE ${t.name} ADD COLUMN IF NOT EXISTS origin varchar(20) NOT NULL DEFAULT '${node}'`),
+      );
+      // پر کردن uid رکوردهای قدیمی
+      await db.execute(
+        sql.raw(`UPDATE ${t.name} SET uid = gen_random_uuid()::text WHERE uid IS NULL OR uid = ''`),
+      );
+      await db.execute(
+        sql.raw(`ALTER TABLE ${t.name} ALTER COLUMN uid SET DEFAULT gen_random_uuid()::text`),
+      );
+      await db.execute(
+        sql.raw(`CREATE UNIQUE INDEX IF NOT EXISTS ${t.name}_uid_idx ON ${t.name} (uid)`),
+      );
+      await db.execute(
+        sql.raw(`CREATE INDEX IF NOT EXISTS ${t.name}_updated_idx ON ${t.name} (updated_at)`),
+      );
+      await db.execute(sql.raw(`DROP TRIGGER IF EXISTS ${t.name}_touch ON ${t.name}`));
+      await db.execute(
+        sql.raw(
+          `CREATE TRIGGER ${t.name}_touch BEFORE INSERT OR UPDATE ON ${t.name}
+           FOR EACH ROW EXECUTE FUNCTION sek_touch_updated_at()`,
+        ),
+      );
+    } catch (err) {
+      console.warn(`⚠️  افزودن ستون‌های همگام‌سازی به ${t.name} ناموفق:`, err instanceof Error ? err.message : err);
+    }
+  }
 }
 
 async function seed() {

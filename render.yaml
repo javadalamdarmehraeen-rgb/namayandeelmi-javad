@@ -28,3 +28,18 @@ services:
         sync: false
       - key: ADMIN_PHONE
         sync: false
+      # ---- همگام‌سازی دو سروره ----
+      - key: NODE_NAME
+        value: render
+      - key: SYNC_SECRET
+        sync: false
+      - key: SYNC_PEERS
+        value: ndcohub|https://ndcohub.ir
+      - key: SYNC_INTERVAL_MINUTES
+        value: "5"
+      - key: NEXT_PUBLIC_ENDPOINTS
+        value: https://ndcohub.ir,https://namayandeelmi-javad.onrender.com
+      - key: PUBLIC_BASE_URL
+        value: https://namayandeelmi-javad.onrender.com
+      - key: MOBILE_APP_SECRET
+        sync: false

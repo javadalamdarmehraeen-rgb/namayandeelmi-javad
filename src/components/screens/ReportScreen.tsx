@@ -5,6 +5,7 @@ import { Card, SectionTitle } from "@/components/ui";
 import TargetPanel from "@/components/screens/TargetPanel";
 import { JALALI_MONTHS, toPersianDigits } from "@/lib/jalali";
 import { DEFAULT_PRODUCTS, type ProductConfig } from "@/lib/defaults";
+import { downloadFile } from "@/lib/download";
 
 type Row = {
   period: string;
@@ -120,12 +121,17 @@ export default function ReportScreen({ compact = false }: { compact?: boolean })
             ))}
           </select>
           <div className="flex-1" />
-          <a
-            href={`/api/export?type=orders${year ? `&year=${year}` : ""}${month ? `&month=${month}` : ""}`}
+          <button
+            onClick={() =>
+              downloadFile(
+                `/api/export?type=orders${year ? `&year=${year}` : ""}${month ? `&month=${month}` : ""}`,
+                "orders.xls",
+              )
+            }
             className="rounded-xl bg-emerald-600 px-3 py-2 text-xs font-bold text-white"
           >
             ⬇️ اکسل سفارشات این دوره
-          </a>
+          </button>
         </div>
 
         <div className="mb-3 grid grid-cols-3 gap-2 sm:grid-cols-6">

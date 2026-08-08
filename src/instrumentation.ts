@@ -6,4 +6,33 @@ export async function register() {
   } catch (err) {
     console.error("instrumentation bootstrap failed", err);
   }
+
+  // زمان‌بند همگام‌سازی خودکار بین دو سرور
+  try {
+    const { configuredPeers, syncSecret } = await import("@/lib/sync-config");
+    if (configuredPeers().length === 0 || !syncSecret()) return;
+
+    const minutes = Math.max(1, Number(process.env.SYNC_INTERVAL_MINUTES ?? 5));
+    const g = globalThis as typeof globalThis & { __sekSyncTimer?: NodeJS.Timeout };
+    if (g.__sekSyncTimer) clearInterval(g.__sekSyncTimer);
+
+    const run = async () => {
+      try {
+        const { syncAll } = await import("@/lib/sync");
+        const reports = await syncAll();
+        for (const r of reports) {
+          console.log(`[sync:${r.peer}] ${r.ok ? "✔" : "✖"} دریافت ${r.pulled} / ارسال ${r.pushed} — ${r.detail}`);
+        }
+      } catch (err) {
+        console.error("[sync] اجرای خودکار ناموفق:", err instanceof Error ? err.message : err);
+      }
+    };
+
+    // اولین اجرا با تأخیر تا سرور کامل بالا بیاید
+    setTimeout(run, 25_000);
+    g.__sekSyncTimer = setInterval(run, minutes * 60_000);
+    console.log(`🔄 همگام‌سازی خودکار هر ${minutes} دقیقه فعال شد`);
+  } catch (err) {
+    console.error("sync scheduler failed", err);
+  }
 }

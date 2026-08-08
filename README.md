@@ -382,3 +382,69 @@ Render و اپ یکسان باشد.
   تاریخ آخرین سفارش و ریز اقلام فروخته‌شده.
 - دکمه **«📥 پرکردن خودکار فیلدها»** که مسئول سفارش، تلفن، آدرس، لوکیشن،
   پخش و ویزیتور را از آخرین سفارش پر می‌کند.
+
+## 🔄 معماری دو سروره: Render ↔ NdcoHub.ir
+
+برنامه روی دو دامنه اجرا می‌شود و داده‌ها بین آن‌ها **دوطرفه** همگام می‌شوند:
+
+| سرور | دامنه | نقش |
+|---|---|---|
+| NdcoHub (نت‌افراز) | `https://ndcohub.ir` | سرور داخل ایران — سریع و بدون فیلتر |
+| Render | `https://namayandeelmi-javad.onrender.com` | سرور پشتیبان خارج از کشور |
+
+### الف) انتخاب خودکار سرور در سمت کاربر
+`src/lib/endpoints.ts` — کلاینت سریع‌ترین سرورِ در دسترس را انتخاب می‌کند و اگر
+درخواستی روی سرور فعلی شکست بخورد، **خودکار روی سرور دیگر تکرار می‌شود**.
+پس قطعی یکی، کاربر را متوقف نمی‌کند.
+
+### ب) همگام‌سازی داده
+هر جدول سه ستون کمکی دارد:
+- `uid` — شناسه سراسری (UUID) تا شناسه‌های عددی دو سرور تداخل نکنند
+- `updated_at` — با تریگر خودکار به‌روز می‌شود
+- `origin` — نام سروری که رکورد در آن ساخته شده
+
+**جریان:** هر ۵ دقیقه (و با دکمه دستی) هر سرور تغییرات همتا را `pull` و تغییرات
+خود را `push` می‌کند. حل تعارض: **Last-Write-Wins** بر اساس `updated_at`.
+
+**ضد پینگ‌پنگ:** هنگام اعمال داده‌های همتا، پرچم `sek.sync=on` تنظیم می‌شود تا
+تریگر زمان اصلی رکورد را حفظ کند؛ بنابراین رکورد اکو‌شده دوباره «تغییر یافته»
+تلقی نمی‌شود. شرط `updated_at < excluded.updated_at` هم نسخه‌های قدیمی را رد می‌کند.
+
+### ج) مسیرهای همگام‌سازی
+| مسیر | کار |
+|---|---|
+| `POST /api/sync/pull` | همتا تغییرات ما را می‌گیرد (با امضای HMAC) |
+| `POST /api/sync/push` | همتا تغییرات خود را می‌فرستد |
+| `POST /api/sync/run` | اجرای دستی/کرون (`x-sync-key`) |
+| `GET /api/sync/status` | وضعیت، مکان‌نماها و گزارش |
+
+صفحه **مدیر → 🔄 همگام‌سازی سرورها**: وضعیت هر همتا، آمار دریافت/ارسال،
+دکمه «همگام‌سازی اکنون»، «همگام‌سازی کامل» و «سنجش سرعت سرورها».
+
+### د) متغیرهای محیطی
+
+**روی Render:**
+```
+NODE_NAME=render
+SYNC_SECRET=<کلید یکسان روی هر دو سرور>
+SYNC_PEERS=ndcohub|https://ndcohub.ir
+SYNC_INTERVAL_MINUTES=5
+NEXT_PUBLIC_ENDPOINTS=https://ndcohub.ir,https://namayandeelmi-javad.onrender.com
+PUBLIC_BASE_URL=https://namayandeelmi-javad.onrender.com
+```
+
+**روی NdcoHub** (فایل `.env.ndcohub.example` را کپی کنید):
+```
+NODE_NAME=ndcohub
+SYNC_SECRET=<همان کلید>
+SYNC_PEERS=render|https://namayandeelmi-javad.onrender.com
+NEXT_PUBLIC_ENDPOINTS=https://ndcohub.ir,https://namayandeelmi-javad.onrender.com
+PUBLIC_BASE_URL=https://ndcohub.ir
+```
+
+### ه) CI/CD روی هر دو مخزن
+- `.github/workflows/deploy.yml` — بررسی، ساخت، **آینه‌سازی روی GitLab**، انتشار روی هر دو سرور
+- `.gitlab-ci.yml` — همان جریان با **آینه‌سازی روی GitHub**
+
+اسرار موردنیاز: `GITLAB_REPO_URL`, `GITLAB_TOKEN`, `RENDER_DEPLOY_HOOK`,
+`NDCOHUB_DEPLOY_HOOK`, `SYNC_SECRET`.

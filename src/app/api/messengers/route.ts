@@ -1,5 +1,5 @@
 import { db } from "@/db";
-import { messageLogs, messengers } from "@/db/schema";
+import { messageLogs, messengers, settings } from "@/db/schema";
 import { getSessionUser } from "@/lib/auth";
 import { getProxy } from "@/lib/messaging";
 import { getSmsConfig } from "@/lib/otp";
@@ -21,7 +21,15 @@ export async function GET() {
   const logs = await db.select().from(messageLogs).orderBy(desc(messageLogs.id)).limit(50);
   const proxy = await getProxy();
   const sms = await getSmsConfig();
-  return Response.json({ rows, logs, proxy, sms });
+  let autoSend = true;
+  try {
+    const st = await db.select().from(settings).where(eq(settings.key, "autoSendOrders")).limit(1);
+    const v = st[0]?.value as { enabled?: boolean } | undefined;
+    if (v && typeof v.enabled === "boolean") autoSend = v.enabled;
+  } catch {
+    /* ignore */
+  }
+  return Response.json({ rows, logs, proxy, sms, autoSend });
 }
 
 export async function POST(req: Request) {

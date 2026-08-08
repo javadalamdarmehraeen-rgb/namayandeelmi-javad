@@ -137,7 +137,7 @@ export async function GET(req: Request) {
     const w: SQL | undefined = isAdmin ? undefined : eq(trips.userId, user.id);
     const data = await db.select().from(trips).where(w).orderBy(desc(trips.id));
     rows = [
-      ["ردیف", "نام نماینده", "تاریخ", "وضعیت", "شروع", "پایان"],
+      ["ردیف", "نام نماینده", "تاریخ", "وضعیت", "شروع", "پایان", "مسافت (کیلومتر)", "مدت توقف (دقیقه)"],
       ...data.map((r, i) => [
         i + 1,
         r.repName,
@@ -145,6 +145,8 @@ export async function GET(req: Request) {
         r.status === "active" ? "در حال ویزیت" : "پایان یافته",
         tehranDateTime(r.startedAt),
         r.endedAt ? tehranDateTime(r.endedAt) : "",
+        ((r.distanceM ?? 0) / 1000).toFixed(2),
+        Math.round((r.stopSeconds ?? 0) / 60),
       ]),
     ];
   } else if (type === "leaves") {

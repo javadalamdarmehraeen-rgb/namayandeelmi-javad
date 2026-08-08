@@ -164,13 +164,16 @@ export async function POST(req: Request) {
   }
 
   const token = createToken(user.id);
-  if (remember) {
+  // کوکی همیشه ست می‌شود تا دانلود فایل‌ها (که هدر سفارشی ندارند) هم احراز هویت شود.
+  // اگر «مرا به خاطر بسپار» نباشد، کوکی نشستی است و با بستن مرورگر پاک می‌شود.
+  {
     const store = await cookies();
     store.set(SESSION_COOKIE, token, {
       httpOnly: true,
       sameSite: "lax",
+      secure: process.env.NODE_ENV === "production",
       path: "/",
-      maxAge: 60 * 60 * 24 * 30,
+      ...(remember ? { maxAge: 60 * 60 * 24 * 30 } : {}),
     });
   }
 

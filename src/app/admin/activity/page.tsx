@@ -82,7 +82,7 @@ export default function ActivityPage() {
       </div>
 
       <Card>
-        <h3 className="mb-2 text-sm font-bold text-slate-700">وضعیت لحظه‌ای هر نماینده</h3>
+        <h3 className="mb-2 text-sm font-bold text-slate-700">وضعیت لحظه‌ای هر نماینده — روی هرکدام بزنید</h3>
         <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
           {reps.map((r) => (
             <button
@@ -112,9 +112,61 @@ export default function ActivityPage() {
         </div>
       </Card>
 
+      {/* ---------- فعالیت تفکیکی نماینده انتخاب‌شده ---------- */}
+      {rep ? (
+        <Card>
+          <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+            <h3 className="text-sm font-black text-teal-800">📋 کارنامه فعالیت «{rep}»</h3>
+            <Button variant="ghost" onClick={() => setRep("")}>
+              بازگشت به همه
+            </Button>
+          </div>
+
+          <div className="mb-3 grid grid-cols-2 gap-2 sm:grid-cols-4">
+            {(() => {
+              const r = reps.find((x) => x.fullName === rep);
+              return [
+                ["🏥 داروخانه", r?.pharmacies ?? 0],
+                ["🩺 پزشک", r?.doctors ?? 0],
+                ["🧾 سفارش", r?.orders ?? 0],
+                ["🗺️ سفر ویزیت", r?.trips ?? 0],
+              ].map(([l, v]) => (
+                <div key={String(l)} className="rounded-xl bg-slate-50 p-3 text-center ring-1 ring-slate-200">
+                  <div className="text-lg font-black text-teal-700">{toPersianDigits(v as number)}</div>
+                  <div className="text-[10px] font-bold text-slate-500">{l as string}</div>
+                </div>
+              ));
+            })()}
+          </div>
+
+          <div className="mb-3">
+            <h4 className="mb-1 text-xs font-bold text-slate-600">تفکیک نوع فعالیت</h4>
+            <div className="flex flex-wrap gap-1">
+              {perAction.map((a) => (
+                <span key={a.label} className="rounded-lg bg-teal-50 px-2 py-1 text-[11px] font-bold text-teal-700 ring-1 ring-teal-200">
+                  {a.label}: {toPersianDigits(a.value)}
+                </span>
+              ))}
+              {perAction.length === 0 ? <span className="text-[11px] text-slate-400">فعالیتی ثبت نشده</span> : null}
+            </div>
+          </div>
+
+          <div className="max-h-72 space-y-1 overflow-y-auto">
+            {filtered.map((l) => (
+              <div key={l.id} className="flex flex-wrap items-center gap-2 rounded-xl bg-slate-50 px-3 py-2 text-xs">
+                <span className="rounded-lg bg-teal-100 px-2 py-0.5 text-[10px] font-bold text-teal-700">{l.action}</span>
+                {l.detail ? <span className="text-slate-600">{l.detail}</span> : null}
+                <span className="mr-auto text-[10px] text-slate-400">{tehranDateTime(l.createdAt)}</span>
+              </div>
+            ))}
+            {filtered.length === 0 ? <p className="py-4 text-center text-slate-400">رویدادی یافت نشد</p> : null}
+          </div>
+        </Card>
+      ) : null}
+
       <Card>
         <div className="mb-2 flex flex-wrap items-center gap-2">
-          <h3 className="text-sm font-bold text-slate-700">جریان فعالیت‌ها</h3>
+          <h3 className="text-sm font-bold text-slate-700">جریان فعالیت همه نمایندگان</h3>
           <Input placeholder="🔍 جستجو..." value={q} onChange={(e) => setQ(e.target.value)} className="max-w-[220px]" />
           {rep ? (
             <Button variant="ghost" onClick={() => setRep("")}>

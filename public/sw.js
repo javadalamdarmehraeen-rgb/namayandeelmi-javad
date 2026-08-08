@@ -7,7 +7,7 @@
  *  این فایل توسط scripts/build-sw.mjs پس از هر build تولید می‌شود.
  * ============================================================ */
 
-const BUILD = "msiuhyks-44";
+const BUILD = "mskocv8h-46";
 const SHELL = `sek-shell-${BUILD}`;
 const DATA = `sek-data-${BUILD}`;
 
@@ -55,50 +55,52 @@ const PAGES = [
   "/admin/backup"
 ];
 const ASSETS = [
-  "/_next/static/YOMjAJn79xalwTW1BSkMU/_buildManifest.js",
-  "/_next/static/YOMjAJn79xalwTW1BSkMU/_clientMiddlewareManifest.js",
-  "/_next/static/YOMjAJn79xalwTW1BSkMU/_ssgManifest.js",
-  "/_next/static/chunks/0-yvehd2.pc8b.js",
-  "/_next/static/chunks/0.__2~vg1zfx-.js",
-  "/_next/static/chunks/00bwe0zb6r87f.js",
-  "/_next/static/chunks/00j8bzodjupn6.js",
+  "/_next/static/chunks/0-npkp6cy67s6.js",
+  "/_next/static/chunks/0.7il.jihrkh-.js",
+  "/_next/static/chunks/00olq03bmyg~j.js",
   "/_next/static/chunks/01xlw8hd842-c.js",
-  "/_next/static/chunks/02t_wxwzroaiz.js",
   "/_next/static/chunks/03h9eo09svijh.js",
   "/_next/static/chunks/03~yq9q893hmn.js",
-  "/_next/static/chunks/04z2e~awa-gwd.js",
+  "/_next/static/chunks/06i1ruokte.eg.js",
+  "/_next/static/chunks/06ic2raj6d0-l.js",
   "/_next/static/chunks/06r9_3ub2r-4z.js",
   "/_next/static/chunks/07df90r8w-0_w.js",
   "/_next/static/chunks/07lhk_q6pmm3r.js",
-  "/_next/static/chunks/07ol~8c6r993t.js",
   "/_next/static/chunks/07uz2g0_38qia.js",
-  "/_next/static/chunks/08c23zmk-fr_l.js",
+  "/_next/static/chunks/08bqkqim.q04a.js",
   "/_next/static/chunks/08g-5kea7g6.h.js",
-  "/_next/static/chunks/08g4dhgfb3-g1.js",
-  "/_next/static/chunks/08knf~nps_ax5.js",
-  "/_next/static/chunks/08~kq0~0qge7..js",
-  "/_next/static/chunks/0a6fznmb06a1s.js",
-  "/_next/static/chunks/0amv7qth8c0wt.js",
-  "/_next/static/chunks/0an995q9rgmye.js",
+  "/_next/static/chunks/0_v~kvt9uc5or.js",
+  "/_next/static/chunks/0asdo24lqpub6.js",
+  "/_next/static/chunks/0c8e51tnfg8mo.js",
+  "/_next/static/chunks/0cwkwz77n78-d.js",
   "/_next/static/chunks/0d3shmwh5_nmn.js",
-  "/_next/static/chunks/0gyt0px_yi~~h.js",
   "/_next/static/chunks/0h7njwe2.s3ht.js",
-  "/_next/static/chunks/0m2e7ej6xszm4.js",
-  "/_next/static/chunks/0m7-1y0haw-6y.js",
+  "/_next/static/chunks/0lyvt9fwnl.s7.js",
   "/_next/static/chunks/0mkdhkpipl3ae.js",
+  "/_next/static/chunks/0mwzomct90g1i.js",
   "/_next/static/chunks/0n1bpogj.il~n.js",
-  "/_next/static/chunks/0ov4nyfm5pzpu.js",
+  "/_next/static/chunks/0q3ovab3rhqyb.css",
+  "/_next/static/chunks/0rjt6zqfado2i.js",
+  "/_next/static/chunks/0rz3o0743-gv3.js",
   "/_next/static/chunks/0t.kl08cbz2tx.js",
   "/_next/static/chunks/0t48hzs_6fshe.css",
+  "/_next/static/chunks/0u7bkm2nmt6t2.js",
   "/_next/static/chunks/0uh4e2v8-yv0m.js",
   "/_next/static/chunks/0wxhwo2i~7vvo.js",
+  "/_next/static/chunks/0yhud5x-2k8~x.js",
+  "/_next/static/chunks/0z0v650y5rwv2.js",
   "/_next/static/chunks/0ze4gu236oq96.js",
-  "/_next/static/chunks/0~e6i9nwvxzzi.js",
-  "/_next/static/chunks/0~o2d5~bok6p7.js",
-  "/_next/static/chunks/102jj0xa8nazx.css",
-  "/_next/static/chunks/13cs9bj_g1co0.js",
+  "/_next/static/chunks/0~m7_mz9dpodi.js",
+  "/_next/static/chunks/104v4p6z4b.f3.js",
+  "/_next/static/chunks/10l1in0aeztjv.js",
+  "/_next/static/chunks/120leif2bb6u-.js",
+  "/_next/static/chunks/13pyciza0m9eu.js",
   "/_next/static/chunks/176ztuhghbfr1.js",
-  "/_next/static/chunks/turbopack-0ngnbt.drh_yz.js"
+  "/_next/static/chunks/177-oksbd~hr_.js",
+  "/_next/static/chunks/turbopack-0ngnbt.drh_yz.js",
+  "/_next/static/i-4qktcX6Z3XIzoZ7vBjW/_buildManifest.js",
+  "/_next/static/i-4qktcX6Z3XIzoZ7vBjW/_clientMiddlewareManifest.js",
+  "/_next/static/i-4qktcX6Z3XIzoZ7vBjW/_ssgManifest.js"
 ];
 const EXTRAS = [
   "/manifest.webmanifest",
@@ -285,6 +287,50 @@ self.addEventListener("message", (e) => {
 });
 self.addEventListener("sync", (e) => {
   if (e.tag === "sek-sync") e.waitUntil(flushQueue());
+});
+
+/* ---------------- کلیک روی نوتیفیکیشن ---------------- */
+self.addEventListener("notificationclick", (event) => {
+  const data = event.notification.data || {};
+  event.notification.close();
+  event.waitUntil(
+    (async () => {
+      const all = await self.clients.matchAll({ type: "window", includeUncontrolled: true });
+      // اگر برنامه باز است، همان پنجره را فوکوس کن
+      for (const c of all) {
+        c.postMessage({ type: "notification-click", id: data.id });
+        if ("focus" in c) {
+          await c.focus();
+          if (data.link) c.navigate?.(data.link);
+          return;
+        }
+      }
+      if (self.clients.openWindow) await self.clients.openWindow(data.link || "/panel/notifications");
+    })()
+  );
+});
+
+/* ---------------- Web Push (در صورت پیکربندی) ---------------- */
+self.addEventListener("push", (event) => {
+  let payload = { title: "اعلان جدید", body: "", id: 0, link: "/panel/notifications" };
+  try {
+    payload = { ...payload, ...(event.data ? event.data.json() : {}) };
+  } catch {
+    if (event.data) payload.body = event.data.text();
+  }
+  event.waitUntil(
+    self.registration.showNotification(`🔔 ${payload.title}`, {
+      body: payload.body,
+      icon: "/icons/icon-192.png",
+      badge: "/icons/icon-192.png",
+      dir: "rtl",
+      lang: "fa",
+      tag: `sek-${payload.id}`,
+      requireInteraction: true,
+      vibrate: [200, 100, 200],
+      data: payload,
+    })
+  );
 });
 
 /* ---------------- راهبرد واکشی ---------------- */

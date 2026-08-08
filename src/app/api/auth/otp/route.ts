@@ -100,13 +100,14 @@ export async function POST(req: Request) {
       .catch(() => undefined);
 
     const token = createToken(user.id);
-    if (b.remember !== false) {
+    {
       const store = await cookies();
       store.set(SESSION_COOKIE, token, {
         httpOnly: true,
         sameSite: "lax",
+        secure: process.env.NODE_ENV === "production",
         path: "/",
-        maxAge: 60 * 60 * 24 * 30,
+        ...(b.remember !== false ? { maxAge: 60 * 60 * 24 * 30 } : {}),
       });
     }
 

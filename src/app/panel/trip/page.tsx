@@ -2,134 +2,96 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import dynamic from "next/dynamic";
+import { Alert, Badge, Button, Card, SectionTitle } from "@/components/ui";
+import { useConfirm } from "@/components/Confirm";
+import { tehranTime, toPersianDigits, todayJalali } from "@/lib/jalali";
+import {
+  bufferedCount,
+  createTracker,
+  flushPoints,
+  formatDistance,
+  formatDuration,
+  pushLive,
+  type TrackPoint,
+  type TrackerState,
+} from "@/lib/tracker";
 
 const MapBox = dynamic(() => import("@/components/MapBox"), { ssr: false });
-import { Alert, Badge, Button, Card, SectionTitle } from "@/components/ui";
-import { tehranTime, toPersianDigits, todayJalali } from "@/lib/jalali";
-import { useConfirm } from "@/components/Confirm";
-
-type QPoint = { lat: number; lng: number; accuracy?: number; kind: string; note?: string; recordedAt: string };
 
 const LS_TRIP = "sek_trip_id";
-const LS_QUEUE = "sek_trip_queue";
-const LS_PATH = "sek_trip_path";
+const LS_STATE = "sek_trip_state";
 
-function readQueue(): QPoint[] {
-  try {
-    return JSON.parse(localStorage.getItem(LS_QUEUE) || "[]");
-  } catch {
-    return [];
-  }
-}
-function writeQueue(q: QPoint[]) {
-  localStorage.setItem(LS_QUEUE, JSON.stringify(q.slice(-1000)));
-}
+type Place = { lat: number; lng: number; label: string; color: string };
 
 export default function TripPage() {
   const [tripId, setTripId] = useState<number | null>(null);
   const [active, setActive] = useState(false);
-  const [path, setPath] = useState<QPoint[]>([]);
-  const [queueLen, setQueueLen] = useState(0);
+  const [st, setSt] = useState<TrackerState>({
+    lastPoint: null,
+    distanceM: 0,
+    stopSeconds: 0,
+    gpsOn: true,
+    pending: 0,
+    points: [],
+  });
+  const [startedAt, setStartedAt] = useState("");
   const [msg, setMsg] = useState<{ kind: "info" | "error" | "success"; text: string } | null>(null);
-  const [gpsOk, setGpsOk] = useState(true);
-  const [startedAt, setStartedAt] = useState<string>("");
-  const [home, setHome] = useState<{ lat: number; lng: number; title: string } | null>(null);
-  const watchRef = useRef<number | null>(null);
+  const [places, setPlaces] = useState<Place[]>([]);
+  const trackerRef = useRef<ReturnType<typeof createTracker> | null>(null);
   const confirm = useConfirm();
-  const lastSaved = useRef<number>(0);
 
-  const flush = useCallback(async () => {
-    const id = Number(localStorage.getItem(LS_TRIP));
-    const q = readQueue();
-    setQueueLen(q.length);
-    if (!id || q.length === 0 || !navigator.onLine) return;
-    const res = await fetch("/api/trips/points", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ tripId: id, points: q }),
-    }).catch(() => null);
-    if (res?.ok) {
-      writeQueue([]);
-      setQueueLen(0);
-    }
+  /* ---------- بارگذاری داروخانه‌ها، پزشکان و منزل برای نمایش روی نقشه ---------- */
+  const loadPlaces = useCallback(async () => {
+    const out: Place[] = [];
+    const get = async (url: string) => {
+      const r = await fetch(url, { cache: "no-store" }).catch(() => null);
+      return r?.ok ? ((await r.json()).rows ?? []) : [];
+    };
+    const [ph, dr, hm] = await Promise.all([
+      get("/api/records/pharmacies?limit=300"),
+      get("/api/records/doctors?limit=300"),
+      get("/api/homes"),
+    ]);
+    for (const p of ph) if (p.lat && p.lng) out.push({ lat: p.lat, lng: p.lng, label: `🏥 ${p.name}`, color: "#0f766e" });
+    for (const d of dr) if (d.lat && d.lng) out.push({ lat: d.lat, lng: d.lng, label: `🩺 ${d.name}`, color: "#0369a1" });
+    for (const h of hm) if (h.lat && h.lng) out.push({ lat: h.lat, lng: h.lng, label: `🏠 ${h.title}`, color: "#7c3aed" });
+    setPlaces(out);
   }, []);
 
+  /* ---------- بازیابی سفر در حال اجرا پس از بستن برنامه ---------- */
   useEffect(() => {
+    loadPlaces();
     const id = Number(localStorage.getItem(LS_TRIP));
     if (id) {
       setTripId(id);
       setActive(true);
       try {
-        setPath(JSON.parse(localStorage.getItem(LS_PATH) || "[]"));
+        const saved = JSON.parse(localStorage.getItem(LS_STATE) ?? "{}");
+        if (saved.startedAt) setStartedAt(saved.startedAt);
       } catch {
         /* ignore */
       }
     }
-    setQueueLen(readQueue().length);
-    fetch("/api/homes", { cache: "no-store" })
-      .then((r) => (r.ok ? r.json() : null))
-      .then((d) => {
-        const h = d?.rows?.[0];
-        if (h) setHome({ lat: h.lat, lng: h.lng, title: h.title });
-      })
-      .catch(() => undefined);
-    const t = setInterval(flush, 15000);
-    window.addEventListener("online", flush);
-    return () => {
-      clearInterval(t);
-      window.removeEventListener("online", flush);
-    };
-  }, [flush]);
+    bufferedCount().then((n) => setSt((s) => ({ ...s, pending: n })));
 
-  const pushPoint = useCallback((p: QPoint) => {
-    setPath((prev) => {
-      const next = [...prev, p].slice(-1000);
-      localStorage.setItem(LS_PATH, JSON.stringify(next));
-      return next;
-    });
-    const q = readQueue();
-    q.push(p);
-    writeQueue(q);
-    setQueueLen(q.length);
-  }, []);
+    // ارسال نقاط باقی‌مانده به‌محض بازگشت اینترنت
+    const onOnline = () => void flushPoints();
+    window.addEventListener("online", onOnline);
+    return () => window.removeEventListener("online", onOnline);
+  }, [loadPlaces]);
 
-  const startWatch = useCallback(() => {
-    if (!navigator.geolocation) {
-      setGpsOk(false);
-      return;
-    }
-    if (watchRef.current !== null) return;
-    watchRef.current = navigator.geolocation.watchPosition(
-      (pos) => {
-        setGpsOk(true);
-        const now = Date.now();
-        if (now - lastSaved.current < 10000) return;
-        lastSaved.current = now;
-        pushPoint({
-          lat: pos.coords.latitude,
-          lng: pos.coords.longitude,
-          accuracy: pos.coords.accuracy,
-          kind: "move",
-          recordedAt: new Date().toISOString(),
-        });
-      },
-      () => setGpsOk(false),
-      { enableHighAccuracy: true, maximumAge: 5000, timeout: 20000 },
-    );
-  }, [pushPoint]);
-
-  const stopWatch = useCallback(() => {
-    if (watchRef.current !== null) {
-      navigator.geolocation.clearWatch(watchRef.current);
-      watchRef.current = null;
-    }
-  }, []);
-
+  /* ---------- راه‌اندازی ردیاب وقتی سفر فعال است ---------- */
   useEffect(() => {
-    if (active) startWatch();
-    else stopWatch();
-    return () => stopWatch();
-  }, [active, startWatch, stopWatch]);
+    if (!active || !tripId) return;
+    const tracker = createTracker({ tripId, onUpdate: setSt });
+    trackerRef.current = tracker;
+    const ok = tracker.start();
+    if (!ok) setMsg({ kind: "error", text: "موقعیت‌یاب این دستگاه در دسترس نیست" });
+    return () => {
+      void tracker.stop("توقف موقت");
+      trackerRef.current = null;
+    };
+  }, [active, tripId]);
 
   const currentPosition = () =>
     new Promise<{ lat: number; lng: number; accuracy?: number } | null>((resolve) => {
@@ -137,84 +99,81 @@ export default function TripPage() {
       navigator.geolocation.getCurrentPosition(
         (p) => resolve({ lat: p.coords.latitude, lng: p.coords.longitude, accuracy: p.coords.accuracy }),
         () => resolve(null),
-        { enableHighAccuracy: true, timeout: 12000 },
+        { enableHighAccuracy: true, timeout: 15000, maximumAge: 30000 },
       );
     });
 
   const startTrip = async () => {
-    if (!(await confirm({ title: "شروع ویزیت", message: "GPS فعال شود و ثبت مسیر شروع شود؟", confirmText: "شروع ویزیت" })))
-      return;
-    setMsg({ kind: "info", text: "در حال فعال‌سازی GPS..." });
+    if (!(await confirm({ title: "شروع ویزیت", message: "ثبت مسیر شروع شود؟", confirmText: "شروع" }))) return;
+    setMsg({ kind: "info", text: "📡 در حال فعال‌سازی موقعیت‌یاب..." });
     const pos = await currentPosition();
-    if (!pos) {
-      setGpsOk(false);
-      setMsg({ kind: "error", text: "⚠️ دسترسی به GPS برقرار نشد. لطفاً موقعیت مکانی دستگاه را روشن کنید." });
-      return;
-    }
+
     const res = await fetch("/api/trips", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(pos),
+      body: JSON.stringify(pos ?? {}),
     }).catch(() => null);
-    if (!res?.ok) {
-      setMsg({ kind: "error", text: "ارتباط با سرور برقرار نشد. برای شروع سفر یک بار اتصال اینترنت لازم است." });
-      return;
+
+    // اگر سرور در دسترس نبود، سفر محلی ساخته می‌شود و بعداً همگام می‌شود
+    let id: number | null = null;
+    if (res?.ok) {
+      const d = await res.json();
+      id = d.trip?.id ?? null;
     }
-    const data = await res.json();
-    localStorage.setItem(LS_TRIP, String(data.trip.id));
-    localStorage.setItem(LS_PATH, "[]");
-    setTripId(data.trip.id);
+    if (!id) {
+      setMsg({
+        kind: "info",
+        text: "📴 ارتباط با سرور برقرار نشد؛ ویزیت به‌صورت محلی شروع شد و پس از اتصال ارسال می‌شود.",
+      });
+      id = -Date.now(); // شناسه موقت محلی
+    } else {
+      setMsg({ kind: "success", text: "🚗 ویزیت شروع شد — مسیر شما ثبت می‌شود (آنلاین و آفلاین)" });
+    }
+
+    localStorage.setItem(LS_TRIP, String(id));
+    localStorage.setItem(LS_STATE, JSON.stringify({ startedAt: tehranTime(new Date()) }));
     setStartedAt(tehranTime(new Date()));
-    setPath([{ ...pos, kind: "start", recordedAt: new Date().toISOString() }]);
+    setTripId(id);
     setActive(true);
-    setMsg({ kind: "success", text: "🚗 ویزیت شروع شد. مسیر شما به صورت آنلاین و آفلاین ثبت می‌شود." });
+    if (pos) void pushLive({ ...pos, gpsOn: true, tripId: id });
   };
 
   const markPause = async () => {
-    if (!(await confirm({ title: "ثبت وقفه", message: "وقفه در موقعیت فعلی ثبت شود؟", confirmText: "ثبت وقفه" })))
-      return;
-    const pos = (await currentPosition()) ?? path[path.length - 1];
-    if (!pos) return;
-    pushPoint({
-      lat: pos.lat,
-      lng: pos.lng,
-      kind: "pause",
-      note: `وقفه در ساعت ${tehranTime(new Date())}`,
-      recordedAt: new Date().toISOString(),
-    });
-    flush();
-    setMsg({ kind: "info", text: `⏸ وقفه در ساعت ${tehranTime(new Date())} ثبت شد` });
+    if (!(await confirm({ title: "ثبت وقفه", message: "وقفه در موقعیت فعلی ثبت شود؟", confirmText: "ثبت" }))) return;
+    await trackerRef.current?.markPause(`وقفه دستی — ${tehranTime(new Date())}`);
+    setMsg({ kind: "info", text: `⏸ وقفه ساعت ${tehranTime(new Date())} ثبت شد` });
   };
 
   const endTrip = async () => {
     if (
       !(await confirm({
         title: "پایان ویزیت",
-        message: "سفر پایان یابد و GPS و نقشه غیرفعال شوند؟",
+        message: `مسافت طی‌شده: ${formatDistance(st.distanceM)}\nتوقف‌ها: ${formatDuration(st.stopSeconds)}\n\nسفر پایان یابد؟`,
         confirmText: "پایان ویزیت",
         danger: true,
       }))
     )
       return;
+
+    await trackerRef.current?.stop("پایان ویزیت");
     const pos = await currentPosition();
-    await flush();
-    if (tripId) {
+    if (tripId && tripId > 0) {
       await fetch("/api/trips", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id: tripId, action: "end", ...(pos ?? {}) }),
       }).catch(() => null);
     }
-    stopWatch();
     localStorage.removeItem(LS_TRIP);
-    localStorage.removeItem(LS_PATH);
+    localStorage.removeItem(LS_STATE);
     setActive(false);
     setTripId(null);
-    setPath([]);
-    setMsg({ kind: "success", text: "🏁 پایان ویزیت ثبت شد. GPS و نقشه غیرفعال شدند." });
+    setSt({ lastPoint: null, distanceM: 0, stopSeconds: 0, gpsOn: true, pending: 0, points: [] });
+    setMsg({ kind: "success", text: "🏁 پایان ویزیت ثبت شد" });
   };
 
-  const pauses = path.filter((p) => p.kind === "pause");
+  const pauses = st.points.filter((p: TrackPoint) => p.kind === "pause");
+  const path = st.points.map((p) => ({ lat: p.lat, lng: p.lng }));
 
   return (
     <div className="space-y-4">
@@ -225,67 +184,89 @@ export default function TripPage() {
         <div className="flex flex-wrap items-center gap-2">
           {!active ? (
             <Button onClick={startTrip} className="flex-1 sm:flex-none">
-              ▶️ شروع ویزیت (فعال‌سازی GPS)
+              ▶️ شروع ویزیت
             </Button>
           ) : (
             <>
               <Button variant="soft" onClick={markPause}>
-                ⏸ ثبت وقفه در این نقطه
+                ⏸ ثبت وقفه
               </Button>
               <Button variant="danger" onClick={endTrip}>
-                ⏹ پایان ویزیت (قطع GPS و نقشه)
+                ⏹ پایان ویزیت
               </Button>
             </>
           )}
           <div className="flex-1" />
-          <Badge tone={active ? "green" : "slate"}>{active ? "ویزیت فعال" : "غیرفعال"}</Badge>
-          <Badge tone={gpsOk ? "green" : "amber"}>{gpsOk ? "GPS متصل" : "GPS خاموش"}</Badge>
-          <Badge tone={queueLen ? "amber" : "slate"}>
-            صف آفلاین: {toPersianDigits(queueLen)}
-          </Badge>
+          <Badge tone={active ? "green" : "slate"}>{active ? "در حال ویزیت" : "غیرفعال"}</Badge>
+          <Badge tone={st.gpsOn ? "green" : "amber"}>{st.gpsOn ? "GPS متصل" : "GPS ضعیف — ادامه دارد"}</Badge>
+          {st.pending > 0 ? <Badge tone="amber">{toPersianDigits(st.pending)} نقطه در صف</Badge> : null}
         </div>
+
         {active ? (
-          <div className="mt-2 text-xs text-slate-500">
-            شروع: {startedAt || "—"} | نقاط ثبت‌شده: {toPersianDigits(path.length)} | وقفه‌ها:{" "}
-            {toPersianDigits(pauses.length)}
-            {!gpsOk ? " — GPS به صورت دستی خاموش شده است؛ نقشه همچنان فعال است." : ""}
+          <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4">
+            {[
+              ["مسافت طی‌شده", formatDistance(st.distanceM), "bg-teal-50 text-teal-700"],
+              ["مدت توقف‌ها", formatDuration(st.stopSeconds), "bg-amber-50 text-amber-700"],
+              ["نقاط ثبت‌شده", toPersianDigits(st.points.length), "bg-slate-50 text-slate-700"],
+              ["ساعت شروع", startedAt || "—", "bg-sky-50 text-sky-700"],
+            ].map(([l, v, c]) => (
+              <div key={l} className={`rounded-xl p-2.5 text-center ring-1 ring-slate-200 ${c}`}>
+                <div className="text-sm font-black">{v}</div>
+                <div className="text-[10px] font-bold opacity-70">{l}</div>
+              </div>
+            ))}
           </div>
+        ) : null}
+
+        {!st.gpsOn && active ? (
+          <p className="mt-2 rounded-lg bg-amber-50 px-3 py-2 text-[11px] text-amber-800">
+            سیگنال GPS ضعیف است یا موقعیت‌یاب خاموش شده — ردیابی متوقف نشده و به‌محض بازگشت سیگنال، مسیر ادامه می‌یابد.
+          </p>
         ) : null}
       </Card>
 
-      {active ? (
-        <Card>
-          <MapBox
-            height={360}
-            follow
-            path={path.map((p) => ({ lat: p.lat, lng: p.lng }))}
-            points={[
-              ...path
-                .filter((p) => p.kind !== "move")
-                .map((p) => ({
-                  lat: p.lat,
-                  lng: p.lng,
-                  label: p.note || (p.kind === "start" ? "شروع ویزیت" : "پایان"),
-                  color: p.kind === "pause" ? "#f59e0b" : "#0f766e",
-                })),
-              ...(home ? [{ lat: home.lat, lng: home.lng, label: `🏠 ${home.title}`, color: "#7c3aed" }] : []),
-            ]}
-          />
-          {pauses.length ? (
-            <ul className="mt-3 space-y-1 text-xs text-slate-600">
-              {pauses.map((p, i) => (
-                <li key={i} className="rounded-lg bg-amber-50 px-3 py-1.5">
-                  ⏸ {p.note}
-                </li>
-              ))}
-            </ul>
-          ) : null}
-        </Card>
-      ) : (
+      <Card>
+        <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+          <h3 className="text-sm font-bold text-slate-700">
+            {active ? "مسیر زنده شما" : "داروخانه‌ها، پزشکان و منزل روی نقشه"}
+          </h3>
+          <span className="text-[11px] text-slate-500">
+            🏥 داروخانه · 🩺 پزشک · 🏠 منزل · ⏸ توقف
+          </span>
+        </div>
+        <MapBox
+          height={380}
+          follow={active}
+          path={path}
+          points={[
+            ...places,
+            ...st.points
+              .filter((p) => p.kind !== "move")
+              .map((p) => ({
+                lat: p.lat,
+                lng: p.lng,
+                label: p.note || (p.kind === "start" ? "شروع ویزیت" : "پایان"),
+                color: p.kind === "pause" ? "#f59e0b" : p.kind === "end" ? "#e11d48" : "#16a34a",
+              })),
+          ]}
+        />
+        {pauses.length ? (
+          <ul className="mt-3 space-y-1 text-xs text-slate-600">
+            {pauses.map((p, i) => (
+              <li key={i} className="rounded-lg bg-amber-50 px-3 py-1.5">
+                ⏸ {p.note} — {tehranTime(p.recordedAt)}
+              </li>
+            ))}
+          </ul>
+        ) : null}
+      </Card>
+
+      {!active ? (
         <Alert kind="info">
-          نقشه و GPS تنها در زمان ویزیت فعال هستند. با زدن «شروع ویزیت» موقعیت شما ثبت و برای مدیر ارسال می‌شود.
+          با زدن «شروع ویزیت»، مسیر شما ثبت می‌شود. اگر اینترنت قطع شود یا GPS ضعیف باشد، اطلاعات روی گوشی ذخیره
+          می‌شود و به‌محض برقراری ارتباط، خودکار ارسال می‌گردد — بدون هیچ هشداری.
         </Alert>
-      )}
+      ) : null}
     </div>
   );
 }

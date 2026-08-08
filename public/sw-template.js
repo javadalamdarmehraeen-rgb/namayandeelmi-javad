@@ -174,6 +174,50 @@ self.addEventListener("sync", (e) => {
   if (e.tag === "sek-sync") e.waitUntil(flushQueue());
 });
 
+/* ---------------- کلیک روی نوتیفیکیشن ---------------- */
+self.addEventListener("notificationclick", (event) => {
+  const data = event.notification.data || {};
+  event.notification.close();
+  event.waitUntil(
+    (async () => {
+      const all = await self.clients.matchAll({ type: "window", includeUncontrolled: true });
+      // اگر برنامه باز است، همان پنجره را فوکوس کن
+      for (const c of all) {
+        c.postMessage({ type: "notification-click", id: data.id });
+        if ("focus" in c) {
+          await c.focus();
+          if (data.link) c.navigate?.(data.link);
+          return;
+        }
+      }
+      if (self.clients.openWindow) await self.clients.openWindow(data.link || "/panel/notifications");
+    })()
+  );
+});
+
+/* ---------------- Web Push (در صورت پیکربندی) ---------------- */
+self.addEventListener("push", (event) => {
+  let payload = { title: "اعلان جدید", body: "", id: 0, link: "/panel/notifications" };
+  try {
+    payload = { ...payload, ...(event.data ? event.data.json() : {}) };
+  } catch {
+    if (event.data) payload.body = event.data.text();
+  }
+  event.waitUntil(
+    self.registration.showNotification(`🔔 ${payload.title}`, {
+      body: payload.body,
+      icon: "/icons/icon-192.png",
+      badge: "/icons/icon-192.png",
+      dir: "rtl",
+      lang: "fa",
+      tag: `sek-${payload.id}`,
+      requireInteraction: true,
+      vibrate: [200, 100, 200],
+      data: payload,
+    })
+  );
+});
+
 /* ---------------- راهبرد واکشی ---------------- */
 self.addEventListener("fetch", (event) => {
   const req = event.request;

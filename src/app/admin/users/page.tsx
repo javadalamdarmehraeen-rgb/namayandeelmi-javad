@@ -11,6 +11,7 @@ import {
 import { tehranDateTime, toPersianDigits } from "@/lib/jalali";
 import { useConfirm } from "@/components/Confirm";
 import { useLive } from "@/lib/useLive";
+import { downloadFile } from "@/lib/download";
 
 type Role = { id: number; key: string; label: string; base: string; permissions: string[]; builtin: boolean };
 
@@ -173,9 +174,12 @@ export default function UsersPage() {
           <Button variant={showAllPass ? "danger" : "ghost"} onClick={() => setShowAllPass((v) => !v)}>
             {showAllPass ? "🙈 پنهان کردن همه رمزها" : "👁 نمایش همه رمزها"}
           </Button>
-          <a href="/api/export?type=users" className="rounded-xl bg-emerald-600 px-3 py-2.5 text-xs font-bold text-white">
+          <Button
+            variant="success"
+            onClick={async () => setMsg({ kind: "success", text: await downloadFile("/api/export?type=users", "users.xls") })}
+          >
             ⬇️ خروجی اکسل
-          </a>
+          </Button>
         </div>
       </div>
       {msg ? <Alert kind={msg.kind}>{msg.text}</Alert> : null}

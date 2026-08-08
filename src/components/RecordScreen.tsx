@@ -19,6 +19,7 @@ import {
 import { isValidJalali, tehranDateTime, toPersianDigits, todayJalali } from "@/lib/jalali";
 import { useConfirm } from "@/components/Confirm";
 import { useLive } from "@/lib/useLive";
+import { downloadFile } from "@/lib/download";
 
 const MapBox = dynamicImport(() => import("./MapBox"), { ssr: false });
 
@@ -155,6 +156,9 @@ export default function RecordScreen({ type, isAdmin = false }: { type: RecordTy
   const [suggestion, setSuggestion] = useState<Record<string, unknown> | null>(null);
   const [autofilled, setAutofilled] = useState(false);
   const [targets, setTargets] = useState<TargetRow[]>([]);
+  const [editRow, setEditRow] = useState<Row | null>(null);
+  const [editDraft, setEditDraft] = useState<Record<string, string>>({});
+  const [editItems, setEditItems] = useState<Record<string, number>>({});
   const [columns, setColumns] = useState<ColumnConfig[]>(DEFAULT_COLUMNS[type]);
 
   const confirm = useConfirm();
@@ -418,6 +422,78 @@ export default function RecordScreen({ type, isAdmin = false }: { type: RecordTy
     setTimeout(() => setAutofilled(false), 4000);
   };
 
+  /* ---------- ویرایش و حذف رکورد ---------- */
+  const openEdit = (r: Row) => {
+    setEditRow(r);
+    setEditDraft({
+      dateShamsi: r.dateShamsi ?? "",
+      name: r.name ?? "",
+      pharmacyName: r.pharmacyName ?? "",
+      province: r.province ?? "",
+      city: r.city ?? "",
+      region: r.region ?? "",
+      landline: r.landline ?? "",
+      managerName: r.managerName ?? "",
+      managerPhone: r.managerPhone ?? "",
+      specialty: r.specialty ?? "",
+      phone: r.phone ?? "",
+      secretaryName: r.secretaryName ?? "",
+      secretaryPhone: r.secretaryPhone ?? "",
+      address: r.address ?? "",
+      otherAddresses: r.otherAddresses ?? "",
+      distributor: r.distributor ?? "",
+      visitor: r.visitor ?? "",
+      notes: r.notes ?? "",
+      percentValue: r.percentValue ?? "",
+    });
+    setEditItems({ ...(r.items ?? {}) });
+  };
+
+  const saveEdit = async () => {
+    if (!editRow) return;
+    if (
+      !(await confirm({
+        title: "ذخیره ویرایش",
+        message: `تغییرات «${editDraft.pharmacyName || editDraft.name}» ذخیره شود؟`,
+        confirmText: "ذخیره",
+      }))
+    )
+      return;
+    setBusy(true);
+    const res = await fetch(`/api/records/${type}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id: editRow.id, ...editDraft, ...(type === "orders" ? { items: editItems } : {}) }),
+    });
+    setBusy(false);
+    const d = await res.json().catch(() => ({}));
+    if (res.ok) {
+      setMsg({ kind: "success", text: "✅ ویرایش ذخیره شد" });
+      setEditRow(null);
+      loadRows();
+      loadTargets();
+    } else setMsg({ kind: "error", text: d.error ?? "خطا در ویرایش" });
+  };
+
+  const removeRow = async (r: Row) => {
+    if (
+      !(await confirm({
+        title: "حذف رکورد",
+        message: `«${nameOf(r)}» برای همیشه حذف شود؟ این عمل قابل بازگشت نیست.`,
+        confirmText: "حذف",
+        danger: true,
+      }))
+    )
+      return;
+    const res = await fetch(`/api/records/${type}?id=${r.id}`, { method: "DELETE" });
+    const d = await res.json().catch(() => ({}));
+    if (res.ok) {
+      setMsg({ kind: "success", text: "🗑 رکورد حذف شد" });
+      loadRows();
+      loadTargets();
+    } else setMsg({ kind: "error", text: d.error ?? "حذف ناموفق بود" });
+  };
+
   const onAdded = () => loadOptions();
 
   const visibleCols = columns.filter((c) => c.visible);
@@ -464,6 +540,25 @@ export default function RecordScreen({ type, isAdmin = false }: { type: RecordTy
         return r.sent ? <Badge tone="green">ارسال شد</Badge> : <Badge tone="amber">در انتظار</Badge>;
       case "nav":
         return <NavButton lat={r.lat} lng={r.lng} label={nameOf(r)} />;
+      case "actions":
+        return (
+          <div className="flex gap-1">
+            <button
+              onClick={() => openEdit(r)}
+              className="rounded-lg bg-sky-100 px-2 py-1 text-[10px] font-bold text-sky-700"
+              title="ویرایش"
+            >
+              ✏️ ویرایش
+            </button>
+            <button
+              onClick={() => removeRow(r)}
+              className="rounded-lg bg-rose-100 px-2 py-1 text-[10px] font-bold text-rose-700"
+              title="حذف"
+            >
+              🗑 حذف
+            </button>
+          </div>
+        );
       case "totalUnits":
         return toPersianDigits(products.reduce((a, p) => a + Number(r.items?.[p.key] ?? 0), 0));
       case "totalBonus":
@@ -762,6 +857,29 @@ export default function RecordScreen({ type, isAdmin = false }: { type: RecordTy
             </div>
           ) : null}
 
+          {type === "orders" && targets.some((t) => t.quantity > 0) ? (
+            <div className="mt-4 rounded-2xl bg-teal-50 p-3 ring-1 ring-teal-200">
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="text-xs font-black text-teal-900">🎯 تارگت شما در این ماه</span>
+                {(() => {
+                  const tq = targets.reduce((a, t) => a + t.quantity, 0);
+                  const ts = targets.reduce((a, t) => a + t.sold, 0);
+                  const typed = products.reduce((a, p) => a + Number(items[p.key] ?? 0), 0);
+                  const pc = tq > 0 ? Math.round((ts / tq) * 100) : 0;
+                  return (
+                    <>
+                      <Badge tone="slate">تارگت کل: {toPersianDigits(tq)}</Badge>
+                      <Badge tone="green">فاکتور شده: {toPersianDigits(ts)}</Badge>
+                      <Badge tone="amber">باقیمانده: {toPersianDigits(Math.max(0, tq - ts - typed))}</Badge>
+                      {typed > 0 ? <Badge tone="green">این سفارش: {toPersianDigits(typed)}</Badge> : null}
+                      <span className="mr-auto text-[11px] font-black text-teal-800">تحقق {toPersianDigits(pc)}٪</span>
+                    </>
+                  );
+                })()}
+              </div>
+            </div>
+          ) : null}
+
           {type === "orders" ? (
             <div className="mt-4">
               <SectionTitle icon="💊">اقلام سفارش</SectionTitle>
@@ -951,12 +1069,14 @@ export default function RecordScreen({ type, isAdmin = false }: { type: RecordTy
               ))}
             </select>
             <div className="flex-1" />
-            <a
-              href={`/api/export?type=${type}`}
-              className="rounded-xl bg-emerald-600 px-3 py-2.5 text-xs font-bold text-white hover:bg-emerald-700"
+            <Button
+              variant="success"
+              onClick={async () =>
+                setMsg({ kind: "success", text: await downloadFile(`/api/export?type=${type}`, `${type}.xls`) })
+              }
             >
               ⬇️ خروجی اکسل
-            </a>
+            </Button>
             {!isAdmin ? (
               <Button variant="success" onClick={sendSelected} disabled={busy}>
                 📤 ارسال {selected.length ? `(${toPersianDigits(selected.length)})` : "ارسال‌نشده‌ها"}
@@ -1006,6 +1126,147 @@ export default function RecordScreen({ type, isAdmin = false }: { type: RecordTy
         </Card>
       )}
 
+      {editRow ? (
+        <div
+          className="fixed inset-0 z-[70] flex items-end justify-center bg-slate-900/60 sm:items-center sm:p-4"
+          onClick={() => setEditRow(null)}
+        >
+          <div
+            className="fade-in max-h-[92vh] w-full max-w-2xl overflow-y-auto rounded-t-3xl bg-white p-4 sm:rounded-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="mb-3 flex items-center justify-between">
+              <h3 className="text-base font-black text-sky-800">✏️ ویرایش رکورد</h3>
+              <button onClick={() => setEditRow(null)} className="rounded-lg bg-slate-100 px-3 py-1 text-sm">
+                بستن ✕
+              </button>
+            </div>
+
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+              <Field label="تاریخ">
+                <JalaliDateInput
+                  value={editDraft.dateShamsi}
+                  onChange={(v) => setEditDraft({ ...editDraft, dateShamsi: v })}
+                />
+              </Field>
+              <Field label={meta.nameLabel}>
+                <Input
+                  value={type === "orders" ? editDraft.pharmacyName : editDraft.name}
+                  onChange={(e) =>
+                    setEditDraft({
+                      ...editDraft,
+                      [type === "orders" ? "pharmacyName" : "name"]: e.target.value,
+                    })
+                  }
+                />
+              </Field>
+
+              {type === "doctors" ? (
+                <>
+                  <Field label="تخصص">
+                    <Input value={editDraft.specialty} onChange={(e) => setEditDraft({ ...editDraft, specialty: e.target.value })} />
+                  </Field>
+                  <Field label="شماره همراه پزشک">
+                    <Input value={editDraft.phone} onChange={(e) => setEditDraft({ ...editDraft, phone: e.target.value })} />
+                  </Field>
+                  <Field label="نام منشی">
+                    <Input value={editDraft.secretaryName} onChange={(e) => setEditDraft({ ...editDraft, secretaryName: e.target.value })} />
+                  </Field>
+                  <Field label="شماره منشی">
+                    <Input value={editDraft.secretaryPhone} onChange={(e) => setEditDraft({ ...editDraft, secretaryPhone: e.target.value })} />
+                  </Field>
+                </>
+              ) : (
+                <>
+                  <Field label="مسئول سفارش">
+                    <Input value={editDraft.managerName} onChange={(e) => setEditDraft({ ...editDraft, managerName: e.target.value })} />
+                  </Field>
+                  <Field label="شماره همراه">
+                    <Input value={editDraft.managerPhone} onChange={(e) => setEditDraft({ ...editDraft, managerPhone: e.target.value })} />
+                  </Field>
+                </>
+              )}
+
+              {type !== "orders" ? (
+                <>
+                  <Field label="استان">
+                    <Input value={editDraft.province} onChange={(e) => setEditDraft({ ...editDraft, province: e.target.value })} />
+                  </Field>
+                  <Field label="شهر">
+                    <Input value={editDraft.city} onChange={(e) => setEditDraft({ ...editDraft, city: e.target.value })} />
+                  </Field>
+                </>
+              ) : (
+                <>
+                  <Field label="نام پخش">
+                    <Input value={editDraft.distributor} onChange={(e) => setEditDraft({ ...editDraft, distributor: e.target.value })} />
+                  </Field>
+                  <Field label="نام ویزیتور">
+                    <Input value={editDraft.visitor} onChange={(e) => setEditDraft({ ...editDraft, visitor: e.target.value })} />
+                  </Field>
+                </>
+              )}
+
+              <div className="sm:col-span-2">
+                <Field label="آدرس">
+                  <TextArea value={editDraft.address} onChange={(e) => setEditDraft({ ...editDraft, address: e.target.value })} />
+                </Field>
+              </div>
+              {type === "orders" ? (
+                <div className="sm:col-span-2">
+                  <Field label="توضیحات">
+                    <TextArea value={editDraft.notes} onChange={(e) => setEditDraft({ ...editDraft, notes: e.target.value })} />
+                  </Field>
+                </div>
+              ) : null}
+            </div>
+
+            {type === "orders" ? (
+              <div className="mt-3">
+                <h4 className="mb-2 text-sm font-bold text-slate-700">اقلام سفارش</h4>
+                <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+                  {products.map((p) => (
+                    <div key={p.key} className="rounded-xl bg-slate-50 p-2 ring-1 ring-slate-200">
+                      <div className="mb-1 text-[11px] font-bold text-slate-700">{p.label}</div>
+                      <div className="grid grid-cols-2 gap-1">
+                        <Input
+                          inputMode="numeric"
+                          value={editItems[p.key] ?? ""}
+                          onChange={(e) =>
+                            setEditItems({ ...editItems, [p.key]: Number(e.target.value.replace(/\D/g, "")) || 0 })
+                          }
+                          className="px-1 py-1 text-center text-xs"
+                        />
+                        <Input
+                          inputMode="numeric"
+                          value={editItems[bonusKeyOf(p.key)] ?? ""}
+                          onChange={(e) =>
+                            setEditItems({
+                              ...editItems,
+                              [bonusKeyOf(p.key)]: Number(e.target.value.replace(/\D/g, "")) || 0,
+                            })
+                          }
+                          className="px-1 py-1 text-center text-xs"
+                        />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ) : null}
+
+            <div className="mt-4 flex gap-2">
+              <Button onClick={saveEdit} disabled={busy}>
+                💾 ذخیره تغییرات
+              </Button>
+              <Button variant="ghost" onClick={() => setEditRow(null)}>
+                انصراف
+              </Button>
+            </div>
+          </div>
+        </div>
+      ) : null}
+
       {detail ? (
         <div
           className="fixed inset-0 z-40 flex items-end justify-center bg-slate-900/50 sm:items-center sm:p-4"
@@ -1019,9 +1280,30 @@ export default function RecordScreen({ type, isAdmin = false }: { type: RecordTy
               <h3 className="text-base font-bold text-teal-800">
                 {type === "orders" ? detail.pharmacyName : detail.name}
               </h3>
-              <button onClick={() => setDetail(null)} className="rounded-lg bg-slate-100 px-3 py-1 text-sm">
-                بستن ✕
-              </button>
+              <div className="flex gap-1">
+                <button
+                  onClick={() => {
+                    openEdit(detail);
+                    setDetail(null);
+                  }}
+                  className="rounded-lg bg-sky-100 px-2 py-1 text-xs font-bold text-sky-700"
+                >
+                  ✏️ ویرایش
+                </button>
+                <button
+                  onClick={() => {
+                    const r = detail;
+                    setDetail(null);
+                    removeRow(r);
+                  }}
+                  className="rounded-lg bg-rose-100 px-2 py-1 text-xs font-bold text-rose-700"
+                >
+                  🗑 حذف
+                </button>
+                <button onClick={() => setDetail(null)} className="rounded-lg bg-slate-100 px-3 py-1 text-sm">
+                  بستن ✕
+                </button>
+              </div>
             </div>
             <dl className="grid grid-cols-1 gap-2 text-sm sm:grid-cols-2">
               <D k="نام نماینده" v={detail.repName} />
@@ -1114,7 +1396,7 @@ export default function RecordScreen({ type, isAdmin = false }: { type: RecordTy
                       },
                     ]}
                   />
-                  <div className="mt-2">
+                  <div className="relative z-[60] mt-2" onClick={(e) => e.stopPropagation()}>
                     <NavButton
                       lat={detail.lat}
                       lng={detail.lng}

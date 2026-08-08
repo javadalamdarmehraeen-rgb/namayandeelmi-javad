@@ -101,6 +101,7 @@ export default function NavButton({
   const [open, setOpen] = useState(false);
   const [plat, setPlat] = useState<"android" | "ios" | "desktop">("desktop");
   const [canShare, setCanShare] = useState(false);
+  const [pos, setPos] = useState<{ top: number; left: number } | null>(null);
 
   useEffect(() => {
     setPlat(platform());
@@ -115,17 +116,19 @@ export default function NavButton({
   const go = (a: App) => {
     setOpen(false);
     const webUrl = a.web(lat, lng, name);
-    // روی موبایل ابتدا اپ نصب‌شده امتحان می‌شود، در صورت نبود نسخه وب باز می‌شود
-    if (a.scheme && plat !== "desktop") {
-      const started = Date.now();
-      const fb = setTimeout(() => {
-        if (!document.hidden && Date.now() - started < 2500) window.open(webUrl, "_blank", "noopener");
-      }, 1100);
-      window.addEventListener("pagehide", () => clearTimeout(fb), { once: true });
-      window.location.href = a.scheme(lat, lng, name);
+    // روی دسکتاپ همیشه نسخه وب باز می‌شود
+    if (plat === "desktop" || !a.scheme) {
+      const w = window.open(webUrl, "_blank", "noopener,noreferrer");
+      if (!w) window.location.href = webUrl; // اگر پاپ‌آپ مسدود شد
       return;
     }
-    window.open(webUrl, "_blank", "noopener");
+    // روی موبایل ابتدا اپ نصب‌شده امتحان می‌شود، در صورت نبود نسخه وب باز می‌شود
+    const started = Date.now();
+    const fb = setTimeout(() => {
+      if (!document.hidden && Date.now() - started < 2500) window.open(webUrl, "_blank", "noopener");
+    }, 1100);
+    window.addEventListener("pagehide", () => clearTimeout(fb), { once: true });
+    window.location.href = a.scheme(lat, lng, name);
   };
 
   const shareLocation = async () => {
@@ -151,7 +154,14 @@ export default function NavButton({
     <span className="relative inline-block">
       <button
         type="button"
-        onClick={() => setOpen((v) => !v)}
+        onClick={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          const r = (e.currentTarget as HTMLElement).getBoundingClientRect();
+          // موقعیت ثابت نسبت به صفحه تا داخل پنجره‌های بازشو بریده یا مسدود نشود
+          setPos({ top: Math.min(r.bottom + 6, window.innerHeight - 320), left: Math.max(8, r.left) });
+          setOpen((v) => !v);
+        }}
         title="انتخاب مسیریاب"
         className={`rounded-lg bg-teal-600 font-bold text-white hover:bg-teal-700 ${
           compact ? "px-2 py-1 text-[11px]" : "px-3 py-2 text-xs"
@@ -161,8 +171,18 @@ export default function NavButton({
       </button>
       {open ? (
         <>
-          <span className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
-          <span className="fade-in absolute left-0 z-50 mt-1 block w-56 rounded-xl bg-white p-1 shadow-2xl ring-1 ring-slate-200">
+          <span
+            className="fixed inset-0 z-[998]"
+            onClick={(e) => {
+              e.stopPropagation();
+              setOpen(false);
+            }}
+          />
+          <span
+            className="fade-in fixed z-[999] block w-56 rounded-xl bg-white p-1 shadow-2xl ring-1 ring-slate-200"
+            style={{ top: pos?.top ?? 80, left: pos?.left ?? 16 }}
+            onClick={(e) => e.stopPropagation()}
+          >
             <span className="block px-2 py-1 text-[10px] font-bold text-slate-400">
               مسیریاب مورد نظر را انتخاب کنید
             </span>

@@ -34,6 +34,7 @@ export const OPTION_CATEGORIES: { key: string; label: string }[] = [
   { key: "doctor", label: "نام پزشک" },
   { key: "secretary", label: "نام منشی" },
   { key: "leaveKind", label: "نوع مرخصی" },
+  { key: "year", label: "سال مالی" },
   { key: "distributor", label: "نام پخش" },
   { key: "visitor", label: "نام ویزیتور" },
 ];

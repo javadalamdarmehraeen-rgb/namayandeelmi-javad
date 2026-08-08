@@ -164,12 +164,32 @@ export const leaves = pgTable("leaves", {
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
+export const liveLocations = pgTable("live_locations", {
+  userId: integer("user_id").primaryKey(),
+  repName: varchar("rep_name", { length: 160 }).notNull().default(""),
+  lat: doublePrecision("lat").notNull(),
+  lng: doublePrecision("lng").notNull(),
+  accuracy: doublePrecision("accuracy"),
+  speed: doublePrecision("speed"),
+  heading: doublePrecision("heading"),
+  battery: integer("battery"),
+  gpsOn: boolean("gps_on").notNull().default(true),
+  online: boolean("online").notNull().default(true),
+  tripId: integer("trip_id"),
+  recordedAt: timestamp("recorded_at", { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
 export const trips = pgTable("trips", {
   id: serial("id").primaryKey(),
   userId: integer("user_id").notNull(),
   repName: varchar("rep_name", { length: 160 }).notNull(),
   dateShamsi: varchar("date_shamsi", { length: 12 }).notNull(),
   status: varchar("status", { length: 20 }).notNull().default("active"),
+  /** مسافت طی‌شده بر حسب متر */
+  distanceM: doublePrecision("distance_m").notNull().default(0),
+  /** مجموع مدت توقف‌ها بر حسب ثانیه */
+  stopSeconds: integer("stop_seconds").notNull().default(0),
   startedAt: timestamp("started_at", { withTimezone: true }).notNull().defaultNow(),
   endedAt: timestamp("ended_at", { withTimezone: true }),
 });
@@ -184,6 +204,10 @@ export const tripPoints = pgTable(
     accuracy: doublePrecision("accuracy"),
     kind: varchar("kind", { length: 20 }).notNull().default("move"),
     note: varchar("note", { length: 200 }).notNull().default(""),
+    speed: doublePrecision("speed"),
+    /** مدت توقف در این نقطه (ثانیه) */
+    stopSeconds: integer("stop_seconds").notNull().default(0),
+    gpsOn: boolean("gps_on").notNull().default(true),
     recordedAt: timestamp("recorded_at", { withTimezone: true }).notNull().defaultNow(),
     synced: boolean("synced").notNull().default(true),
   },
@@ -341,3 +365,36 @@ export const targets = pgTable(
   },
   (t) => [index("targets_user_idx").on(t.userId, t.period)],
 );
+
+/** وضعیت همگام‌سازی با هر سرور همتا (Render ↔ NdcoHub) */
+export const syncState = pgTable("sync_state", {
+  id: serial("id").primaryKey(),
+  /** شناسه یکتای سرور همتا */
+  peer: varchar("peer", { length: 80 }).notNull().unique(),
+  peerUrl: text("peer_url").notNull().default(""),
+  enabled: boolean("enabled").notNull().default(true),
+  /** آخرین زمان تغییری که از این همتا دریافت شده */
+  pullCursor: timestamp("pull_cursor", { withTimezone: true }),
+  /** آخرین زمان تغییری که برای این همتا ارسال شده */
+  pushCursor: timestamp("push_cursor", { withTimezone: true }),
+  lastSyncAt: timestamp("last_sync_at", { withTimezone: true }),
+  lastStatus: text("last_status").notNull().default(""),
+  lastError: text("last_error").notNull().default(""),
+  pulled: integer("pulled").notNull().default(0),
+  pushed: integer("pushed").notNull().default(0),
+  conflicts: integer("conflicts").notNull().default(0),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
+/** گزارش هر اجرای همگام‌سازی برای عیب‌یابی */
+export const syncLogs = pgTable("sync_logs", {
+  id: serial("id").primaryKey(),
+  peer: varchar("peer", { length: 80 }).notNull().default(""),
+  direction: varchar("direction", { length: 10 }).notNull().default("pull"),
+  tableName: varchar("table_name", { length: 40 }).notNull().default(""),
+  applied: integer("applied").notNull().default(0),
+  skipped: integer("skipped").notNull().default(0),
+  ok: boolean("ok").notNull().default(true),
+  detail: text("detail").notNull().default(""),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+});
