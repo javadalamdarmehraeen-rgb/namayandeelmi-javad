@@ -52,15 +52,32 @@ export default function ColumnsPage() {
     load();
   }, [load]);
 
-  const save = async (key: string, value: unknown) => {
-    if (!(await confirm({ title: "ذخیره تغییرات", message: "تغییرات ذخیره و بلافاصله در همه صفحات اعمال شود؟", confirmText: "ذخیره" })))
-      return;
+  /** ذخیره فوری تنظیمات — برای افزودن/حذف ستون و کالا */
+  const persist = async (key: string, value: unknown, success = "✅ ذخیره شد و بلافاصله اعمال می‌شود") => {
     const res = await fetch("/api/settings", {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ key, value }),
     });
-    setMsg(res.ok ? "✅ ذخیره شد و بلافاصله در همه صفحات اعمال می‌شود" : "خطا در ذخیره");
+    const d = await res.json().catch(() => ({}));
+    if (res.ok) {
+      setMsg(success);
+      return true;
+    }
+    setMsg(`✖ ${d.error ?? "خطا در ذخیره"}`);
+    return false;
+  };
+
+  const save = async (key: string, value: unknown) => {
+    if (
+      !(await confirm({
+        title: "ذخیره تغییرات",
+        message: "تغییرات ذخیره و بلافاصله در همه صفحات اعمال شود؟",
+        confirmText: "ذخیره",
+      }))
+    )
+      return;
+    await persist(key, value);
   };
 
   const move = (list: ColumnConfig[], i: number, dir: -1 | 1) => {
@@ -80,11 +97,16 @@ export default function ColumnsPage() {
   };
 
   const current = cols[tab] ?? [];
+  /** ستون‌هایی که حذف شده‌اند یا در حال حاضر مخفی هستند، قابل افزودن‌اند */
+  const addable = (AVAILABLE_COLUMNS[tab] ?? []).filter((a) => {
+    const existing = current.find((c) => c.key === a.key);
+    return !existing || !existing.visible;
+  });
 
   return (
     <div className="space-y-4">
       <SectionTitle icon="🧱">مدیریت ستون‌ها و کالاها</SectionTitle>
-      {msg ? <Alert kind="success">{msg}</Alert> : null}
+      {msg ? <Alert kind={msg.startsWith("✖") || msg.includes("خطا") ? "error" : "success"}>{msg}</Alert> : null}
 
       <Card>
         <div className="mb-3 flex flex-wrap gap-1 rounded-xl bg-slate-100 p-1 text-xs font-bold">
@@ -99,8 +121,9 @@ export default function ColumnsPage() {
           ))}
         </div>
 
-        <p className="mb-2 text-[11px] text-slate-500">
-          با تیک زدن، ستون نمایش داده می‌شود و با فلش‌ها ترتیب آن جابه‌جا می‌شود. عنوان ستون هم قابل تغییر است.
+        <p className="mb-2 rounded-xl bg-sky-50 px-3 py-2 text-[11px] leading-5 text-sky-800 ring-1 ring-sky-200">
+          افزودن، حذف و نمایش/مخفی کردن ستون‌ها <b>همان لحظه ذخیره می‌شود</b>. برای تغییر عنوان یا ترتیب با فلش‌ها،
+          در پایان دکمه «ذخیره ترتیب ستون‌ها» را بزنید. ستون «عملیات» برای دسترسی به ویرایش و حذف اجباری است.
         </p>
 
         <ul className="space-y-1">
@@ -109,12 +132,20 @@ export default function ColumnsPage() {
               <span className="w-6 text-center text-[11px] text-slate-400">{toPersianDigits(i + 1)}</span>
               <input
                 type="checkbox"
-                className="size-4 accent-teal-600"
+                className="size-4 accent-teal-600 disabled:opacity-50"
                 checked={c.visible}
-                onChange={(e) => {
+                disabled={c.key === "actions"}
+                title={c.key === "actions" ? "ستون عملیات برای ویرایش و حذف اجباری است" : "نمایش/مخفی"}
+                onChange={async (e) => {
+                  const visible = e.target.checked;
                   const next = [...current];
-                  next[i] = { ...c, visible: e.target.checked };
+                  next[i] = { ...c, visible };
                   setCols({ ...cols, [tab]: next });
+                  await persist(
+                    `columns.${tab}`,
+                    next,
+                    `${visible ? "✅ ستون نمایش داده شد" : "✅ ستون مخفی شد"}`,
+                  );
                 }}
               />
               <Input
@@ -140,23 +171,35 @@ export default function ColumnsPage() {
                 >
                   ↓
                 </button>
-                <button
-                  onClick={async () => {
-                    if (
-                      !(await confirm({
-                        title: "حذف ستون",
-                        message: `ستون «${c.label}» از این جدول حذف شود؟ بعداً می‌توانید دوباره اضافه کنید.`,
-                        confirmText: "حذف",
-                        danger: true,
-                      }))
-                    )
-                      return;
-                    setCols({ ...cols, [tab]: current.filter((_, x) => x !== i) });
-                  }}
-                  className="rounded-lg bg-rose-100 px-2 py-1 text-xs font-bold text-rose-700"
-                >
-                  حذف
-                </button>
+                {c.key === "actions" ? (
+                  <span className="rounded-lg bg-teal-100 px-2 py-1 text-[10px] font-bold text-teal-700">
+                    اجباری
+                  </span>
+                ) : (
+                  <button
+                    onClick={async () => {
+                      if (
+                        !(await confirm({
+                          title: "حذف ستون",
+                          message: `ستون «${c.label}» از این جدول حذف شود؟ بعداً می‌توانید دوباره اضافه کنید.`,
+                          confirmText: "حذف",
+                          danger: true,
+                        }))
+                      )
+                        return;
+                      const next = current.filter((_, x) => x !== i);
+                      setCols({ ...cols, [tab]: next });
+                      await persist(
+                        `columns.${tab}`,
+                        next,
+                        `🗑 ستون «${c.label}» حذف و تنظیمات ذخیره شد`,
+                      );
+                    }}
+                    className="rounded-lg bg-rose-100 px-2 py-1 text-xs font-bold text-rose-700"
+                  >
+                    حذف
+                  </button>
+                )}
               </div>
             </li>
           ))}
@@ -170,28 +213,50 @@ export default function ColumnsPage() {
             className="rounded-xl border border-slate-300 px-2 py-2 text-xs"
           >
             <option value="">انتخاب ستون...</option>
-            {(AVAILABLE_COLUMNS[tab] ?? [])
-              .filter((a) => !current.some((c) => c.key === a.key))
-              .map((a) => (
+            {addable.map((a) => {
+              const hidden = current.some((c) => c.key === a.key && !c.visible);
+              return (
                 <option key={a.key} value={a.key}>
-                  {a.label}
+                  {a.label}{hidden ? " (مخفی — فعال شود)" : ""}
                 </option>
-              ))}
+              );
+            })}
           </select>
           <Button
             variant="soft"
-            onClick={() => {
+            disabled={!addCol}
+            onClick={async () => {
               const found = (AVAILABLE_COLUMNS[tab] ?? []).find((a) => a.key === addCol);
-              if (!found) return;
-              setCols({ ...cols, [tab]: [...current, { ...found, visible: true }] });
+              if (!found) {
+                setMsg("✖ ابتدا یک ستون را انتخاب کنید");
+                return;
+              }
+              if (
+                !(await confirm({
+                  title: "افزودن ستون",
+                  message: `ستون «${found.label}» به جدول اضافه و نمایش داده شود؟`,
+                  confirmText: "افزودن و ذخیره",
+                }))
+              )
+                return;
+
+              const exists = current.some((c) => c.key === found.key);
+              const next = exists
+                ? current.map((c) => (c.key === found.key ? { ...c, visible: true, label: c.label || found.label } : c))
+                : [...current, { ...found, visible: true }];
+              setCols({ ...cols, [tab]: next });
               setAddCol("");
+              await persist(
+                `columns.${tab}`,
+                next,
+                `✅ ستون «${found.label}» اضافه شد و در جدول نمایش داده می‌شود`,
+              );
             }}
           >
-            ➕ افزودن
+            ➕ افزودن و ذخیره
           </Button>
           <span className="text-[10px] text-slate-400">
-            {toPersianDigits((AVAILABLE_COLUMNS[tab] ?? []).filter((a) => !current.some((c) => c.key === a.key)).length)}{" "}
-            ستون قابل افزودن
+            {toPersianDigits(addable.length)} ستون قابل افزودن
           </span>
         </div>
 
@@ -282,15 +347,28 @@ export default function ColumnsPage() {
           />
           <Button
             variant="soft"
-            onClick={() => {
+            onClick={async () => {
               const label = newProduct.trim();
-              if (!label) return;
+              if (!label) {
+                setMsg("✖ نام کالای جدید را وارد کنید");
+                return;
+              }
+              if (
+                !(await confirm({
+                  title: "افزودن کالا",
+                  message: `کالای «${label}» و فیلد جایزه آن اضافه شود؟`,
+                  confirmText: "افزودن و ذخیره",
+                }))
+              )
+                return;
               const key = `p_${Date.now()}`;
-              setProducts([...products, { key, label, bonusLabel: `تعداد جایزه ${label}`, enabled: true }]);
+              const next = [...products, { key, label, bonusLabel: `تعداد جایزه ${label}`, enabled: true }];
+              setProducts(next);
               setNewProduct("");
+              await persist("products", next, `✅ کالای «${label}» اضافه و ذخیره شد`);
             }}
           >
-            ➕ افزودن کالا
+            ➕ افزودن و ذخیره کالا
           </Button>
           <Button onClick={() => save("products", products)}>💾 ذخیره کالاها</Button>
           <Button variant="ghost" onClick={() => setProducts(DEFAULT_PRODUCTS)}>

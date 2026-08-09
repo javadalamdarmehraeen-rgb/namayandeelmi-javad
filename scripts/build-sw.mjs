@@ -69,6 +69,7 @@ const EXTRAS = [
   "/icons/icon-192.png",
   "/icons/icon-512.png",
   "/apple-touch-icon.png",
+  "/data/iran-provinces-lite.geojson",
 ];
 
 function main() {

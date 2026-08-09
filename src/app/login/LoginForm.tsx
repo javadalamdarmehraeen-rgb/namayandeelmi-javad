@@ -356,12 +356,19 @@ export default function LoginForm() {
           </div>
         ) : null}
 
-        <div className="mb-4 text-center text-white">
-          <div className="mx-auto mb-3 flex size-14 items-center justify-center rounded-2xl bg-white/15 text-2xl ring-1 ring-white/30">
-            📋
+        <div className="mb-5 text-center text-white">
+          <div className="relative mx-auto mb-3 flex size-24 items-center justify-center rounded-[2rem] bg-white shadow-2xl ring-4 ring-white/20">
+            <span className="absolute -inset-2 -z-10 rounded-[2.25rem] bg-gradient-to-br from-orange-300/50 via-rose-400/50 to-fuchsia-600/50 blur-lg" />
+            {/* لوگوی اصلی کپسول اپلیکیشن */}
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/logo.svg"
+              alt="لوگوی کپسول ثبت اطلاعات کل"
+              className="size-[4.75rem] object-contain drop-shadow-md"
+            />
           </div>
-          <h1 className="text-2xl font-black">ثبت اطلاعات کل</h1>
-          <p className="mt-1 text-xs text-teal-50/90">سامانه نمایندگان علمی — وب، ویندوز و موبایل</p>
+          <h1 className="text-2xl font-black tracking-tight drop-shadow-sm">ثبت اطلاعات کل</h1>
+          <p className="mt-1 text-xs text-teal-50/90">سامانه هوشمند نمایندگان علمی — وب، ویندوز و موبایل</p>
         </div>
 
         <form onSubmit={submit} className="space-y-3 rounded-3xl bg-white p-5 shadow-xl ring-1 ring-slate-200">

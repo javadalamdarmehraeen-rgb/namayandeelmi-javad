@@ -7,7 +7,7 @@
  *  این فایل توسط scripts/build-sw.mjs پس از هر build تولید می‌شود.
  * ============================================================ */
 
-const BUILD = "mskz2k2i-47";
+const BUILD = "msm8l0q5-47";
 const SHELL = `sek-shell-${BUILD}`;
 const DATA = `sek-data-${BUILD}`;
 
@@ -58,52 +58,52 @@ const PAGES = [
   "/admin/backup"
 ];
 const ASSETS = [
-  "/_next/static/EVYiujXEGQLJpqdJglecE/_buildManifest.js",
-  "/_next/static/EVYiujXEGQLJpqdJglecE/_clientMiddlewareManifest.js",
-  "/_next/static/EVYiujXEGQLJpqdJglecE/_ssgManifest.js",
-  "/_next/static/chunks/0.f8o6x69lldq.js",
-  "/_next/static/chunks/004tn4m3o_n3c.js",
-  "/_next/static/chunks/01ixv0-2_s9we.js",
+  "/_next/static/T2oIK48BDPzS7f2YkooCK/_buildManifest.js",
+  "/_next/static/T2oIK48BDPzS7f2YkooCK/_clientMiddlewareManifest.js",
+  "/_next/static/T2oIK48BDPzS7f2YkooCK/_ssgManifest.js",
+  "/_next/static/chunks/0-blgd7ufdph4.js",
+  "/_next/static/chunks/0-sslwsqtfajc.js",
+  "/_next/static/chunks/010qxjwvo~j~n.js",
   "/_next/static/chunks/01xlw8hd842-c.js",
-  "/_next/static/chunks/028qrniavwvco.js",
-  "/_next/static/chunks/0365ks38jrbtn.css",
+  "/_next/static/chunks/03blnpeelzzwe.js",
   "/_next/static/chunks/03h9eo09svijh.js",
-  "/_next/static/chunks/03qwy7yiygax3.js",
+  "/_next/static/chunks/03xhorrc__p~p.js",
   "/_next/static/chunks/03~yq9q893hmn.js",
-  "/_next/static/chunks/06g04.wa5p806.js",
-  "/_next/static/chunks/06i1ruokte.eg.js",
+  "/_next/static/chunks/05ydwwpel3-d1.js",
   "/_next/static/chunks/06r9_3ub2r-4z.js",
   "/_next/static/chunks/076q375zztaku.js",
   "/_next/static/chunks/07lhk_q6pmm3r.js",
   "/_next/static/chunks/07uz2g0_38qia.js",
-  "/_next/static/chunks/08b7fflrtydcm.js",
-  "/_next/static/chunks/08g-5kea7g6.h.js",
+  "/_next/static/chunks/081sh1b8c4d9r.js",
+  "/_next/static/chunks/09dzv~emb88~s.js",
+  "/_next/static/chunks/0_hxj2ax9leum.js",
+  "/_next/static/chunks/0_tvra5sq9eqr.js",
+  "/_next/static/chunks/0aqoa4~cbcf2u.js",
   "/_next/static/chunks/0asdo24lqpub6.js",
-  "/_next/static/chunks/0biqo1w3zaht_.js",
-  "/_next/static/chunks/0bnkjjhebv1ka.js",
+  "/_next/static/chunks/0a~i~7ew0jl6..js",
   "/_next/static/chunks/0d3shmwh5_nmn.js",
+  "/_next/static/chunks/0d_p8.2yqyqn6.js",
+  "/_next/static/chunks/0e0a08djjp.l7.js",
+  "/_next/static/chunks/0f3l4r88gty7a.js",
+  "/_next/static/chunks/0g.fw589axj7f.css",
+  "/_next/static/chunks/0gtx.vvs8o8.g.js",
   "/_next/static/chunks/0h7njwe2.s3ht.js",
-  "/_next/static/chunks/0i_udcalhtyt-.js",
-  "/_next/static/chunks/0kds3l_b0fetp.js",
-  "/_next/static/chunks/0n.0ufr5-u.u3.js",
+  "/_next/static/chunks/0j~3j8nzm_ojm.js",
   "/_next/static/chunks/0n1bpogj.il~n.js",
-  "/_next/static/chunks/0ock63bjlp-jx.js",
-  "/_next/static/chunks/0p6_0pg7xd6km.js",
+  "/_next/static/chunks/0n6z52s9kwo.m.js",
+  "/_next/static/chunks/0newzr7g.qk5c.js",
+  "/_next/static/chunks/0o_0002n6.sxy.js",
+  "/_next/static/chunks/0o~b5c~ru.4b2.js",
   "/_next/static/chunks/0rz3o0743-gv3.js",
+  "/_next/static/chunks/0se-zsy~5txaw.js",
+  "/_next/static/chunks/0sj_is6kxhu1c.js",
   "/_next/static/chunks/0t48hzs_6fshe.css",
-  "/_next/static/chunks/0uau8j83k.~d~.js",
-  "/_next/static/chunks/0uh4e2v8-yv0m.js",
-  "/_next/static/chunks/0uwo4ig.ttwoi.js",
+  "/_next/static/chunks/0tiyyx3xriv--.js",
   "/_next/static/chunks/0wxhwo2i~7vvo.js",
-  "/_next/static/chunks/0x7wvfe2a651h.js",
-  "/_next/static/chunks/0xsq1kypcelih.js",
-  "/_next/static/chunks/0xx92gqc8vd0_.js",
+  "/_next/static/chunks/0wz~vz-f~nhfk.js",
   "/_next/static/chunks/0ze4gu236oq96.js",
-  "/_next/static/chunks/104v4p6z4b.f3.js",
-  "/_next/static/chunks/10l1in0aeztjv.js",
-  "/_next/static/chunks/176ztuhghbfr1.js",
-  "/_next/static/chunks/17rem3ul2c_y5.js",
-  "/_next/static/chunks/187jy39kz4ak6.js",
+  "/_next/static/chunks/1731-a1ihv3m..js",
+  "/_next/static/chunks/17tgfz2.xc192.js",
   "/_next/static/chunks/turbopack-0ngnbt.drh_yz.js"
 ];
 const EXTRAS = [
@@ -111,7 +111,8 @@ const EXTRAS = [
   "/logo.svg",
   "/icons/icon-192.png",
   "/icons/icon-512.png",
-  "/apple-touch-icon.png"
+  "/apple-touch-icon.png",
+  "/data/iran-provinces-lite.geojson"
 ];
 const RSC_PAGES = [
   "/?_rsc=offline",

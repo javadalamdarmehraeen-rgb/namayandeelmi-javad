@@ -6,9 +6,10 @@ import { Alert, Badge, Button, Card, Field, Input, SectionTitle } from "@/compon
 import Combobox from "@/components/Combobox";
 import NavButton from "@/components/NavButton";
 import { fetchRows } from "@/lib/useLive";
-import { IRAN_CENTER, PROVINCE_GEO, TEHRAN_REGIONS, resolveArea } from "@/lib/geo";
+import { IRAN_CENTER, PROVINCE_GEO, resolveArea } from "@/lib/geo";
+import { IRAN, REGIONS } from "@/lib/iran";
 import { toPersianDigits } from "@/lib/jalali";
-import type { MapArea, MapPoint } from "@/components/MapBox";
+import type { MapArea, MapPoint, ProvinceCollection } from "@/components/MapBox";
 
 const MapBox = nextDynamic(() => import("@/components/MapBox"), {
   ssr: false,
@@ -46,6 +47,7 @@ const KIND_META: Record<Place["kind"], { label: string; icon: string; color: str
  */
 export default function MapExplorer({ isAdmin = false }: { isAdmin?: boolean }) {
   const [places, setPlaces] = useState<Place[]>([]);
+  const [provinceShapes, setProvinceShapes] = useState<ProvinceCollection | null>(null);
   const [loading, setLoading] = useState(true);
 
   const [kinds, setKinds] = useState<Record<Place["kind"], boolean>>({
@@ -100,24 +102,32 @@ export default function MapExplorer({ isAdmin = false }: { isAdmin?: boolean }) 
 
   useEffect(() => {
     load();
+    // مرز واقعی ۳۱ استان؛ فایل محلی و قابل استفاده در حالت آفلاین است
+    fetch("/data/iran-provinces-lite.geojson", { cache: "force-cache" })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => {
+        if (d?.type === "FeatureCollection" && Array.isArray(d.features)) {
+          setProvinceShapes(d as ProvinceCollection);
+        }
+      })
+      .catch(() => setProvinceShapes(null));
   }, [load]);
 
   /* ---------------- فهرست فیلترها ---------------- */
   const provinces = useMemo(
-    () => [...new Set([...Object.keys(PROVINCE_GEO), ...places.map((p) => p.province)])].filter(Boolean).sort(),
+    () => [...new Set([...Object.keys(IRAN), ...Object.keys(PROVINCE_GEO), ...places.map((p) => p.province)])].filter(Boolean).sort(),
     [places],
   );
-  const cities = useMemo(
-    () =>
-      [...new Set(places.filter((p) => !province || p.province === province).map((p) => p.city))]
-        .filter(Boolean)
-        .sort(),
-    [places, province],
-  );
+  // شهرها از فهرست کامل همان استان می‌آیند، حتی اگر هنوز رکوردی در آن شهر ثبت نشده باشد
+  const cities = useMemo(() => {
+    const complete = province ? IRAN[province] ?? [] : [];
+    const fromData = places.filter((p) => !province || p.province === province).map((p) => p.city);
+    return [...new Set([...complete, ...fromData])].filter(Boolean).sort();
+  }, [places, province]);
+  // مناطق به شهر انتخاب‌شده متصل‌اند
   const regions = useMemo(() => {
-    const fromData = places.filter((p) => (!city || p.city === city)).map((p) => p.region);
-    const base = city === "تهران" ? Object.values(TEHRAN_REGIONS).map((r) => r.name) : [];
-    return [...new Set([...base, ...fromData])].filter(Boolean).sort();
+    const fromData = places.filter((p) => !city || p.city === city).map((p) => p.region);
+    return [...new Set([...(REGIONS[city] ?? []), ...fromData])].filter(Boolean).sort();
   }, [places, city]);
   const reps = useMemo(() => [...new Set(places.map((p) => p.repName))].filter(Boolean).sort(), [places]);
 
@@ -281,7 +291,39 @@ export default function MapExplorer({ isAdmin = false }: { isAdmin?: boolean }) 
 
       <div className="grid grid-cols-1 gap-3 lg:grid-cols-3">
         <Card className="lg:col-span-2">
-          <MapBox height={520} points={mapPoints} area={area} follow={!!selected} />
+          <div className="mb-2 flex flex-wrap items-center gap-2 rounded-xl bg-teal-50 px-3 py-2 text-[11px] text-teal-800 ring-1 ring-teal-200">
+            <span className="font-black">نقشه استانی ایران</span>
+            <span>مرز ۳۱ استان به‌هم‌پیوسته است؛ برای انتخاب و بزرگ‌نمایی روی هر استان لمس کنید.</span>
+            {province ? (
+              <button
+                type="button"
+                onClick={() => {
+                  setProvince("");
+                  setCity("");
+                  setRegion("");
+                  setSelected(null);
+                }}
+                className="mr-auto rounded-lg bg-white px-2 py-1 font-bold text-teal-700 ring-1 ring-teal-300"
+              >
+                نمایش کل ایران
+              </button>
+            ) : null}
+          </div>
+          <MapBox
+            height={520}
+            points={mapPoints}
+            area={area}
+            follow={!!selected}
+            provinces={provinceShapes}
+            selectedProvince={province}
+            onProvinceClick={(name) => {
+              setProvince(name);
+              setCity("");
+              setRegion("");
+              setSelected(null);
+            }}
+            showProvinceLabels
+          />
           {selected ? (
             <div className="mt-3 rounded-xl bg-slate-50 p-3 ring-1 ring-slate-200">
               <div className="flex flex-wrap items-center gap-2">
