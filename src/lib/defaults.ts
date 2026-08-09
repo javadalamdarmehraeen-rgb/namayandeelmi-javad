@@ -1,13 +1,38 @@
 import { PRODUCTS } from "./constants";
 
-export type ProductConfig = { key: string; label: string; bonusLabel: string; enabled: boolean };
-export type ColumnConfig = { key: string; label: string; visible: boolean };
+export type ProductConfig = {
+  key: string;
+  label: string;
+  bonusLabel: string;
+  enabled: boolean;
+  /** قیمت‌های مرجع برنامه (ریال) — در تارگت استفاده می‌شوند */
+  priceDistributor: number;
+  pricePharmacy: number;
+};
+
+export type FieldScope = "form" | "list" | "both";
+export type FieldType = "text" | "number" | "textarea" | "select" | "phone";
+
+export type ColumnConfig = {
+  key: string;
+  label: string;
+  visible: boolean;
+  /** محل نمایش: فرم ثبت، لیست، یا هر دو */
+  scope?: FieldScope;
+  /** برای فیلدهای سفارشی */
+  fieldType?: FieldType;
+  custom?: boolean;
+  required?: boolean;
+  optionCategory?: string;
+};
 
 export const DEFAULT_PRODUCTS: ProductConfig[] = PRODUCTS.map((p) => ({
   key: p.key,
   label: p.label,
   bonusLabel: p.bonusLabel,
   enabled: true,
+  priceDistributor: 0,
+  pricePharmacy: 0,
 }));
 
 /** کلید فیلد جایزه هر کالا */
@@ -69,6 +94,25 @@ export const DEFAULT_COLUMNS: Record<string, ColumnConfig[]> = {
     { key: "actions", label: "عملیات", visible: true },
   ],
 };
+
+
+/** ستون‌های سیستمی که فقط در لیست معنا دارند */
+const LIST_ONLY_KEYS = new Set(["row", "repName", "products", "totalUnits", "totalBonus", "location", "nav", "files", "sent", "sendStatus", "createdAt", "actions"]);
+
+/** محدوده نمایش پیش‌فرض — سازگار با تنظیمات قدیمی دیتابیس */
+export function scopeOf(c: ColumnConfig): FieldScope {
+  return c.scope ?? (LIST_ONLY_KEYS.has(c.key) ? "list" : "both");
+}
+
+export function inForm(c: ColumnConfig) {
+  const s = scopeOf(c);
+  return (s === "form" || s === "both") && c.visible !== false;
+}
+
+export function inList(c: ColumnConfig) {
+  const s = scopeOf(c);
+  return (s === "list" || s === "both") && c.visible !== false;
+}
 
 export const PERMISSION_GROUPS: {
   key: string;
@@ -150,6 +194,9 @@ export const PERMISSION_GROUPS: {
       { key: "trip.start", label: "شروع/پایان ویزیت" },
       { key: "trip.pause", label: "ثبت وقفه در مسیر" },
       { key: "monitor", label: "رصد تردد نمایندگان" },
+      { key: "live", label: "مشاهده موقعیت زنده نمایندگان" },
+      { key: "map", label: "مشاهده نقشه جامع" },
+      { key: "map.viewAll", label: "مشاهده نقاط همه نمایندگان روی نقشه" },
       { key: "home", label: "ثبت لوکیشن منزل" },
       { key: "home.viewAll", label: "مشاهده منزل همه نمایندگان" },
     ],
@@ -173,6 +220,8 @@ export const PERMISSION_GROUPS: {
       { key: "reports", label: "مشاهده گزارش ماهانه" },
       { key: "reports.allReps", label: "گزارش همه نمایندگان" },
       { key: "reports.products", label: "گزارش فروش هر قلم" },
+      { key: "targets", label: "مشاهده پیشرفت تارگت" },
+      { key: "targets.manage", label: "تعریف تارگت و قیمت‌ها" },
       { key: "export", label: "دریافت خروجی اکسل" },
     ],
   },
@@ -184,11 +233,16 @@ export const PERMISSION_GROUPS: {
       { key: "options", label: "افزودن مقادیر کشویی" },
       { key: "optionsDelete", label: "حذف مقادیر کشویی" },
       { key: "columns", label: "مدیریت ستون‌ها و کالاها" },
+      { key: "columns.fields", label: "ساخت فیلد سفارشی فرم و لیست" },
+      { key: "products.prices", label: "تغییر قیمت پخش و داروخانه کالاها" },
       { key: "users", label: "مدیریت کاربران" },
       { key: "users.password", label: "مشاهده رمز عبور کاربران" },
       { key: "users.permissions", label: "تغییر سطح دسترسی" },
       { key: "messengers", label: "تنظیم پیام‌رسان‌ها" },
       { key: "notifications.send", label: "ارسال اعلان به نمایندگان" },
+      { key: "sync", label: "همگام‌سازی دو سرور" },
+      { key: "backup", label: "پشتیبان‌گیری" },
+      { key: "source.download", label: "دانلود سورس برنامه" },
     ],
   },
 ];
@@ -222,6 +276,8 @@ export const REP_DEFAULT_PERMISSIONS = [
   "trip",
   "trip.start",
   "trip.pause",
+  "map",
+  "targets",
   "home",
   "leave",
   "reports",
@@ -247,6 +303,9 @@ export const SUPERVISOR_DEFAULT_PERMISSIONS = [
   "leave.export",
   "home.viewAll",
   "monitor",
+  "live",
+  "map.viewAll",
+  "targets.manage",
   "reports.allReps",
   "export",
 ];

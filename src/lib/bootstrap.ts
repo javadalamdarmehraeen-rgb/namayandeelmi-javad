@@ -369,6 +369,9 @@ async function migrate() {
     `ALTER TABLE pharmacies ALTER COLUMN location_label TYPE text`,
     `ALTER TABLE doctors ALTER COLUMN location_label TYPE text`,
     `ALTER TABLE orders ALTER COLUMN location_label TYPE text`,
+    `ALTER TABLE pharmacies ADD COLUMN IF NOT EXISTS custom_data jsonb NOT NULL DEFAULT '{}'::jsonb`,
+    `ALTER TABLE doctors ADD COLUMN IF NOT EXISTS custom_data jsonb NOT NULL DEFAULT '{}'::jsonb`,
+    `ALTER TABLE orders ADD COLUMN IF NOT EXISTS custom_data jsonb NOT NULL DEFAULT '{}'::jsonb`,
     `ALTER TABLE pharmacies ALTER COLUMN name TYPE text`,
     `ALTER TABLE doctors ALTER COLUMN name TYPE text`,
     `ALTER TABLE orders ALTER COLUMN pharmacy_name TYPE text`,
@@ -554,29 +557,16 @@ async function seed() {
       { key: "columns.orders", value: DEFAULT_COLUMNS.orders },
     ]);
   }
-
-  // ترمیم دیتابیس‌های قدیمی: ستون اجباری عملیات (ویرایش/حذف) باید همیشه موجود باشد
-  for (const table of ["pharmacies", "doctors", "orders"] as const) {
-    const key = `columns.${table}`;
-    const row = (await db.select().from(settings).where(eq(settings.key, key)).limit(1))[0];
-    if (!row) continue;
-    const list = Array.isArray(row.value) ? (row.value as { key: string; label: string; visible: boolean }[]) : [];
-    const action = list.find((c) => c.key === "actions");
-    if (!action || !action.visible) {
-      const fixed = action
-        ? list.map((c) => (c.key === "actions" ? { ...c, label: "عملیات", visible: true } : c))
-        : [...list, { key: "actions", label: "عملیات", visible: true }];
-      await db
-        .update(settings)
-        .set({ value: fixed, updatedAt: new Date() })
-        .where(eq(settings.key, key));
-    }
-  }
   // مدیر همیشه دسترسی کامل داشته باشد (ترمیم دیتابیس‌های قدیمی)
   try {
     await db.execute(sql`
-      UPDATE users SET permissions = ${JSON.stringify(ALL_PERMISSION_KEYS)}::jsonb
-      WHERE role = 'admin' AND (permissions IS NULL OR jsonb_array_length(permissions) < ${ALL_PERMISSION_KEYS.length})
+      UPDATE users
+      SET permissions = ${JSON.stringify(ALL_PERMISSION_KEYS)}::jsonb,
+          active = true,
+          role = CASE WHEN username = 'admin' THEN 'admin' ELSE role END,
+          require_phone = false,
+          sim_mode = 'off'
+      WHERE role = 'admin' OR username = 'admin' 
     `);
     await db.execute(sql`
       UPDATE users SET permissions = ${JSON.stringify(REP_DEFAULT_PERMISSIONS)}::jsonb

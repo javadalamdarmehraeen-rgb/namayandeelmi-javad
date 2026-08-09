@@ -83,7 +83,13 @@ export default function HomeScreen({ isAdmin = false }: { isAdmin?: boolean }) {
             </Field>
           </div>
           <div className="mt-3">
-            <LocationPicker value={loc} onChange={setLoc} label={title} suggestQuery={address || title} />
+            <LocationPicker
+              value={loc}
+              onChange={setLoc}
+              label={title}
+              suggestQuery={address || title}
+              onAddressChange={setAddress}
+            />
           </div>
           <div className="mt-3 flex justify-end">
             <Button onClick={save}>💾 ثبت لوکیشن منزل</Button>

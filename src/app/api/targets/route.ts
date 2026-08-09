@@ -74,8 +74,9 @@ export async function GET(req: Request) {
   const progress: TargetProgress[] = products.map((p) => {
     const t = forPeriod.find((x) => x.productKey === p.key);
     const quantity = t?.quantity ?? 0;
-    const pd = t?.priceDistributor ?? 0;
-    const pp = t?.pricePharmacy ?? 0;
+    // قیمت مرجع از تنظیمات کالا؛ برای داده‌های قدیمی قیمت خود تارگت پشتیبان است
+    const pd = Number(p.priceDistributor) || Number(t?.priceDistributor) || 0;
+    const pp = Number(p.pricePharmacy) || Number(t?.pricePharmacy) || 0;
     const s = sold[p.key] ?? 0;
     return {
       productKey: p.key,
@@ -157,8 +158,9 @@ export async function PUT(req: Request) {
       productKey: key,
       productLabel: p.label,
       quantity: Math.max(0, Number(it.quantity) || 0),
-      priceDistributor: Math.max(0, Number(it.priceDistributor) || 0),
-      pricePharmacy: Math.max(0, Number(it.pricePharmacy) || 0),
+      // قیمت همیشه از تنظیمات مرکزی کالا خوانده می‌شود
+      priceDistributor: Math.max(0, Number(p.priceDistributor) || Number(it.priceDistributor) || 0),
+      pricePharmacy: Math.max(0, Number(p.pricePharmacy) || Number(it.pricePharmacy) || 0),
       updatedAt: new Date(),
     };
     const existing = await dbRetrySafe(

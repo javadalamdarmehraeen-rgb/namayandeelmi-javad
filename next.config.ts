@@ -77,13 +77,6 @@ const nextConfig: NextConfig = {
         ],
       },
       {
-        source: "/data/:path*",
-        headers: [
-          { key: "Cache-Control", value: "public, max-age=31536000, immutable" },
-          { key: "Access-Control-Allow-Origin", value: "*" },
-        ],
-      },
-      {
         // API ها هرگز کش نشوند
         source: "/api/:path*",
         headers: [{ key: "Cache-Control", value: NO_STORE }],

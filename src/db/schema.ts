@@ -59,6 +59,8 @@ export const pharmacies = pgTable(
     lng: doublePrecision("lng"),
     accuracy: doublePrecision("accuracy"),
     locationLabel: text("location_label").notNull().default(""),
+    /** فیلدهای سفارشی تعریف‌شده توسط مدیر */
+    customData: jsonb("custom_data").$type<Record<string, string | number | boolean>>().notNull().default({}),
     sent: boolean("sent").notNull().default(false),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   },
@@ -88,6 +90,8 @@ export const doctors = pgTable(
     lng: doublePrecision("lng"),
     accuracy: doublePrecision("accuracy"),
     locationLabel: text("location_label").notNull().default(""),
+    /** فیلدهای سفارشی تعریف‌شده توسط مدیر */
+    customData: jsonb("custom_data").$type<Record<string, string | number | boolean>>().notNull().default({}),
     sent: boolean("sent").notNull().default(false),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   },
@@ -109,6 +113,8 @@ export const orders = pgTable(
     lng: doublePrecision("lng"),
     accuracy: doublePrecision("accuracy"),
     locationLabel: text("location_label").notNull().default(""),
+    /** فیلدهای سفارشی تعریف‌شده توسط مدیر */
+    customData: jsonb("custom_data").$type<Record<string, string | number | boolean>>().notNull().default({}),
     items: jsonb("items").$type<Record<string, number>>().notNull().default({}),
     distributor: varchar("distributor", { length: 160 }).notNull().default(""),
     visitor: varchar("visitor", { length: 160 }).notNull().default(""),

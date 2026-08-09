@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import dynamicImport from "next/dynamic";
 import JalaliDateInput from "./JalaliDateInput";
 import Combobox from "./Combobox";
@@ -13,6 +13,9 @@ import {
   DEFAULT_PRODUCTS,
   DEFAULT_COLUMNS,
   bonusKeyOf,
+  inForm,
+  inList,
+  scopeOf,
   type ProductConfig,
   type ColumnConfig,
 } from "@/lib/defaults";
@@ -20,6 +23,7 @@ import { isValidJalali, tehranDateTime, toPersianDigits, todayJalali } from "@/l
 import { useConfirm } from "@/components/Confirm";
 import { useLive } from "@/lib/useLive";
 import { downloadFile } from "@/lib/download";
+import { faSort } from "@/lib/sort";
 
 const MapBox = dynamicImport(() => import("./MapBox"), { ssr: false });
 
@@ -56,6 +60,7 @@ export type Row = {
   sent?: boolean;
   sendStatus?: string;
   createdAt?: string;
+  customData?: Record<string, string | number | boolean>;
 };
 
 type Form = Record<string, string> & { items?: never };
@@ -159,7 +164,10 @@ export default function RecordScreen({ type, isAdmin = false }: { type: RecordTy
   const [editRow, setEditRow] = useState<Row | null>(null);
   const [editDraft, setEditDraft] = useState<Record<string, string>>({});
   const [editItems, setEditItems] = useState<Record<string, number>>({});
+  const [customValues, setCustomValues] = useState<Record<string, string | number | boolean>>({});
+  const [editCustom, setEditCustom] = useState<Record<string, string | number | boolean>>({});
   const [columns, setColumns] = useState<ColumnConfig[]>(DEFAULT_COLUMNS[type]);
+  const lastAutoFilledRef = useRef("");
 
   const confirm = useConfirm();
   const set = (k: string, v: string) => setForm((f) => ({ ...f, [k]: v }));
@@ -181,6 +189,10 @@ export default function RecordScreen({ type, isAdmin = false }: { type: RecordTy
       const par = o.parent ?? "";
       ((tree[o.category] ??= {})[par] ??= []).push(o.value);
     }
+    for (const k of Object.keys(grouped)) grouped[k] = faSort(grouped[k]);
+    for (const category of Object.keys(tree)) {
+      for (const parent of Object.keys(tree[category])) tree[category][parent] = faSort(tree[category][parent]);
+    }
     setOpts(grouped);
     setOptTree(tree);
   }, []);
@@ -190,7 +202,16 @@ export default function RecordScreen({ type, isAdmin = false }: { type: RecordTy
     if (!res.ok) return;
     const d = await res.json();
     const v = d.values ?? {};
-    setProducts((v.products as ProductConfig[])?.filter((p) => p.enabled) ?? DEFAULT_PRODUCTS);
+    const loadedProducts = Array.isArray(v.products) ? (v.products as ProductConfig[]) : DEFAULT_PRODUCTS;
+    setProducts(
+      loadedProducts
+        .filter((p) => p.enabled !== false)
+        .map((p) => ({
+          ...p,
+          priceDistributor: Number(p.priceDistributor) || 0,
+          pricePharmacy: Number(p.pricePharmacy) || 0,
+        })),
+    );
 
     /**
      * ادغام ستون‌های ذخیره‌شده با پیش‌فرض‌ها.
@@ -203,9 +224,9 @@ export default function RecordScreen({ type, isAdmin = false }: { type: RecordTy
     if (Array.isArray(stored) && stored.length) {
       const have = new Set(stored.map((c) => c.key));
       const missing = defaults.filter((c) => !have.has(c.key));
-      setColumns([...stored, ...missing]);
+      setColumns([...stored.map((c) => ({ ...c, scope: scopeOf(c) })), ...missing.map((c) => ({ ...c, scope: scopeOf(c) }))]);
     } else {
-      setColumns(defaults);
+      setColumns(defaults.map((c) => ({ ...c, scope: scopeOf(c) })));
     }
   }, [type]);
 
@@ -226,6 +247,13 @@ export default function RecordScreen({ type, isAdmin = false }: { type: RecordTy
     }
     if (!recordName.trim()) {
       setMsg({ kind: "error", text: `${meta.nameLabel} الزامی است` });
+      return;
+    }
+    const missingCustom = formCustomFields.find(
+      (c) => c.required && String(customValues[c.key] ?? "").trim() === "",
+    );
+    if (missingCustom) {
+      setMsg({ kind: "error", text: `فیلد «${missingCustom.label}» الزامی است` });
       return;
     }
     // هشدار تکراری بودن پیش از ثبت
@@ -260,6 +288,7 @@ export default function RecordScreen({ type, isAdmin = false }: { type: RecordTy
         isPercent,
         percentValue,
         fileIds,
+        customData: customValues,
         lat: loc.lat,
         lng: loc.lng,
         accuracy: loc.accuracy,
@@ -273,6 +302,7 @@ export default function RecordScreen({ type, isAdmin = false }: { type: RecordTy
       setIsPercent(false);
       setPercentValue("");
       setFileIds([]);
+      setCustomValues({});
       setLoc({ lat: null, lng: null, accuracy: null });
       setMsg({ kind: "success", text: "✅ ثبت شد. برای ارسال به مدیر به تب «لیست ثبت‌شده‌ها» بروید." });
       setDupes([]);
@@ -410,6 +440,32 @@ export default function RecordScreen({ type, isAdmin = false }: { type: RecordTy
     return () => clearTimeout(t);
   }, [lookupName, lookupPhone, type, tab]);
 
+  /** پرکردن کاملاً خودکار سفارش به‌محض شناسایی داروخانه */
+  useEffect(() => {
+    if (type !== "orders" || !suggestion || !lookupName.trim()) return;
+    const key = `${lookupName.trim()}|${String(suggestion.pharmacyName ?? suggestion.name ?? "")}`;
+    if (lastAutoFilledRef.current === key) return;
+    lastAutoFilledRef.current = key;
+
+    setForm((f) => ({
+      ...f,
+      pharmacyName: String(suggestion.pharmacyName ?? suggestion.name ?? f.pharmacyName),
+      managerName: String(suggestion.managerName ?? f.managerName),
+      managerPhone: String(suggestion.managerPhone ?? f.managerPhone),
+      address: String(suggestion.address ?? f.address),
+      distributor: String(suggestion.distributor ?? f.distributor),
+      visitor: String(suggestion.visitor ?? f.visitor),
+    }));
+    const la = Number(suggestion.lat);
+    const ln = Number(suggestion.lng);
+    if (Number.isFinite(la) && Number.isFinite(ln) && la && ln) {
+      setLoc({ lat: la, lng: ln, accuracy: Number(suggestion.accuracy) || null });
+    }
+    setAutofilled(true);
+    const timer = setTimeout(() => setAutofilled(false), 4500);
+    return () => clearTimeout(timer);
+  }, [suggestion, lookupName, type]);
+
   /** پرکردن خودکار فیلدها از سابقه داروخانه */
   const applySuggestion = (src?: Record<string, unknown> | DupRow) => {
     const s = (src ?? suggestion) as Record<string, unknown> | null;
@@ -462,6 +518,7 @@ export default function RecordScreen({ type, isAdmin = false }: { type: RecordTy
       percentValue: r.percentValue ?? "",
     });
     setEditItems({ ...(r.items ?? {}) });
+    setEditCustom({ ...(r.customData ?? {}) });
   };
 
   const saveEdit = async () => {
@@ -478,7 +535,12 @@ export default function RecordScreen({ type, isAdmin = false }: { type: RecordTy
     const res = await fetch(`/api/records/${type}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ id: editRow.id, ...editDraft, ...(type === "orders" ? { items: editItems } : {}) }),
+      body: JSON.stringify({
+        id: editRow.id,
+        ...editDraft,
+        customData: editCustom,
+        ...(type === "orders" ? { items: editItems } : {}),
+      }),
     });
     setBusy(false);
     const d = await res.json().catch(() => ({}));
@@ -511,7 +573,13 @@ export default function RecordScreen({ type, isAdmin = false }: { type: RecordTy
 
   const onAdded = () => loadOptions();
 
-  const visibleCols = columns.filter((c) => c.visible);
+  const visibleCols = columns.filter(inList);
+  const formCustomFields = columns.filter((c) => c.custom && inForm(c));
+  /** فیلدهای سیستمی قدیمی اگر در تنظیمات نبودند، برای سازگاری نمایش داده می‌شوند */
+  const formOn = (key: string) => {
+    const c = columns.find((x) => x.key === key);
+    return !c || inForm(c);
+  };
 
   const nameOf = (r: Row) => (type === "orders" ? r.pharmacyName : r.name) ?? "";
 
@@ -612,6 +680,10 @@ export default function RecordScreen({ type, isAdmin = false }: { type: RecordTy
       case "landline":
         return toPersianDigits((r as unknown as Record<string, string>)[key] ?? "") || "—";
       default: {
+        if (key.startsWith("custom_")) {
+          const v = r.customData?.[key];
+          return v === undefined || v === "" ? "—" : String(v);
+        }
         const v = (r as unknown as Record<string, unknown>)[key];
         return v ? String(v) : "—";
       }
@@ -644,9 +716,11 @@ export default function RecordScreen({ type, isAdmin = false }: { type: RecordTy
       {tab === "form" ? (
         <Card>
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            <Field label={type === "orders" ? "تاریخ سفارش" : "تاریخ ثبت"} required hint="تایپ با درج خودکار اسلش یا انتخاب از تقویم">
-              <JalaliDateInput value={form.dateShamsi} onChange={(v) => set("dateShamsi", v)} />
-            </Field>
+            {formOn("dateShamsi") ? (
+              <Field label={type === "orders" ? "تاریخ سفارش" : "تاریخ ثبت"} required hint="تایپ با درج خودکار اسلش یا انتخاب از تقویم">
+                <JalaliDateInput value={form.dateShamsi} onChange={(v) => set("dateShamsi", v)} />
+              </Field>
+            ) : null}
 
             {type !== "orders" ? (
               <>
@@ -716,9 +790,11 @@ export default function RecordScreen({ type, isAdmin = false }: { type: RecordTy
                     onAdded={onAdded}
                   />
                 </Field>
-                <Field label="شماره همراه پزشک">
-                  <Input inputMode="numeric" value={form.phone} onChange={(e) => set("phone", e.target.value)} />
-                </Field>
+                {formOn("phone") ? (
+                  <Field label="شماره همراه پزشک">
+                    <Input inputMode="numeric" value={form.phone} onChange={(e) => set("phone", e.target.value)} />
+                  </Field>
+                ) : null}
                 <Field label="نام منشی">
                   <Combobox
                     value={form.secretaryName}
@@ -728,27 +804,29 @@ export default function RecordScreen({ type, isAdmin = false }: { type: RecordTy
                     onAdded={onAdded}
                   />
                 </Field>
-                <Field label="شماره همراه منشی">
-                  <Input
-                    inputMode="numeric"
-                    value={form.secretaryPhone}
-                    onChange={(e) => set("secretaryPhone", e.target.value)}
-                  />
-                </Field>
-                <div className="sm:col-span-2 lg:col-span-3">
-                  <Field label="آدرس مطب">
-                    <TextArea value={form.address} onChange={(e) => set("address", e.target.value)} />
+                {formOn("secretaryPhone") ? (
+                  <Field label="شماره همراه منشی">
+                    <Input inputMode="numeric" value={form.secretaryPhone} onChange={(e) => set("secretaryPhone", e.target.value)} />
                   </Field>
-                </div>
-                <div className="sm:col-span-2 lg:col-span-3">
-                  <Field label="آدرس مطب‌های دیگر">
+                ) : null}
+                {formOn("address") ? (
+                  <div className="sm:col-span-2 lg:col-span-3">
+                    <Field label="آدرس مطب">
+                      <TextArea value={form.address} onChange={(e) => set("address", e.target.value)} />
+                    </Field>
+                  </div>
+                ) : null}
+                {formOn("otherAddresses") ? (
+                  <div className="sm:col-span-2 lg:col-span-3">
+                    <Field label="آدرس مطب‌های دیگر">
                     <TextArea
                       value={form.otherAddresses}
                       onChange={(e) => set("otherAddresses", e.target.value)}
                       placeholder="هر آدرس در یک خط"
                     />
-                  </Field>
-                </div>
+                    </Field>
+                  </div>
+                ) : null}
               </>
             ) : (
               <>
@@ -761,7 +839,7 @@ export default function RecordScreen({ type, isAdmin = false }: { type: RecordTy
                     onAdded={onAdded}
                   />
                 </Field>
-                {type === "pharmacies" ? (
+                {type === "pharmacies" && formOn("landline") ? (
                   <Field label="شماره ثابت داروخانه">
                     <Input inputMode="numeric" value={form.landline} onChange={(e) => set("landline", e.target.value)} placeholder="۰۲۱..." />
                   </Field>
@@ -775,21 +853,61 @@ export default function RecordScreen({ type, isAdmin = false }: { type: RecordTy
                     onAdded={onAdded}
                   />
                 </Field>
-                <Field label="شماره همراه مسئول سفارش">
-                  <Input
-                    inputMode="numeric"
-                    value={form.managerPhone}
-                    onChange={(e) => set("managerPhone", e.target.value)}
-                  />
-                </Field>
-                <div className="sm:col-span-2 lg:col-span-3">
-                  <Field label="آدرس داروخانه">
-                    <TextArea value={form.address} onChange={(e) => set("address", e.target.value)} />
+                {formOn("managerPhone") ? (
+                  <Field label="شماره همراه مسئول سفارش">
+                    <Input inputMode="numeric" value={form.managerPhone} onChange={(e) => set("managerPhone", e.target.value)} />
                   </Field>
-                </div>
+                ) : null}
+                {formOn("address") ? (
+                  <div className="sm:col-span-2 lg:col-span-3">
+                    <Field label="آدرس داروخانه">
+                      <TextArea value={form.address} onChange={(e) => set("address", e.target.value)} />
+                    </Field>
+                  </div>
+                ) : null}
               </>
             )}
           </div>
+
+          {formCustomFields.length > 0 ? (
+            <div className="mt-4 rounded-2xl bg-violet-50 p-3 ring-1 ring-violet-200">
+              <h3 className="mb-2 text-sm font-black text-violet-900">✨ فیلدهای سفارشی</h3>
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                {formCustomFields.map((c) => (
+                  <div key={c.key} className={c.fieldType === "textarea" ? "sm:col-span-2 lg:col-span-3" : ""}>
+                    <Field label={c.label} required={c.required}>
+                      {c.fieldType === "textarea" ? (
+                        <TextArea
+                          value={String(customValues[c.key] ?? "")}
+                          onChange={(e) => setCustomValues({ ...customValues, [c.key]: e.target.value })}
+                        />
+                      ) : c.fieldType === "select" ? (
+                        <Combobox
+                          value={String(customValues[c.key] ?? "")}
+                          onChange={(v) => setCustomValues({ ...customValues, [c.key]: v })}
+                          options={opts[c.optionCategory ?? ""] ?? []}
+                          canAdd={false}
+                          placeholder="انتخاب کنید..."
+                        />
+                      ) : (
+                        <Input
+                          type={c.fieldType === "number" ? "number" : "text"}
+                          inputMode={c.fieldType === "number" || c.fieldType === "phone" ? "numeric" : undefined}
+                          value={String(customValues[c.key] ?? "")}
+                          onChange={(e) =>
+                            setCustomValues({
+                              ...customValues,
+                              [c.key]: c.fieldType === "number" ? Number(e.target.value) : e.target.value,
+                            })
+                          }
+                        />
+                      )}
+                    </Field>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ) : null}
 
           {/* ---------- هشدار تکراری بودن ---------- */}
           {dupes.length > 0 ? (
@@ -895,7 +1013,7 @@ export default function RecordScreen({ type, isAdmin = false }: { type: RecordTy
             </div>
           ) : null}
 
-          {type === "orders" ? (
+          {type === "orders" && formOn("products") ? (
             <div className="mt-4">
               <SectionTitle icon="💊">اقلام سفارش</SectionTitle>
               <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4">
@@ -999,7 +1117,7 @@ export default function RecordScreen({ type, isAdmin = false }: { type: RecordTy
             </div>
           ) : null}
 
-          {type !== "orders" ? (
+          {type !== "orders" && formOn("isPercent") ? (
             <div className="mt-4 rounded-2xl bg-amber-50 p-3 ring-1 ring-amber-200">
               <div className="flex flex-wrap items-center gap-3">
                 <span className="text-sm font-bold text-amber-900">
@@ -1039,7 +1157,7 @@ export default function RecordScreen({ type, isAdmin = false }: { type: RecordTy
             </div>
           ) : null}
 
-          {type !== "orders" ? (
+          {type !== "orders" && formOn("files") ? (
             <div className="mt-4">
               <SectionTitle icon="📎">
                 بارگذاری عکس یا فایل {type === "doctors" ? "پزشک" : "داروخانه"}
@@ -1048,6 +1166,7 @@ export default function RecordScreen({ type, isAdmin = false }: { type: RecordTy
             </div>
           ) : null}
 
+          {formOn("location") ? (
           <div className="mt-4">
             <SectionTitle icon="📍">
               {type === "doctors" ? "لوکیشن مطب" : "لوکیشن داروخانه"}
@@ -1058,8 +1177,11 @@ export default function RecordScreen({ type, isAdmin = false }: { type: RecordTy
               onChange={setLoc}
               label={recordName || "لوکیشن"}
               suggestQuery={[recordName, form.city, form.province].filter(Boolean).join(" ")}
+              province={form.province}
+              onAddressChange={(address) => set("address", address)}
             />
           </div>
+          ) : null}
 
           <div className="mt-4 flex justify-end">
             <Button onClick={submit} disabled={busy} className="w-full sm:w-auto">
@@ -1240,6 +1362,36 @@ export default function RecordScreen({ type, isAdmin = false }: { type: RecordTy
                 </div>
               ) : null}
             </div>
+
+            {formCustomFields.length > 0 ? (
+              <div className="mt-3 rounded-2xl bg-violet-50 p-3 ring-1 ring-violet-200">
+                <h4 className="mb-2 text-sm font-bold text-violet-900">فیلدهای سفارشی</h4>
+                <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                  {formCustomFields.map((c) => (
+                    <Field key={c.key} label={c.label} required={c.required}>
+                      {c.fieldType === "textarea" ? (
+                        <TextArea
+                          value={String(editCustom[c.key] ?? "")}
+                          onChange={(e) => setEditCustom({ ...editCustom, [c.key]: e.target.value })}
+                        />
+                      ) : (
+                        <Input
+                          type={c.fieldType === "number" ? "number" : "text"}
+                          inputMode={c.fieldType === "number" || c.fieldType === "phone" ? "numeric" : undefined}
+                          value={String(editCustom[c.key] ?? "")}
+                          onChange={(e) =>
+                            setEditCustom({
+                              ...editCustom,
+                              [c.key]: c.fieldType === "number" ? Number(e.target.value) : e.target.value,
+                            })
+                          }
+                        />
+                      )}
+                    </Field>
+                  ))}
+                </div>
+              </div>
+            ) : null}
 
             {type === "orders" ? (
               <div className="mt-3">

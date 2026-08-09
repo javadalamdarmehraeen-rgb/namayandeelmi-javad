@@ -16,6 +16,19 @@ const str = (v: unknown, max = 0) => {
   return max > 0 ? t.slice(0, max) : t; // max=0 یعنی بدون محدودیت کاراکتر
 };
 
+/** فیلدهای سفارشی مدیر — فقط مقادیر ساده و کلیدهای custom_* */
+function customData(v: unknown): Record<string, string | number | boolean> {
+  if (!v || typeof v !== "object" || Array.isArray(v)) return {};
+  const out: Record<string, string | number | boolean> = {};
+  for (const [k, val] of Object.entries(v as Record<string, unknown>)) {
+    if (!/^custom_[a-z0-9_]+$/i.test(k)) continue;
+    if (typeof val === "number" && Number.isFinite(val)) out[k] = val;
+    else if (typeof val === "boolean") out[k] = val;
+    else if (typeof val === "string") out[k] = val; // بدون محدودیت متن
+  }
+  return out;
+}
+
 export async function GET(req: Request, ctx: Ctx) {
   const user = await getSessionUser();
   if (!user) return Response.json({ error: "دسترسی غیرمجاز" }, { status: 401 });
@@ -101,6 +114,7 @@ export async function POST(req: Request, ctx: Ctx) {
           managerName: str(body.managerName, 160),
           managerPhone: str(body.managerPhone, 20),
           address: str(body.address),
+          customData: customData(body.customData),
           isPercent: body.isPercent === true,
           percentValue: str(body.percentValue),
           locationLabel: base.locationLabel || str(body.name),
@@ -138,6 +152,7 @@ export async function POST(req: Request, ctx: Ctx) {
           secretaryPhone: str(body.secretaryPhone, 20),
           address: str(body.address),
           otherAddresses: str(body.otherAddresses),
+          customData: customData(body.customData),
           isPercent: body.isPercent === true,
           percentValue: str(body.percentValue),
           locationLabel: base.locationLabel || str(body.name),
@@ -177,6 +192,7 @@ export async function POST(req: Request, ctx: Ctx) {
           distributor: str(body.distributor, 160),
           visitor: str(body.visitor, 160),
           notes: str(body.notes),
+          customData: customData(body.customData),
         })
         .returning();
       await log(user.id, user.fullName, "ثبت سفارش", str(body.pharmacyName));
@@ -278,6 +294,7 @@ export async function PATCH(req: Request, ctx: Ctx) {
       setIf("percentValue", body.percentValue !== undefined ? str(body.percentValue) : undefined);
       setIf("lat", body.lat !== undefined ? num(body.lat) : undefined);
       setIf("lng", body.lng !== undefined ? num(body.lng) : undefined);
+      if (body.customData !== undefined) patch.customData = customData(body.customData);
       if (Object.keys(patch).length === 0) return Response.json({ error: "تغییری ارسال نشد" }, { status: 400 });
       const w = isAdmin ? eq(pharmacies.id, id) : and(eq(pharmacies.id, id), eq(pharmacies.userId, user.id));
       await dbRetry(() => db.update(pharmacies).set(patch).where(w), "pharmacies:update");
@@ -297,6 +314,7 @@ export async function PATCH(req: Request, ctx: Ctx) {
       setIf("percentValue", body.percentValue !== undefined ? str(body.percentValue) : undefined);
       setIf("lat", body.lat !== undefined ? num(body.lat) : undefined);
       setIf("lng", body.lng !== undefined ? num(body.lng) : undefined);
+      if (body.customData !== undefined) patch.customData = customData(body.customData);
       if (Object.keys(patch).length === 0) return Response.json({ error: "تغییری ارسال نشد" }, { status: 400 });
       const w = isAdmin ? eq(doctors.id, id) : and(eq(doctors.id, id), eq(doctors.userId, user.id));
       await dbRetry(() => db.update(doctors).set(patch).where(w), "doctors:update");
@@ -311,6 +329,7 @@ export async function PATCH(req: Request, ctx: Ctx) {
       setIf("notes", body.notes !== undefined ? str(body.notes) : undefined);
       setIf("lat", body.lat !== undefined ? num(body.lat) : undefined);
       setIf("lng", body.lng !== undefined ? num(body.lng) : undefined);
+      if (body.customData !== undefined) patch.customData = customData(body.customData);
       if (body.items && typeof body.items === "object") {
         const items: Record<string, number> = {};
         for (const [k, v] of Object.entries(body.items as Record<string, unknown>)) {

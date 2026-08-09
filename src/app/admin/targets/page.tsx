@@ -274,8 +274,15 @@ export default function TargetsPage() {
 
       <Card>
         <h3 className="mb-2 text-sm font-bold text-slate-700">
-          تارگت و قیمت هر کالا — ارزش ریالی به‌صورت لحظه‌ای محاسبه می‌شود
+          تارگت هر کالا — قیمت‌ها از «ستون‌ها و کالاها» خوانده می‌شوند و ارزش لحظه‌ای محاسبه می‌شود
         </h3>
+        {rows.some((r) => !r.priceDistributor || !r.pricePharmacy) ? (
+          <div className="mb-3">
+            <Alert kind="error">
+              قیمت بعضی کالاها تعریف نشده است. ابتدا در «ستون‌ها و کالاها ← کالاها و قیمت‌ها» قیمت پخش و داروخانه را ذخیره کنید.
+            </Alert>
+          </div>
+        ) : null}
         <div className="scroll-x">
           <table className="w-full min-w-[980px] text-right text-xs">
             <thead>
@@ -309,27 +316,15 @@ export default function TargetsPage() {
                         placeholder="0"
                       />
                     </td>
-                    <td className="px-2 py-2">
-                      <Input
-                        inputMode="numeric"
-                        value={r.priceDistributor || ""}
-                        onChange={(e) =>
-                          setField(r.productKey, "priceDistributor", Number(e.target.value.replace(/\D/g, "")) || 0)
-                        }
-                        className="w-32 px-2 py-1 text-center text-xs"
-                        placeholder="0"
-                      />
+                    <td className="px-2 py-2 text-center">
+                      <div className={`rounded-lg px-2 py-1.5 font-bold ${r.priceDistributor ? "bg-sky-50 text-sky-700" : "bg-rose-50 text-rose-600"}`}>
+                        {r.priceDistributor ? money(r.priceDistributor) : "تعریف نشده"}
+                      </div>
                     </td>
-                    <td className="px-2 py-2">
-                      <Input
-                        inputMode="numeric"
-                        value={r.pricePharmacy || ""}
-                        onChange={(e) =>
-                          setField(r.productKey, "pricePharmacy", Number(e.target.value.replace(/\D/g, "")) || 0)
-                        }
-                        className="w-32 px-2 py-1 text-center text-xs"
-                        placeholder="0"
-                      />
+                    <td className="px-2 py-2 text-center">
+                      <div className={`rounded-lg px-2 py-1.5 font-bold ${r.pricePharmacy ? "bg-indigo-50 text-indigo-700" : "bg-rose-50 text-rose-600"}`}>
+                        {r.pricePharmacy ? money(r.pricePharmacy) : "تعریف نشده"}
+                      </div>
                     </td>
                     {/* ارزش ریالی — لحظه‌ای */}
                     <td className="px-2 py-2 text-center font-black text-slate-700">

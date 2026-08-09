@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useConfirm } from "./Confirm";
+import { faCompare } from "@/lib/sort";
 
 export type Opt = { value: string; parent?: string };
 
@@ -74,9 +75,12 @@ export default function Combobox({
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
-    if (!q) return options.slice(0, 80);
+    if (!q) return [...options].sort(faCompare).slice(0, 80);
     const words = q.split(/\s+/);
-    return options.filter((o) => words.every((w) => o.toLowerCase().includes(w))).slice(0, 80);
+    return options
+      .filter((o) => words.every((w) => o.toLowerCase().includes(w)))
+      .sort(faCompare)
+      .slice(0, 80);
   }, [query, options]);
 
   const trimmed = query.trim();
@@ -127,7 +131,12 @@ export default function Combobox({
           value={query}
           placeholder={blocked ? `ابتدا ${parentLabel || "مورد بالا"} را انتخاب کنید` : placeholder}
           disabled={blocked}
-          onFocus={() => !blocked && setOpen(true)}
+          onFocus={() => {
+            if (blocked) return;
+            // با کلیک، متن قبلی پاک می‌شود تا همه گزینه‌ها فوراً دیده شوند
+            setQuery("");
+            setOpen(true);
+          }}
           onChange={(e) => {
             setQuery(e.target.value);
             setOpen(true);

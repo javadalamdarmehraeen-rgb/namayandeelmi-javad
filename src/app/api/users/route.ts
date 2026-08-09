@@ -2,6 +2,8 @@ import { db } from "@/db";
 import { users } from "@/db/schema";
 import { getSessionUser, hashPassword } from "@/lib/auth";
 import { ALL_PERMISSION_KEYS } from "@/lib/defaults";
+import { issueOtp } from "@/lib/otp";
+import { notify } from "@/lib/notify";
 import { asc, eq } from "drizzle-orm";
 
 export const dynamic = "force-dynamic";
@@ -75,6 +77,40 @@ export async function PATCH(req: Request) {
   const b = await req.json().catch(() => ({}));
   const id = Number(b.id);
   if (!Number.isFinite(id)) return Response.json({ error: "شناسه نامعتبر" }, { status: 400 });
+  if (id === admin.id && b.active === false) {
+    return Response.json({ error: "حساب مدیر جاری را نمی‌توانید غیرفعال کنید" }, { status: 400 });
+  }
+  if (id === admin.id && typeof b.role === "string" && b.role !== "admin") {
+    return Response.json({ error: "نقش مدیر جاری قابل کاهش نیست" }, { status: 400 });
+  }
+
+  // ارسال واقعی کد تایید به شماره ثبت‌شده کاربر
+  if (b.sendOtp === true) {
+    const target = (await db.select().from(users).where(eq(users.id, id)).limit(1))[0];
+    if (!target) return Response.json({ error: "کاربر یافت نشد" }, { status: 404 });
+    if (!target.phone) return Response.json({ error: "شماره همراه برای کاربر ثبت نشده است" }, { status: 400 });
+    const result = await issueOtp(target.id, target.phone, target.deviceId || "admin-request");
+    if (!result.sent) {
+      // اگر پنل پیامک تنظیم نیست، کد فقط برای مدیر جاری اعلان می‌شود
+      await notify({
+        toUserId: admin.id,
+        fromName: "سامانه",
+        kind: "otp",
+        title: `🔐 کد تایید ${target.fullName}`,
+        body: `کد: ${result.code} | شماره: ${target.phone} | اعتبار: ۳ دقیقه`,
+        link: "/admin/users",
+      });
+    }
+    return Response.json({
+      ok: true,
+      sent: result.sent,
+      channel: result.channel,
+      message: result.sent
+        ? `کد تایید به ${target.phone} ارسال شد`
+        : `سرویس پیامک فعال نیست؛ کد ${result.code} در اعلان مدیر نمایش داده شد`,
+    });
+  }
+
   const patch: Record<string, unknown> = {};
   if (typeof b.fullName === "string" && b.fullName.trim()) patch.fullName = b.fullName.trim();
   if (typeof b.phone === "string") patch.phone = b.phone.trim();

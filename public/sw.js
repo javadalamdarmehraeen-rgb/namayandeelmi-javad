@@ -7,7 +7,7 @@
  *  این فایل توسط scripts/build-sw.mjs پس از هر build تولید می‌شود.
  * ============================================================ */
 
-const BUILD = "msm8l0q5-47";
+const BUILD = "msmbwebo-47";
 const SHELL = `sek-shell-${BUILD}`;
 const DATA = `sek-data-${BUILD}`;
 
@@ -58,53 +58,53 @@ const PAGES = [
   "/admin/backup"
 ];
 const ASSETS = [
-  "/_next/static/T2oIK48BDPzS7f2YkooCK/_buildManifest.js",
-  "/_next/static/T2oIK48BDPzS7f2YkooCK/_clientMiddlewareManifest.js",
-  "/_next/static/T2oIK48BDPzS7f2YkooCK/_ssgManifest.js",
-  "/_next/static/chunks/0-blgd7ufdph4.js",
-  "/_next/static/chunks/0-sslwsqtfajc.js",
-  "/_next/static/chunks/010qxjwvo~j~n.js",
   "/_next/static/chunks/01xlw8hd842-c.js",
-  "/_next/static/chunks/03blnpeelzzwe.js",
   "/_next/static/chunks/03h9eo09svijh.js",
-  "/_next/static/chunks/03xhorrc__p~p.js",
   "/_next/static/chunks/03~yq9q893hmn.js",
-  "/_next/static/chunks/05ydwwpel3-d1.js",
+  "/_next/static/chunks/06oz0czv-d5tc.js",
   "/_next/static/chunks/06r9_3ub2r-4z.js",
-  "/_next/static/chunks/076q375zztaku.js",
   "/_next/static/chunks/07lhk_q6pmm3r.js",
   "/_next/static/chunks/07uz2g0_38qia.js",
-  "/_next/static/chunks/081sh1b8c4d9r.js",
-  "/_next/static/chunks/09dzv~emb88~s.js",
-  "/_next/static/chunks/0_hxj2ax9leum.js",
-  "/_next/static/chunks/0_tvra5sq9eqr.js",
-  "/_next/static/chunks/0aqoa4~cbcf2u.js",
-  "/_next/static/chunks/0asdo24lqpub6.js",
-  "/_next/static/chunks/0a~i~7ew0jl6..js",
+  "/_next/static/chunks/08g-5kea7g6.h.js",
+  "/_next/static/chunks/09rohsnetlgvg.js",
+  "/_next/static/chunks/0a6uide7sk.4j.js",
+  "/_next/static/chunks/0c6h26xaxixi5.js",
+  "/_next/static/chunks/0cmnsp-6s4emd.js",
   "/_next/static/chunks/0d3shmwh5_nmn.js",
-  "/_next/static/chunks/0d_p8.2yqyqn6.js",
-  "/_next/static/chunks/0e0a08djjp.l7.js",
-  "/_next/static/chunks/0f3l4r88gty7a.js",
-  "/_next/static/chunks/0g.fw589axj7f.css",
-  "/_next/static/chunks/0gtx.vvs8o8.g.js",
+  "/_next/static/chunks/0d3~6y3_1m0z-.js",
+  "/_next/static/chunks/0g~22-d-nkj~4.js",
   "/_next/static/chunks/0h7njwe2.s3ht.js",
-  "/_next/static/chunks/0j~3j8nzm_ojm.js",
   "/_next/static/chunks/0n1bpogj.il~n.js",
-  "/_next/static/chunks/0n6z52s9kwo.m.js",
-  "/_next/static/chunks/0newzr7g.qk5c.js",
-  "/_next/static/chunks/0o_0002n6.sxy.js",
-  "/_next/static/chunks/0o~b5c~ru.4b2.js",
+  "/_next/static/chunks/0ojksj2vtemtc.js",
+  "/_next/static/chunks/0r5do5q8jm14l.js",
   "/_next/static/chunks/0rz3o0743-gv3.js",
-  "/_next/static/chunks/0se-zsy~5txaw.js",
-  "/_next/static/chunks/0sj_is6kxhu1c.js",
+  "/_next/static/chunks/0s.vxark05-ft.css",
   "/_next/static/chunks/0t48hzs_6fshe.css",
-  "/_next/static/chunks/0tiyyx3xriv--.js",
+  "/_next/static/chunks/0tww0ugqpbjuc.js",
+  "/_next/static/chunks/0tzxennt9x7fa.js",
+  "/_next/static/chunks/0uau8j83k.~d~.js",
+  "/_next/static/chunks/0uh4e2v8-yv0m.js",
+  "/_next/static/chunks/0un~29--xqa01.js",
+  "/_next/static/chunks/0uwo4ig.ttwoi.js",
+  "/_next/static/chunks/0v9f5878j8.gt.js",
   "/_next/static/chunks/0wxhwo2i~7vvo.js",
-  "/_next/static/chunks/0wz~vz-f~nhfk.js",
+  "/_next/static/chunks/0xsq1kypcelih.js",
+  "/_next/static/chunks/0xy8up.i~wc4b.js",
   "/_next/static/chunks/0ze4gu236oq96.js",
-  "/_next/static/chunks/1731-a1ihv3m..js",
-  "/_next/static/chunks/17tgfz2.xc192.js",
-  "/_next/static/chunks/turbopack-0ngnbt.drh_yz.js"
+  "/_next/static/chunks/0zpc6fh2wd_w~.js",
+  "/_next/static/chunks/0~ie.p3wye-qk.js",
+  "/_next/static/chunks/14hh_.sc~ot8r.js",
+  "/_next/static/chunks/14wt~2u5_rded.js",
+  "/_next/static/chunks/15tk54h_nfdov.js",
+  "/_next/static/chunks/16a52._r.wop8.js",
+  "/_next/static/chunks/16fgd7snpuz_9.js",
+  "/_next/static/chunks/176ztuhghbfr1.js",
+  "/_next/static/chunks/1773nblf01y94.js",
+  "/_next/static/chunks/17rem3ul2c_y5.js",
+  "/_next/static/chunks/turbopack-0ngnbt.drh_yz.js",
+  "/_next/static/tALvSrKvwM8vyolH1AHdQ/_buildManifest.js",
+  "/_next/static/tALvSrKvwM8vyolH1AHdQ/_clientMiddlewareManifest.js",
+  "/_next/static/tALvSrKvwM8vyolH1AHdQ/_ssgManifest.js"
 ];
 const EXTRAS = [
   "/manifest.webmanifest",
@@ -112,7 +112,8 @@ const EXTRAS = [
   "/icons/icon-192.png",
   "/icons/icon-512.png",
   "/apple-touch-icon.png",
-  "/data/iran-provinces-lite.geojson"
+  "/data/world-countries.geojson",
+  "/data/iran-provinces.geojson"
 ];
 const RSC_PAGES = [
   "/?_rsc=offline",
