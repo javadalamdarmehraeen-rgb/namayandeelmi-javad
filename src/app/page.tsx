@@ -19,12 +19,7 @@ export default function Home() {
       return;
     }
 
-    // ۲) اگر آفلاین هستیم مستقیم به صفحه ورود
-    if (!navigator.onLine) {
-      router.replace("/login");
-      return;
-    }
-
+   
     const slowTimer = setTimeout(() => setSlow(true), 5000);
     // اگر ظرف ۱۲ ثانیه پاسخی نیامد، به صفحه ورود می‌رویم تا کاربر معطل نماند
     const bail = setTimeout(() => router.replace("/login"), 12000);
