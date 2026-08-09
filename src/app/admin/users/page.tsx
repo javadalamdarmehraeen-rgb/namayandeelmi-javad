@@ -56,23 +56,17 @@ export default function UsersPage() {
   const [roles, setRoles] = useState<Role[]>([]);
   const [roleForm, setRoleForm] = useState({ label: "", key: "", base: "rep" });
   const [showRoles, setShowRoles] = useState(false);
-  const [dirty, setDirty] = useState<Record<number, boolean>>({});
-  const [savingUser, setSavingUser] = useState<number | null>(null);
   const confirm = useConfirm();
 
   const load = useCallback(async () => {
     const res = await fetch("/api/users", { cache: "no-store" });
     if (res.ok) {
       const d = await res.json();
-      const fresh: User[] = (d.rows ?? []).map((u: User) => ({
-        ...u,
-        permissions: Array.isArray(u.permissions) ? u.permissions : [],
-      }));
-      setRows((prev) =>
-        fresh.map((u) => (dirty[u.id] ? prev.find((x) => x.id === u.id) ?? u : u)),
+      setRows(
+        (d.rows ?? []).map((u: User) => ({ ...u, permissions: Array.isArray(u.permissions) ? u.permissions : [] })),
       );
     } else setMsg({ kind: "error", text: "خطا در دریافت کاربران — دوباره وارد شوید" });
-  }, [dirty]);
+  }, []);
 
   const loadRoles = useCallback(async () => {
     const res = await fetch("/api/roles", { cache: "no-store" });
@@ -84,58 +78,6 @@ export default function UsersPage() {
   }, [loadRoles]);
 
   useLive(load, 20000);
-
-  const updateLocal = (id: number, patch: Partial<User>) => {
-    setRows((prev) => prev.map((u) => (u.id === id ? { ...u, ...patch } : u)));
-    setDirty((d) => ({ ...d, [id]: true }));
-  };
-
-  /** همه تغییرات یک کاربر فقط با این کلید ثبت می‌شوند */
-  const saveUser = async (u: User) => {
-    if (
-      !(await confirm({
-        title: "ذخیره تغییرات کاربر",
-        message: `همه تغییرات «${u.fullName}» (وضعیت، نقش، شماره، کنترل سیم‌کارت و دسترسی‌ها) ذخیره شود؟`,
-        confirmText: "ثبت تغییرات",
-      }))
-    )
-      return;
-    setSavingUser(u.id);
-    const res = await fetch("/api/users", {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        id: u.id,
-        fullName: u.fullName,
-        username: u.username,
-        phone: u.phone,
-        role: u.role,
-        active: u.active,
-        requirePhone: u.requirePhone,
-        simMode: u.simMode ?? "device",
-        permissions: u.permissions,
-      }),
-    });
-    const data = await res.json().catch(() => ({}));
-    setSavingUser(null);
-    if (res.ok) {
-      setDirty((d) => ({ ...d, [u.id]: false }));
-      setMsg({ kind: "success", text: `✅ تغییرات «${u.fullName}» در لحظه ذخیره شد` });
-      load();
-    } else setMsg({ kind: "error", text: data.error ?? "ثبت تغییرات ناموفق بود" });
-  };
-
-  const sendOtp = async (u: User) => {
-    if (!u.phone) return setMsg({ kind: "error", text: "ابتدا شماره همراه کاربر را ثبت و ذخیره کنید" });
-    if (!(await confirm({ title: "ارسال کد تایید", message: `کد تایید به شماره ${u.phone} ارسال شود؟`, confirmText: "ارسال پیامک" }))) return;
-    const res = await fetch("/api/users", {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ id: u.id, sendOtp: true }),
-    });
-    const data = await res.json().catch(() => ({}));
-    setMsg({ kind: res.ok ? "success" : "error", text: data.message ?? data.error ?? "خطا" });
-  };
 
   const create = async () => {
     if (!form.fullName.trim() || !form.username.trim() || !form.password.trim()) {
@@ -202,9 +144,7 @@ export default function UsersPage() {
 
   const togglePerm = (u: User, key: string) => {
     const has = u.permissions.includes(key);
-    updateLocal(u.id, {
-      permissions: has ? u.permissions.filter((p) => p !== key) : [...u.permissions, key],
-    });
+    patch({ id: u.id, permissions: has ? u.permissions.filter((p) => p !== key) : [...u.permissions, key] }, true);
   };
 
   const setPassword = async (u: User) => {
@@ -521,7 +461,6 @@ export default function UsersPage() {
                 {roles.find((r) => r.key === u.role)?.label ?? u.role}
               </Badge>
               {!u.active ? <Badge tone="amber">غیرفعال</Badge> : null}
-              {dirty[u.id] ? <Badge tone="amber">تغییرات ذخیره‌نشده</Badge> : <Badge tone="green">ذخیره‌شده</Badge>}
               <span className="text-[11px] text-slate-400">
                 آخرین ورود: {u.lastSeenAt ? tehranDateTime(u.lastSeenAt) : "—"}
               </span>
@@ -532,24 +471,13 @@ export default function UsersPage() {
                 >
                   ⚙️ سطح دسترسی ({toPersianDigits(u.permissions.length)}) {open ? "▲" : "▼"}
                 </button>
-                <label className="flex cursor-pointer items-center gap-1.5 rounded-lg bg-slate-100 px-2 py-1 text-[11px] font-bold text-slate-700">
-                  <span className={`relative inline-flex h-5 w-9 rounded-full transition ${u.active ? "bg-emerald-500" : "bg-slate-300"}`}>
-                    <input
-                      type="checkbox"
-                      className="sr-only"
-                      checked={u.active}
-                      onChange={() => updateLocal(u.id, { active: !u.active })}
-                    />
-                    <span className={`absolute top-0.5 size-4 rounded-full bg-white shadow transition ${u.active ? "right-0.5" : "right-[18px]"}`} />
-                  </span>
-                  {u.active ? "فعال" : "غیرفعال"}
-                </label>
                 <button
-                  onClick={() => saveUser(u)}
-                  disabled={!dirty[u.id] || savingUser === u.id}
-                  className="rounded-lg bg-emerald-600 px-3 py-1 text-[11px] font-black text-white disabled:bg-slate-300"
+                  onClick={() => patch({ id: u.id, active: !u.active })}
+                  className={`rounded-lg px-2 py-1 text-[11px] font-bold ${
+                    u.active ? "bg-amber-100 text-amber-700" : "bg-emerald-100 text-emerald-700"
+                  }`}
                 >
-                  {savingUser === u.id ? "در حال ثبت..." : "💾 ثبت تغییرات"}
+                  {u.active ? "غیرفعال کن" : "فعال کن"}
                 </button>
                 <button
                   onClick={() => remove(u.id, u.fullName)}
@@ -560,16 +488,13 @@ export default function UsersPage() {
               </div>
             </div>
 
-            <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-5">
-              <label className="block">
-                <span className="mb-1 block text-[11px] font-bold text-slate-500">نام و نام خانوادگی</span>
-                <Input value={u.fullName} onChange={(e) => updateLocal(u.id, { fullName: e.target.value })} />
-              </label>
+            <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-4">
               <label className="block">
                 <span className="mb-1 block text-[11px] font-bold text-slate-500">نام کاربری</span>
                 <Input
                   value={u.username}
-                  onChange={(e) => updateLocal(u.id, { username: e.target.value })}
+                  onChange={(e) => setRows((p) => p.map((x) => (x.id === u.id ? { ...x, username: e.target.value } : x)))}
+                  onBlur={() => patch({ id: u.id, username: u.username }, true)}
                   className="text-left"
                 />
               </label>
@@ -626,7 +551,12 @@ export default function UsersPage() {
                 <Input
                   inputMode="numeric"
                   value={u.phone}
-                  onChange={(e) => updateLocal(u.id, { phone: e.target.value.replace(/\D/g, "").slice(0, 11) })}
+                  onChange={(e) =>
+                    setRows((p) =>
+                      p.map((x) => (x.id === u.id ? { ...x, phone: e.target.value.replace(/\D/g, "").slice(0, 11) } : x)),
+                    )
+                  }
+                  onBlur={() => patch({ id: u.id, phone: u.phone }, true)}
                 />
               </label>
             </div>
@@ -635,7 +565,7 @@ export default function UsersPage() {
               <span className="text-[11px] font-bold text-slate-500">کنترل سیم‌کارت:</span>
               <select
                 value={u.simMode ?? "device"}
-                onChange={(e) => updateLocal(u.id, { simMode: e.target.value })}
+                onChange={(e) => patch({ id: u.id, simMode: e.target.value })}
                 className="rounded-lg border border-slate-200 px-2 py-1 text-[11px] font-bold"
                 title="سطح سخت‌گیری بررسی سیم‌کارت"
               >
@@ -645,20 +575,12 @@ export default function UsersPage() {
                 <option value="otp">تایید پیامکی (سخت‌گیرانه)</option>
               </select>
               <button
-                onClick={() => updateLocal(u.id, { requirePhone: !u.requirePhone })}
+                onClick={() => patch({ id: u.id, requirePhone: !u.requirePhone })}
                 className={`rounded-lg px-3 py-1 text-[11px] font-bold ${
                   u.requirePhone ? "bg-emerald-100 text-emerald-700" : "bg-slate-200 text-slate-600"
                 }`}
               >
                 {u.requirePhone ? "✅ شماره اجباری" : "⛔ بدون شماره"}
-              </button>
-              <button
-                onClick={() => sendOtp(u)}
-                disabled={!u.phone}
-                className="rounded-lg bg-sky-100 px-3 py-1 text-[11px] font-bold text-sky-700 disabled:opacity-40"
-                title="ارسال کد تایید به شماره ثبت‌شده"
-              >
-                📩 ارسال پیامک تایید
               </button>
               <span className="mx-1 h-5 w-px bg-slate-200" />
               <span className="text-[11px] font-bold text-slate-500">گوشی متصل:</span>
@@ -695,7 +617,7 @@ export default function UsersPage() {
               <span className="text-[11px] font-bold text-slate-500">نقش:</span>
               <select
                 value={u.role}
-                onChange={(e) => updateLocal(u.id, { role: e.target.value })}
+                onChange={(e) => patch({ id: u.id, role: e.target.value })}
                 className="rounded-lg border border-slate-200 px-2 py-1 text-[11px]"
               >
                 {roles.map((r) => (
@@ -709,16 +631,16 @@ export default function UsersPage() {
             {open ? (
               <div className="fade-in mt-3 space-y-3 rounded-2xl bg-slate-50 p-3 ring-1 ring-slate-200">
                 <div className="flex flex-wrap gap-2">
-                  <Button onClick={() => updateLocal(u.id, { permissions: [...ALL_PERMISSION_KEYS] })}>
+                  <Button onClick={() => patch({ id: u.id, permissions: ALL_PERMISSION_KEYS }, true)}>
                     ✅ دسترسی کامل
                   </Button>
-                  <Button variant="soft" onClick={() => updateLocal(u.id, { permissions: [...SUPERVISOR_DEFAULT_PERMISSIONS] })}>
+                  <Button variant="soft" onClick={() => patch({ id: u.id, permissions: SUPERVISOR_DEFAULT_PERMISSIONS }, true)}>
                     پیش‌فرض سرپرست
                   </Button>
-                  <Button variant="soft" onClick={() => updateLocal(u.id, { permissions: [...REP_DEFAULT_PERMISSIONS] })}>
+                  <Button variant="soft" onClick={() => patch({ id: u.id, permissions: REP_DEFAULT_PERMISSIONS }, true)}>
                     پیش‌فرض نماینده
                   </Button>
-                  <Button variant="danger" onClick={() => updateLocal(u.id, { permissions: [] })}>
+                  <Button variant="danger" onClick={() => patch({ id: u.id, permissions: [] }, true)}>
                     حذف همه
                   </Button>
                 </div>
@@ -734,11 +656,15 @@ export default function UsersPage() {
                         </span>
                         <button
                           onClick={() =>
-                            updateLocal(u.id, {
-                              permissions: allOn
-                                ? u.permissions.filter((p) => !groupKeys.includes(p))
-                                : [...new Set([...u.permissions, ...groupKeys])],
-                            })
+                            patch(
+                              {
+                                id: u.id,
+                                permissions: allOn
+                                  ? u.permissions.filter((p) => !groupKeys.includes(p))
+                                  : [...new Set([...u.permissions, ...groupKeys])],
+                              },
+                              true,
+                            )
                           }
                           className={`rounded-lg px-2 py-1 text-[10px] font-bold ${
                             allOn ? "bg-rose-100 text-rose-700" : "bg-teal-100 text-teal-700"
@@ -771,11 +697,6 @@ export default function UsersPage() {
                     </div>
                   );
                 })}
-                <div className="sticky bottom-0 flex justify-end border-t border-slate-200 bg-slate-50/95 pt-3 backdrop-blur">
-                  <Button onClick={() => saveUser(u)} disabled={!dirty[u.id] || savingUser === u.id}>
-                    {savingUser === u.id ? "در حال ثبت..." : "💾 ثبت همه تغییرات این کاربر"}
-                  </Button>
-                </div>
               </div>
             ) : null}
           </Card>

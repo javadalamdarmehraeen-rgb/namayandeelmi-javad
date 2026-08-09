@@ -69,7 +69,6 @@ const EXTRAS = [
   "/icons/icon-192.png",
   "/icons/icon-512.png",
   "/apple-touch-icon.png",
-  "/data/world-countries.geojson",
   "/data/iran-provinces.geojson",
 ];
 

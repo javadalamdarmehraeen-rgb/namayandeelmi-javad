@@ -1,433 +1,449 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { Alert, Badge, Button, Card, Field, Input, SectionTitle } from "@/components/ui";
+import { useCallback, useEffect, useState } from "react";
+import { Alert, Badge, Button, Card, Input, SectionTitle } from "@/components/ui";
 import {
   AVAILABLE_COLUMNS,
+  AVAILABLE_FORM_FIELDS,
   DEFAULT_COLUMNS,
+  DEFAULT_FORM_FIELDS,
   DEFAULT_PRODUCTS,
-  scopeOf,
   type ColumnConfig,
-  type FieldScope,
-  type FieldType,
+  type FormFieldConfig,
   type ProductConfig,
 } from "@/lib/defaults";
 import { useConfirm } from "@/components/Confirm";
 import { toPersianDigits } from "@/lib/jalali";
 
 const TABLES = [
-  { key: "pharmacies", label: "داروخانه‌ها", icon: "🏥" },
-  { key: "doctors", label: "پزشکان", icon: "🩺" },
-  { key: "orders", label: "سفارشات", icon: "🧾" },
+  { key: "pharmacies", label: "جدول داروخانه‌ها" },
+  { key: "doctors", label: "جدول پزشکان" },
+  { key: "orders", label: "جدول سفارشات" },
 ];
-
-const SCOPE_LABEL: Record<FieldScope, string> = {
-  form: "فقط فرم ثبت",
-  list: "فقط لیست",
-  both: "فرم و لیست",
-};
-
-const TYPE_LABEL: Record<FieldType, string> = {
-  text: "متن کوتاه",
-  number: "عدد",
-  textarea: "متن بلند",
-  select: "کشویی",
-  phone: "شماره تماس",
-};
-
-const normalizeProduct = (p: Partial<ProductConfig> & Pick<ProductConfig, "key" | "label" | "bonusLabel">): ProductConfig => ({
-  key: p.key,
-  label: p.label,
-  bonusLabel: p.bonusLabel,
-  enabled: p.enabled !== false,
-  priceDistributor: Number(p.priceDistributor) || 0,
-  pricePharmacy: Number(p.pricePharmacy) || 0,
-});
-
-const mergeColumns = (stored: ColumnConfig[] | undefined, defaults: ColumnConfig[]) => {
-  if (!Array.isArray(stored) || stored.length === 0) return defaults.map((c) => ({ ...c, scope: scopeOf(c) }));
-  const normalized = stored.map((c) => ({ ...c, scope: scopeOf(c) }));
-  const have = new Set(normalized.map((c) => c.key));
-  return [...normalized, ...defaults.filter((c) => !have.has(c.key)).map((c) => ({ ...c, scope: scopeOf(c) }))];
-};
 
 export default function ColumnsPage() {
   const [cols, setCols] = useState<Record<string, ColumnConfig[]>>(DEFAULT_COLUMNS);
+  const [formFields, setFormFields] = useState<Record<string, FormFieldConfig[]>>(DEFAULT_FORM_FIELDS);
   const [products, setProducts] = useState<ProductConfig[]>(DEFAULT_PRODUCTS);
   const [tab, setTab] = useState("pharmacies");
   const [msg, setMsg] = useState("");
-  const [busy, setBusy] = useState(false);
-  const [dirty, setDirty] = useState<Record<string, boolean>>({});
-
-  // افزودن ستون آماده
-  const [addCol, setAddCol] = useState("");
-  const [addScope, setAddScope] = useState<FieldScope>("both");
-
-  // افزودن فیلد سفارشی
-  const [customLabel, setCustomLabel] = useState("");
-  const [customType, setCustomType] = useState<FieldType>("text");
-  const [customScope, setCustomScope] = useState<FieldScope>("both");
-  const [customRequired, setCustomRequired] = useState(false);
-
-  // افزودن کالا
   const [newProduct, setNewProduct] = useState("");
+  const [addCol, setAddCol] = useState("");
+  const [addField, setAddField] = useState("");
   const confirm = useConfirm();
 
   const load = useCallback(async () => {
     const res = await fetch("/api/settings", { cache: "no-store" });
     if (!res.ok) return;
-    const v = (await res.json()).values ?? {};
-    const storedProducts = Array.isArray(v.products) ? (v.products as ProductConfig[]) : DEFAULT_PRODUCTS;
-    setProducts(storedProducts.map(normalizeProduct));
+    const d = await res.json();
+    const v = d.values ?? {};
+    setProducts((v.products as ProductConfig[]) ?? DEFAULT_PRODUCTS);
+
+    /** ستون‌های جدید برنامه به تنظیمات ذخیره‌شده اضافه می‌شوند */
+    const merge = (key: string, def: ColumnConfig[]) => {
+      const stored = v[key] as ColumnConfig[] | undefined;
+      if (!Array.isArray(stored) || stored.length === 0) return def;
+      const have = new Set(stored.map((c) => c.key));
+      const mandatory = def.filter((c) => c.key === "actions" && !have.has(c.key));
+      return [...stored, ...mandatory];
+    };
     setCols({
-      pharmacies: mergeColumns(v["columns.pharmacies"], DEFAULT_COLUMNS.pharmacies),
-      doctors: mergeColumns(v["columns.doctors"], DEFAULT_COLUMNS.doctors),
-      orders: mergeColumns(v["columns.orders"], DEFAULT_COLUMNS.orders),
+      pharmacies: merge("columns.pharmacies", DEFAULT_COLUMNS.pharmacies),
+      doctors: merge("columns.doctors", DEFAULT_COLUMNS.doctors),
+      orders: merge("columns.orders", DEFAULT_COLUMNS.orders),
     });
-    setDirty({});
+
+    const mergeFields = (key: string, def: FormFieldConfig[]) => {
+      const stored = v[key] as FormFieldConfig[] | undefined;
+      if (!Array.isArray(stored) || stored.length === 0) return def;
+      const have = new Set(stored.map((f) => f.key));
+      const mandatory = def.filter((f) => f.key === "location" && !have.has(f.key));
+      return [...stored, ...mandatory];
+    };
+    setFormFields({
+      pharmacies: mergeFields("fields.pharmacies", DEFAULT_FORM_FIELDS.pharmacies),
+      doctors: mergeFields("fields.doctors", DEFAULT_FORM_FIELDS.doctors),
+      orders: mergeFields("fields.orders", DEFAULT_FORM_FIELDS.orders),
+    });
   }, []);
 
   useEffect(() => {
     load();
   }, [load]);
 
-  const current = cols[tab] ?? [];
-  const available = useMemo(
-    () => (AVAILABLE_COLUMNS[tab] ?? []).filter((a) => !current.some((c) => c.key === a.key)),
-    [tab, current],
-  );
-
-  const setCurrent = (next: ColumnConfig[]) => {
-    setCols((c) => ({ ...c, [tab]: next }));
-    setDirty((d) => ({ ...d, [tab]: true }));
+  const persist = async (key: string, value: unknown, success = "✅ ذخیره شد و بلافاصله اعمال می‌شود") => {
+    const res = await fetch("/api/settings", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ key, value }),
+    });
+    setMsg(res.ok ? success : "❌ خطا در ذخیره تنظیمات");
+    return res.ok;
   };
 
-  const move = (i: number, dir: -1 | 1) => {
+  const save = async (key: string, value: unknown) => {
+    if (!(await confirm({ title: "ذخیره تغییرات", message: "تغییرات ذخیره و بلافاصله در همه صفحات اعمال شود؟", confirmText: "ذخیره" })))
+      return;
+    await persist(key, value);
+  };
+
+  const move = (list: ColumnConfig[], i: number, dir: -1 | 1) => {
+    const next = [...list];
     const j = i + dir;
-    if (j < 0 || j >= current.length) return;
-    const next = [...current];
+    if (j < 0 || j >= next.length) return next;
     [next[i], next[j]] = [next[j], next[i]];
-    setCurrent(next);
+    return next;
   };
 
-  const saveColumns = async () => {
-    if (
-      !(await confirm({
-        title: "ذخیره فیلدها و ستون‌ها",
-        message: "تنظیمات در فرم ثبت و لیست اعمال شود؟",
-        confirmText: "ذخیره و اعمال",
-      }))
-    )
-      return;
-    setBusy(true);
-    const res = await fetch("/api/settings", {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ key: `columns.${tab}`, value: current }),
-    });
-    setBusy(false);
-    if (res.ok) {
-      setMsg("✅ ذخیره شد؛ فیلدهای جدید در فرم ثبت و/یا لیست اعمال شدند");
-      setDirty((d) => ({ ...d, [tab]: false }));
-    } else setMsg("✖ ذخیره تنظیمات ناموفق بود");
+  const moveP = (i: number, dir: -1 | 1) => {
+    const next = [...products];
+    const j = i + dir;
+    if (j < 0 || j >= next.length) return;
+    [next[i], next[j]] = [next[j], next[i]];
+    setProducts(next);
   };
 
-  const addReadyColumn = () => {
-    const found = available.find((a) => a.key === addCol);
-    if (!found) return setMsg("✖ ابتدا یک ستون را انتخاب کنید");
-    setCurrent([
-      ...current,
-      {
-        ...found,
-        visible: true,
-        scope: addScope,
-        fieldType: addScope === "list" ? undefined : "text",
-      },
-    ]);
-    setAddCol("");
-    setMsg(`✅ «${found.label}» اضافه شد؛ برای اعمال، دکمه ذخیره را بزنید`);
-  };
-
-  const addCustomField = () => {
-    const label = customLabel.trim();
-    if (label.length < 2) return setMsg("✖ نام فیلد سفارشی حداقل ۲ حرف باشد");
-    const key = `custom_${Date.now().toString(36)}`;
-    setCurrent([
-      ...current,
-      {
-        key,
-        label,
-        visible: true,
-        scope: customScope,
-        fieldType: customType,
-        custom: true,
-        required: customRequired,
-      },
-    ]);
-    setCustomLabel("");
-    setCustomRequired(false);
-    setMsg(`✅ فیلد سفارشی «${label}» اضافه شد؛ برای اعمال، ذخیره کنید`);
-  };
-
-  const saveProducts = async () => {
-    if (
-      !(await confirm({
-        title: "ذخیره کالاها و قیمت‌ها",
-        message: "عنوان‌ها، ترتیب، قیمت پخش و قیمت داروخانه ذخیره شوند؟ این قیمت‌ها در محاسبات تارگت استفاده می‌شوند.",
-        confirmText: "ذخیره",
-      }))
-    )
-      return;
-    setBusy(true);
-    const res = await fetch("/api/settings", {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ key: "products", value: products }),
-    });
-    setBusy(false);
-    setMsg(res.ok ? "✅ کالاها و قیمت‌ها ذخیره شدند و در تارگت اعمال می‌شوند" : "✖ ذخیره کالاها ناموفق بود");
-  };
-
-  const money = (n: number) => toPersianDigits(Math.round(n).toLocaleString("en-US"));
+  const current = cols[tab] ?? [];
+  const currentFields = formFields[tab] ?? [];
 
   return (
     <div className="space-y-4">
-      <SectionTitle icon="🧱">مدیریت فیلدها، ستون‌ها، کالاها و قیمت‌ها</SectionTitle>
-      {msg ? <Alert kind={msg.startsWith("✖") ? "error" : "success"}>{msg}</Alert> : null}
+      <SectionTitle icon="🧱">مدیریت ستون‌ها و کالاها</SectionTitle>
+      {msg ? <Alert kind="success">{msg}</Alert> : null}
 
       <Card>
-        <div className="mb-4 flex flex-wrap gap-1 rounded-xl bg-slate-100 p-1 text-xs font-bold">
+        <div className="mb-3 flex flex-wrap gap-1 rounded-xl bg-slate-100 p-1 text-xs font-bold">
           {TABLES.map((t) => (
             <button
               key={t.key}
-              onClick={() => {
-                setTab(t.key);
-                setAddCol("");
-              }}
-              className={`rounded-lg px-4 py-2 ${tab === t.key ? "bg-teal-600 text-white shadow" : "text-slate-600"}`}
+              onClick={() => setTab(t.key)}
+              className={`rounded-lg px-3 py-2 ${tab === t.key ? "bg-teal-600 text-white" : "text-slate-600"}`}
             >
-              {t.icon} {t.label} {dirty[t.key] ? "●" : ""}
+              {t.label}
             </button>
           ))}
         </div>
 
-        <Alert kind="info">
-          برای هر مورد مشخص کنید در <b>فرم ثبت</b>، <b>لیست</b> یا <b>هر دو</b> نمایش داده شود. فیلدهای سفارشی واقعاً
-          همراه رکورد در دیتابیس ذخیره می‌شوند.
-        </Alert>
+        <p className="mb-2 text-[11px] text-slate-500">
+          با تیک زدن، ستون نمایش داده می‌شود و با فلش‌ها ترتیب آن جابه‌جا می‌شود. عنوان ستون هم قابل تغییر است.
+        </p>
 
-        <div className="mt-3 space-y-1.5">
+        <ul className="space-y-1">
           {current.map((c, i) => (
-            <div key={c.key} className="grid grid-cols-1 gap-2 rounded-xl bg-slate-50 p-2 ring-1 ring-slate-200 sm:grid-cols-[34px_1fr_170px_130px_auto] sm:items-center">
-              <span className="text-center text-[11px] text-slate-400">{toPersianDigits(i + 1)}</span>
-              <div className="flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  className="size-4 accent-teal-600"
-                  checked={c.visible}
-                  onChange={(e) => {
-                    const next = [...current];
-                    next[i] = { ...c, visible: e.target.checked };
-                    setCurrent(next);
-                  }}
-                />
-                <Input
-                  value={c.label}
-                  onChange={(e) => {
-                    const next = [...current];
-                    next[i] = { ...c, label: e.target.value };
-                    setCurrent(next);
-                  }}
-                  className="px-2 py-1.5 text-xs"
-                />
-                {c.custom ? <Badge tone="amber">سفارشی</Badge> : <Badge tone="slate">سیستمی</Badge>}
-              </div>
-              <select
-                value={scopeOf(c)}
+            <li key={c.key} className="flex flex-wrap items-center gap-2 rounded-xl bg-slate-50 px-3 py-2">
+              <span className="w-6 text-center text-[11px] text-slate-400">{toPersianDigits(i + 1)}</span>
+              <input
+                type="checkbox"
+                className="size-4 accent-teal-600"
+                checked={c.visible}
                 onChange={(e) => {
                   const next = [...current];
-                  next[i] = { ...c, scope: e.target.value as FieldScope };
-                  setCurrent(next);
+                  next[i] = { ...c, visible: e.target.checked };
+                  setCols({ ...cols, [tab]: next });
                 }}
-                className="rounded-xl border border-slate-300 px-2 py-2 text-xs"
-              >
-                {Object.entries(SCOPE_LABEL).map(([k, v]) => (
-                  <option key={k} value={k}>
-                    {v}
-                  </option>
-                ))}
-              </select>
-              {c.custom ? (
-                <select
-                  value={c.fieldType ?? "text"}
-                  onChange={(e) => {
-                    const next = [...current];
-                    next[i] = { ...c, fieldType: e.target.value as FieldType };
-                    setCurrent(next);
-                  }}
-                  className="rounded-xl border border-slate-300 px-2 py-2 text-xs"
+              />
+              <Input
+                value={c.label}
+                onChange={(e) => {
+                  const next = [...current];
+                  next[i] = { ...c, label: e.target.value };
+                  setCols({ ...cols, [tab]: next });
+                }}
+                className="max-w-[180px] px-2 py-1 text-xs"
+              />
+              <span className="text-[10px] text-slate-400">{c.key}</span>
+              <div className="mr-auto flex gap-1">
+                <button
+                  onClick={() => setCols({ ...cols, [tab]: move(current, i, -1) })}
+                  className="rounded-lg bg-white px-2 py-1 text-xs ring-1 ring-slate-200"
                 >
-                  {Object.entries(TYPE_LABEL).map(([k, v]) => (
-                    <option key={k} value={k}>
-                      {v}
-                    </option>
-                  ))}
-                </select>
-              ) : (
-                <span className="text-[10px] text-slate-400" dir="ltr">
-                  {c.key}
-                </span>
-              )}
-              <div className="flex justify-end gap-1">
-                <button onClick={() => move(i, -1)} className="rounded-lg bg-white px-2 py-1 text-xs ring-1 ring-slate-200">↑</button>
-                <button onClick={() => move(i, 1)} className="rounded-lg bg-white px-2 py-1 text-xs ring-1 ring-slate-200">↓</button>
+                  ↑
+                </button>
+                <button
+                  onClick={() => setCols({ ...cols, [tab]: move(current, i, 1) })}
+                  className="rounded-lg bg-white px-2 py-1 text-xs ring-1 ring-slate-200"
+                >
+                  ↓
+                </button>
                 <button
                   onClick={async () => {
-                    if (!(await confirm({ title: "حذف فیلد/ستون", message: `«${c.label}» حذف شود؟`, confirmText: "حذف", danger: true }))) return;
-                    setCurrent(current.filter((_, x) => x !== i));
+                    if (
+                      !(await confirm({
+                        title: "حذف ستون",
+                        message: `ستون «${c.label}» از این جدول حذف شود؟ بعداً می‌توانید دوباره اضافه کنید.`,
+                        confirmText: "حذف",
+                        danger: true,
+                      }))
+                    )
+                      return;
+                    setCols({ ...cols, [tab]: current.filter((_, x) => x !== i) });
                   }}
                   className="rounded-lg bg-rose-100 px-2 py-1 text-xs font-bold text-rose-700"
                 >
                   حذف
                 </button>
               </div>
-            </div>
+            </li>
           ))}
+        </ul>
+
+        <div className="mt-3 flex flex-wrap items-center gap-2 rounded-xl bg-slate-50 p-2 ring-1 ring-slate-200">
+          <span className="text-[11px] font-bold text-slate-600">افزودن ستون:</span>
+          <select
+            value={addCol}
+            onChange={(e) => setAddCol(e.target.value)}
+            className="rounded-xl border border-slate-300 px-2 py-2 text-xs"
+          >
+            <option value="">انتخاب ستون...</option>
+            {(AVAILABLE_COLUMNS[tab] ?? [])
+              .filter((a) => !current.some((c) => c.key === a.key))
+              .map((a) => (
+                <option key={a.key} value={a.key}>
+                  {a.label}
+                </option>
+              ))}
+          </select>
+          <Button
+            variant="soft"
+            onClick={async () => {
+              const found = (AVAILABLE_COLUMNS[tab] ?? []).find((a) => a.key === addCol);
+              if (!found) {
+                setMsg("ابتدا یک ستون را انتخاب کنید");
+                return;
+              }
+              const next = [...current, { ...found, visible: true }];
+              setCols({ ...cols, [tab]: next });
+              setAddCol("");
+              await persist(`columns.${tab}`, next, `✅ ستون «${found.label}» اضافه و ذخیره شد`);
+            }}
+          >
+            ➕ افزودن
+          </Button>
+          <span className="text-[10px] text-slate-400">
+            {toPersianDigits((AVAILABLE_COLUMNS[tab] ?? []).filter((a) => !current.some((c) => c.key === a.key)).length)}{" "}
+            ستون قابل افزودن
+          </span>
         </div>
 
-        <div className="mt-4 grid grid-cols-1 gap-3 lg:grid-cols-2">
-          <div className="rounded-2xl bg-sky-50 p-3 ring-1 ring-sky-200">
-            <h3 className="mb-2 text-xs font-black text-sky-900">➕ افزودن فیلد/ستون آماده</h3>
-            <div className="flex flex-wrap gap-2">
-              <select value={addCol} onChange={(e) => setAddCol(e.target.value)} className="min-w-[180px] flex-1 rounded-xl border border-slate-300 px-2 py-2 text-xs">
-                <option value="">انتخاب مورد...</option>
-                {available.map((a) => <option key={a.key} value={a.key}>{a.label}</option>)}
-              </select>
-              <select value={addScope} onChange={(e) => setAddScope(e.target.value as FieldScope)} className="rounded-xl border border-slate-300 px-2 py-2 text-xs">
-                {Object.entries(SCOPE_LABEL).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
-              </select>
-              <Button variant="soft" onClick={addReadyColumn}>افزودن</Button>
-            </div>
-            <p className="mt-1 text-[10px] text-sky-700">{toPersianDigits(available.length)} مورد آماده قابل افزودن است.</p>
-          </div>
-
-          <div className="rounded-2xl bg-amber-50 p-3 ring-1 ring-amber-200">
-            <h3 className="mb-2 text-xs font-black text-amber-900">✨ ساخت فیلد کاملاً سفارشی</h3>
-            <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
-              <Input value={customLabel} onChange={(e) => setCustomLabel(e.target.value)} placeholder="نام فیلد، مثلاً کد مشتری" />
-              <select value={customType} onChange={(e) => setCustomType(e.target.value as FieldType)} className="rounded-xl border border-slate-300 px-2 py-2 text-xs">
-                {Object.entries(TYPE_LABEL).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
-              </select>
-              <select value={customScope} onChange={(e) => setCustomScope(e.target.value as FieldScope)} className="rounded-xl border border-slate-300 px-2 py-2 text-xs">
-                {Object.entries(SCOPE_LABEL).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
-              </select>
-            </div>
-            <div className="mt-2 flex items-center justify-between gap-2">
-              <label className="flex items-center gap-1 text-[11px] font-bold text-amber-900">
-                <input type="checkbox" checked={customRequired} onChange={(e) => setCustomRequired(e.target.checked)} className="accent-amber-600" /> اجباری
-              </label>
-              <Button variant="soft" onClick={addCustomField}>ساخت فیلد</Button>
-            </div>
-          </div>
-        </div>
-
-        <div className="mt-4 flex flex-wrap gap-2">
-          <Button onClick={saveColumns} disabled={busy}>💾 ذخیره و اعمال در فرم/لیست</Button>
+        <div className="mt-3 flex gap-2">
+          <Button onClick={() => save(`columns.${tab}`, current)}>💾 ذخیره ترتیب ستون‌ها</Button>
           <Button
             variant="ghost"
             onClick={async () => {
-              if (!(await confirm({ title: "بازگردانی پیش‌فرض", message: "تنظیمات این بخش به حالت اولیه برگردد؟", confirmText: "بازگردانی" }))) return;
-              setCurrent(DEFAULT_COLUMNS[tab].map((c) => ({ ...c, scope: scopeOf(c) })));
+              if (!(await confirm({ title: "بازگردانی پیش‌فرض", message: "ستون‌های این جدول به حالت اولیه برگردند؟", confirmText: "بازگردانی" })))
+                return;
+              setCols({ ...cols, [tab]: DEFAULT_COLUMNS[tab] });
             }}
           >
             بازگردانی پیش‌فرض
           </Button>
-          {dirty[tab] ? <Badge tone="amber">تغییرات ذخیره‌نشده</Badge> : <Badge tone="green">ذخیره‌شده</Badge>}
+        </div>
+      </Card>
+
+      {/* فیلدهای داخل فرم ثبت — مستقل از ستون‌های جدول */}
+      <Card>
+        <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+          <div>
+            <h3 className="text-sm font-black text-slate-800">📝 فیلدهای فرم ثبت</h3>
+            <p className="mt-1 text-[11px] text-slate-500">
+              این بخش تعیین می‌کند چه فیلدهایی داخل تب «فرم ثبت» نمایش داده شوند. ستون‌های بالای صفحه فقط مربوط به جدول لیست هستند.
+            </p>
+          </div>
+          <Badge tone="green">{toPersianDigits(currentFields.filter((f) => f.visible).length)} فیلد فعال</Badge>
+        </div>
+
+        <ul className="space-y-1">
+          {currentFields.map((f, i) => (
+            <li key={f.key} className="flex flex-wrap items-center gap-2 rounded-xl bg-indigo-50/60 px-3 py-2 ring-1 ring-indigo-100">
+              <span className="w-6 text-center text-[11px] text-slate-400">{toPersianDigits(i + 1)}</span>
+              <input
+                type="checkbox"
+                className="size-4 accent-indigo-600"
+                checked={f.visible}
+                onChange={(e) => {
+                  const next = [...currentFields];
+                  next[i] = { ...f, visible: e.target.checked };
+                  setFormFields({ ...formFields, [tab]: next });
+                }}
+              />
+              <Input
+                value={f.label}
+                onChange={(e) => {
+                  const next = [...currentFields];
+                  next[i] = { ...f, label: e.target.value };
+                  setFormFields({ ...formFields, [tab]: next });
+                }}
+                className="max-w-[220px] px-2 py-1 text-xs"
+              />
+              <span className="rounded bg-white px-2 py-0.5 text-[10px] text-slate-400">{f.key}</span>
+              <div className="mr-auto flex gap-1">
+                <button
+                  onClick={() => setFormFields({ ...formFields, [tab]: move(currentFields, i, -1) })}
+                  className="rounded-lg bg-white px-2 py-1 text-xs ring-1 ring-slate-200"
+                >
+                  ↑
+                </button>
+                <button
+                  onClick={() => setFormFields({ ...formFields, [tab]: move(currentFields, i, 1) })}
+                  className="rounded-lg bg-white px-2 py-1 text-xs ring-1 ring-slate-200"
+                >
+                  ↓
+                </button>
+                <button
+                  onClick={async () => {
+                    if (!(await confirm({
+                      title: "حذف فیلد فرم",
+                      message: `فیلد «${f.label}» از فرم ثبت حذف شود؟ بعداً می‌توانید دوباره اضافه کنید.`,
+                      confirmText: "حذف",
+                      danger: true,
+                    }))) return;
+                    const next = currentFields.filter((_, x) => x !== i);
+                    setFormFields({ ...formFields, [tab]: next });
+                    await persist(`fields.${tab}`, next, `✅ فیلد «${f.label}» حذف شد`);
+                  }}
+                  className="rounded-lg bg-rose-100 px-2 py-1 text-xs font-bold text-rose-700"
+                >
+                  حذف
+                </button>
+              </div>
+            </li>
+          ))}
+        </ul>
+
+        <div className="mt-3 flex flex-wrap items-center gap-2 rounded-xl bg-indigo-50 p-2 ring-1 ring-indigo-200">
+          <span className="text-[11px] font-bold text-indigo-800">افزودن فیلد به فرم:</span>
+          <select
+            value={addField}
+            onChange={(e) => setAddField(e.target.value)}
+            className="rounded-xl border border-indigo-200 bg-white px-2 py-2 text-xs"
+          >
+            <option value="">انتخاب فیلد...</option>
+            {(AVAILABLE_FORM_FIELDS[tab] ?? [])
+              .filter((a) => !currentFields.some((f) => f.key === a.key))
+              .map((a) => (
+                <option key={a.key} value={a.key}>{a.label}</option>
+              ))}
+          </select>
+          <Button
+            variant="soft"
+            onClick={async () => {
+              const found = (AVAILABLE_FORM_FIELDS[tab] ?? []).find((a) => a.key === addField);
+              if (!found) {
+                setMsg("ابتدا یک فیلد فرم را انتخاب کنید");
+                return;
+              }
+              const next = [...currentFields, { ...found, visible: true }];
+              setFormFields({ ...formFields, [tab]: next });
+              setAddField("");
+              await persist(`fields.${tab}`, next, `✅ فیلد «${found.label}» به فرم ثبت اضافه شد`);
+            }}
+          >
+            ➕ افزودن و ذخیره
+          </Button>
+        </div>
+
+        <div className="mt-3 flex flex-wrap gap-2">
+          <Button onClick={() => save(`fields.${tab}`, currentFields)}>💾 ذخیره ترتیب فیلدهای فرم</Button>
+          <Button
+            variant="ghost"
+            onClick={async () => {
+              if (!(await confirm({ title: "بازگردانی فرم", message: "همه فیلدهای فرم به حالت اولیه برگردند؟", confirmText: "بازگردانی" }))) return;
+              const next = DEFAULT_FORM_FIELDS[tab];
+              setFormFields({ ...formFields, [tab]: next });
+              await persist(`fields.${tab}`, next, "✅ فیلدهای فرم به حالت اولیه برگشتند");
+            }}
+          >
+            بازگردانی همه فیلدها
+          </Button>
         </div>
       </Card>
 
       <Card>
-        <h3 className="mb-1 text-sm font-black text-slate-800">💊 کالاها، جوایز و قیمت‌های مرجع</h3>
-        <p className="mb-3 text-[11px] text-slate-500">
-          قیمت پخش و داروخانه به ریال وارد شود. این قیمت‌ها مستقیماً در محاسبات تارگت هر نماینده استفاده می‌شوند.
-        </p>
-        <div className="scroll-x">
-          <table className="w-full min-w-[940px] text-right text-xs">
-            <thead>
-              <tr className="bg-slate-100 text-slate-600">
-                <th className="px-2 py-2">ردیف</th>
-                <th className="px-2 py-2">فعال</th>
-                <th className="px-2 py-2">نام کالا</th>
-                <th className="px-2 py-2">عنوان جایزه</th>
-                <th className="px-2 py-2">قیمت پخش (ریال)</th>
-                <th className="px-2 py-2">قیمت داروخانه (ریال)</th>
-                <th className="px-2 py-2">اختلاف</th>
-                <th className="px-2 py-2">عملیات</th>
-              </tr>
-            </thead>
-            <tbody>
-              {products.map((p, i) => (
-                <tr key={p.key} className="border-b border-slate-100">
-                  <td className="px-2 py-2">{toPersianDigits(i + 1)}</td>
-                  <td className="px-2 py-2">
-                    <input
-                      type="checkbox"
-                      checked={p.enabled}
-                      onChange={(e) => {
-                        const next = [...products];
-                        next[i] = { ...p, enabled: e.target.checked };
-                        setProducts(next);
-                      }}
-                      className="size-4 accent-teal-600"
-                    />
-                  </td>
-                  <td className="px-2 py-2">
-                    <Input value={p.label} onChange={(e) => { const next=[...products]; next[i]={...p,label:e.target.value}; setProducts(next); }} className="w-36 px-2 py-1.5 text-xs" />
-                  </td>
-                  <td className="px-2 py-2">
-                    <Input value={p.bonusLabel} onChange={(e) => { const next=[...products]; next[i]={...p,bonusLabel:e.target.value}; setProducts(next); }} className="w-44 px-2 py-1.5 text-xs" />
-                  </td>
-                  <td className="px-2 py-2">
-                    <Input inputMode="numeric" value={p.priceDistributor || ""} onChange={(e) => { const next=[...products]; next[i]={...p,priceDistributor:Number(e.target.value.replace(/\D/g,""))||0}; setProducts(next); }} className="w-32 px-2 py-1.5 text-center text-xs" />
-                  </td>
-                  <td className="px-2 py-2">
-                    <Input inputMode="numeric" value={p.pricePharmacy || ""} onChange={(e) => { const next=[...products]; next[i]={...p,pricePharmacy:Number(e.target.value.replace(/\D/g,""))||0}; setProducts(next); }} className="w-32 px-2 py-1.5 text-center text-xs" />
-                  </td>
-                  <td className="px-2 py-2 font-bold text-teal-700">{money(Math.max(0, p.pricePharmacy - p.priceDistributor))}</td>
-                  <td className="px-2 py-2">
-                    <div className="flex gap-1">
-                      <button onClick={() => { const j=i-1;if(j<0)return;const n=[...products];[n[i],n[j]]=[n[j],n[i]];setProducts(n); }} className="rounded bg-white px-2 py-1 ring-1 ring-slate-200">↑</button>
-                      <button onClick={() => { const j=i+1;if(j>=products.length)return;const n=[...products];[n[i],n[j]]=[n[j],n[i]];setProducts(n); }} className="rounded bg-white px-2 py-1 ring-1 ring-slate-200">↓</button>
-                      <button
-                        onClick={async () => {
-                          if (!(await confirm({ title: "حذف کالا", message: `«${p.label}» حذف شود؟`, confirmText: "حذف", danger: true }))) return;
-                          setProducts(products.filter((_, x) => x !== i));
-                        }}
-                        className="rounded bg-rose-100 px-2 py-1 font-bold text-rose-700"
-                      >حذف</button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+        <h3 className="mb-2 text-sm font-bold text-slate-700">کالاها و جوایز (ترتیب، عنوان، فعال/غیرفعال)</h3>
+        <ul className="space-y-1">
+          {products.map((p, i) => (
+            <li key={p.key} className="flex flex-wrap items-center gap-2 rounded-xl bg-slate-50 px-3 py-2">
+              <span className="w-6 text-center text-[11px] text-slate-400">{toPersianDigits(i + 1)}</span>
+              <input
+                type="checkbox"
+                className="size-4 accent-teal-600"
+                checked={p.enabled}
+                onChange={(e) => {
+                  const next = [...products];
+                  next[i] = { ...p, enabled: e.target.checked };
+                  setProducts(next);
+                }}
+              />
+              <Input
+                value={p.label}
+                onChange={(e) => {
+                  const next = [...products];
+                  next[i] = { ...p, label: e.target.value };
+                  setProducts(next);
+                }}
+                className="max-w-[150px] px-2 py-1 text-xs"
+              />
+              <Input
+                value={p.bonusLabel}
+                onChange={(e) => {
+                  const next = [...products];
+                  next[i] = { ...p, bonusLabel: e.target.value };
+                  setProducts(next);
+                }}
+                className="max-w-[180px] px-2 py-1 text-xs"
+              />
+              <div className="mr-auto flex gap-1">
+                <button onClick={() => moveP(i, -1)} className="rounded-lg bg-white px-2 py-1 text-xs ring-1 ring-slate-200">
+                  ↑
+                </button>
+                <button onClick={() => moveP(i, 1)} className="rounded-lg bg-white px-2 py-1 text-xs ring-1 ring-slate-200">
+                  ↓
+                </button>
+                <button
+                  onClick={async () => {
+                    if (
+                      !(await confirm({
+                        title: "حذف کالا",
+                        message: `کالای «${p.label}» حذف شود؟`,
+                        confirmText: "حذف",
+                        danger: true,
+                      }))
+                    )
+                      return;
+                    setProducts(products.filter((_, x) => x !== i));
+                  }}
+                  className="rounded-lg bg-rose-100 px-2 py-1 text-xs font-bold text-rose-700"
+                >
+                  حذف
+                </button>
+              </div>
+            </li>
+          ))}
+        </ul>
 
-        <div className="mt-3 flex flex-wrap gap-2 rounded-xl bg-slate-50 p-3 ring-1 ring-slate-200">
-          <Input value={newProduct} onChange={(e) => setNewProduct(e.target.value)} placeholder="نام کالای جدید..." className="max-w-[240px]" />
+        <div className="mt-3 flex flex-wrap gap-2">
+          <Input
+            value={newProduct}
+            onChange={(e) => setNewProduct(e.target.value)}
+            placeholder="نام کالای جدید..."
+            className="max-w-[220px]"
+          />
           <Button
             variant="soft"
             onClick={() => {
               const label = newProduct.trim();
               if (!label) return;
-              setProducts([...products, normalizeProduct({ key: `p_${Date.now()}`, label, bonusLabel: `تعداد جایزه ${label}`, enabled: true })]);
+              const key = `p_${Date.now()}`;
+              setProducts([...products, { key, label, bonusLabel: `تعداد جایزه ${label}`, enabled: true }]);
               setNewProduct("");
             }}
           >
             ➕ افزودن کالا
           </Button>
-          <Button onClick={saveProducts} disabled={busy}>💾 ذخیره کالاها و قیمت‌ها</Button>
-          <Button variant="ghost" onClick={() => setProducts(DEFAULT_PRODUCTS)}>بازگردانی پیش‌فرض</Button>
+          <Button onClick={() => save("products", products)}>💾 ذخیره کالاها</Button>
+          <Button variant="ghost" onClick={() => setProducts(DEFAULT_PRODUCTS)}>
+            بازگردانی پیش‌فرض
+          </Button>
         </div>
       </Card>
     </div>

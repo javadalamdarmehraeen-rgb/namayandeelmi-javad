@@ -19,6 +19,41 @@ export type GeoArea = {
   radiusKm: number;
 };
 
+/** نام انگلیسی استان‌ها در GeoJSON → نام فارسی سامانه */
+export const PROVINCE_EN_FA: Record<string, string> = {
+  Tehran: "تهران",
+  Alborz: "البرز",
+  Isfahan: "اصفهان",
+  Fars: "فارس",
+  "Razavi Khorasan": "خراسان رضوی",
+  "East Azerbaijan": "آذربایجان شرقی",
+  "West Azerbaijan": "آذربایجان غربی",
+  Khuzestan: "خوزستان",
+  Gilan: "گیلان",
+  Mazandaran: "مازندران",
+  Kerman: "کرمان",
+  Qom: "قم",
+  Yazd: "یزد",
+  Hamadan: "همدان",
+  Kermanshah: "کرمانشاه",
+  Golestan: "گلستان",
+  Ardabil: "اردبیل",
+  Qazvin: "قزوین",
+  Zanjan: "زنجان",
+  Markazi: "مرکزی",
+  Lorestan: "لرستان",
+  Kurdistan: "کردستان",
+  Hormozgan: "هرمزگان",
+  Bushehr: "بوشهر",
+  Semnan: "سمنان",
+  "Sistan and Baluchestan": "سیستان و بلوچستان",
+  "Chaharmahal and Bakhtiari": "چهارمحال و بختیاری",
+  "Kohgiluyeh and Boyer-Ahmad": "کهگیلویه و بویراحمد",
+  "North Khorasan": "خراسان شمالی",
+  "South Khorasan": "خراسان جنوبی",
+  Ilam: "ایلام",
+};
+
 /** مرکز جغرافیایی ایران — نقطه پیش‌فرض نقشه */
 export const IRAN_CENTER: GeoArea = {
   name: "ایران",

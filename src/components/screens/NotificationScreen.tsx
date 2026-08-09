@@ -67,22 +67,6 @@ export default function NotificationScreen() {
     } else setMsg("خطا در ارسال");
   };
 
-  const markOne = async (id: number) => {
-    // تغییر خوش‌بینانه: کاربر همان لحظه نتیجه را می‌بیند
-    const now = new Date().toISOString();
-    setRows((prev) => prev.map((n) => (n.id === id ? { ...n, readAt: now } : n)));
-    const res = await fetch("/api/notifications", {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ ids: [id] }),
-    });
-    if (res.ok) setMsg("✅ پیام خوانده شد");
-    else {
-      setMsg("✖ ثبت وضعیت خوانده‌شده ناموفق بود");
-      load();
-    }
-  };
-
   const markAll = async () => {
     await fetch("/api/notifications", {
       method: "PATCH",
@@ -143,22 +127,18 @@ export default function NotificationScreen() {
         <div className="space-y-2">
           {rows.length === 0 ? <p className="text-sm text-slate-400">اعلانی وجود ندارد</p> : null}
           {rows.map((n) => (
-            <button
-              type="button"
+            <div
               key={n.id}
-              onClick={() => !n.readAt && markOne(n.id)}
-              className={`block w-full rounded-xl px-3 py-2 text-right text-sm transition ${
-                n.readAt ? "bg-slate-50 opacity-75" : "bg-teal-50 ring-1 ring-teal-200 hover:bg-teal-100"
-              }`}
+              className={`rounded-xl px-3 py-2 text-sm ${n.readAt ? "bg-slate-50" : "bg-teal-50 ring-1 ring-teal-200"}`}
             >
               <div className="flex flex-wrap items-center gap-2">
                 <span className="font-bold text-slate-800">{n.title}</span>
-                {!n.readAt ? <Badge tone="green">جدید — برای خواندن کلیک کنید</Badge> : <Badge tone="slate">خوانده‌شده</Badge>}
+                {!n.readAt ? <Badge tone="green">جدید</Badge> : null}
                 <span className="mr-auto text-[10px] text-slate-400">{tehranDateTime(n.createdAt)}</span>
               </div>
               {n.body ? <p className="mt-1 whitespace-pre-wrap text-xs text-slate-600">{n.body}</p> : null}
               {n.fromName ? <p className="text-[10px] text-slate-400">فرستنده: {n.fromName}</p> : null}
-            </button>
+            </div>
           ))}
         </div>
         <p className="mt-2 text-[11px] text-slate-400">تعداد کل: {toPersianDigits(rows.length)}</p>

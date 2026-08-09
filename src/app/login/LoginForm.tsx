@@ -356,20 +356,29 @@ export default function LoginForm() {
           </div>
         ) : null}
 
-        <div className="mb-4 text-center text-white">
-          <div className="mx-auto mb-3 flex size-24 items-center justify-center rounded-[1.75rem] bg-white shadow-xl ring-4 ring-white/25">
-            {/* لوگوی رسمی کپسول برنامه */}
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src="/logo.svg"
-              alt="لوگوی کپسول ثبت اطلاعات کل"
-              width="82"
-              height="82"
-              className="size-[82px] object-contain drop-shadow-sm"
-            />
+        <div className="mb-5 text-center text-white">
+          <div className="relative mx-auto mb-3 size-24">
+            <div className="absolute inset-1 rounded-[1.75rem] bg-white/20 blur-lg" />
+            <div className="relative flex size-24 items-center justify-center overflow-hidden rounded-[1.75rem] bg-white shadow-2xl ring-1 ring-white/70">
+              {/* لوگوی اصلی کپسول برنامه */}
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src="/icons/icon-192.png"
+                alt="لوگوی کپسول ثبت اطلاعات کل"
+                width={84}
+                height={84}
+                className="size-[84px] object-contain"
+              />
+            </div>
+            <span className="absolute -bottom-1 -left-1 flex size-7 items-center justify-center rounded-full bg-emerald-400 text-xs shadow-lg ring-2 ring-teal-700">
+              ✓
+            </span>
           </div>
-          <h1 className="text-2xl font-black">ثبت اطلاعات کل</h1>
-          <p className="mt-1 text-xs text-teal-50/90">سامانه نمایندگان علمی — وب، ویندوز و موبایل</p>
+          <h1 className="text-2xl font-black drop-shadow-sm">ثبت اطلاعات کل</h1>
+          <p className="mt-1 text-xs font-medium text-teal-50/90">سامانه هوشمند نمایندگان علمی</p>
+          <div className="mx-auto mt-2 flex w-fit items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-[10px] text-teal-50 ring-1 ring-white/20">
+            <span>وب</span><span className="opacity-50">•</span><span>اندروید</span><span className="opacity-50">•</span><span>ویندوز</span><span className="opacity-50">•</span><span>آفلاین</span>
+          </div>
         </div>
 
         <form onSubmit={submit} className="space-y-3 rounded-3xl bg-white p-5 shadow-xl ring-1 ring-slate-200">

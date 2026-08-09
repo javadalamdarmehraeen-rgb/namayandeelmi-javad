@@ -1,42 +1,71 @@
 import { PRODUCTS } from "./constants";
 
-export type ProductConfig = {
-  key: string;
-  label: string;
-  bonusLabel: string;
-  enabled: boolean;
-  /** قیمت‌های مرجع برنامه (ریال) — در تارگت استفاده می‌شوند */
-  priceDistributor: number;
-  pricePharmacy: number;
-};
-
-export type FieldScope = "form" | "list" | "both";
-export type FieldType = "text" | "number" | "textarea" | "select" | "phone";
-
-export type ColumnConfig = {
-  key: string;
-  label: string;
-  visible: boolean;
-  /** محل نمایش: فرم ثبت، لیست، یا هر دو */
-  scope?: FieldScope;
-  /** برای فیلدهای سفارشی */
-  fieldType?: FieldType;
-  custom?: boolean;
-  required?: boolean;
-  optionCategory?: string;
-};
+export type ProductConfig = { key: string; label: string; bonusLabel: string; enabled: boolean };
+export type ColumnConfig = { key: string; label: string; visible: boolean };
+export type FormFieldConfig = { key: string; label: string; visible: boolean };
 
 export const DEFAULT_PRODUCTS: ProductConfig[] = PRODUCTS.map((p) => ({
   key: p.key,
   label: p.label,
   bonusLabel: p.bonusLabel,
   enabled: true,
-  priceDistributor: 0,
-  pricePharmacy: 0,
 }));
 
 /** کلید فیلد جایزه هر کالا */
 export const bonusKeyOf = (key: string) => `${key}_bonus`;
+
+export const DEFAULT_FORM_FIELDS: Record<string, FormFieldConfig[]> = {
+  pharmacies: [
+    { key: "dateShamsi", label: "تاریخ ثبت", visible: true },
+    { key: "province", label: "استان", visible: true },
+    { key: "city", label: "شهر", visible: true },
+    { key: "region", label: "منطقه", visible: true },
+    { key: "name", label: "نام داروخانه", visible: true },
+    { key: "landline", label: "شماره ثابت داروخانه", visible: true },
+    { key: "managerName", label: "نام مسئول سفارش", visible: true },
+    { key: "managerPhone", label: "شماره همراه مسئول سفارش", visible: true },
+    { key: "address", label: "آدرس داروخانه", visible: true },
+    { key: "isPercent", label: "وضعیت درصدی", visible: true },
+    { key: "files", label: "فایل و تصویر", visible: true },
+    { key: "location", label: "لوکیشن و نقشه داروخانه", visible: true },
+  ],
+  doctors: [
+    { key: "dateShamsi", label: "تاریخ ثبت", visible: true },
+    { key: "province", label: "استان", visible: true },
+    { key: "city", label: "شهر", visible: true },
+    { key: "region", label: "منطقه", visible: true },
+    { key: "name", label: "نام پزشک", visible: true },
+    { key: "specialty", label: "تخصص", visible: true },
+    { key: "phone", label: "شماره همراه پزشک", visible: true },
+    { key: "secretaryName", label: "نام منشی", visible: true },
+    { key: "secretaryPhone", label: "شماره همراه منشی", visible: true },
+    { key: "address", label: "آدرس مطب", visible: true },
+    { key: "otherAddresses", label: "آدرس مطب‌های دیگر", visible: true },
+    { key: "isPercent", label: "وضعیت درصدی", visible: true },
+    { key: "files", label: "فایل و تصویر پزشک", visible: true },
+    { key: "location", label: "لوکیشن و نقشه مطب", visible: true },
+  ],
+  orders: [
+    { key: "dateShamsi", label: "تاریخ سفارش", visible: true },
+    { key: "pharmacyName", label: "نام داروخانه", visible: true },
+    { key: "managerName", label: "نام مسئول سفارش", visible: true },
+    { key: "managerPhone", label: "شماره همراه مسئول سفارش", visible: true },
+    { key: "address", label: "آدرس داروخانه", visible: true },
+    { key: "location", label: "لوکیشن و نقشه داروخانه", visible: true },
+    { key: "products", label: "اقلام سفارش و جایزه", visible: true },
+    { key: "distributor", label: "نام پخش", visible: true },
+    { key: "visitor", label: "نام ویزیتور", visible: true },
+    { key: "notes", label: "توضیحات", visible: true },
+  ],
+};
+
+/** همه فیلدهای قابل افزودن به فرم ثبت */
+export const AVAILABLE_FORM_FIELDS: Record<string, { key: string; label: string }[]> = Object.fromEntries(
+  Object.entries(DEFAULT_FORM_FIELDS).map(([key, fields]) => [
+    key,
+    fields.map(({ key: fieldKey, label }) => ({ key: fieldKey, label })),
+  ]),
+);
 
 export const DEFAULT_COLUMNS: Record<string, ColumnConfig[]> = {
   pharmacies: [
@@ -94,25 +123,6 @@ export const DEFAULT_COLUMNS: Record<string, ColumnConfig[]> = {
     { key: "actions", label: "عملیات", visible: true },
   ],
 };
-
-
-/** ستون‌های سیستمی که فقط در لیست معنا دارند */
-const LIST_ONLY_KEYS = new Set(["row", "repName", "products", "totalUnits", "totalBonus", "location", "nav", "files", "sent", "sendStatus", "createdAt", "actions"]);
-
-/** محدوده نمایش پیش‌فرض — سازگار با تنظیمات قدیمی دیتابیس */
-export function scopeOf(c: ColumnConfig): FieldScope {
-  return c.scope ?? (LIST_ONLY_KEYS.has(c.key) ? "list" : "both");
-}
-
-export function inForm(c: ColumnConfig) {
-  const s = scopeOf(c);
-  return (s === "form" || s === "both") && c.visible !== false;
-}
-
-export function inList(c: ColumnConfig) {
-  const s = scopeOf(c);
-  return (s === "list" || s === "both") && c.visible !== false;
-}
 
 export const PERMISSION_GROUPS: {
   key: string;
@@ -194,9 +204,6 @@ export const PERMISSION_GROUPS: {
       { key: "trip.start", label: "شروع/پایان ویزیت" },
       { key: "trip.pause", label: "ثبت وقفه در مسیر" },
       { key: "monitor", label: "رصد تردد نمایندگان" },
-      { key: "live", label: "مشاهده موقعیت زنده نمایندگان" },
-      { key: "map", label: "مشاهده نقشه جامع" },
-      { key: "map.viewAll", label: "مشاهده نقاط همه نمایندگان روی نقشه" },
       { key: "home", label: "ثبت لوکیشن منزل" },
       { key: "home.viewAll", label: "مشاهده منزل همه نمایندگان" },
     ],
@@ -220,8 +227,6 @@ export const PERMISSION_GROUPS: {
       { key: "reports", label: "مشاهده گزارش ماهانه" },
       { key: "reports.allReps", label: "گزارش همه نمایندگان" },
       { key: "reports.products", label: "گزارش فروش هر قلم" },
-      { key: "targets", label: "مشاهده پیشرفت تارگت" },
-      { key: "targets.manage", label: "تعریف تارگت و قیمت‌ها" },
       { key: "export", label: "دریافت خروجی اکسل" },
     ],
   },
@@ -233,16 +238,11 @@ export const PERMISSION_GROUPS: {
       { key: "options", label: "افزودن مقادیر کشویی" },
       { key: "optionsDelete", label: "حذف مقادیر کشویی" },
       { key: "columns", label: "مدیریت ستون‌ها و کالاها" },
-      { key: "columns.fields", label: "ساخت فیلد سفارشی فرم و لیست" },
-      { key: "products.prices", label: "تغییر قیمت پخش و داروخانه کالاها" },
       { key: "users", label: "مدیریت کاربران" },
       { key: "users.password", label: "مشاهده رمز عبور کاربران" },
       { key: "users.permissions", label: "تغییر سطح دسترسی" },
       { key: "messengers", label: "تنظیم پیام‌رسان‌ها" },
       { key: "notifications.send", label: "ارسال اعلان به نمایندگان" },
-      { key: "sync", label: "همگام‌سازی دو سرور" },
-      { key: "backup", label: "پشتیبان‌گیری" },
-      { key: "source.download", label: "دانلود سورس برنامه" },
     ],
   },
 ];
@@ -276,8 +276,6 @@ export const REP_DEFAULT_PERMISSIONS = [
   "trip",
   "trip.start",
   "trip.pause",
-  "map",
-  "targets",
   "home",
   "leave",
   "reports",
@@ -303,9 +301,6 @@ export const SUPERVISOR_DEFAULT_PERMISSIONS = [
   "leave.export",
   "home.viewAll",
   "monitor",
-  "live",
-  "map.viewAll",
-  "targets.manage",
   "reports.allReps",
   "export",
 ];

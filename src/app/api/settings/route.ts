@@ -2,7 +2,7 @@ import { db } from "@/db";
 import { settings } from "@/db/schema";
 import { getSessionUser } from "@/lib/auth";
 import { ensureSeed } from "@/lib/bootstrap";
-import { DEFAULT_COLUMNS, DEFAULT_PRODUCTS } from "@/lib/defaults";
+import { DEFAULT_COLUMNS, DEFAULT_FORM_FIELDS, DEFAULT_PRODUCTS } from "@/lib/defaults";
 import { eq } from "drizzle-orm";
 
 export const dynamic = "force-dynamic";
@@ -12,6 +12,9 @@ const FALLBACK: Record<string, unknown> = {
   "columns.pharmacies": DEFAULT_COLUMNS.pharmacies,
   "columns.doctors": DEFAULT_COLUMNS.doctors,
   "columns.orders": DEFAULT_COLUMNS.orders,
+  "fields.pharmacies": DEFAULT_FORM_FIELDS.pharmacies,
+  "fields.doctors": DEFAULT_FORM_FIELDS.doctors,
+  "fields.orders": DEFAULT_FORM_FIELDS.orders,
 };
 
 export async function GET(req: Request) {

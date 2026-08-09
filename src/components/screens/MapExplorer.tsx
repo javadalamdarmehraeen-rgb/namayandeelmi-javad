@@ -6,10 +6,8 @@ import { Alert, Badge, Button, Card, Field, Input, SectionTitle } from "@/compon
 import Combobox from "@/components/Combobox";
 import NavButton from "@/components/NavButton";
 import { fetchRows } from "@/lib/useLive";
-import { IRAN_CENTER, PROVINCE_GEO, resolveArea } from "@/lib/geo";
-import { IRAN, REGIONS } from "@/lib/iran";
+import { IRAN_CENTER, PROVINCE_GEO, TEHRAN_REGIONS, resolveArea } from "@/lib/geo";
 import { toPersianDigits } from "@/lib/jalali";
-import { faSort } from "@/lib/sort";
 import type { MapArea, MapPoint } from "@/components/MapBox";
 
 const MapBox = nextDynamic(() => import("@/components/MapBox"), {
@@ -104,11 +102,24 @@ export default function MapExplorer({ isAdmin = false }: { isAdmin?: boolean }) 
     load();
   }, [load]);
 
-  /* ---------------- فهرست سلسله‌مراتبی ایران (آفلاین) ---------------- */
-  const provinces = useMemo(() => faSort(Object.keys(IRAN)), []);
-  const cities = useMemo(() => (province ? faSort(IRAN[province] ?? []) : []), [province]);
-  const regions = useMemo(() => (city ? faSort(REGIONS[city] ?? []) : []), [city]);
-  const reps = useMemo(() => faSort(places.map((p) => p.repName)), [places]);
+  /* ---------------- فهرست فیلترها ---------------- */
+  const provinces = useMemo(
+    () => [...new Set([...Object.keys(PROVINCE_GEO), ...places.map((p) => p.province)])].filter(Boolean).sort(),
+    [places],
+  );
+  const cities = useMemo(
+    () =>
+      [...new Set(places.filter((p) => !province || p.province === province).map((p) => p.city))]
+        .filter(Boolean)
+        .sort(),
+    [places, province],
+  );
+  const regions = useMemo(() => {
+    const fromData = places.filter((p) => (!city || p.city === city)).map((p) => p.region);
+    const base = city === "تهران" ? Object.values(TEHRAN_REGIONS).map((r) => r.name) : [];
+    return [...new Set([...base, ...fromData])].filter(Boolean).sort();
+  }, [places, city]);
+  const reps = useMemo(() => [...new Set(places.map((p) => p.repName))].filter(Boolean).sort(), [places]);
 
   /* ---------------- اعمال فیلترها ---------------- */
   const filtered = useMemo(() => {
@@ -275,11 +286,9 @@ export default function MapExplorer({ isAdmin = false }: { isAdmin?: boolean }) 
             points={mapPoints}
             area={area}
             follow={!!selected}
-            showWorld
-            showProvinces
+            showIranProvinces
             selectedProvince={province}
             onProvinceSelect={(name) => {
-              if (!IRAN[name]) return;
               setProvince(name);
               setCity("");
               setRegion("");

@@ -5,7 +5,6 @@ import { Alert, Button, Card, Input, SectionTitle } from "@/components/ui";
 import { OPTION_CATEGORIES } from "@/lib/constants";
 import { useConfirm } from "@/components/Confirm";
 import { toPersianDigits } from "@/lib/jalali";
-import { faCompare } from "@/lib/sort";
 import { useLive } from "@/lib/useLive";
 
 type Opt = { id: number; category: string; value: string; parent: string; createdBy: string };
@@ -98,14 +97,12 @@ export default function OptionsScreen({ canDelete = false }: { canDelete?: boole
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {OPTION_CATEGORIES.map((cat) => {
           const par = parentSel[cat.key] ?? "";
-          const items = rows
-            .filter(
-              (r) =>
-                r.category === cat.key &&
-                (!q || r.value.toLowerCase().includes(q.toLowerCase())) &&
-                (!par || r.parent === par),
-            )
-            .sort((a, b) => faCompare(a.value, b.value));
+          const items = rows.filter(
+            (r) =>
+              r.category === cat.key &&
+              (!q || r.value.toLowerCase().includes(q.toLowerCase())) &&
+              (!par || r.parent === par),
+          );
           return (
             <Card key={cat.key}>
               <h3 className="mb-2 text-sm font-bold text-slate-800">

@@ -8,6 +8,7 @@ import { IRAN, PROVINCES, REGIONS } from "./iran";
 import {
   ALL_PERMISSION_KEYS,
   DEFAULT_COLUMNS,
+  DEFAULT_FORM_FIELDS,
   DEFAULT_PRODUCTS,
   REP_DEFAULT_PERMISSIONS,
   SUPERVISOR_DEFAULT_PERMISSIONS,
@@ -369,9 +370,6 @@ async function migrate() {
     `ALTER TABLE pharmacies ALTER COLUMN location_label TYPE text`,
     `ALTER TABLE doctors ALTER COLUMN location_label TYPE text`,
     `ALTER TABLE orders ALTER COLUMN location_label TYPE text`,
-    `ALTER TABLE pharmacies ADD COLUMN IF NOT EXISTS custom_data jsonb NOT NULL DEFAULT '{}'::jsonb`,
-    `ALTER TABLE doctors ADD COLUMN IF NOT EXISTS custom_data jsonb NOT NULL DEFAULT '{}'::jsonb`,
-    `ALTER TABLE orders ADD COLUMN IF NOT EXISTS custom_data jsonb NOT NULL DEFAULT '{}'::jsonb`,
     `ALTER TABLE pharmacies ALTER COLUMN name TYPE text`,
     `ALTER TABLE doctors ALTER COLUMN name TYPE text`,
     `ALTER TABLE orders ALTER COLUMN pharmacy_name TYPE text`,
@@ -555,18 +553,16 @@ async function seed() {
       { key: "columns.pharmacies", value: DEFAULT_COLUMNS.pharmacies },
       { key: "columns.doctors", value: DEFAULT_COLUMNS.doctors },
       { key: "columns.orders", value: DEFAULT_COLUMNS.orders },
+      { key: "fields.pharmacies", value: DEFAULT_FORM_FIELDS.pharmacies },
+      { key: "fields.doctors", value: DEFAULT_FORM_FIELDS.doctors },
+      { key: "fields.orders", value: DEFAULT_FORM_FIELDS.orders },
     ]);
   }
   // مدیر همیشه دسترسی کامل داشته باشد (ترمیم دیتابیس‌های قدیمی)
   try {
     await db.execute(sql`
-      UPDATE users
-      SET permissions = ${JSON.stringify(ALL_PERMISSION_KEYS)}::jsonb,
-          active = true,
-          role = CASE WHEN username = 'admin' THEN 'admin' ELSE role END,
-          require_phone = false,
-          sim_mode = 'off'
-      WHERE role = 'admin' OR username = 'admin' 
+      UPDATE users SET permissions = ${JSON.stringify(ALL_PERMISSION_KEYS)}::jsonb
+      WHERE role = 'admin' AND (permissions IS NULL OR jsonb_array_length(permissions) < ${ALL_PERMISSION_KEYS.length})
     `);
     await db.execute(sql`
       UPDATE users SET permissions = ${JSON.stringify(REP_DEFAULT_PERMISSIONS)}::jsonb

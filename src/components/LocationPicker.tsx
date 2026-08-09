@@ -4,7 +4,6 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import dynamic from "next/dynamic";
 import { Badge, Button, Input } from "./ui";
 import { toPersianDigits } from "@/lib/jalali";
-import { CITY_GEO, PROVINCE_GEO } from "@/lib/geo";
 
 const MapBox = dynamic(() => import("./MapBox"), {
   ssr: false,
@@ -31,18 +30,12 @@ export default function LocationPicker({
   height = 260,
   /** متن پیشنهادی برای جستجو (مثلاً نام داروخانه + شهر) */
   suggestQuery = "",
-  province = "",
-  onAddressChange,
 }: {
   value: LatLng;
   onChange: (v: LatLng) => void;
   label?: string;
   height?: number;
   suggestQuery?: string;
-  /** استان انتخاب‌شده برای مشخص شدن مرز آن روی نقشه */
-  province?: string;
-  /** آدرس پیدا شده از جستجو/GPS را داخل فیلد آدرس فرم می‌نشاند */
-  onAddressChange?: (address: string) => void;
 }) {
   const [status, setStatus] = useState("");
   const [busy, setBusy] = useState(false);
@@ -75,37 +68,14 @@ export default function LocationPicker({
     try {
       const res = await fetch(`/api/geocode?q=${encodeURIComponent(term)}`, { cache: "no-store" });
       const d = await res.json();
-      let list: Hit[] = d.results ?? [];
-      // پشتیبان آفلاین: مرکز شهر/استان از داده محلی برنامه
-      if (list.length === 0) {
-        const local = [...Object.values(CITY_GEO), ...Object.values(PROVINCE_GEO)].filter((g) =>
-          term.replace(/\s+/g, "").includes(g.name.replace(/\s+/g, "")),
-        );
-        list = local.slice(0, 8).map((g) => ({
-          label: `${g.name} — موقعیت تقریبی آفلاین`,
-          lat: g.lat,
-          lng: g.lng,
-          type: "offline-local",
-        }));
-      }
+      const list: Hit[] = d.results ?? [];
       setHits(list);
       setOpenList(list.length > 0);
       setSearchMsg(
         list.length ? `${toPersianDigits(list.length)} نتیجه — یکی را انتخاب کنید` : "نتیجه‌ای یافت نشد",
       );
     } catch {
-      const local = [...Object.values(CITY_GEO), ...Object.values(PROVINCE_GEO)].filter((g) =>
-        term.replace(/\s+/g, "").includes(g.name.replace(/\s+/g, "")),
-      );
-      const list = local.slice(0, 8).map((g) => ({
-        label: `${g.name} — موقعیت تقریبی آفلاین`,
-        lat: g.lat,
-        lng: g.lng,
-        type: "offline-local",
-      }));
-      setHits(list);
-      setOpenList(list.length > 0);
-      setSearchMsg(list.length ? "📴 نتیجه تقریبی از نقشه آفلاین" : "جستجو ناموفق بود — روی نقشه نقطه را انتخاب کنید");
+      setSearchMsg("جستجو ناموفق بود — می‌توانید روی نقشه نقطه را انتخاب کنید");
     } finally {
       setSearching(false);
     }
@@ -139,7 +109,6 @@ export default function LocationPicker({
     onChange({ lat: h.lat, lng: h.lng, accuracy: 0 });
     setQuery(h.label);
     setAddress(h.label);
-    onAddressChange?.(h.label);
     setOpenList(false);
     setSearchMsg("✅ موقعیت روی نقشه تنظیم شد — در صورت نیاز نشانگر را جابه‌جا کنید");
   };
@@ -149,14 +118,11 @@ export default function LocationPicker({
     try {
       const res = await fetch(`/api/geocode?lat=${lat}&lng=${lng}`, { cache: "no-store" });
       const d = await res.json();
-      if (d.results?.[0]?.label) {
-        setAddress(d.results[0].label);
-        onAddressChange?.(d.results[0].label);
-      }
+      if (d.results?.[0]?.label) setAddress(d.results[0].label);
     } catch {
       /* ignore */
     }
-  }, [onAddressChange]);
+  }, []);
 
   /* ------------------------- موقعیت‌یاب GPS ------------------------- */
 
@@ -320,13 +286,7 @@ export default function LocationPicker({
         draggable
         accuracy={acc}
         points={value.lat && value.lng ? [{ lat: value.lat, lng: value.lng, label: label || "لوکیشن" }] : []}
-        showWorld
-        showProvinces
-        selectedProvince={province}
-        onPick={(p) => {
-          onChange({ lat: p.lat, lng: p.lng, accuracy: 0 });
-          void reverseLookup(p.lat, p.lng);
-        }}
+        onPick={(p) => onChange({ lat: p.lat, lng: p.lng, accuracy: 0 })}
       />
 
       <div className="grid grid-cols-2 gap-2">

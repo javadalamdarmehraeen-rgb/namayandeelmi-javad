@@ -8,15 +8,7 @@ export async function getProducts(): Promise<ProductConfig[]> {
   try {
     const rows = await db.select().from(settings).where(eq(settings.key, "products")).limit(1);
     const v = rows[0]?.value as ProductConfig[] | undefined;
-    if (Array.isArray(v) && v.length) {
-      return v
-        .filter((p) => p.enabled !== false)
-        .map((p) => ({
-          ...p,
-          priceDistributor: Number(p.priceDistributor) || 0,
-          pricePharmacy: Number(p.pricePharmacy) || 0,
-        }));
-    }
+    if (Array.isArray(v) && v.length) return v.filter((p) => p.enabled !== false);
   } catch {
     /* ignore */
   }

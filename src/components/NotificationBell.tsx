@@ -115,14 +115,12 @@ export default function NotificationBell({ basePath }: { basePath: string }) {
   };
 
   const markOne = async (id: number) => {
-    setRows((prev) => prev.filter((n) => n.id !== id));
-    setUnread((n) => Math.max(0, n - 1));
-    const res = await fetch("/api/notifications", {
+    await fetch("/api/notifications", {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ ids: [id] }),
     });
-    if (!res.ok) load();
+    load();
   };
 
   const toggleMute = () => {
