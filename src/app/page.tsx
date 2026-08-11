@@ -1,63 +1,30 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
-import { patchFetch } from "@/components/SessionProvider";
-import { getCachedUser } from "@/lib/offline-session";
+import React, { useEffect } from "react";
 
-export default function Home() {
-  const router = useRouter();
-  const [slow, setSlow] = useState(false);
-
+/**
+ * Next.js Root Dashboard Page (/)
+ * هماهنگ با آدرس‌های دائم namayandeelmi-javad.onrender.com و ndcohub.ir
+ * اجرای مستقیم سامانه مدیریت ویزیت علمی، داروخانه‌ها، پزشکان و سفارشات (CRM PWA)
+ */
+export default function HomePage() {
   useEffect(() => {
-    patchFetch();
-
-    // ۱) اگر نشست ذخیره‌شده داریم، بدون انتظار برای شبکه وارد می‌شویم (کار روی هر اینترنتی)
-    const cached = getCachedUser();
-    if (cached) {
-      router.replace(cached.role === "rep" ? "/panel" : "/admin");
-      return;
-    }
-
-    // ۲) اگر آفلاین هستیم مستقیم به صفحه ورود
-    if (!navigator.onLine) {
-      router.replace("/login");
-      return;
-    }
-
-    const slowTimer = setTimeout(() => setSlow(true), 5000);
-    // اگر ظرف ۱۲ ثانیه پاسخی نیامد، به صفحه ورود می‌رویم تا کاربر معطل نماند
-    const bail = setTimeout(() => router.replace("/login"), 12000);
-    // بیدارکردن سرور (Render رایگان بعد از بی‌کاری خاموش می‌شود)
-    fetch("/api/ping", { cache: "no-store" }).catch(() => undefined);
-
-    fetch("/api/auth/me", { cache: "no-store" })
-      .then((r) => (r.ok ? r.json() : null))
-      .then((d) => router.replace(!d?.user ? "/login" : d.user.role === "rep" ? "/panel" : "/admin"))
-      .catch(() => router.replace("/login"))
-      .finally(() => {
-        clearTimeout(slowTimer);
-        clearTimeout(bail);
-      });
-
-    return () => {
-      clearTimeout(slowTimer);
-      clearTimeout(bail);
-    };
-  }, [router]);
+    document.title = "سیستم جامع مدیریت و ویزیت علمی، داروخانه‌ها و پزشکان (CRM)";
+  }, []);
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center gap-3 bg-slate-100 p-6 text-center">
-      <div className="size-10 animate-spin rounded-full border-4 border-teal-200 border-t-teal-600" />
-      <p className="text-sm font-bold text-slate-600">در حال بارگذاری «ثبت اطلاعات کل»...</p>
-      {slow ? (
-        <p className="max-w-xs text-xs leading-6 text-slate-500">
-          ارتباط با سرور کند است یا سرور در حال بیدار شدن. چند لحظه صبر کنید — برنامه خودکار ادامه می‌دهد.
-        </p>
-      ) : null}
-      <a href="/login" className="mt-2 text-xs font-bold text-teal-700 underline">
-        رفتن مستقیم به صفحه ورود
-      </a>
-    </main>
+    <div style={{ width: "100%", height: "100vh", margin: 0, padding: 0, overflow: "hidden", backgroundColor: "#0f766e" }}>
+      <iframe
+        src="/index.html"
+        title="CRM Medical Representative Application"
+        style={{
+          width: "100%",
+          height: "100%",
+          border: "none",
+          display: "block",
+        }}
+        allow="geolocation; microphone; camera"
+      />
+    </div>
   );
 }
