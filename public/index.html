@@ -12,8 +12,8 @@
   <link rel="manifest" href="manifest.json" />
   <meta name="theme-color" content="#0d9488" />
   
-  <!-- Custom Style with Anti-Cache Version -->
-  <link rel="stylesheet" href="style.css?v=3.1.0" />
+  <!-- Custom Style with Anti-Cache Version 5.0.0 -->
+  <link rel="stylesheet" href="style.css?v=5.0.0" />
 </head>
 <body>
 
@@ -120,6 +120,21 @@
             <h3 id="statLeaves">0</h3>
             <p>مرخصی‌های در جریان</p>
           </div>
+        </div>
+      </div>
+
+      <!-- 20-Section Quick Launchpad Grid (لانچ‌پد امکانات سامانه - بدون اسکرول افقی) -->
+      <div class="card" style="margin-bottom: 1.5rem;">
+        <div class="card-header">
+          <div class="card-title">
+            <span>🚀 دسترسی یکجا به تمامی ۲۰ قابلیت مدیریتی (بدون نیاز به اسکرول به چپ و راست)</span>
+          </div>
+        </div>
+        <p style="font-size: 0.88rem; color: #64748b; margin-bottom: 1rem;">
+          تمامی امکانات سامانه در یک صفحه چیده شده‌اند تا بدون اسکرول به چپ و راست، با یک کلیک وارد هر بخش شوید:
+        </p>
+        <div class="launchpad-grid" id="dashboardLaunchpadGrid">
+          <!-- Generated dynamically for all 20 sections -->
         </div>
       </div>
 
@@ -706,13 +721,13 @@
     </section>
 
     <!-- ======================================================================
-         6. TAB: COMPREHENSIVE MAP (نقشه جامع) - Menu Item 6 + Province/City Zoom
+         6. TAB: COMPREHENSIVE MAP (نقشه جامع) - Menu Item 6 + Province/City/District Zoom
          ====================================================================== -->
     <section id="tab-overview-map" class="tab-pane">
       <div class="card">
         <div class="card-header">
           <div class="card-title">
-            <span>🗺️ نقشه جامع شبکه درمان (داروخانه‌ها 🏥، پزشکان 👨‍⚕️ و نمایندگان 👔 با نام ثابت)</span>
+            <span>🗺️ نقشه جامع شبکه درمان (داروخانه‌ها 🏥، پزشکان 👨‍⚕️ و بیمارستان‌ها 🏥 با نام ثابت)</span>
           </div>
           <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
             <select id="mapFilterProvince" class="form-select dropdown-auto-clear" style="width: 140px;">
@@ -721,12 +736,22 @@
             <select id="mapFilterCity" class="form-select dropdown-auto-clear" style="width: 140px;">
               <option value="">همه شهرها</option>
             </select>
+            <select id="mapFilterDistrict" class="form-select dropdown-auto-clear" style="width: 140px;">
+              <option value="">همه مناطق</option>
+            </select>
             <button id="btnFocusMapRegion" class="btn btn-primary btn-sm" style="background: #0d9488;">
-              <span>🔍 بزرگنمایی استان/شهر</span>
+              <span>🔍 بزرگنمایی و فیلتر موقعیت</span>
             </button>
           </div>
         </div>
-        <div id="map-full-overview" class="map-container" style="height: 560px;"></div>
+        <div id="map-full-overview" class="map-container" style="height: 520px; margin-bottom: 1rem;"></div>
+
+        <!-- Summary Counts Box for Selected Region -->
+        <div id="overviewMapSummaryBox" style="background: #f0fdf4; border: 1.5px solid #bbf7d0; border-radius: 10px; padding: 1rem; display: flex; align-items: center; justify-content: space-around; flex-wrap: wrap; gap: 1rem; color: #166534; font-weight: 700;">
+          <div>🏥 تعداد داروخانه‌ها در موقعیت: <strong id="cntOverviewPharmacies" style="color: #0d9488; font-size: 1.15rem;">0</strong></div>
+          <div>👨‍⚕️ تعداد پزشکان و مطب‌ها: <strong id="cntOverviewDoctors" style="color: #10b981; font-size: 1.15rem;">0</strong></div>
+          <div>🏥 درمانگاه‌ها و بیمارستان‌ها: <strong id="cntOverviewHospitals" style="color: #059669; font-size: 1.15rem;">0</strong></div>
+        </div>
       </div>
     </section>
 
@@ -784,16 +809,31 @@
       <div class="card">
         <div class="card-header">
           <div class="card-title">
-            <span>🛣️ رصد تردد و مسیرهای روزانه نمایندگان در شهر و منطقه</span>
+            <span>🛣️ رصد تردد، مسیرهای روزانه، زمان شروع و پایان ویزیت و توقف‌ها روی نقشه</span>
+          </div>
+          <div style="display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap;">
+            <select id="routeRepFilterSelect" class="form-select dropdown-auto-clear" style="width: 200px;">
+              <option value="">همه نمایندگان</option>
+            </select>
+            <button id="btnRefreshRepRoutesMap" class="btn btn-outline btn-sm">
+              <span>🔄 بروزرسانی نقشه تردد</span>
+            </button>
           </div>
         </div>
+        <p style="font-size: 0.88rem; color: #64748b; margin-bottom: 1rem;">
+          مراکز ویزیت‌شده با رنگ <strong>سبز (✅ ویزیت‌شده)</strong> و مراکز در انتظار با رنگ <strong>زرد/نارنجی (⏳ در انتظار)</strong> روی مسیر تردد نمایش داده می‌شوند. همچنین ساعت شروع، پایان و زمان هر توقف روی نقشه مشخص است.
+        </p>
+        <div id="map-rep-routes-full" class="map-container" style="height: 480px; margin-bottom: 1.5rem;"></div>
+
         <div class="table-responsive">
           <table class="data-table">
             <thead>
               <tr>
                 <th>نام نماینده علمی</th>
-                <th>تاریخ تردد</th>
+                <th>ساعت شروع ویزیت</th>
+                <th>ساعت پایان ویزیت</th>
                 <th>آخرین ایستگاه / وقفه در مسیر</th>
+                <th>تعداد ویزیت‌شده (✅) / در انتظار (⏳)</th>
                 <th>وضعیت تردد</th>
               </tr>
             </thead>
@@ -812,9 +852,17 @@
       <div class="card">
         <div class="card-header">
           <div class="card-title">
-            <span>🏠 نقشه و آدرس ثبت‌شده منزل نمایندگان علمی</span>
+            <span>🏠 نقشه و آدرس ثبت‌شده منزل نمایندگان علمی (ثبت لوکیشن منزل)</span>
           </div>
+          <button id="btnRepHomeCurrentLocation" class="btn btn-primary btn-sm" style="background: #0d9488;">
+            <span>📍 موقعیت فعلی من (ثبت لوکیشن منزل روی نقشه)</span>
+          </button>
         </div>
+        <p style="font-size: 0.88rem; color: #64748b; margin-bottom: 1rem;">
+          با کلیک بر روی «موقعیت فعلی من»، مختصات دقیق منزل شما روی نقشه درج شده و در مسیر تردد روزانه به عنوان نقطه شروع/پایان لحاظ می‌شود.
+        </p>
+        <div id="map-rep-homes" class="map-container" style="height: 360px; margin-bottom: 1.5rem;"></div>
+
         <div class="table-responsive">
           <table class="data-table">
             <thead>
@@ -834,27 +882,72 @@
     </section>
 
     <!-- ======================================================================
-         10. TAB: LEAVES (مرخصی‌ها) - Menu Item 10
+         10. TAB: LEAVES (مرخصی‌ها) - Menu Item 10 + Hourly/Daily + 2-Tier Approval
          ====================================================================== -->
     <section id="tab-leaves" class="tab-pane">
       <div class="card">
         <div class="card-header">
           <div class="card-title">
-            <span>📝 مدیریت درخواست‌های مرخصی و ماموریت نمایندگان</span>
+            <span>📝 مدیریت درخواست‌های مرخصی و مأموریت (با دو تاییدیه سرپرست و مدیر کل)</span>
           </div>
           <button id="btnExportLeavesCSV" class="btn btn-success btn-sm" style="background: #0d9488;">
             <span>⬇️ خروجی اکسل مرخصی‌ها</span>
           </button>
         </div>
+
+        <form id="formLeaveRequest" onsubmit="return false;" style="background: #f8fafc; padding: 1.25rem; border-radius: 10px; border: 1px solid var(--border-color); margin-bottom: 1.5rem;">
+          <h4 style="margin-bottom: 1rem; color: #1e293b;">📝 ثبت درخواست مرخصی / مأموریت جدید</h4>
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="form-label">نام نماینده *</label>
+              <select id="leaveRepSelect" class="form-select dropdown-auto-clear" required>
+                <option value="">انتخاب نماینده...</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">نوع مرخصی *</label>
+              <select id="leaveTypeSelect" class="form-select dropdown-auto-clear" required>
+                <option value="روزانه (استحقاقی)">روزانه (استحقاقی)</option>
+                <option value="روزانه (استعلاجی)">روزانه (استعلاجی)</option>
+                <option value="ساعتی">مرخصی ساعتی</option>
+                <option value="مأموریت اداری">مأموریت اداری</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">از تاریخ * (با اسلش خودکار)</label>
+              <input type="text" id="leaveFromDate" class="form-input" placeholder="1405/05/22" required />
+            </div>
+            <div class="form-group">
+              <label class="form-label">تا تاریخ *</label>
+              <input type="text" id="leaveToDate" class="form-input" placeholder="1405/05/23" required />
+            </div>
+            <div class="form-group" id="leaveHoursGroup" style="display: none;">
+              <label class="form-label">ساعت مرخصی (از ساعت - تا ساعت)</label>
+              <input type="text" id="leaveHoursInput" class="form-input" placeholder="مثال: از ۰۹:۰۰ تا ۱۲:۰۰" />
+            </div>
+            <div class="form-group full-width">
+              <label class="form-label">توضیحات و دلیل مرخصی *</label>
+              <input type="text" id="leaveReasonInput" class="form-input" placeholder="علت درخواست مرخصی یا مأموریت..." required />
+            </div>
+          </div>
+          <div style="display: flex; justify-content: flex-end; margin-top: 1rem;">
+            <button type="submit" class="btn btn-primary" style="background: #0d9488;">
+              <span>📝 ثبت درخواست مرخصی</span>
+            </button>
+          </div>
+        </form>
+
         <div class="table-responsive">
           <table class="data-table">
             <thead>
               <tr>
                 <th>نام نماینده علمی</th>
-                <th>از تاریخ</th>
+                <th>نوع مرخصی</th>
+                <th>از تاریخ / ساعت</th>
                 <th>تا تاریخ</th>
-                <th>نوع و دلیل مرخصی</th>
-                <th>وضعیت تایید</th>
+                <th>دلیل</th>
+                <th>تایید سرپرست</th>
+                <th>تایید مدیر کل</th>
                 <th>عملیات</th>
               </tr>
             </thead>
@@ -867,15 +960,46 @@
     </section>
 
     <!-- ======================================================================
-         11. TAB: NOTIFICATIONS (اعلان‌ها) - Menu Item 11
+         11. TAB: NOTIFICATIONS (اعلان‌ها) - Menu Item 11 + Send/Reply Message
          ====================================================================== -->
     <section id="tab-notifications" class="tab-pane">
       <div class="card">
         <div class="card-header">
           <div class="card-title">
-            <span>🔔 ارسال و مشاهده اعلان‌ها و پیام‌های جمعی به نمایندگان</span>
+            <span>🔔 ارسال و مشاهده اعلان‌ها و پیام‌رسانی داخلی (امکان ارسال و پاسخ پیام)</span>
           </div>
         </div>
+
+        <!-- Send / Reply Message Box -->
+        <form id="formSendMessage" onsubmit="return false;" style="background: #f8fafc; padding: 1.25rem; border-radius: 10px; border: 1px solid var(--border-color); margin-bottom: 1.5rem;">
+          <h4 style="margin-bottom: 1rem; color: #1e293b;">💬 ارسال پیام جدید / پاسخ به پیام در اعلان‌ها</h4>
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="form-label">گیرنده پیام *</label>
+              <select id="msgRecipientSelect" class="form-select dropdown-auto-clear" required>
+                <option value="همه کاربران (اعلان عمومی)">همه کاربران (اعلان عمومی)</option>
+                <option value="مدیر سیستم">مدیر سیستم (Admin)</option>
+                <option value="جواد علمدار">جواد علمدار (نماینده علمی)</option>
+                <option value="خانم نیلا محرمی">خانم نیلا محرمی (نماینده علمی)</option>
+                <option value="آقای داوود عقبایی">آقای داوود عقبایی (سرپرست)</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">عنوان پیام / اعلان *</label>
+              <input type="text" id="msgTitleInput" class="form-input" placeholder="مثال: پاسخ مرخصی یا اعلام تارگت..." required />
+            </div>
+            <div class="form-group full-width">
+              <label class="form-label">متن پیام *</label>
+              <input type="text" id="msgBodyInput" class="form-input" placeholder="متن کامل پیام یا پاسخ خود را تایپ کنید..." required />
+            </div>
+          </div>
+          <div style="display: flex; justify-content: flex-end; margin-top: 1rem;">
+            <button type="submit" class="btn btn-primary" style="background: #0d9488;">
+              <span>📤 ارسال پیام و اعلان (با صدای هشدار)</span>
+            </button>
+          </div>
+        </form>
+
         <div class="table-responsive">
           <table class="data-table">
             <thead>
@@ -883,7 +1007,9 @@
                 <th>تاریخ ارسال</th>
                 <th>عنوان اعلان</th>
                 <th>متن پیام</th>
-                <th>فرستنده</th>
+                <th>فرستنده / گیرنده</th>
+                <th>وضعیت</th>
+                <th>عملیات</th>
               </tr>
             </thead>
             <tbody id="tableNotificationsBody">
@@ -1545,8 +1671,8 @@
   <!-- Leaflet JS -->
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   
-  <!-- Data & Application Logic with Anti-Cache Version -->
-  <script src="crm-data.js?v=3.1.0"></script>
-  <script src="crm-app.js?v=3.1.0"></script>
+  <!-- Data & Application Logic with Anti-Cache Version 5.0.0 -->
+  <script src="crm-data.js?v=5.0.0"></script>
+  <script src="crm-app.js?v=5.0.0"></script>
 </body>
 </html>

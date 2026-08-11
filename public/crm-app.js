@@ -93,17 +93,19 @@ function applyGeneralSettingsToUI() {
 }
 
 // ----------------------------------------------------------------------------
-// 1. منوی ۲۰ قابلیت و سایدبار کشویی (Matching Screenshot 1)
+// 1. منوی ۲۰ قابلیت، سایدبار کشویی و لانچ‌پد بدون اسکرول افقی
 // ----------------------------------------------------------------------------
 function setupNavigationMenu() {
   const horizontalContainer = document.getElementById("horizontalNavContainer");
   const sideContainer = document.getElementById("sideMenuItemsContainer");
+  const launchpadGrid = document.getElementById("dashboardLaunchpadGrid");
 
   if (horizontalContainer) horizontalContainer.innerHTML = "";
   if (sideContainer) sideContainer.innerHTML = "";
+  if (launchpadGrid) launchpadGrid.innerHTML = "";
 
   MENU_SECTIONS_LIST.forEach((sec, index) => {
-    // 1. ساخت دکمه منوی افقی
+    // 1. ساخت دکمه منوی افقی (wrapping grid - بدون اسکرول به چپ و راست)
     if (horizontalContainer) {
       const btn = document.createElement("button");
       btn.className = "nav-item" + (index === 0 ? " active" : "");
@@ -116,7 +118,7 @@ function setupNavigationMenu() {
       horizontalContainer.appendChild(btn);
     }
 
-    // 2. ساخت آیتم منوی کشویی سایدبار (هماهنگ با اسکرین‌شات ۱)
+    // 2. ساخت آیتم منوی کشویی سایدبار
     if (sideContainer) {
       const btnSide = document.createElement("button");
       btnSide.className = "side-menu-item" + (index === 0 ? " active" : "");
@@ -130,6 +132,20 @@ function setupNavigationMenu() {
         closeSideMenu();
       };
       sideContainer.appendChild(btnSide);
+    }
+
+    // 3. ساخت کارت لانچ‌پد در داشبورد (بدون اسکرول افقی)
+    if (launchpadGrid) {
+      const card = document.createElement("button");
+      card.className = "launchpad-card";
+      card.onclick = () => switchTab(sec.id);
+      card.innerHTML = `
+        <div class="launchpad-icon">${sec.icon}</div>
+        <div class="launchpad-text">
+          <h4>${sec.label}</h4>
+        </div>
+      `;
+      launchpadGrid.appendChild(card);
     }
   });
 
@@ -1671,24 +1687,172 @@ function renderRepHomesTable() {
   });
 }
 
+function setupLeavesModule() {
+  const formLeave = document.getElementById("formLeaveRequest");
+  const repSel = document.getElementById("leaveRepSelect");
+  const typeSel = document.getElementById("leaveTypeSelect");
+  const hoursGrp = document.getElementById("leaveHoursGroup");
+
+  if (repSel) {
+    repSel.innerHTML = `<option value="">انتخاب نماینده...</option>`;
+    state.reps.forEach(r => {
+      repSel.innerHTML += `<option value="${r.name}">${r.name}</option>`;
+    });
+  }
+
+  if (typeSel && hoursGrp) {
+    typeSel.addEventListener("change", () => {
+      hoursGrp.style.display = typeSel.value.includes("ساعتی") ? "block" : "none";
+    });
+  }
+
+  if (formLeave) {
+    formLeave.addEventListener("submit", () => {
+      const repName = repSel.value;
+      const leaveType = typeSel.value;
+      const fromDate = document.getElementById("leaveFromDate").value.trim();
+      const toDate = document.getElementById("leaveToDate").value.trim();
+      const hours = document.getElementById("leaveHoursInput") ? document.getElementById("leaveHoursInput").value.trim() : "";
+      const reason = document.getElementById("leaveReasonInput").value.trim();
+
+      if (!repName || !fromDate || !toDate || !reason) {
+        alert("لطفاً نماینده، تاریخ شروع، پایان و دلیل مرخصی را وارد کنید.");
+        return;
+      }
+
+      const newLeave = {
+        id: "lv-" + Date.now(),
+        repName,
+        fromDate,
+        toDate,
+        reason: `${leaveType}${hours ? ` (${hours})` : ""} - ${reason}`,
+        supervisorStatus: "در انتظار",
+        adminStatus: "در انتظار",
+        status: "در حال بررسی"
+      };
+
+      if (!state.leaves) state.leaves = [];
+      state.leaves.push(newLeave);
+      saveState();
+      formLeave.reset();
+      renderLeavesTable();
+      updateNavBadges();
+      alert(`📝 درخواست مرخصی برای «${repName}» ثبت شد و منتظر تایید سرپرست و مدیر است.`);
+    });
+  }
+}
+
 function renderLeavesTable() {
   const tbody = document.getElementById("tableLeavesBody");
   if (!tbody) return;
   tbody.innerHTML = "";
   (state.leaves || []).forEach(lv => {
     const tr = document.createElement("tr");
+    const supBadge = lv.supervisorStatus === "تایید شد"
+      ? `<span class="badge-status-online" style="background:#10b981;">✅ تایید شد</span>`
+      : `<button class="btn btn-outline btn-sm" onclick="approveLeaveSupervisor('${lv.id}')">⏳ تایید سرپرست</button>`;
+
+    const admBadge = lv.adminStatus === "تایید شد"
+      ? `<span class="badge-status-online" style="background:#0d9488;">✅ تایید نهایی</span>`
+      : `<button class="btn btn-primary btn-sm" style="background:#0d9488;" onclick="approveLeaveAdmin('${lv.id}')">⏳ تایید مدیر کل</button>`;
+
     tr.innerHTML = `
       <td><strong style="color:#0f172a;">${lv.repName}</strong></td>
+      <td>${lv.reason}</td>
       <td>${lv.fromDate}</td>
       <td>${lv.toDate}</td>
       <td>${lv.reason}</td>
-      <td><span class="badge-status-online">${lv.status}</span></td>
+      <td>${supBadge}</td>
+      <td>${admBadge}</td>
       <td>
-        <button class="btn btn-outline btn-sm" onclick="alert('تایید مرخصی برای ${lv.repName} انجام شد.')">✓ تایید</button>
+        <button class="btn btn-danger btn-sm" onclick="deleteLeave('${lv.id}')">🗑️ حذف</button>
       </td>
     `;
     tbody.appendChild(tr);
   });
+}
+
+function approveLeaveSupervisor(id) {
+  const lv = (state.leaves || []).find(x => x.id === id);
+  if (!lv) return;
+  lv.supervisorStatus = "تایید شد";
+  saveState();
+  renderLeavesTable();
+  alert(`✓ تایید سرپرست برای درخواست مرخصی «${lv.repName}» انجام شد.`);
+}
+
+function approveLeaveAdmin(id) {
+  const lv = (state.leaves || []).find(x => x.id === id);
+  if (!lv) return;
+  lv.adminStatus = "تایید شد";
+  lv.status = "تایید نهایی شد";
+  saveState();
+  renderLeavesTable();
+
+  // ارسال اعلان وضعیت مرخصی به نماینده
+  const notif = {
+    id: "not-" + Date.now(),
+    date: new Date().toLocaleDateString("fa-IR"),
+    title: `تایید مرخصی: ${lv.repName}`,
+    message: `درخواست مرخصی شما از تاریخ ${lv.fromDate} تا ${lv.toDate} توسط مدیر کل تایید نهایی شد.`,
+    sender: "مدیر کل",
+    recipient: lv.repName,
+    isRead: false
+  };
+  if (!state.notifications) state.notifications = [];
+  state.notifications.unshift(notif);
+  saveState();
+  playNotificationBeep();
+  alert(`✅ تایید نهایی مرخصی انجام شد و اعلان آن برای «${lv.repName}» ارسال گردید.`);
+}
+
+function deleteLeave(id) {
+  if (!confirm("آیا از حذف این درخواست مرخصی اطمینان دارید؟")) return;
+  state.leaves = state.leaves.filter(l => l.id !== id);
+  saveState();
+  renderLeavesTable();
+  updateNavBadges();
+}
+
+function setupNotificationsMessaging() {
+  const formMsg = document.getElementById("formSendMessage");
+  if (formMsg) {
+    formMsg.addEventListener("submit", () => {
+      const recipient = document.getElementById("msgRecipientSelect").value;
+      const title = document.getElementById("msgTitleInput").value.trim();
+      const body = document.getElementById("msgBodyInput").value.trim();
+
+      if (!title || !body) {
+        alert("لطفاً عنوان و متن پیام را وارد کنید.");
+        return;
+      }
+
+      const notif = {
+        id: "not-" + Date.now(),
+        date: new Date().toLocaleDateString("fa-IR"),
+        title: title,
+        message: body,
+        sender: `${currentUserName}`,
+        recipient: recipient,
+        isRead: false
+      };
+
+      if (!state.notifications) state.notifications = [];
+      state.notifications.unshift(notif);
+      saveState();
+      formMsg.reset();
+      renderNotificationsTable();
+      playNotificationBeep();
+
+      const badge = document.getElementById("headerNotifBadgeCount") || document.querySelector(".notif-count-badge");
+      if (badge) {
+        badge.style.display = "flex";
+        const cur = parseInt(badge.textContent) || 0;
+        badge.textContent = cur + 1;
+      }
+      alert(`✅ پیام شما به «${recipient}» ارسال شد و با صدای هشدار به ایشان اطلاع داده شد.`);
+    });
+  }
 }
 
 function renderNotificationsTable() {
@@ -1697,14 +1861,37 @@ function renderNotificationsTable() {
   tbody.innerHTML = "";
   (state.notifications || []).forEach(nt => {
     const tr = document.createElement("tr");
+    const readBadge = nt.isRead
+      ? `<span style="color:#64748b;font-size:0.8rem;">خوانده‌شد</span>`
+      : `<button class="btn btn-outline btn-sm" onclick="markNotificationRead('${nt.id}')">✓ خواندن</button>`;
+
     tr.innerHTML = `
       <td>${nt.date}</td>
       <td><strong style="color:#0d9488;">${nt.title}</strong></td>
       <td>${nt.message}</td>
-      <td>${nt.sender}</td>
+      <td>${nt.sender} → ${nt.recipient || "عمومی"}</td>
+      <td>${readBadge}</td>
+      <td>
+        <button class="btn btn-danger btn-sm" onclick="deleteNotification('${nt.id}')">🗑️</button>
+      </td>
     `;
     tbody.appendChild(tr);
   });
+}
+
+function markNotificationRead(id) {
+  const nt = (state.notifications || []).find(n => n.id === id);
+  if (!nt) return;
+  nt.isRead = true;
+  saveState();
+  renderNotificationsTable();
+}
+
+function deleteNotification(id) {
+  if (!confirm("آیا از حذف این اعلان اطمینان دارید؟")) return;
+  state.notifications = state.notifications.filter(n => n.id !== id);
+  saveState();
+  renderNotificationsTable();
 }
 
 function renderMonthlyReportsTable() {
@@ -2720,7 +2907,11 @@ document.addEventListener("DOMContentLoaded", () => {
   try { setupOtherSidebarModules(); } catch(e) {}
   try { setupBackupAndRestore(); } catch(e) {}
   try { setupAddOptionModalForm(); } catch(e) {}
+  try { setupLeavesModule(); } catch(e) {}
+  try { setupNotificationsMessaging(); } catch(e) {}
 
+  try { setupJalaliDateAutoSlash(); } catch(e) {}
+  try { setupFormListSwitchers(); } catch(e) {}
   try { setupDropdownAutoClear(); } catch(e) {}
   try { setupCSVExportButtons(); } catch(e) {}
   try { setupNavigationAppsModal(); } catch(e) {}
@@ -2729,6 +2920,8 @@ document.addEventListener("DOMContentLoaded", () => {
   try { setupPWAServiceWorker(); } catch(e) {}
 
   try { renderAllCustomFieldsInFormsAndTables(); } catch(e) {}
+  try { renderLeavesTable(); } catch(e) {}
+  try { renderNotificationsTable(); } catch(e) {}
 
-  console.log("✅ سیستم مدیریت و ویزیت علمی با تمامی ۲۰ بخش منو، دکمه خروج، زنگوله و آنلاین/آفلاین بارگذاری شد.");
+  console.log("✅ سیستم مدیریت و ویزیت علمی با تمامی ۱۲ بازخورد تاریخی، اسلش خودکار، پیام‌رسانی و تارگت بارگذاری شد.");
 });

@@ -122,66 +122,71 @@ body {
   transform: translateY(-1px);
 }
 
-/* Navigation Tabs */
+/* Navigation Tabs - Compact Wrapping Grid (Zero Left/Right Scroll) */
 .app-nav {
   background: var(--card-bg);
-  border-bottom: 1px solid var(--border-color);
+  border-bottom: 2px solid var(--border-color);
   box-shadow: var(--shadow-sm);
   position: sticky;
   top: 76px;
   z-index: 999;
-  overflow-x: auto;
+  overflow: hidden;
 }
 
 .nav-container {
   max-width: 1400px;
   margin: 0 auto;
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: 0.5rem;
-  padding: 0.5rem 1rem;
-  white-space: nowrap;
+  justify-content: center;
+  gap: 0.4rem;
+  padding: 0.65rem 1rem;
 }
 
 .nav-item {
-  padding: 0.65rem 1.15rem;
-  border-radius: 10px;
-  font-weight: 600;
-  font-size: 0.9rem;
+  padding: 0.45rem 0.85rem;
+  border-radius: 8px;
+  font-weight: 700;
+  font-size: 0.84rem;
   color: var(--text-muted);
-  background: transparent;
-  border: none;
+  background: #f8fafc;
+  border: 1px solid var(--border-color);
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.18s ease;
   display: inline-flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.35rem;
   font-family: inherit;
+  white-space: nowrap;
 }
 
 .nav-item:hover {
-  background: var(--bg-main);
-  color: var(--primary);
+  background: #f0fdf4;
+  border-color: #0d9488;
+  color: #0d9488;
+  transform: translateY(-1px);
 }
 
 .nav-item.active {
-  background: var(--primary-light);
-  color: var(--primary);
-  box-shadow: inset 0 0 0 1px rgba(37, 99, 235, 0.2);
+  background: #0d9488;
+  color: #ffffff;
+  border-color: #0f766e;
+  box-shadow: 0 2px 6px rgba(13, 148, 136, 0.35);
 }
 
 .nav-badge {
   background: #e2e8f0;
-  color: #475569;
-  font-size: 0.75rem;
-  padding: 0.15rem 0.5rem;
+  color: #334155;
+  font-size: 0.72rem;
+  padding: 0.1rem 0.45rem;
   border-radius: 999px;
-  font-weight: 700;
+  font-weight: 800;
 }
 
 .nav-item.active .nav-badge {
-  background: var(--primary);
-  color: #fff;
+  background: #ffffff;
+  color: #0f766e;
 }
 
 /* Main Layout & Cards */
@@ -679,22 +684,53 @@ body {
   padding: 1.5rem;
 }
 
-/* Responsive adjustments */
-@media (max-width: 768px) {
-  .header-container {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-  .header-actions {
-    width: 100%;
-    justify-content: space-between;
-  }
-  .form-grid {
-    grid-template-columns: 1fr;
-  }
-  .map-container {
-    height: 300px;
-  }
+/* Launchpad Grid on Dashboard (Zero Scroll Access to All 20 Modules) */
+.launchpad-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(175px, 1fr));
+  gap: 0.75rem;
+}
+
+.launchpad-card {
+  background: #f8fafc;
+  border: 1.5px solid var(--border-color);
+  border-radius: 12px;
+  padding: 0.85rem;
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: inherit;
+  text-align: right;
+  width: 100%;
+}
+
+.launchpad-card:hover {
+  background: #f0fdf4;
+  border-color: #0d9488;
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.launchpad-icon {
+  font-size: 1.6rem;
+  width: 42px;
+  height: 42px;
+  background: #ffffff;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--shadow-sm);
+  flex-shrink: 0;
+}
+
+.launchpad-text h4 {
+  font-size: 0.9rem;
+  font-weight: 800;
+  color: #0f172a;
+  margin: 0;
 }
 
 /* ============================================================================
