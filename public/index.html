@@ -706,13 +706,24 @@
     </section>
 
     <!-- ======================================================================
-         6. TAB: COMPREHENSIVE MAP (نقشه جامع) - Menu Item 6
+         6. TAB: COMPREHENSIVE MAP (نقشه جامع) - Menu Item 6 + Province/City Zoom
          ====================================================================== -->
     <section id="tab-overview-map" class="tab-pane">
       <div class="card">
         <div class="card-header">
           <div class="card-title">
             <span>🗺️ نقشه جامع شبکه درمان (داروخانه‌ها 🏥، پزشکان 👨‍⚕️ و نمایندگان 👔 با نام ثابت)</span>
+          </div>
+          <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+            <select id="mapFilterProvince" class="form-select dropdown-auto-clear" style="width: 140px;">
+              <option value="">همه استان‌ها</option>
+            </select>
+            <select id="mapFilterCity" class="form-select dropdown-auto-clear" style="width: 140px;">
+              <option value="">همه شهرها</option>
+            </select>
+            <button id="btnFocusMapRegion" class="btn btn-primary btn-sm" style="background: #0d9488;">
+              <span>🔍 بزرگنمایی استان/شهر</span>
+            </button>
           </div>
         </div>
         <div id="map-full-overview" class="map-container" style="height: 560px;"></div>
@@ -916,24 +927,88 @@
     </section>
 
     <!-- ======================================================================
-         13. TAB: SALES TARGETS (تارگت فروش) - Menu Item 13
+         13. TAB: SALES TARGETS (تارگت فروش) - Menu Item 13 + Real-Time Calc
          ====================================================================== -->
     <section id="tab-sales-targets" class="tab-pane">
       <div class="card">
         <div class="card-header">
           <div class="card-title">
-            <span>🎯 تعیین و نظارت بر تارگت فروش (KPI) نمایندگان</span>
+            <span>🎯 تعیین و نظارت بر تارگت فروش (KPI) به تفکیک نماینده و کالا</span>
           </div>
         </div>
+        <p style="font-size: 0.88rem; color: #64748b; margin-bottom: 1.25rem;">
+          بر اساس درخواست شما: با وارد کردن تعداد تارگت برای هر کالا، مبلغ تارگت (ضربدر قیمت پخش و قیمت داروخانه) به صورت لحظه‌ای محاسبه شده و در گزارش‌های سفارش از باقیمانده آن کسر می‌شود.
+        </p>
+
+        <form id="formSalesTarget" onsubmit="return false;" style="background: #f8fafc; padding: 1.25rem; border-radius: 10px; border: 1px solid var(--border-color); margin-bottom: 1.5rem;">
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="form-label">نماینده علمی *</label>
+              <select id="tgtRepSelect" class="form-select dropdown-auto-clear" required>
+                <option value="">انتخاب نماینده...</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">محصول / کالا *</label>
+              <select id="tgtProductSelect" class="form-select dropdown-auto-clear" required>
+                <option value="">انتخاب کالا...</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">تعداد تارگت (عدد) *</label>
+              <input type="number" id="tgtCountInput" class="form-input" placeholder="مثال: 500" required />
+            </div>
+            <div class="form-group">
+              <label class="form-label">سال هدف</label>
+              <input type="number" id="tgtYearInput" class="form-input" value="1405" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">ماه هدف</label>
+              <select id="tgtMonthSelect" class="form-select dropdown-auto-clear">
+                <option value="فروردین">فروردین</option>
+                <option value="اردیبهشت">اردیبهشت</option>
+                <option value="خرداد">خرداد</option>
+                <option value="تیر">تیر</option>
+                <option value="مرداد" selected>مرداد</option>
+                <option value="شهریور">شهریور</option>
+                <option value="مهر">مهر</option>
+                <option value="آبان">آبان</option>
+                <option value="آذر">آذر</option>
+                <option value="دی">دی</option>
+                <option value="بهمن">بهمن</option>
+                <option value="اسفند">اسفند</option>
+              </select>
+            </div>
+            <div class="form-group full-width" style="background: #eff6ff; padding: 0.75rem 1rem; border-radius: 8px; border: 1px solid #bfdbfe; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap;">
+              <div>
+                <span>مبلغ کل بر اساس قیمت پخش: </span>
+                <strong id="tgtCalcDistPrice" style="color: #1e40af;">0 ریال</strong>
+              </div>
+              <div>
+                <span>مبلغ کل بر اساس قیمت داروخانه: </span>
+                <strong id="tgtCalcPhPrice" style="color: #0d9488;">0 ریال</strong>
+              </div>
+            </div>
+          </div>
+          <div style="display: flex; justify-content: flex-end; margin-top: 1rem;">
+            <button type="submit" class="btn btn-primary" style="background: #0d9488;">
+              <span>🎯 ثبت و محاسبه تارگت نماینده</span>
+            </button>
+          </div>
+        </form>
+
         <div class="table-responsive">
           <table class="data-table">
             <thead>
               <tr>
                 <th>نام نماینده علمی</th>
-                <th>ماه هدف</th>
-                <th>مبلغ تارگت (ریال)</th>
-                <th>فروش محقق‌شده (ریال)</th>
+                <th>محصول / کالا</th>
+                <th>تعداد تارگت</th>
+                <th>سفارش گرفته</th>
+                <th>باقیمانده</th>
+                <th>مبلغ کل تارگت (ریال)</th>
                 <th>درصد تحقق</th>
+                <th>عملیات</th>
               </tr>
             </thead>
             <tbody id="tableSalesTargetsBody">
@@ -1058,7 +1133,11 @@
               <input type="text" id="productCategory" class="form-input" placeholder="مثال: گوارش / دیابت" required />
             </div>
             <div class="form-group">
-              <label class="form-label">قیمت واحد (ریال) *</label>
+              <label class="form-label">قیمت پخش (ریال) *</label>
+              <input type="number" id="productDistPrice" class="form-input" placeholder="40000" required />
+            </div>
+            <div class="form-group">
+              <label class="form-label">قیمت داروخانه (ریال) *</label>
               <input type="number" id="productPrice" class="form-input" placeholder="45000" required />
             </div>
             <div class="form-group">
@@ -1079,7 +1158,8 @@
                 <th>ردیف</th>
                 <th>نام دارو / محصول</th>
                 <th>دسته درمانی</th>
-                <th>قیمت واحد (ریال)</th>
+                <th>قیمت پخش (ریال)</th>
+                <th>قیمت داروخانه (ریال)</th>
                 <th>موجودی</th>
                 <th>عملیات</th>
               </tr>
@@ -1384,10 +1464,52 @@
   </div>
 
   <!-- ======================================================================
+       MODAL: NAVIGATION APPS SELECTOR (انتخاب مسیریاب: نشان، بلد، گوگل، ویز)
+       ====================================================================== -->
+  <div id="modalNavigationApps" class="modal-overlay">
+    <div class="modal-content" style="max-width: 440px;">
+      <div class="card-header">
+        <div class="card-title">
+          <span>🧭 انتخاب مسیریاب برای هدایت به مقصد</span>
+        </div>
+      </div>
+      <p style="font-size: 0.88rem; color: #64748b; margin-bottom: 1.25rem;">
+        مسیریاب مورد نظر خود را انتخاب کنید تا مستقیماً مسیر شما تا مقصد روی نقشه باز شود:
+      </p>
+      <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+        <button type="button" id="btnNavNeshan" class="btn btn-outline" style="justify-content: flex-start; font-size: 0.95rem; padding: 0.75rem 1rem;">
+          <span style="font-size: 1.3rem;">🟢</span>
+          <span>مسیریاب نشان (Neshan)</span>
+        </button>
+        <button type="button" id="btnNavBalad" class="btn btn-outline" style="justify-content: flex-start; font-size: 0.95rem; padding: 0.75rem 1rem;">
+          <span style="font-size: 1.3rem;">🔵</span>
+          <span>مسیریاب بلد (Balad)</span>
+        </button>
+        <button type="button" id="btnNavGoogle" class="btn btn-outline" style="justify-content: flex-start; font-size: 0.95rem; padding: 0.75rem 1rem;">
+          <span style="font-size: 1.3rem;">🔴</span>
+          <span>گوگل مپس (Google Maps)</span>
+        </button>
+        <button type="button" id="btnNavWaze" class="btn btn-outline" style="justify-content: flex-start; font-size: 0.95rem; padding: 0.75rem 1rem;">
+          <span style="font-size: 1.3rem;">🟠</span>
+          <span>ویز (Waze)</span>
+        </button>
+      </div>
+      <div style="display: flex; justify-content: flex-end; margin-top: 1.25rem;">
+        <button type="button" class="btn btn-outline" onclick="closeModalNavigationApps()">بستن</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======================================================================
        MODAL: LOGIN & ROLE SWITCHING (ورود و تغییر نقش کاربری)
        ====================================================================== -->
   <div id="modalLogin" class="modal-overlay">
     <div class="modal-content" style="max-width: 480px;">
+      <div style="text-align: center; margin-bottom: 1rem;">
+        <div style="width: 64px; height: 64px; background: linear-gradient(135deg, #0d9488 0%, #1e3a8a 100%); color: #fff; font-size: 2.2rem; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(13, 148, 136, 0.4);">
+          💊
+        </div>
+      </div>
       <div class="card-header">
         <div class="card-title">
           <span>🔐 ورود به سیستم / تغییر نقش کاربری</span>

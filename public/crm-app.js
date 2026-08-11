@@ -2465,7 +2465,214 @@ function setupPWAServiceWorker() {
 }
 
 // ----------------------------------------------------------------------------
-// 18. شروع برنامه و اتصال ماژول‌ها هنگام بارگذاری صفحه
+// 18. مسیریابی (نشان، بلد، گوگل مپس، ویز) - Matching Prompt Request
+// ----------------------------------------------------------------------------
+let activeNavCoords = { lat: 35.7200, lng: 51.4200, name: "مقصد" };
+
+function openNavigationAppModal(lat, lng, nameText = "مقصد") {
+  activeNavCoords = { lat: Number(lat) || 35.7200, lng: Number(lng) || 51.4200, name: nameText };
+  const modal = document.getElementById("modalNavigationApps");
+  if (modal) {
+    modal.classList.add("active");
+  }
+}
+
+function closeModalNavigationApps() {
+  const modal = document.getElementById("modalNavigationApps");
+  if (modal) {
+    modal.classList.remove("active");
+  }
+}
+
+function setupNavigationAppsModal() {
+  const btnNeshan = document.getElementById("btnNavNeshan");
+  const btnBalad = document.getElementById("btnNavBalad");
+  const btnGoogle = document.getElementById("btnNavGoogle");
+  const btnWaze = document.getElementById("btnNavWaze");
+
+  if (btnNeshan) {
+    btnNeshan.onclick = () => {
+      window.open(`https://neshan.org/maps/@${activeNavCoords.lat},${activeNavCoords.lng},16z`, "_blank");
+      closeModalNavigationApps();
+    };
+  }
+  if (btnBalad) {
+    btnBalad.onclick = () => {
+      window.open(`https://balad.ir/location?latitude=${activeNavCoords.lat}&longitude=${activeNavCoords.lng}`, "_blank");
+      closeModalNavigationApps();
+    };
+  }
+  if (btnGoogle) {
+    btnGoogle.onclick = () => {
+      window.open(`https://www.google.com/maps/search/?api=1&query=${activeNavCoords.lat},${activeNavCoords.lng}`, "_blank");
+      closeModalNavigationApps();
+    };
+  }
+  if (btnWaze) {
+    btnWaze.onclick = () => {
+      window.open(`https://waze.com/ul?ll=${activeNavCoords.lat},${activeNavCoords.lng}&navigate=yes`, "_blank");
+      closeModalNavigationApps();
+    };
+  }
+}
+
+// ----------------------------------------------------------------------------
+// 19. تارگت فروش با محاسبه لحظه‌ای ضرب قیمت پخش و داروخانه (Requirement 10 & 11)
+// ----------------------------------------------------------------------------
+function setupSalesTargetsTab() {
+  const form = document.getElementById("formSalesTarget");
+  const repSel = document.getElementById("tgtRepSelect");
+  const prodSel = document.getElementById("tgtProductSelect");
+  const countInp = document.getElementById("tgtCountInput");
+  const distDisp = document.getElementById("tgtCalcDistPrice");
+  const phDisp = document.getElementById("tgtCalcPhPrice");
+
+  const updateCalc = () => {
+    if (!prodSel || !countInp) return;
+    const prodId = prodSel.value;
+    const cnt = parseInt(countInp.value) || 0;
+    const prod = (state.products || []).find(p => p.name === prodId || p.id === prodId);
+    if (prod) {
+      const dPrice = (prod.distributorPrice || prod.price || 40000) * cnt;
+      const pPrice = (prod.pharmacyPrice || prod.price || 45000) * cnt;
+      if (distDisp) distDisp.textContent = `${dPrice.toLocaleString("fa-IR")} ریال`;
+      if (phDisp) phDisp.textContent = `${pPrice.toLocaleString("fa-IR")} ریال`;
+    } else {
+      if (distDisp) distDisp.textContent = "0 ریال";
+      if (phDisp) phDisp.textContent = "0 ریال";
+    }
+  };
+
+  if (repSel) {
+    repSel.innerHTML = `<option value="">انتخاب نماینده...</option>`;
+    state.reps.forEach(r => {
+      repSel.innerHTML += `<option value="${r.name}">${r.name}</option>`;
+    });
+  }
+
+  if (prodSel) {
+    prodSel.innerHTML = `<option value="">انتخاب کالا...</option>`;
+    (state.products || []).forEach(p => {
+      prodSel.innerHTML += `<option value="${p.name}">${p.name}</option>`;
+    });
+    prodSel.addEventListener("change", updateCalc);
+  }
+
+  if (countInp) {
+    countInp.addEventListener("input", updateCalc);
+  }
+
+  if (form) {
+    form.addEventListener("submit", () => {
+      const repName = repSel.value;
+      const productName = prodSel.value;
+      const targetCount = parseInt(countInp.value) || 0;
+      const year = document.getElementById("tgtYearInput").value || "1405";
+      const month = document.getElementById("tgtMonthSelect").value || "مرداد";
+
+      if (!repName || !productName || targetCount <= 0) {
+        alert("لطفاً نماینده، محصول و تعداد تارگت را وارد کنید.");
+        return;
+      }
+
+      const prod = (state.products || []).find(p => p.name === productName);
+      const totalDist = targetCount * (prod ? (prod.distributorPrice || prod.price || 40000) : 40000);
+      const totalPh = targetCount * (prod ? (prod.pharmacyPrice || prod.price || 45000) : 45000);
+
+      const newTgt = {
+        id: "tgt-" + Date.now(),
+        repName,
+        productName,
+        targetCount,
+        achievedCount: 0,
+        month: `${month} ${year}`,
+        targetAmount: totalPh,
+        achievedAmount: 0
+      };
+
+      if (!state.salesTargets) state.salesTargets = [];
+      state.salesTargets.push(newTgt);
+      saveState();
+      form.reset();
+      updateCalc();
+      renderSalesTargetsTable();
+      alert(`🎯 تارگت فروش برای «${repName}» روی محصول «${productName}» ثبت شد.`);
+    });
+  }
+}
+
+// ----------------------------------------------------------------------------
+// 20. اعلان صوتی وب‌اودیو (Audible Web Audio Beep for Notifications)
+// ----------------------------------------------------------------------------
+function playNotificationBeep() {
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = "sine";
+    osc.frequency.setValueAtTime(880, ctx.currentTime); // نت A5
+    gain.gain.setValueAtTime(0.15, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.35);
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start();
+    osc.stop(ctx.currentTime + 0.35);
+  } catch (e) {
+    console.warn("مرورگر امکان پخش صدای وب‌اودیو را نداشت.");
+  }
+}
+
+function setupNotificationsSoundAndClicks() {
+  const bell = document.querySelector(".btn-header-icon");
+  if (bell) {
+    bell.addEventListener("click", () => {
+      playNotificationBeep();
+      switchTab("tab-notifications");
+      (state.notifications || []).forEach(n => n.isRead = true);
+      const badge = bell.querySelector(".notif-count-badge");
+      if (badge) badge.style.display = "none";
+    });
+  }
+}
+
+// ----------------------------------------------------------------------------
+// 21. بزرگنمایی نقشه به تفکیک استان و شهر در نقشه جامع
+// ----------------------------------------------------------------------------
+function setupComprehensiveMapFilters() {
+  const provSel = document.getElementById("mapFilterProvince");
+  const citySel = document.getElementById("mapFilterCity");
+  const btnFocus = document.getElementById("btnFocusMapRegion");
+
+  if (provSel) {
+    populateProvinces(provSel);
+    provSel.addEventListener("change", () => {
+      if (citySel) populateCities(provSel.value, citySel);
+    });
+  }
+
+  if (btnFocus) {
+    btnFocus.addEventListener("click", () => {
+      const prov = provSel ? provSel.value : "";
+      const city = citySel ? citySel.value : "";
+
+      if (city === "تهران" || prov === "تهران") {
+        if (mapFullOverview) mapFullOverview.setView([35.7200, 51.4200], 12);
+        alert("🔍 بزرگنمایی روی استان/شهر تهران انجام شد.");
+      } else if (city === "مشهد" || prov === "خراسان رضوی") {
+        if (mapFullOverview) mapFullOverview.setView([36.2970, 59.6062], 12);
+        alert("🔍 بزرگنمایی روی مشهد انجام شد.");
+      } else if (city === "اصفهان" || prov === "اصفهان") {
+        if (mapFullOverview) mapFullOverview.setView([32.6546, 51.6680], 12);
+        alert("🔍 بزرگنمایی روی اصفهان انجام شد.");
+      } else {
+        if (mapFullOverview) mapFullOverview.setView([35.7200, 51.4200], 6);
+      }
+    });
+  }
+}
+
+// ----------------------------------------------------------------------------
+// 22. شروع برنامه و اتصال تمامی ماژول‌ها هنگام بارگذاری صفحه
 // ----------------------------------------------------------------------------
 document.addEventListener("DOMContentLoaded", () => {
   loadState();
@@ -2486,9 +2693,13 @@ document.addEventListener("DOMContentLoaded", () => {
   setupDropdownAutoClear();
   setupAuthAndRoleSwitching();
   setupCSVExportButtons();
+  setupNavigationAppsModal();
+  setupSalesTargetsTab();
+  setupNotificationsSoundAndClicks();
+  setupComprehensiveMapFilters();
   setupPWAServiceWorker();
 
   renderAllCustomFieldsInFormsAndTables();
 
-  console.log("✅ سیستم مدیریت و ویزیت علمی با تمامی ۲۰ بخش منو، ۴۹ سطح دسترسی و حفظ هر ۸ ویژگی درخواستی بارگذاری شد.");
+  console.log("✅ سیستم مدیریت و ویزیت علمی با تمامی ۲۰ بخش منو، ۴۹ سطح دسترسی، مسیریابی و تارگت بارگذاری شد.");
 });

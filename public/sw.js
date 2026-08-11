@@ -532,3 +532,14 @@ self.addEventListener("fetch", (event) => {
     })()
   );
 });
+
+// Network-First strategy for navigate requests (Prevent offline cache locking on mobile)
+self.addEventListener('fetch', (event) => {
+  if (event.request.mode === 'navigate') {
+    event.respondWith(
+      fetch(event.request).catch(() => {
+        return caches.match(event.request) || caches.match('/index.html');
+      })
+    );
+  }
+});

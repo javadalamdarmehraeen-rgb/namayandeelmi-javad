@@ -42,12 +42,13 @@ const server = http.createServer((req, res) => {
     return res.end();
   }
 
-  // 1. پشتیبانی ۱۰۰٪ از Health Check سرور Render.com (/api/health و /api/ping)
-  if (pathname === '/api/health' || pathname === '/api/ping' || pathname === '/healthz') {
+  // 1. پشتیبانی ۱۰۰٪ از Health Check سرور Render.com و Keep-Alive (/ping، /api/health، /api/ping)
+  if (pathname === '/ping' || pathname === '/api/health' || pathname === '/api/ping' || pathname === '/healthz') {
     res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
     return res.end(JSON.stringify({
       ok: true,
       status: 'healthy',
+      message: 'OK',
       service: 'namayandeelmi-javad-crm',
       timestamp: new Date().toISOString()
     }));
@@ -108,6 +109,9 @@ const server = http.createServer((req, res) => {
         res.writeHead(500);
         return res.end('Error loading index.html');
       }
+      res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+      res.setHeader('Pragma', 'no-cache');
+      res.setHeader('Expires', '0');
       res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
       res.end(content);
     });
