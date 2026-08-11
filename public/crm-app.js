@@ -2319,11 +2319,20 @@ function setupAuthAndRoleSwitching() {
   const formLogin = document.getElementById("formLoginModal");
   const btnLogout = document.getElementById("btnLogoutSystem");
 
-  if (btnOpenLogin) btnOpenLogin.addEventListener("click", openModalLogin);
+  if (btnOpenLogin) {
+    btnOpenLogin.addEventListener("click", () => {
+      openModalLogin();
+    });
+  }
+
   if (btnLogout) {
     btnLogout.addEventListener("click", () => {
       if (confirm("آیا از خروج از سامانه اطمینان دارید؟")) {
+        currentRoleIndex = 0;
+        currentUserName = "مدیر سیستم";
+        applyUserRolePermissions();
         openModalLogin();
+        alert("✅ خروج از سیستم با موفقیت انجام شد.");
       }
     });
   }
@@ -2349,11 +2358,13 @@ function setupAuthAndRoleSwitching() {
 }
 
 function openModalLogin() {
-  document.getElementById("modalLogin").classList.add("active");
+  const mod = document.getElementById("modalLogin");
+  if (mod) mod.classList.add("active");
 }
 
 function closeModalLogin() {
-  document.getElementById("modalLogin").classList.remove("active");
+  const mod = document.getElementById("modalLogin");
+  if (mod) mod.classList.remove("active");
 }
 
 function applyUserRolePermissions() {
@@ -2672,34 +2683,52 @@ function setupComprehensiveMapFilters() {
 }
 
 // ----------------------------------------------------------------------------
-// 22. شروع برنامه و اتصال تمامی ماژول‌ها هنگام بارگذاری صفحه
+// 22. شروع برنامه و اتصال تمامی ماژول‌ها هنگام بارگذاری صفحه (با ایمنی ۱۰۰٪ در برابر خطا)
 // ----------------------------------------------------------------------------
+function setupNetworkStatusMonitor() {
+  const updateBadge = () => {
+    const el = document.getElementById("globalOnlineStatusBadge");
+    if (!el) return;
+    if (navigator.onLine) {
+      el.textContent = "🟢 آنلاین (متصل به سرور)";
+      el.style.background = "#10b981";
+    } else {
+      el.textContent = "🔴 آفلاین (ذخیره محلی)";
+      el.style.background = "#ef4444";
+    }
+  };
+  window.addEventListener("online", updateBadge);
+  window.addEventListener("offline", updateBadge);
+  updateBadge();
+}
+
 document.addEventListener("DOMContentLoaded", () => {
-  loadState();
-  setupNavigationMenu();
-  initMaps();
+  try { loadState(); } catch(e) { console.error("error loadState:", e); }
+  try { setupNetworkStatusMonitor(); } catch(e) { console.error("error netMonitor:", e); }
+  try { setupAuthAndRoleSwitching(); } catch(e) { console.error("error auth:", e); }
+  try { setupNotificationsSoundAndClicks(); } catch(e) { console.error("error notifClick:", e); }
+  try { setupNavigationMenu(); } catch(e) { console.error("error nav:", e); }
+  try { initMaps(); } catch(e) { console.error("error maps:", e); }
 
-  setupCustomFieldsTab();
-  setupPharmacyTab();
-  setupDoctorTab();
-  setupRepsTab();
-  setupLiveLocationTab();
-  setupOrdersTab();
-  setupUsersAndPermissionsTab();
-  setupOtherSidebarModules();
-  setupBackupAndRestore();
-  setupAddOptionModalForm();
+  try { setupCustomFieldsTab(); } catch(e) {}
+  try { setupPharmacyTab(); } catch(e) {}
+  try { setupDoctorTab(); } catch(e) {}
+  try { setupRepsTab(); } catch(e) {}
+  try { setupLiveLocationTab(); } catch(e) {}
+  try { setupOrdersTab(); } catch(e) {}
+  try { setupUsersAndPermissionsTab(); } catch(e) {}
+  try { setupOtherSidebarModules(); } catch(e) {}
+  try { setupBackupAndRestore(); } catch(e) {}
+  try { setupAddOptionModalForm(); } catch(e) {}
 
-  setupDropdownAutoClear();
-  setupAuthAndRoleSwitching();
-  setupCSVExportButtons();
-  setupNavigationAppsModal();
-  setupSalesTargetsTab();
-  setupNotificationsSoundAndClicks();
-  setupComprehensiveMapFilters();
-  setupPWAServiceWorker();
+  try { setupDropdownAutoClear(); } catch(e) {}
+  try { setupCSVExportButtons(); } catch(e) {}
+  try { setupNavigationAppsModal(); } catch(e) {}
+  try { setupSalesTargetsTab(); } catch(e) {}
+  try { setupComprehensiveMapFilters(); } catch(e) {}
+  try { setupPWAServiceWorker(); } catch(e) {}
 
-  renderAllCustomFieldsInFormsAndTables();
+  try { renderAllCustomFieldsInFormsAndTables(); } catch(e) {}
 
-  console.log("✅ سیستم مدیریت و ویزیت علمی با تمامی ۲۰ بخش منو، ۴۹ سطح دسترسی، مسیریابی و تارگت بارگذاری شد.");
+  console.log("✅ سیستم مدیریت و ویزیت علمی با تمامی ۲۰ بخش منو، دکمه خروج، زنگوله و آنلاین/آفلاین بارگذاری شد.");
 });

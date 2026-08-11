@@ -47,7 +47,7 @@ body {
 
 /* Header & Navbar */
 .app-header {
-  background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);
+  background: linear-gradient(135deg, #0f766e 0%, #0d9488 100%);
   color: #ffffff;
   padding: 1rem 1.5rem;
   box-shadow: var(--shadow-md);
