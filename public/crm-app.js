@@ -2923,5 +2923,190 @@ document.addEventListener("DOMContentLoaded", () => {
   try { renderLeavesTable(); } catch(e) {}
   try { renderNotificationsTable(); } catch(e) {}
 
+  try { setupAllFormSubmitHandlers(); } catch(e) { console.error("error submitHandlers:", e); }
   console.log("✅ سیستم مدیریت و ویزیت علمی با تمامی ۱۲ بازخورد تاریخی، اسلش خودکار، پیام‌رسانی و تارگت بارگذاری شد.");
 });
+
+
+// ============================================================================
+// 26. توابع ثبت و ذخیره داروخانه، پزشک، سفارشات و بررسی تکراری بودن + کسر از تارگت
+// ============================================================================
+function setupAllFormSubmitHandlers() {
+  // 1. ذخیره داروخانه (با بررسی تکراری بودن)
+  const formPh = document.getElementById("formPharmacy");
+  const btnPh = document.getElementById("btnSavePharmacy");
+  const handleSavePh = () => {
+    const editId = document.getElementById("pharmacyEditId").value;
+    const dateAdded = document.getElementById("pharmacyDate").value.trim() || new Date().toLocaleDateString("fa-IR");
+    const name = document.getElementById("pharmacyName").value.trim();
+    const phone = document.getElementById("pharmacyPhone").value.trim();
+    const manager = document.getElementById("pharmacyManager").value.trim();
+    const province = document.getElementById("pharmacyProvince").value;
+    const city = document.getElementById("pharmacyCity").value;
+    const district = document.getElementById("pharmacyDistrict").value;
+    const address = document.getElementById("pharmacyAddress").value.trim();
+    const lat = parseFloat(document.getElementById("pharmacyLat").value) || 35.7605;
+    const lng = parseFloat(document.getElementById("pharmacyLng").value) || 51.4180;
+    const isPercentage = document.getElementById("pharmacyIsPercentage").value === "true";
+
+    if (!name || !province || !city || !district || !address) {
+      alert("لطفاً تمامی فیلدهای ستاره‌دار (*) فرم داروخانه را پر کنید.");
+      return;
+    }
+
+    // بررسی تکراری بودن داروخانه (Requirement 2 in prompt)
+    if (!editId) {
+      const isDup = state.pharmacies.some(p => p.name === name || (phone && p.phone === phone));
+      if (isDup) {
+        alert(`⚠️ اخطار: داروخانه «${name}» قبلاً در سیستم ثبت شده است!`);
+      }
+    }
+
+    if (editId) {
+      const idx = state.pharmacies.findIndex(p => p.id === editId);
+      if (idx !== -1) {
+        state.pharmacies[idx] = { ...state.pharmacies[idx], dateAdded, name, phone, manager, province, city, district, address, lat, lng, isPercentage };
+      }
+      alert(`✅ داروخانه «${name}» با موفقیت ویرایش و ذخیره شد.`);
+    } else {
+      state.pharmacies.push({
+        id: "ph-" + Date.now(),
+        dateAdded, name, phone, manager, province, city, district, address, lat, lng, isPercentage,
+        repName: currentUserName
+      });
+      alert(`✅ داروخانه «${name}» با موفقیت ثبت شد.`);
+    }
+
+    saveState();
+    resetPharmacyForm();
+    renderPharmaciesList();
+    renderDashboardOverviewMap();
+    updateNavBadges();
+    // جابجایی خودکار به تب لیست
+    const btnList = document.getElementById("btnShowPhList");
+    if (btnList) btnList.click();
+  };
+
+  if (btnPh) btnPh.onclick = (e) => { e.preventDefault(); handleSavePh(); };
+  if (formPh) formPh.onsubmit = (e) => { e.preventDefault(); handleSavePh(); };
+
+  // 2. ذخیره پزشک (با بررسی تکراری بودن)
+  const formDoc = document.getElementById("formDoctor");
+  const btnDoc = document.getElementById("btnSaveDoctor");
+  const handleSaveDoc = () => {
+    const editId = document.getElementById("doctorEditId").value;
+    const dateAdded = document.getElementById("doctorDate").value.trim() || new Date().toLocaleDateString("fa-IR");
+    const name = document.getElementById("doctorName").value.trim();
+    const specialty = document.getElementById("doctorSpecialty").value.trim();
+    const phone = document.getElementById("doctorPhone").value.trim();
+    const province = document.getElementById("doctorProvince").value;
+    const city = document.getElementById("doctorCity").value;
+    const district = document.getElementById("doctorDistrict").value;
+    const address = document.getElementById("doctorAddress").value.trim();
+    const lat = parseFloat(document.getElementById("doctorLat").value) || 35.7580;
+    const lng = parseFloat(document.getElementById("doctorLng").value) || 51.4400;
+    const isPercentage = document.getElementById("doctorIsPercentage").value === "true";
+
+    if (!name || !specialty || !province || !city || !district || !address) {
+      alert("لطفاً تمامی فیلدهای ستاره‌دار (*) فرم پزشک/مطب را پر کنید.");
+      return;
+    }
+
+    if (!editId) {
+      const isDup = state.doctors.some(d => d.name === name || (phone && d.phone === phone));
+      if (isDup) {
+        alert(`⚠️ اخطار: پزشک/مطب «${name}» قبلاً در سیستم ثبت شده است!`);
+      }
+    }
+
+    if (editId) {
+      const idx = state.doctors.findIndex(d => d.id === editId);
+      if (idx !== -1) {
+        state.doctors[idx] = { ...state.doctors[idx], dateAdded, name, specialty, phone, province, city, district, address, lat, lng, isPercentage };
+      }
+      alert(`✅ پزشک/مطب «${name}» با موفقیت ویرایش و ذخیره شد.`);
+    } else {
+      state.doctors.push({
+        id: "doc-" + Date.now(),
+        dateAdded, name, specialty, phone, province, city, district, address, lat, lng, isPercentage,
+        repName: currentUserName
+      });
+      alert(`✅ پزشک/مطب «${name}» با موفقیت ثبت شد.`);
+    }
+
+    saveState();
+    resetDoctorForm();
+    renderDoctorsList();
+    renderDashboardOverviewMap();
+    updateNavBadges();
+    const btnList = document.getElementById("btnShowDocList");
+    if (btnList) btnList.click();
+  };
+
+  if (btnDoc) btnDoc.onclick = (e) => { e.preventDefault(); handleSaveDoc(); };
+  if (formDoc) formDoc.onsubmit = (e) => { e.preventDefault(); handleSaveDoc(); };
+
+  // 3. ذخیره سفارش (همراه با کسر از باقیمانده تارگت کالاها)
+  const formOrd = document.getElementById("formOrder");
+  const btnOrd = document.getElementById("btnSaveOrder");
+  const handleSaveOrd = () => {
+    const editId = document.getElementById("orderEditId").value;
+    const pharmacyName = document.getElementById("orderPharmacyName").value.trim();
+    const province = document.getElementById("orderProvince").value;
+    const city = document.getElementById("orderCity").value;
+    const district = document.getElementById("orderDistrict").value;
+    const address = document.getElementById("orderAddress").value.trim();
+    const repName = document.getElementById("orderRepName").value || currentUserName;
+    const orderDate = document.getElementById("orderDate").value.trim() || new Date().toLocaleDateString("fa-IR");
+    const status = document.getElementById("orderStatus").value;
+    const notes = document.getElementById("orderNotes").value.trim();
+
+    if (!pharmacyName || !province || !city || !district) {
+      alert("لطفاً نام داروخانه، استان، شهر و منطقه را وارد کنید.");
+      return;
+    }
+
+    const items = getOrderItemsFromUI();
+    if (items.length === 0 || !items[0].name) {
+      alert("لطفاً حداقل یک قلم دارویی در سفارش ثبت کنید.");
+      return;
+    }
+
+    const totalAmount = items.reduce((sum, item) => sum + (item.count * item.price), 0);
+
+    // کسر خودکار از باقیمانده تارگت نماینده (Requirement 1 in prompt)
+    items.forEach(item => {
+      const tgt = (state.salesTargets || []).find(t => t.repName === repName && t.productName === item.name);
+      if (tgt) {
+        tgt.achievedCount = (tgt.achievedCount || 0) + item.count;
+        const prod = (state.products || []).find(p => p.name === item.name);
+        tgt.achievedAmount = tgt.achievedCount * (prod ? (prod.pharmacyPrice || prod.price || 45000) : 45000);
+      }
+    });
+
+    if (editId) {
+      const idx = state.orders.findIndex(o => o.id === editId);
+      if (idx !== -1) {
+        state.orders[idx] = { ...state.orders[idx], pharmacyName, province, city, district, address, repName, orderDate, status, notes, items, totalAmount };
+      }
+      alert(`✅ سفارش داروخانه «${pharmacyName}» ویرایش شد.`);
+    } else {
+      state.orders.push({
+        id: "ord-" + Date.now(),
+        pharmacyName, province, city, district, address, repName, orderDate, status, notes, items, totalAmount
+      });
+      alert(`✅ سفارش جدید برای داروخانه «${pharmacyName}» ثبت شد. از باقیمانده تارگت نماینده کسر گردید.`);
+    }
+
+    saveState();
+    resetOrderForm();
+    renderOrdersList();
+    renderSalesTargetsTable();
+    updateNavBadges();
+    const btnList = document.getElementById("btnShowOrdList");
+    if (btnList) btnList.click();
+  };
+
+  if (btnOrd) btnOrd.onclick = (e) => { e.preventDefault(); handleSaveOrd(); };
+  if (formOrd) formOrd.onsubmit = (e) => { e.preventDefault(); handleSaveOrd(); };
+}
