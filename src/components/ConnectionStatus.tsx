@@ -1,14 +1,16 @@
+
 "use client";
 import { useCallback, useEffect, useRef, useState } from "react";
 /**
  *    +    .
  *
  * :
- *  -  «  »        
+ *  -  «  »
+
  *           .
- *  - «»         
+ *  - «»
  *    (  navigator.onLine      ).
- *  -      «  »  
+ *  -      «  »
  *             .
  */
 type State = "online" | "checking" | "offline";
@@ -44,11 +46,11 @@ export default function ConnectionStatus() {
       failures.current = 0;
       setState("online");
       setDismissed(false);
-      //       
+      //
       navigator.serviceWorker?.controller?.postMessage("flush");
     } else {
       failures.current += 1;
-      //            
+      //
       setState(failures.current >= 2 ? "offline" : "checking");
     }
     navigator.serviceWorker?.controller?.postMessage("queue-count");
@@ -59,7 +61,6 @@ export default function ConnectionStatus() {
       if (!document.hidden) check();
     }, CHECK_INTERVAL);
     const onOnline = () => check();
-
     const onFocus = () => check();
     window.addEventListener("online", onOnline);
     window.addEventListener("offline", () => setState("offline"));
@@ -90,6 +91,7 @@ export default function ConnectionStatus() {
   }, [check]);
   const sendNow = async () => {
     setSending(true);
+
     setFlash("     ...");
     const ok = await probe();
     if (!ok) {
@@ -122,7 +124,7 @@ t-bold text-white shadow-lg">
             <div className="min-w-0 flex-1">
               <div className="text-xs font-black">    </div>
               <div className="mt-0.5 text-[11px] leading-5 text-amber-50">
-                      .           
+                      .
                     .
               </div>
               <div className="mt-2 flex flex-wrap gap-2">
@@ -130,20 +132,16 @@ t-bold text-white shadow-lg">
                   onClick={check}
                   className="rounded-lg bg-white px-3 py-1 text-[11px] font-bold text-amber-700"
                 >
-                    
                 </button>
                 <a
                   href="/diagnostics"
                   className="rounded-lg bg-white/20 px-3 py-1 text-[11px] font-bold text-white ring-1 ring-white/40"
                 >
-                   
                 </a>
                 <button
-
                   onClick={() => setDismissed(true)}
                   className="rounded-lg bg-white/20 px-3 py-1 text-[11px] font-bold text-white ring-1 ring-white/40"
                 >
-                  
                 </button>
               </div>
             </div>
@@ -156,7 +154,7 @@ t-bold text-white shadow-lg">
             <span className="text-lg"></span>
             <div className="min-w-0 flex-1">
               <div className="text-xs font-black">
-                {pending.toLocaleString("fa-IR")}    
+                {pending.toLocaleString("fa-IR")}
               </div>
               <div className="text-[11px] text-teal-50">
                 {offline ? "     " : "   —     "}
@@ -175,3 +173,4 @@ t-bold text-white shadow-lg">
     </div>
   );
 }
+

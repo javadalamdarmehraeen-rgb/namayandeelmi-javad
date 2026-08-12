@@ -1,9 +1,11 @@
+
 import { db } from "@/db";
 import { notifications, users } from "@/db/schema";
 import { getSessionUser } from "@/lib/auth";
 import { and, desc, eq, inArray, isNull, or, sql, SQL } from "drizzle-orm";
 export const dynamic = "force-dynamic";
 export async function GET(req: Request) {
+
   const user = await getSessionUser();
   if (!user) return Response.json({ error: " " }, { status: 401 });
   const onlyUnread = new URL(req.url).searchParams.get("unread") === "1";
@@ -54,7 +56,6 @@ export async function POST(req: Request) {
   return Response.json({ ok: true });
 }
 /**   */
-
 export async function PATCH(req: Request) {
   const user = await getSessionUser();
   if (!user) return Response.json({ error: " " }, { status: 401 });

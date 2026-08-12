@@ -1,8 +1,8 @@
+
 /**
  * Lightweight XLS (SpreadsheetML/HTML table) writer.
- *     .xls      Excel  WPS  
+ *     .xls      Excel  WPS
  * (        ).
-
  */
 function esc(v: unknown) {
   return String(v ?? "")
@@ -39,3 +39,4 @@ export function xlsResponse(fileName: string, sheetName: string, rows: (string |
     },
   });
 }
+

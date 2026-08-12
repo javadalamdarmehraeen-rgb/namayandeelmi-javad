@@ -1,3 +1,4 @@
+
 "use client";
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
@@ -20,7 +21,6 @@ export default function JalaliDateInput({
   onChange: (v: string) => void;
   placeholder?: string;
 }) {
-
   const [open, setOpen] = useState(false);
   const boxRef = useRef<HTMLDivElement>(null);
   const parsed = parseJalali(value) ?? parseJalali(todayJalali())!;
@@ -64,10 +64,10 @@ export default function JalaliDateInput({
           className="shrink-0 rounded-xl bg-teal-50 px-3 text-lg ring-1 ring-teal-200 hover:bg-teal-100"
           title="  "
         >
-          
         </button>
       </div>
       {open ? (
+
         <div className="fade-in absolute z-30 mt-2 w-[19rem] max-w-[92vw] rounded-2xl bg-white p-3 shadow-xl ring-1 ring
 -slate-200">
           <div className="mb-2 flex items-center justify-between gap-1">
@@ -100,7 +100,6 @@ export default function JalaliDateInput({
             <button
               type="button"
               className="rounded-lg px-2 py-1 text-slate-600 hover:bg-slate-100"
-
               onClick={() => setView(([y, m]) => (m === 12 ? [y + 1, 1] : [y, m + 1]))}
             >
               ›
@@ -153,3 +152,4 @@ export default function JalaliDateInput({
     </div>
   );
 }
+

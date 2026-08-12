@@ -1,3 +1,4 @@
+
 import { drizzle } from "drizzle-orm/node-postgres";
 import { Pool, type PoolClient, type PoolConfig } from "pg";
 import { isTransientError, withRetry, type RetryOptions } from "@/lib/retry";
@@ -5,8 +6,8 @@ import { isTransientError, withRetry, type RetryOptions } from "@/lib/retry";
  *     PostgreSQL (Neon / Render / )
  *
  *  )    endpoint  «pooler»  Neon
- *  ) connect_timeout=15       
- *  ) Retry  Exponential Backoff   
+ *  ) connect_timeout=15
+ *  ) Retry  Exponential Backoff
  * ============================================================ */
 const rawUrl = process.env.DATABASE_URL;
 export const hasDatabaseUrl = Boolean(rawUrl);
@@ -21,8 +22,9 @@ function isLocalHost(url: string) {
 /**
  *   :
  *  -  Neon    `-pooler`   (PgBouncer   )
- *  - `sslmode=require`   
- *  - `connect_timeout=15`     
+
+ *  - `sslmode=require`
+ *  - `connect_timeout=15`
  *  - `application_name`      Neon
  */
 export function normalizeConnectionString(input: string): { url: string; usedPooler: boolean; local: boolean } {
@@ -56,18 +58,17 @@ if (rawUrl) {
   console.log(
     `   : ${local ? "" : usedPooler ? "Neon pooler " : " ( pooler)"} | connect_timeout=15s`
 ,
-
   );
 }
 const poolConfig: PoolConfig = {
   connectionString,
   ssl: local ? undefined : { rejectUnauthorized: false },
-  //  PgBouncer      
+  //  PgBouncer
   max: Number(process.env.DB_POOL_MAX ?? (local ? 5 : 8)),
   min: 0,
   idleTimeoutMillis: 30_000,
   connectionTimeoutMillis: 15_000,
-  //         
+  //
   statement_timeout: 20_000,
   query_timeout: 20_000,
   keepAlive: true,
@@ -79,7 +80,7 @@ const globalForDb = globalThis as typeof globalThis & {
 };
 function createPool() {
   const p = new Pool(poolConfig);
-  //         
+  //
   p.on("error", (err) => {
     console.error("      (  ):", err.message);
   });
@@ -106,6 +107,7 @@ const DB_RETRY: RetryOptions = {
  */
 export function dbRetry<T>(operation: () => Promise<T>, label = "db"): Promise<T> {
   return withRetry(() => operation(), { ...DB_RETRY, label });
+
 }
 /**  :       (  ) */
 export async function dbRetrySafe<T>(operation: () => Promise<T>, fallback: T, label = "db"): Promise<T> {
@@ -132,7 +134,6 @@ export function dbTransaction<T>(fn: (client: PoolClient) => Promise<T>, label =
       client.release();
     }
   }, label);
-
 }
 /**        */
 export async function checkDatabase(): Promise<{ ok: boolean; latencyMs: number; detail: string }> {

@@ -1,15 +1,16 @@
+
 "use client";
 /**
  * ============================================================
  *     (Offline-First GPS Tracker)
  * ------------------------------------------------------------
  *  :
- *   •     IndexedDB   
- *   •           
- *   •           
- *   •   GPS       
- *              
- *   •          «»  
+ *   •     IndexedDB
+ *   •
+ *   •
+ *   •   GPS
+ *
+ *   •          «»
  * ============================================================
  */
 export type TrackPoint = {
@@ -27,7 +28,8 @@ export type TrackPoint = {
 const DB_NAME = "sek-track";
 const STORE = "points";
 const MIN_DISTANCE_M = 12; //       ( GPS)
-const STOP_THRESHOLD_MS = 2 * 60 * 1000; //     
+const STOP_THRESHOLD_MS = 2 * 60 * 1000; //
+
 /* ------------------------------ IndexedDB ------------------------------ */
 function idb(): Promise<IDBDatabase> {
   return new Promise((res, rej) => {
@@ -40,7 +42,6 @@ function idb(): Promise<IDBDatabase> {
     r.onerror = () => rej(r.error);
   });
 }
-
 export async function bufferPoint(tripId: number, p: TrackPoint) {
   try {
     const d = await idb();
@@ -113,8 +114,8 @@ export async function flushPoints(): Promise<{ sent: number; pending: number }> 
   }
   let sent = 0;
   for (const [tripId, points] of byTrip) {
-    const chunk = points.slice(0, 200);
 
+    const chunk = points.slice(0, 200);
     try {
       const res = await fetch("/api/trips/points", {
         method: "POST",
@@ -133,7 +134,7 @@ export async function flushPoints(): Promise<{ sent: number; pending: number }> 
         sent += chunk.length;
       }
     } catch {
-      break; //  —    
+      break; //  —
     }
   }
   return { sent, pending: (await bufferedPoints()).length };
@@ -191,19 +192,19 @@ export function createTracker({ tripId, onUpdate }: TrackerOptions) {
   let lastSavedAt = 0;
   const emit = () => onUpdate({ ...state, points: [...state.points] });
   const record = async (p: TrackPoint) => {
-
     state.points.push(p);
     if (state.points.length > 2000) state.points.shift();
     state.lastPoint = p;
     await bufferPoint(tripId, p);
     state.pending = await bufferedCount();
     emit();
+
   };
   const onPosition = async (pos: GeolocationPosition) => {
     state.gpsOn = true;
     const now = Date.now();
     const cur = { lat: pos.coords.latitude, lng: pos.coords.longitude };
-    //  
+    //
     if (!state.lastPoint) {
       lastMoveAt = now;
       lastSavedAt = now;
@@ -220,7 +221,7 @@ export function createTracker({ tripId, onUpdate }: TrackerOptions) {
       return;
     }
     const dist = haversine(state.lastPoint, cur);
-    //     
+    //
     if (dist < MIN_DISTANCE_M) {
       const stopped = now - lastMoveAt;
       if (stopped >= STOP_THRESHOLD_MS && now - lastSavedAt >= STOP_THRESHOLD_MS) {
@@ -239,7 +240,7 @@ export function createTracker({ tripId, onUpdate }: TrackerOptions) {
       }
       return;
     }
-    //  
+    //
     state.distanceM += dist;
     lastMoveAt = now;
     lastSavedAt = now;
@@ -254,7 +255,7 @@ export function createTracker({ tripId, onUpdate }: TrackerOptions) {
     });
   };
   const onError = () => {
-    // GPS     —   
+    // GPS     —
     state.gpsOn = false;
     emit();
   };
@@ -268,12 +269,11 @@ export function createTracker({ tripId, onUpdate }: TrackerOptions) {
     });
     //     ()
     flushTimer = setInterval(async () => {
-
       const r = await flushPoints();
       state.pending = r.pending;
       emit();
     }, 20000);
-    //      GPS  
+    //      GPS
     liveTimer = setInterval(() => {
       if (state.lastPoint) {
         void pushLive({
@@ -283,6 +283,7 @@ export function createTracker({ tripId, onUpdate }: TrackerOptions) {
           speed: state.lastPoint.speed,
           gpsOn: state.gpsOn,
           tripId,
+
         });
       }
     }, 30000);

@@ -1,9 +1,10 @@
+
 /**
  *   /ping — Keep-Alive        .
  *
  *    (UptimeRobot BetterStack cron-job.org):
  *   URL      : https://<your-app>.onrender.com/ping
- *   Interval :   
+ *   Interval :
  */
 export const dynamic = "force-dynamic";
 export const revalidate = 0;

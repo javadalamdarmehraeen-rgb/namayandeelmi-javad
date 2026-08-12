@@ -1,3 +1,4 @@
+
 import { db, dbRetry } from "@/db";
 import { activityLogs, roles, users } from "@/db/schema";
 import { SESSION_COOKIE, createToken } from "@/lib/auth";
@@ -14,15 +15,15 @@ export const dynamic = "force-dynamic";
  * POST /api/mobile/login-with-phone
  * {
  *   deviceId, deviceInfo, nonce, timestamp, signature,
- *   phoneNumber?,        //        
+ *   phoneNumber?,        //
  *   simFingerprint?,     // ICCID/IMSI  carrier+mcc/mnc ( )
  *   simCarrier?, simCount?, simState?
  * }
  *
  * :
- *   200 { token, user }                →  
+ *   200 { token, user }                →
  *   403 { needOtp: true, ... }         →     (     )
- *   401/403/404 { error, code }        →  
+ *   401/403/404 { error, code }        →
  */
 export async function POST(req: Request) {
   await ensureSeed();
@@ -35,13 +36,12 @@ export async function POST(req: Request) {
   const phone = normalizePhone(b.phoneNumber ?? "");
   const simFp = hashSim(String(b.simFingerprint ?? ""));
   const simCarrier = String(b.simCarrier ?? "").slice(0, 80);
-
   /* ---------- )   →    ---------- */
   if (!phone || !/^0\d{10}$/.test(phone)) {
     return Response.json(
       {
         error:
-          "      (        ).    
+          "      (        ).
   .",
         code: "SIM_NUMBER_UNAVAILABLE",
         needOtp: true,
@@ -54,7 +54,7 @@ export async function POST(req: Request) {
   const rows = await dbRetry(() => db.select().from(users).where(eq(users.phone, phone)).limit(1), "mobile:findUser");
   let found: typeof users.$inferSelect | undefined = rows[0];
   if (!found) {
-    //  :       
+    //  :
     const all = await dbRetry(() => db.select().from(users), "mobile:allUsers");
     found = all.find((u) => normalizePhone(u.phone) === phone);
   }
@@ -68,6 +68,7 @@ export async function POST(req: Request) {
   if (!user.active) {
     return Response.json({ error: "   ", code: "USER_INACTIVE" }, { status: 403 });
   }
+
   /* ---------- )   ---------- */
   let baseRole: string = user.role;
   if (!["admin", "supervisor", "rep"].includes(user.role)) {
@@ -93,7 +94,7 @@ export async function POST(req: Request) {
     return Response.json(
       {
         error:
-          "       .                
+          "       .
    .",
         code: "DEVICE_MISMATCH",
         needOtp: true,
@@ -112,7 +113,6 @@ export async function POST(req: Request) {
       { status: 403 },
     );
   }
-
   /* ---------- )  :    ---------- */
   if (simMode === "otp" && !user.deviceId) {
     const r = await issueOtp(user.id, phone, deviceId);
@@ -153,6 +153,7 @@ export async function POST(req: Request) {
         })
         .where(eq(users.id, user.id)),
     "mobile:bind",
+
   );
   await db
     .insert(activityLogs)

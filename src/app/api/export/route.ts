@@ -1,3 +1,4 @@
+
 import { db } from "@/db";
 import { attachments, doctors, homes, leaves, orders, pharmacies, trips, users } from "@/db/schema";
 import { getSessionUser } from "@/lib/auth";
@@ -31,7 +32,7 @@ export async function GET(req: Request) {
       inPeriod(r.dateShamsi),
     );
     rows = [
-      ["", " ", " ", "", "", "", " ", " ", " ", " 
+      ["", " ", " ", "", "", "", " ", " ", " ", "
 ", "", "", " ", " ", " ()", " "],
       ...data.map((r, i) => [
         i + 1,
@@ -40,6 +41,7 @@ export async function GET(req: Request) {
         r.province,
         r.city,
         r.region,
+
         r.name,
         r.landline,
         r.managerName,
@@ -54,7 +56,6 @@ export async function GET(req: Request) {
     ];
     name = "pharmacies";
   } else if (type === "doctors") {
-
     const w: SQL | undefined = isAdmin ? undefined : eq(doctors.userId, user.id);
     const data = (await db.select().from(doctors).where(w).orderBy(desc(doctors.id))).filter((r) =>
       inPeriod(r.dateShamsi),
@@ -70,7 +71,7 @@ export async function GET(req: Request) {
       /* ignore */
     }
     rows = [
-      ["", " ", " ", "", "", "", " ", "", "  ", " ", 
+      ["", " ", " ", "", "", "", " ", "", "  ", " ",
 " ", " ", "  ", "", " ", " ", " ", " "],
       ...data.map((r, i) => [
         i + 1,
@@ -125,6 +126,7 @@ export async function GET(req: Request) {
         ...PRODUCTS.flatMap((p) => [Number(r.items?.[p.key] ?? 0), Number(r.items?.[bonusKeyOf(p.key)] ?? 0)]),
         r.distributor,
         r.visitor,
+
         r.notes,
         mapLink(r.lat, r.lng),
         r.sendStatus || (r.sent ? " " : " "),
@@ -140,7 +142,6 @@ export async function GET(req: Request) {
         r.repName,
         r.dateShamsi,
         r.status === "active" ? "  " : " ",
-
         tehranDateTime(r.startedAt),
         r.endedAt ? tehranDateTime(r.endedAt) : "",
         ((r.distanceM ?? 0) / 1000).toFixed(2),

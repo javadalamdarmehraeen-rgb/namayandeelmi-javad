@@ -1,13 +1,14 @@
+
 "use client";
 import { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
-
 import {
   cacheUser,
   clearToken,
   getCachedUser,
   getToken,
   saveToken,
+
   type CachedUser,
 } from "@/lib/offline-session";
 import { currentOrigin, orderedEndpoints, setActiveEndpoint } from "@/lib/endpoints";
@@ -19,7 +20,7 @@ export const getTabToken = getToken;
 export const clearTabToken = clearToken;
 let patched = false;
 /**
- *   /api         
+ *   /api
  *  (   VPN)       .
  */
 export function patchFetch() {
@@ -38,7 +39,7 @@ export function patchFetch() {
     const conn = (navigator as Navigator & { connection?: Conn }).connection;
     const slow = conn?.saveData || ["slow-2g", "2g", "3g"].includes(conn?.effectiveType ?? "");
     const baseTimeout = slow ? 45000 : 25000;
-    //      
+    //
     const relPath = url.startsWith("http") ? url.replace(currentOrigin(), "") : url;
     const tryOnce = async (target: string, extraMs: number): Promise<Response> => {
       const isSelf = target === currentOrigin();
@@ -66,7 +67,7 @@ export function patchFetch() {
       let lastErr: unknown;
       for (let ti = 0; ti < targets.length; ti++) {
         const target = targets[ti];
-        const retries = ti === 0 ? 2 : 1; //     
+        const retries = ti === 0 ? 2 : 1; //
         for (let n = 0; n <= retries; n++) {
           try {
             const res = await tryOnce(target, n * 8000);
@@ -77,7 +78,6 @@ export function patchFetch() {
             lastErr = new Error(`HTTP ${res.status}`);
           } catch (err) {
             lastErr = err;
-
           }
           if (n < retries && navigator.onLine) await new Promise((r) => setTimeout(r, 1000 * (n + 1)));
         }
@@ -93,6 +93,7 @@ type Ctx = {
   offline: boolean;
   reload: () => Promise<void>;
   logout: () => Promise<void>;
+
 };
 const SessionCtx = createContext<Ctx>({
   me: null,
@@ -115,7 +116,7 @@ export default function SessionProvider({
 }) {
   patchFetch();
   const router = useRouter();
-  //           
+  //
   const [me, setMe] = useState<Me | null>(() => getCachedUser());
   const [loading, setLoading] = useState(true);
   const [offline, setOffline] = useState(false);
@@ -144,19 +145,18 @@ export default function SessionProvider({
           setOffline(false);
         } else if (!cached) setMe(null);
       } else if (res.status === 401) {
-        //       → 
+        //       →
         clearToken();
         setMe(null);
         setOffline(false);
       }
     } catch {
-      //     →     
+      //     →
       setOffline(true);
     } finally {
       if (mounted.current) setLoading(false);
     }
   }, []);
-
   useEffect(() => {
     reload();
     const onOnline = () => reload();
@@ -178,6 +178,7 @@ export default function SessionProvider({
     return (
       <div className="flex min-h-screen flex-col items-center justify-center gap-3 bg-slate-100 p-6 text-center">
         <div className="size-10 animate-spin rounded-full border-4 border-teal-200 border-t-teal-600" />
+
         <p className="text-sm text-slate-500">{loading ? "  ..." : "     ..."}</p>
         {offline ? (
           <p className="max-w-xs text-xs leading-6 text-amber-700">

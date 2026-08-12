@@ -1,3 +1,4 @@
+
 "use client";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Card, SectionTitle } from "@/components/ui";
@@ -7,6 +8,7 @@ import { DEFAULT_PRODUCTS, type ProductConfig } from "@/lib/defaults";
 import { downloadFile } from "@/lib/download";
 type Row = {
   period: string;
+
   repName: string;
   pharmacies: number;
   doctors: number;
@@ -62,7 +64,6 @@ export default function ReportScreen({ compact = false }: { compact?: boolean })
     { pharmacies: 0, doctors: 0, orders: 0, units: 0, bonus: 0, trips: 0 },
   );
   const reps = useMemo(() => [...new Set(byRep.map((r) => r.repName))].sort(), [byRep]);
-
   const byRepFiltered = useMemo(
     () =>
       byRep.filter(
@@ -92,6 +93,7 @@ export default function ReportScreen({ compact = false }: { compact?: boolean })
             {years.map((y) => (
               <option key={y} value={y}>
                 {toPersianDigits(y)}
+
               </option>
             ))}
           </select>
@@ -117,7 +119,6 @@ export default function ReportScreen({ compact = false }: { compact?: boolean })
             }
             className="rounded-xl bg-emerald-600 px-3 py-2 text-xs font-bold text-white"
           >
-                
           </button>
         </div>
         <div className="mb-3 grid grid-cols-3 gap-2 sm:grid-cols-6">
@@ -141,7 +142,6 @@ export default function ReportScreen({ compact = false }: { compact?: boolean })
             <thead>
               <tr className="bg-slate-100 text-slate-600">
                 <th className="px-2 py-2"></th>
-
                 <th className="px-2 py-2"> </th>
                 <th className="px-2 py-2"></th>
                 <th className="px-2 py-2"></th>
@@ -167,7 +167,6 @@ export default function ReportScreen({ compact = false }: { compact?: boolean })
               {filtered.length === 0 ? (
                 <tr>
                   <td colSpan={8} className="py-6 text-center text-slate-400">
-                         
                   </td>
                 </tr>
               ) : null}
@@ -177,6 +176,7 @@ export default function ReportScreen({ compact = false }: { compact?: boolean })
       </Card>
       {!compact ? (
         <Card>
+
           <div className="mb-2 flex flex-wrap items-center gap-2">
             <h3 className="text-sm font-bold text-slate-700">   —      </h3>
             <select
@@ -225,17 +225,14 @@ export default function ReportScreen({ compact = false }: { compact?: boolean })
                     </tr>
                   );
                 })}
-
                 {byRepFiltered.length === 0 ? (
                   <tr>
                     <td colSpan={products.length + 3} className="py-6 text-center text-slate-400">
-                            
                     </td>
                   </tr>
                 ) : (
                   <tr className="bg-teal-50 font-black text-teal-800">
                     <td className="px-2 py-2" colSpan={2}>
-                        
                     </td>
                     {products.map((p) => (
                       <td key={p.key} className="px-2 py-2 text-center">
@@ -262,6 +259,7 @@ export default function ReportScreen({ compact = false }: { compact?: boolean })
           <p className="mt-2 text-[11px] text-slate-400">
                  « »    « » .
           </p>
+
         </Card>
       ) : null}
     </div>

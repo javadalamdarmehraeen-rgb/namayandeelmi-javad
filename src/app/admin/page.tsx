@@ -1,3 +1,4 @@
+
 "use client";
 import Link from "next/link";
 import { useCallback, useState } from "react";
@@ -5,6 +6,7 @@ import { Badge, Card, SectionTitle } from "@/components/ui";
 import dynamic from "next/dynamic";
 const ChartsPanel = dynamic(() => import("@/components/screens/ChartsPanel"), {
   ssr: false,
+
   loading: () => <div className="rounded-2xl bg-white p-6 text-center text-xs text-slate-400">   ..
 .</div>,
 });
@@ -40,7 +42,6 @@ export default function AdminDashboard() {
   const [reps, setReps] = useState<Rep[]>([]);
   const [byRep, setByRep] = useState<Record<string, Log[]>>({});
   const [openRep, setOpenRep] = useState<string | null>(null);
-
   const [live, setLive] = useState(true);
   const [dl, setDl] = useState("");
   const load = useCallback(async () => {
@@ -90,9 +91,9 @@ export default function AdminDashboard() {
           <SectionTitle icon="">  —    </SectionTitle>
           <Link
             href="/admin/activity"
+
             className="rounded-xl bg-teal-600 px-3 py-2 text-xs font-bold text-white hover:bg-teal-700"
           >
-                
           </Link>
         </div>
         <div className="grid grid-cols-1 gap-2 lg:grid-cols-2">
@@ -120,7 +121,6 @@ l-200"
                   {[
                     ["", r.pharmacies],
                     ["", r.doctors],
-
                     ["", r.orders],
                     ["", r.trips],
                   ].map(([i, v], idx) => (
@@ -166,15 +166,14 @@ l-200"
             className="rounded-xl bg-amber-50 px-3 py-2 text-xs font-bold text-amber-800 ring-1 ring-amber-200 hover:bg-
 amber-100"
           >
-              
           </a>
           <a
             href="/admin/backup"
             className="rounded-xl bg-indigo-50 px-3 py-2 text-xs font-bold text-indigo-800 ring-1 ring-indigo-200 hover:
 bg-indigo-100"
           >
-             
           </a>
+
           {[
             ["pharmacies", ""],
             ["doctors", ""],

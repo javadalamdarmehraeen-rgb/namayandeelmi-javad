@@ -1,3 +1,4 @@
+
 "use client";
 import { useCallback, useEffect, useState } from "react";
 import dynamic from "next/dynamic";
@@ -23,6 +24,7 @@ export default function HomeScreen({ isAdmin = false }: { isAdmin?: boolean }) {
   const [address, setAddress] = useState("");
   const [loc, setLoc] = useState<LatLng>({ lat: null, lng: null, accuracy: null });
   const [msg, setMsg] = useState<{ kind: "success" | "error"; text: string } | null>(null);
+
   const [repFilter, setRepFilter] = useState("");
   const confirm = useConfirm();
   const load = useCallback(async () => {
@@ -57,7 +59,6 @@ export default function HomeScreen({ isAdmin = false }: { isAdmin?: boolean }) {
     if (res.ok) {
       setMsg({ kind: "success", text: "           " });
       load();
-
     } else setMsg({ kind: "error", text: d.error ?? "  " });
   };
   return (
@@ -108,6 +109,7 @@ export default function HomeScreen({ isAdmin = false }: { isAdmin?: boolean }) {
           <>
             <MapBox
               height={300}
+
               points={visible.map((r) => ({
                 lat: r.lat,
                 lng: r.lng,
@@ -139,6 +141,5 @@ ext-xs">
         )}
       </Card>
     </div>
-
   );
 }

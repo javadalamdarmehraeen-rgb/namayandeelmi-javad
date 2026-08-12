@@ -1,3 +1,4 @@
+
 import { createHmac, randomBytes, scryptSync, timingSafeEqual } from "crypto";
 import { cookies, headers } from "next/headers";
 import { db, dbRetry } from "@/db";
@@ -57,11 +58,12 @@ export async function userFromId(id: number): Promise<SessionUser | null> {
     rows = await dbRetry(() => db.select().from(users).where(eq(users.id, id)).limit(1), "session:user");
   } catch (err) {
     console.error("session db error", err);
+
     return null;
   }
   const u = rows[0];
   if (!u || !u.active) return null;
-  //            roles  
+  //            roles
   let base: "admin" | "supervisor" | "rep" =
     u.role === "admin" ? "admin" : u.role === "supervisor" ? "supervisor" : "rep";
   let roleLabel = base === "admin" ? " " : base === "supervisor" ? "" : " ";
@@ -69,7 +71,6 @@ export async function userFromId(id: number): Promise<SessionUser | null> {
     try {
       const r = (await dbRetry(() => db.select().from(roles).where(eq(roles.key, u.role)).limit(1), "session:role"))[0];
       if (r) {
-
         base = r.base === "admin" ? "admin" : r.base === "supervisor" ? "supervisor" : "rep";
         roleLabel = r.label;
       }

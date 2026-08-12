@@ -1,14 +1,15 @@
+
 import { db, dbRetry, dbRetrySafe } from "@/db";
 import { orders, targets, users } from "@/db/schema";
 import { getSessionUser } from "@/lib/auth";
 import { ensureSeed } from "@/lib/bootstrap";
 import { bonusKeyOf } from "@/lib/defaults";
-
 import { getProducts } from "@/lib/settings-server";
 import { todayJalali } from "@/lib/jalali";
 import { and, eq, SQL } from "drizzle-orm";
 export const dynamic = "force-dynamic";
 export type TargetProgress = {
+
   productKey: string;
   productLabel: string;
   quantity: number;
@@ -28,7 +29,7 @@ export type TargetProgress = {
 const currentPeriod = () => todayJalali().slice(0, 7);
 /**
  * GET /api/targets?userId=&period=
- *    :        
+ *    :
  */
 export async function GET(req: Request) {
   await ensureSeed();
@@ -47,7 +48,7 @@ export async function GET(req: Request) {
     "targets:list",
   );
   const forPeriod = rows.filter((t) => allPeriods || t.period === period || t.period === "");
-  //   
+  //
   const orderRows = await dbRetrySafe(
     () => db.select({ d: orders.dateShamsi, items: orders.items }).from(orders).where(eq(orders.userId, scopeId)),
     [],
@@ -79,7 +80,6 @@ export async function GET(req: Request) {
       remaining: Math.max(0, quantity - s),
       percent: quantity > 0 ? Math.min(999, Math.round((s / quantity) * 100)) : 0,
       valueDistributor: quantity * pd,
-
       valuePharmacy: quantity * pp,
       soldValueDistributor: s * pd,
       soldValuePharmacy: s * pp,
@@ -94,6 +94,7 @@ export async function GET(req: Request) {
       valueDistributor: a.valueDistributor + r.valueDistributor,
       valuePharmacy: a.valuePharmacy + r.valuePharmacy,
       soldValueDistributor: a.soldValueDistributor + r.soldValueDistributor,
+
       soldValuePharmacy: a.soldValuePharmacy + r.soldValuePharmacy,
     }),
     {
@@ -116,7 +117,7 @@ export async function GET(req: Request) {
   });
 }
 /**
- * PUT /api/targets — /    
+ * PUT /api/targets — /
  * { userId, period, items: [{ productKey, quantity, priceDistributor, pricePharmacy }] }
  */
 export async function PUT(req: Request) {
@@ -159,7 +160,6 @@ export async function PUT(req: Request) {
     );
     if (existing.length) {
       await dbRetry(() => db.update(targets).set(values).where(eq(targets.id, existing[0].id)), "targets:update");
-
     } else {
       await dbRetry(() => db.insert(targets).values(values), "targets:insert");
     }
@@ -179,3 +179,4 @@ export async function DELETE(req: Request) {
   await dbRetry(() => db.delete(targets).where(where), "targets:delete");
   return Response.json({ ok: true });
 }
+

@@ -1,12 +1,13 @@
-#   
+
+#
           .
 Next.js 16 (App Router) + PostgreSQL (Drizzle ORM) + PWA (      iOS).
-##  
+##
 |  |   |   |    |
 | --- | --- | --- | --- |
 |  | `admin` | `admin1234` | `09120000000` |
 |   | `rep1` | `rep1234` | `09121111111` |
->    `ADMIN_PASSWORD`  `ADMIN_PHONE`       
+>    `ADMIN_PASSWORD`  `ADMIN_PHONE`
 > (       ).      «  »    .
 ##   (VS Code)
 ```bash
@@ -17,7 +18,7 @@ npm run dev
 ```
     **  **   (   migration ).
 ##   Render + Neon
-###   «Could not find a production build» 
+###   «Could not find a production build»
   Render     :
 ```
 ==> Running 'npm start'
@@ -40,26 +41,26 @@ Render →   → **Settings** →  **Build & Deploy**:
 | `NODE_VERSION` | `20.18.0` |
 | `NPM_CONFIG_PRODUCTION` | `false` |
   **Manual Deploy → Clear build cache & deploy**.
-> : `--include=dev`    Render  `NODE_ENV=production`     
+> : `--include=dev`    Render  `NODE_ENV=production`
 > `npm install`  toolchain (typescript  tailwind)      .
 ###   (   Build Command   )
- `npm start`    `scripts/start.mjs`   :   `.next`  
+ `npm start`    `scripts/start.mjs`   :   `.next`
 **       `next build` **    `PORT`   Render  .
        live  (    ).
 ###   Blueprint
-
- `render.yaml`           Render 
+ `render.yaml`           Render
 **New → Blueprint**          `DATABASE_URL`   .
-###   
+###
  `https://<your-app>.onrender.com/api/health`   :
 - `{"ok":true,"db":true}` →   .
 - `{"ok":false,"reason":"DATABASE_URL   "}` →     .
 - `{"ok":false,"reason":"..."}` →     Neon (  `?sslmode=require`)   .
-## 
+##
 -    / +                .
 -       .
 -    :         .
 -    +   +   (`//`).
+
 -         /       .
 -       (  )      / .
 -     «»  « »   « »  .
@@ -70,14 +71,14 @@ Render →   → **Settings** →  **Build & Deploy**:
 -    .
 ##    APK  PWABuilder
      :
--  `prebuild`    build     `96…1024` 
-   `maskable` (  ) `apple-touch-icon`    
-     SVG .     PNG    
+-  `prebuild`    build     `96…1024`
+   `maskable` (  ) `apple-touch-icon`
+     SVG .     PNG
        Render   .
 -      (`/icons/[file]`, `/screenshots/[file]`,
-  `/apple-touch-icon.png`)          
+  `/apple-touch-icon.png`)
        .
--       `<head>`     
+-       `<head>`
    PWA    .
 ###   APK
 1.    Render   (Build Command: `npm install --include=dev && npm run build`).
@@ -85,7 +86,7 @@ Render →   → **Settings** →  **Build & Deploy**:
 3.  Retest    Action Items   .
 4. `Package For Stores → Android`  `Download Test Package`  .
 ##       ()
-** :**   `force-dynamic`          
+** :**   `force-dynamic`
   .    (   Render      )
        .
 ** :**
@@ -97,7 +98,7 @@ Render →   → **Settings** →  **Build & Deploy**:
 6. ** ** ( )       .
 7. **`/api/ping`**  ( )     +    .
 ##    ( )
-    **     **.   
+    **     **.
         **  (OTP)** :
 1.   /   .
 2.       **   **  .
@@ -105,25 +106,24 @@ Render →   → **Settings** →  **Build & Deploy**:
 4.        →   .
 5.              .
 6.     «»   ****  ( ).
-###   
+###
  «» →  « »:  SMS.ir    .
       : `SMS_PROVIDER`, `SMS_API_KEY`, `SMS_SENDER`, `SMS_PATTERN`.
->           ** **   
+>           ** **
 >           .
-##       
+##
 ###   «    »
-
    HTML     **  (. )  **.
-    React  HTML   JS     
+    React  HTML   JS
         →  .
-**:**  `scripts/build-sw.mjs`    build    
-  `/_next/static`       .  ** 
+**:**  `scripts/build-sw.mjs`    build
+  `/_next/static`       .  **
  +  **    .
-###  
- `/diagnostics` —   :      
+###
+ `/diagnostics` —   :
         GPS   .
  «   »  « »  .
-##    —  
+##    —
   **  **   «»       :
 |  |  |
 |---|---|
@@ -132,19 +132,20 @@ Render →   → **Settings** →  **Build & Deploy**:
 | ` ` () |             |
 | ` ` | :           |
    « »     .
-##       
-### ) Keep-Alive —    
+##
+### ) Keep-Alive —
          :
 ```
 GET /ping        → 200 "OK"        (  ~ms)
 GET /ping?json   → {"status":"OK","uptimeMs":...}
-GET /api/ping    → 
+GET /api/ping    →
 HEAD /ping       → 200
 ```
 ** UptimeRobot:** New Monitor → HTTP(s) → URL: `https://<app>.onrender.com/ping`
 → Interval: ** **.      Render   .
 ### ) Retry  Exponential Backoff + Jitter
  `src/lib/retry.ts`:
+
 | API |  |
 |---|---|
 | `withRetry(fn, opts)` |       |
@@ -166,23 +167,22 @@ HEAD /ping       → 200
         ?sslmode=require&connect_timeout=15&application_name=sabt-etelaat-kol
 ```
 -    endpoint  **`-pooler`** (PgBouncer)
-- **`connect_timeout=15`**     
-- `statement_timeout`  `query_timeout`   
+- **`connect_timeout=15`**
+- `statement_timeout`  `query_timeout`
 - `keepAlive`  `max=8`, `min=0`, `idleTimeout=30s`
--  `pool.on("error")`         
+-  `pool.on("error")`
 `GET /api/health`    :
 `{"ok":true,"db":true,"latencyMs":8,"pooler":true,"connectTimeoutSec":15}`
-##   «This page couldn't load»    
-###  
-   **-**         
+##   «This page couldn't load»
+###
+   **-**
            .
-
-### ) HTML   
+### ) HTML
  `next.config.ts`   :
 `Cache-Control: no-cache, no-store, must-revalidate, max-age=0` + `Pragma: no-cache` + `Expires: 0`
   `/_next/static/*`  `immutable`  (  ).
-### )     
- `ConnectionStatus`:     
+### )
+ `ConnectionStatus`:
 **«     —       »**
   « » «»  «».       .
    **  **   ( `navigator.onLine`     )
@@ -192,22 +192,22 @@ HEAD /ping       → 200
 if (req.mode === "navigate") {
          cache: "no-store"
       →     (   )
-     →   (/panel  /)     
-     →      
+     →   (/panel  /)
+     →
 }
 ```
  RSC (  Next)          .
-### )   +  
+### )   +
 -     (  ).
--  /  **IndexedDB**    
+-  /  **IndexedDB**
   «          »   .
 -  «N    »   **« »**   .
 -    Background Sync        .
--  `/offline`   :        
+-  `/offline`   :
   «   »     .
-##       
-> **  Laravel:**  `bot-generator-bale-telegram-laravel-10`  PHP/MySQL  
->   « »     .    PHP   
+##
+> **  Laravel:**  `bot-generator-bale-telegram-laravel-10`  PHP/MySQL
+>   « »     .    PHP
 >        .    (Bot API / + )
 >    TypeScript         .
 ###   —  `messengers`
@@ -225,78 +225,78 @@ if (req.mode === "navigate") {
  `message_logs`     (/ +  )   .
 ###   (`src/lib/messaging.ts`)
 ```ts
-formatOrderMessage(order)      //   
+formatOrderMessage(order)      //
 sendOne(target, text)          //     ( → )
-dispatchText(text, orderId?)   //     
-dispatchOrder(order)           //   
+dispatchText(text, orderId?)   //
+dispatchOrder(order)           //
 fetchUpdates(platform, token)  //   chat_id
+
 ```
-###  
+###
 -    ** **    →  →   (Full Jitter)  .
 -   `Promise.allSettled`    **     **.
 -        ** Cloudflare**  .
 -          ( whatsiplus)   ****  .
-###   
+###
 |  |  |  |
 |---|---|---|
 | **** | @BotFather → `/newbot` | chat_id    `-100…` |
 | **** | @BotFather   → `/newbot` | chat_id  |
 | **** |   `eitaayar.ir` |    `@` |
 | **** |  API  `whatsiplus.ir` ( UltraMsg / Cloud API) |   |
-     **«   chat_id»**    :     
+     **«   chat_id»**    :
                .
-##       
-> ** :** `getLine1Number()`  MSISDN        
+##
+> ** :** `getLine1Number()`  MSISDN
 >       →  `null` .  iOS   API  .
 >     .
-
 ###  API
 |  |  |
 |---|---|
 | `POST /api/mobile/nonce` |  nonce  ( Replay) |
 | `POST /api/mobile/login-with-phone` |     +  HMAC |
 | `POST /api/auth/otp` |      |
-### 
+###
 1. **HMAC-SHA256**  `nonce|timestamp|deviceId|phone|simFingerprint`  `MOBILE_APP_SECRET`
-2. **nonce **     —    
-3. ** **      
-4. ICCID/IMSI      ** SHA-256** 
+2. **nonce **     —
+3. ** **
+4. ICCID/IMSI      ** SHA-256**
 ###   ()
 ```
-200 TOKEN                    ←  
-401 BAD_SIGNATURE            ←  
+200 TOKEN                    ←
+401 BAD_SIGNATURE            ←
 401 BAD_NONCE                ← Replay Attack
-404 PHONE_NOT_REGISTERED     ←    
-422 SIM_NUMBER_UNAVAILABLE   ←     →   
-403 DEVICE_MISMATCH          ←    
-403 SIM_CHANGED              ←    
-403 PASSWORD_LOGIN_REQUIRED  ←       
+404 PHONE_NOT_REGISTERED     ←
+422 SIM_NUMBER_UNAVAILABLE   ←     →
+403 DEVICE_MISMATCH          ←
+403 SIM_CHANGED              ←
+403 PASSWORD_LOGIN_REQUIRED  ←
 ```
-###  
+###
  `mobile/`  `App.tsx` `src/simAuth.ts` (React Native)   Flutter
-       .  `MOBILE_APP_SECRET`  
+       .  `MOBILE_APP_SECRET`
 Render    .
-##        
-### )      
+##
+### )
  `targets`   `userId`, `period` ( ), `productKey`,
 `quantity`, `priceDistributor`, `pricePharmacy`.
 -  ** →   **:         /
            «    ».
-- `GET /api/targets`   :     (  
+- `GET /api/targets`   :     (
   )      .
-- **     **           
+- **     **
       .
 -  « »       .
-### )   
+### )
 `GET /api/records/lookup?type=pharmacies|doctors&name=…&phone=…`
-   ( «/»  / ) 
-« »  «»    .      
+   ( «/»  / )
+« »  «»    .
                 .
-### )    
+### )
       :
--   «  »        
+-   «  »
         .
--  **«   »**      
+-  **«   »**
           .
 ##    : Render  NdcoHub.ir
           ****  :
@@ -304,22 +304,22 @@ Render    .
 |---|---|---|
 | NdcoHub () | `https://ndcohub.ir` |    —     |
 | Render | `https://namayandeelmi-javad.onrender.com` |      |
-### )      
-`src/lib/endpoints.ts` —          
+### )
+`src/lib/endpoints.ts` —
       **     **.
       .
-### )  
+### )
      :
-- `uid` —   (UUID)       
-- `updated_at` —     
-- `origin` —        
-**:**    (   )      `pull`  
+- `uid` —   (UUID)
+- `updated_at` —
+- `origin` —
+**:**    (   )      `pull`
   `push` .  : **Last-Write-Wins**   `updated_at`.
-** :**      `sek.sync=on`   
+
+** :**      `sek.sync=on`
            « »
  .  `updated_at < excluded.updated_at`      .
-
-### )  
+### )
 |  |  |
 |---|---|
 | `POST /api/sync/pull` |      (  HMAC) |
@@ -328,7 +328,7 @@ Render    .
 | `GET /api/sync/status` |     |
  ** →   **:     /
  « » « »  «  ».
-### )  
+### )
 ** Render:**
 ```
 NODE_NAME=render
@@ -346,15 +346,15 @@ SYNC_PEERS=render|https://namayandeelmi-javad.onrender.com
 NEXT_PUBLIC_ENDPOINTS=https://ndcohub.ir,https://namayandeelmi-javad.onrender.com
 PUBLIC_BASE_URL=https://ndcohub.ir
 ```
-### ) CI/CD    
-- `.github/workflows/deploy.yml` —   **  GitLab**     
+### ) CI/CD
+- `.github/workflows/deploy.yml` —   **  GitLab**
 - `.gitlab-ci.yml` —    **  GitHub**
  : `GITLAB_REPO_URL`, `GITLAB_TOKEN`, `RENDER_DEPLOY_HOOK`,
 `NDCOHUB_DEPLOY_HOOK`, `SYNC_SECRET`.
 ##       GitHub / GitLab
- `git status`    «nothing to commit»     
+ `git status`    «nothing to commit»
     (         ).
-### :     
+### :
 1.   ****  .
 2.  ** →   ** .
 3.  **«    (ZIP)»**  .
@@ -362,35 +362,34 @@ PUBLIC_BASE_URL=https://ndcohub.ir
 5. :
 ```bash
 git add -A
-git status                       #       
+git status                       #
 git commit -m "  "
 git push origin main
-git push gitlab main             #   GitLab  
+git push gitlab main             #   GitLab
 ```
 >   `node_modules` `.next`  `.env`  (    ).
 >     `HOW-TO-UPDATE.md`   ZIP  .
  API: `GET /api/source` ( ) —  `GET /api/source?list=1`    .
-##    
+##
 ### )    /
-       .   
-( «»)          
+       .
+( «»)
    .
 **:**        ****
-          (   
+          (
     ).
-### )    
+### )
  `/api/geocode`   (    CORS    ):
 -       +  « » +  Enter
 -         ( / + )
 -     : `35.7219, 51.4089`
 -  «    » ( )
--      (Photon  Nominatim)    
-
->  : `Number(null)`    ****   
->    «    »     
+-      (Photon  Nominatim)
+>  : `Number(null)`    ****
+>    «    »
 > .      .
-##    +   
-###  
+##    +
+###
          :
 |  |  |
 |---|---|
@@ -399,12 +398,13 @@ git push gitlab main             #   GitLab
 | `src/app/panel/map`  `src/app/admin/map` |  «  » |
 `fetchJson`  `fetchRows`   `src/lib/useLive.ts`    `MapBox`
   `MapArea`   (    ).
-###    
+###
+
 **) `Custom Cache-Control headers detected for /_next/static`**
    `/_next/static`   ( Next.js   `immutable`  )
   `no-store`   `/:path((?!_next/).*)`     .
 **) `Encountered unexpected file in NFT list`**
- `/api/source`  `fs`  `path`   import    
-  Turbopack      .   
+ `/api/source`  `fs`  `path`   import
+  Turbopack      .
  **     **  .
 : `npm run build`       .

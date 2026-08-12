@@ -1,3 +1,4 @@
+
 "use client";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import nextDynamic from "next/dynamic";
@@ -9,6 +10,7 @@ import { IRAN_CENTER, PROVINCE_GEO, TEHRAN_REGIONS, resolveArea } from "@/lib/ge
 import { toPersianDigits } from "@/lib/jalali";
 import type { MapArea, MapPoint } from "@/components/MapBox";
 const MapBox = nextDynamic(() => import("@/components/MapBox"), {
+
   ssr: false,
   loading: () => (
     <div className="flex h-[520px] items-center justify-center rounded-2xl bg-slate-100 text-sm text-slate-400">
@@ -21,7 +23,6 @@ type Place = {
   kind: "pharmacy" | "doctor" | "home";
   name: string;
   repName: string;
-
   province: string;
   city: string;
   region: string;
@@ -37,7 +38,7 @@ const KIND_META: Record<Place["kind"], { label: string; icon: string; color: str
   home: { label: " ", icon: "", color: "#7c3aed" },
 };
 /**
- *  :        
+ *  :
  *    /  /  /    .
  */
 export default function MapExplorer({ isAdmin = false }: { isAdmin?: boolean }) {
@@ -94,11 +95,11 @@ export default function MapExplorer({ isAdmin = false }: { isAdmin?: boolean }) 
   /* ----------------   ---------------- */
   const provinces = useMemo(
     () => [...new Set([...Object.keys(PROVINCE_GEO), ...places.map((p) => p.province)])].filter(Boolean).sort(),
+
     [places],
   );
   const cities = useMemo(
     () =>
-
       [...new Set(places.filter((p) => !province || p.province === province).map((p) => p.city))]
         .filter(Boolean)
         .sort(),
@@ -164,7 +165,6 @@ export default function MapExplorer({ isAdmin = false }: { isAdmin?: boolean }) 
           <Badge tone="slate"> {toPersianDigits(counts.doctor)}</Badge>
           <Badge tone="amber"> {toPersianDigits(counts.home)}</Badge>
           <Button variant="ghost" onClick={load}>
-             
           </Button>
         </div>
       </div>
@@ -177,8 +177,8 @@ export default function MapExplorer({ isAdmin = false }: { isAdmin?: boolean }) 
                 setProvince(v);
                 setCity("");
                 setRegion("");
-
                 setSelected(null);
+
               }}
               options={provinces}
               selectOnly
@@ -245,13 +245,12 @@ export default function MapExplorer({ isAdmin = false }: { isAdmin?: boolean }) 
             </button>
           ))}
           {isAdmin ? (
-            <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder=" ..." className="max-w-[200px]" 
+            <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder=" ..." className="max-w-[200px]"
 />
           ) : null}
           <div className="flex-1" />
           <Badge tone="slate">: {area.name ?? IRAN_CENTER.name}</Badge>
           <Button variant="ghost" onClick={reset}>
-              
           </Button>
         </div>
       </Card>
@@ -261,9 +260,9 @@ export default function MapExplorer({ isAdmin = false }: { isAdmin?: boolean }) 
                .           .
         </Alert>
       ) : null}
-
       <div className="grid grid-cols-1 gap-3 lg:grid-cols-3">
         <Card className="lg:col-span-2">
+
           <MapBox
             height={520}
             points={mapPoints}
@@ -289,7 +288,6 @@ export default function MapExplorer({ isAdmin = false }: { isAdmin?: boolean }) 
                 <div className="mr-auto flex items-center gap-2">
                   <NavButton lat={selected.lat} lng={selected.lng} label={selected.name} />
                   <button onClick={() => setSelected(null)} className="text-[11px] font-bold text-slate-500">
-                    
                   </button>
                 </div>
               </div>
@@ -331,7 +329,7 @@ export default function MapExplorer({ isAdmin = false }: { isAdmin?: boolean }) 
             ))}
             {filtered.length > 300 ? (
               <p className="py-2 text-center text-[11px] text-slate-400">
-                {toPersianDigits(filtered.length - 300)}   —    
+                {toPersianDigits(filtered.length - 300)}   —
               </p>
             ) : null}
           </div>

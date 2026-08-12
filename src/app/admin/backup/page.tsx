@@ -1,3 +1,4 @@
+
 "use client";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Alert, Badge, Button, Card, Field, Input, SectionTitle } from "@/components/ui";
@@ -6,8 +7,7 @@ import { useConfirm } from "@/components/Confirm";
 type Cfg = { enabled: boolean; minutes: number; withFiles: boolean; folderName: string };
 const DEFAULT_CFG: Cfg = { enabled: false, minutes: 30, withFiles: false, folderName: "namayandeelmi-javad" };
 const IDB = "sek-backup";
-
-//       
+//
 function idb(): Promise<IDBDatabase> {
   return new Promise((res, rej) => {
     const r = indexedDB.open(IDB, 1);
@@ -71,6 +71,7 @@ export default function BackupPage() {
   const pickFolder = async () => {
     try {
       const w = window as unknown as {
+
         showDirectoryPicker: (o?: { mode?: string }) => Promise<FileSystemDirectoryHandle>;
       };
       const handle = await w.showDirectoryPicker({ mode: "readwrite" });
@@ -85,7 +86,6 @@ export default function BackupPage() {
     }
   };
   const runBackup = useCallback(
-
     async (auto = false, forceDownload = false) => {
       setBusy(true);
       try {
@@ -156,8 +156,9 @@ export default function BackupPage() {
       }
     },
     [cfg.withFiles, supportsFs],
+
   );
-  //  
+  //
   useEffect(() => {
     if (timer.current) clearInterval(timer.current);
     if (!cfg.enabled) return;
@@ -169,13 +170,12 @@ export default function BackupPage() {
     return () => {
       if (timer.current) clearInterval(timer.current);
     };
-
   }, [cfg.enabled, cfg.minutes, runBackup]);
   const winScript = `@echo off
 rem ============================================================
-rem    «  »  
-rem      backup.bat  E:\\porozheha\\backup  
-rem    Task Scheduler       
+rem    «  »
+rem      backup.bat  E:\\porozheha\\backup
+rem    Task Scheduler
 rem ============================================================
 set URL=${typeof window !== "undefined" ? window.location.origin : "https://your-app.onrender.com"}/api/backup
 set DEST=E:\\porozheha\\backup\\${cfg.folderName}
@@ -213,7 +213,6 @@ echo backup saved to %DEST%
             {busy ? "   ..." : "   "}
           </Button>
           <Button variant="ghost" onClick={() => runBackup(false, true)} disabled={busy}>
-              
           </Button>
           {supportsFs ? (
             <Button variant={dirOk ? "success" : "soft"} onClick={pickFolder}>
@@ -226,21 +225,22 @@ echo backup saved to %DEST%
         </div>
         {!dirOk ? (
           <Alert kind="error">
-                  .            
+                  .
              .      «   »  .
           </Alert>
         ) : null}
         <Alert kind="info">
-          <b>  E:\porozheha\backup\{cfg.folderName}</b> —        
-                    :  «   »    
-          <span dir="ltr"> E:\porozheha\backup\{cfg.folderName} </span>   .     
-          (  )      .          
+          <b>  E:\porozheha\backup\{cfg.folderName}</b> —
+                    :  «   »
+          <span dir="ltr"> E:\porozheha\backup\{cfg.folderName} </span>   .
+          (  )      .
             .
         </Alert>
       </Card>
       <Card>
         <h3 className="mb-2 text-sm font-bold text-slate-700">  </h3>
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+
           <Field label="   ">
             <Input
               inputMode="numeric"
@@ -250,7 +250,6 @@ echo backup saved to %DEST%
           </Field>
           <Field label="  ">
             <Input value={cfg.folderName} onChange={(e) => setCfg({ ...cfg, folderName: e.target.value })} />
-
           </Field>
           <div className="flex flex-col justify-end gap-2">
             <label className="flex items-center gap-2 text-xs font-bold text-slate-600">
@@ -269,7 +268,6 @@ echo backup saved to %DEST%
                 checked={cfg.enabled}
                 onChange={(e) => setCfg({ ...cfg, enabled: e.target.checked })}
               />
-                 
             </label>
           </div>
         </div>
@@ -289,14 +287,13 @@ echo backup saved to %DEST%
               saveCfg(cfg);
             }}
           >
-              
           </Button>
           <Badge tone={cfg.enabled ? "green" : "slate"}>
             {cfg.enabled ? ` —  ${toPersianDigits(cfg.minutes)} ` : ""}
           </Badge>
         </div>
         <p className="mt-2 text-[11px] text-slate-500">
-          :            .     
+          :            .
               .
         </p>
       </Card>
@@ -304,7 +301,7 @@ echo backup saved to %DEST%
         <h3 className="mb-2 text-sm font-bold text-slate-700">    (     )</h3
 >
         <p className="mb-2 text-[11px] text-slate-500">
-                 <span dir="ltr">backup.bat</span>          
+                 <span dir="ltr">backup.bat</span>
           Task Scheduler    (   ).
         </p>
         <pre className="scroll-x max-h-56 overflow-auto rounded-xl bg-slate-900 p-3 text-[11px] leading-5 text-emerald-2
@@ -319,13 +316,13 @@ echo backup saved to %DEST%
               setMsg("   ");
             }}
           >
-              
           </Button>
           <Button
             variant="ghost"
             onClick={() => {
               const blob = new Blob([winScript], { type: "text/plain" });
               const a = document.createElement("a");
+
               a.href = URL.createObjectURL(blob);
               a.download = "backup.bat";
               a.click();
@@ -335,7 +332,6 @@ echo backup saved to %DEST%
           </Button>
         </div>
       </Card>
-
       {log.length ? (
         <Card>
           <h3 className="mb-2 text-sm font-bold text-slate-700">    </h3>

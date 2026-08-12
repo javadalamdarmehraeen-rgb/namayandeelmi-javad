@@ -1,10 +1,10 @@
+
 import type { NextConfig } from "next";
 /**
  *  :
- *  -  HTML  →    (no-store)      
+ *  -  HTML  →    (no-store)
  *  -  /_next/static →   (      build  )
- *  - sw.js →        
-
+ *  - sw.js →
  */
 const NO_STORE = "no-cache, no-store, must-revalidate, max-age=0";
 const nextConfig: NextConfig = {
@@ -18,7 +18,7 @@ const nextConfig: NextConfig = {
   async headers() {
     return [
       {
-        //   HTML:     
+        //   HTML:
         // ( /_next/*        )
         source: "/:path((?!_next/).*)",
         headers: [
@@ -28,7 +28,7 @@ const nextConfig: NextConfig = {
           { key: "X-Content-Type-Options", value: "nosniff" },
         ],
       },
-      // :  /_next/static     Next.js  
+      // :  /_next/static     Next.js
       //  immutable            .
       {
         source: "/sw.js",
@@ -41,6 +41,7 @@ const nextConfig: NextConfig = {
       {
         source: "/manifest.webmanifest",
         headers: [
+
           { key: "Content-Type", value: "application/manifest+json; charset=utf-8" },
           { key: "Cache-Control", value: "public, max-age=3600" },
           { key: "Access-Control-Allow-Origin", value: "*" },
@@ -82,12 +83,11 @@ const nextConfig: NextConfig = {
         ],
       },
       {
-        // API    
+        // API
         source: "/api/:path*",
         headers: [{ key: "Cache-Control", value: NO_STORE }],
       },
     ];
   },
-
 };
 export default nextConfig;

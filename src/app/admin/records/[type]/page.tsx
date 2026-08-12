@@ -1,3 +1,4 @@
+
 import { notFound } from "next/navigation";
 import RecordScreen, { type RecordType } from "@/components/RecordScreen";
 const TYPES = ["pharmacies", "doctors", "orders"] as const;

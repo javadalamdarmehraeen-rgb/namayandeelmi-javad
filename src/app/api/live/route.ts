@@ -1,3 +1,4 @@
+
 import { db, dbRetrySafe } from "@/db";
 import { liveLocations, trips, users } from "@/db/schema";
 import { getSessionUser } from "@/lib/auth";
@@ -7,7 +8,7 @@ export const dynamic = "force-dynamic";
  *   .
  *
  * POST →       (    )
- * GET  →       
+ * GET  →
  */
 export async function POST(req: Request) {
   const user = await getSessionUser();
@@ -17,7 +18,6 @@ export async function POST(req: Request) {
   const lng = Number(b.lng);
   if (!Number.isFinite(lat) || !Number.isFinite(lng)) {
     return Response.json({ error: " " }, { status: 400 });
-
   }
   const values = {
     userId: user.id,
@@ -30,6 +30,7 @@ export async function POST(req: Request) {
     battery: Number.isFinite(Number(b.battery)) ? Math.round(Number(b.battery)) : null,
     gpsOn: b.gpsOn !== false,
     online: true,
+
     tripId: Number(b.tripId) || null,
     recordedAt: b.recordedAt ? new Date(String(b.recordedAt)) : new Date(),
     updatedAt: new Date(),
@@ -71,7 +72,7 @@ export async function GET() {
     "live:list",
   );
   const scoped = isManager ? rows : rows.filter((r) => r.userId === user.id);
-  //     
+  //
   const active = await dbRetrySafe(
     () =>
       db
@@ -94,14 +95,13 @@ export async function GET() {
     return {
       ...r,
       ageMs,
-
       /** :        */
       live: ageMs < 3 * 60 * 1000,
       stale: ageMs >= 3 * 60 * 1000 && ageMs < 60 * 60 * 1000,
       activeTrip: active.find((t) => t.userId === r.userId) ?? null,
     };
   });
-  //     
+  //
   const missing = allUsers
     .filter((u) => u.role === "rep" && u.active && !scoped.some((r) => r.userId === u.id))
     .map((u) => ({ userId: u.id, repName: u.fullName }));

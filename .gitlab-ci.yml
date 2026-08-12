@@ -1,5 +1,5 @@
-# ============================================================
 
+# ============================================================
 #  GitLab CI —   GitHub    NdcoHub
 # ============================================================
 stages: [build, mirror, deploy, sync]
@@ -38,8 +38,9 @@ deploy:
   needs: [build]
   rules:
     - if: $CI_COMMIT_BRANCH == "main" || $CI_COMMIT_BRANCH == "master"
+
   script:
-    - '[ -n "$NDCOHUB_DEPLOY_HOOK" ] && curl -fsSL -X POST "$NDCOHUB_DEPLOY_HOOK" && echo " NdcoHub" || echo "hook 
+    - '[ -n "$NDCOHUB_DEPLOY_HOOK" ] && curl -fsSL -X POST "$NDCOHUB_DEPLOY_HOOK" && echo " NdcoHub" || echo "hook
  "'
     - '[ -n "$RENDER_DEPLOY_HOOK" ] && curl -fsSL -X POST "$RENDER_DEPLOY_HOOK" && echo " Render" || true'
 sync-after-deploy:

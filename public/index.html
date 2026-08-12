@@ -1,393 +1,395 @@
+
 <!DOCTYPE html>
 <html lang="fa" dir="rtl">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>سیستم جامع مدیریت و ویزیت علمی، داروخانه‌ها و پزشکان (CRM / PWA)</title>
-  
+  <title>         (CRM / PWA)</title>
   <!-- Leaflet CSS -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-  
   <!-- PWA Manifest -->
   <link rel="manifest" href="manifest.json" />
   <meta name="theme-color" content="#0d9488" />
-  
   <!-- Custom Style with Anti-Cache Version 8.0.0 -->
   <link rel="stylesheet" href="style.css?v=8.0.0" />
 </head>
 <body>
-
   <!-- Top App Header matching Screenshot 1 -->
   <header class="app-header">
     <div class="header-container">
       <div class="logo-area">
-        <button id="btnToggleSideMenu" class="btn-menu-hamburger" title="منوی امکانات برنامه">
-          <span>☰</span>
+        <button id="btnToggleSideMenu" class="btn-menu-hamburger" title="  ">
+          <span></span>
         </button>
-        <div class="logo-icon">🏥</div>
+        <div class="logo-icon"></div>
         <div class="logo-text">
-          <h1 id="headerCompanyNameDisplay">سیستم مدیریت ویزیت علمی و شبکه درمان</h1>
-          <p>هماهنگ با Render.com، Neon، و منوی ۲۰ قابلیت مدیریتی</p>
+          <h1 id="headerCompanyNameDisplay">      </h1>
+          <p>  Render.com Neon     </p>
         </div>
       </div>
       <div class="header-actions">
         <div class="header-user-pill">
-          <span id="currentUserRoleLabel">ثبت اطلا... مدیر سیستم...</span>
-          <span class="badge-status-online" id="globalOnlineStatusBadge">🟢 آنلاین (متصل به سرور)</span>
+          <span id="currentUserRoleLabel"> ...  ...</span>
+          <span class="badge-status-online" id="globalOnlineStatusBadge">  (  )</span>
         </div>
-        <button class="btn-header-icon" id="btnNotificationBellHeader" title="اعلان‌ها">
-          <span>🔔</span>
-          <span class="notif-count-badge" id="headerNotifBadgeCount">۲</span>
+        <button class="btn-header-icon" id="btnNotificationBellHeader" title="">
+          <span></span>
+          <span class="notif-count-badge" id="headerNotifBadgeCount"></span>
         </button>
         <button id="btnOpenLoginModal" class="btn-header-teal">
-          <span>پنل نماینده</span>
+          <span> </span>
         </button>
         <button id="btnLogoutSystem" class="btn-header-logout">
-          <span>خروج</span>
+          <span></span>
         </button>
       </div>
     </div>
   </header>
-
   <!-- Navigation Bar (Quick Horizontal Scrollable Tabs) -->
   <nav class="app-nav">
     <div class="nav-container" id="horizontalNavContainer">
       <!-- Generated dynamically from all 20 sections -->
     </div>
   </nav>
-
   <!-- SIDEBAR NAVIGATION DRAWER (Matching Screenshot 1) -->
   <aside id="sideMenuDrawer" class="side-menu-drawer">
     <div class="side-menu-header">
       <div style="display: flex; align-items: center; gap: 0.5rem;">
-        <span style="font-size: 1.5rem;">🏥</span>
-        <span style="font-weight: 800; font-size: 1.1rem; color: #fff;">امکانات و منوی جامع</span>
+        <span style="font-size: 1.5rem;"></span>
+        <span style="font-weight: 800; font-size: 1.1rem; color: #fff;">   </span>
       </div>
-      <button id="btnCloseSideMenu" class="btn-close-side" title="بستن">✕</button>
+      <button id="btnCloseSideMenu" class="btn-close-side" title=""></button>
     </div>
     <div class="side-menu-content" id="sideMenuItemsContainer">
       <!-- Dynamic list of all 20 sections matching Screenshot 1 -->
     </div>
   </aside>
   <div id="sideMenuOverlay" class="side-menu-overlay"></div>
-
   <!-- Main Content Area -->
   <main class="main-content">
-
     <!-- ======================================================================
-         1. TAB: DASHBOARD (داشبورد)
+         1. TAB: DASHBOARD ()
          ====================================================================== -->
     <section id="tab-dashboard" class="tab-pane active">
       <div class="stats-grid">
         <div class="stat-card">
-          <div class="stat-icon" style="background: #eff6ff; color: #2563eb;">🏥</div>
+          <div class="stat-icon" style="background: #eff6ff; color: #2563eb;"></div>
+
           <div class="stat-content">
             <h3 id="statPharmacies">0</h3>
-            <p>تعداد داروخانه‌ها</p>
+            <p> </p>
           </div>
         </div>
         <div class="stat-card">
-          <div class="stat-icon" style="background: #f0fdf4; color: #10b981;">👨‍⚕️</div>
+          <div class="stat-icon" style="background: #f0fdf4; color: #10b981;"></div>
           <div class="stat-content">
             <h3 id="statDoctors">0</h3>
-            <p>تعداد پزشکان و مطب‌ها</p>
+            <p>   </p>
           </div>
         </div>
         <div class="stat-card">
-          <div class="stat-icon" style="background: #fffbeb; color: #f59e0b;">👔</div>
+          <div class="stat-icon" style="background: #fffbeb; color: #f59e0b;"></div>
           <div class="stat-content">
             <h3 id="statReps">0</h3>
-            <p>نمایندگان علمی فعال</p>
+            <p>  </p>
           </div>
         </div>
         <div class="stat-card">
-          <div class="stat-icon" style="background: #fdf2f8; color: #ec4899;">📦</div>
+          <div class="stat-icon" style="background: #fdf2f8; color: #ec4899;"></div>
           <div class="stat-content">
             <h3 id="statOrders">0</h3>
-            <p>تعداد کل سفارشات</p>
+            <p>  </p>
           </div>
         </div>
         <div class="stat-card">
-          <div class="stat-icon" style="background: #ecfeff; color: #0891b2;">👤</div>
+          <div class="stat-icon" style="background: #ecfeff; color: #0891b2;"></div>
           <div class="stat-content">
             <h3 id="statUsers">0</h3>
-            <p>کاربران و سطح دسترسی</p>
+            <p>   </p>
           </div>
         </div>
         <div class="stat-card">
-          <div class="stat-icon" style="background: #f3e8ff; color: #9333ea;">📝</div>
+          <div class="stat-icon" style="background: #f3e8ff; color: #9333ea;"></div>
           <div class="stat-content">
             <h3 id="statLeaves">0</h3>
-            <p>مرخصی‌های در جریان</p>
+            <p>  </p>
           </div>
         </div>
       </div>
-
-      <!-- 20-Section Quick Launchpad Grid (لانچ‌پد امکانات سامانه - بدون اسکرول افقی) -->
+      <!-- 20-Section Quick Launchpad Grid (   -   ) -->
       <div class="card" style="margin-bottom: 1.5rem;">
         <div class="card-header">
           <div class="card-title">
-            <span>🚀 دسترسی یکجا به تمامی ۲۰ قابلیت مدیریتی (بدون نیاز به اسکرول به چپ و راست)</span>
+            <span>        (       )</span>
           </div>
         </div>
         <p style="font-size: 0.88rem; color: #64748b; margin-bottom: 1rem;">
-          تمامی امکانات سامانه در یک صفحه چیده شده‌اند تا بدون اسکرول به چپ و راست، با یک کلیک وارد هر بخش شوید:
+                               :
         </p>
         <div class="launchpad-grid" id="dashboardLaunchpadGrid">
           <!-- Generated dynamically for all 20 sections -->
         </div>
       </div>
-
       <!-- Interactive Chart Analytics Widget (Section 1 Requirement) -->
       <div class="card" id="dashboardChartsWidget" style="margin-bottom: 1.5rem;">
         <div class="card-header">
           <div class="card-title">
-            <span>📈 نمودارهای تحلیلی ویزیت‌ها، فروش و عملکرد نمایندگان (Chart Analytics)</span>
+            <span>        (Chart Analytics)</span>
           </div>
           <div style="display: flex; gap: 0.5rem;">
-            <button type="button" class="btn btn-outline btn-sm" onclick="alert('🎛️ امکان افزودن، حذف و جابجایی ویجت‌های داشبورد برای مدیر فعال شد.')">
-              <span>🎛️ مدیریت پنل و ویجت‌ها</span>
+            <button type="button" class="btn btn-outline btn-sm" onclick="alert('       
+    .')">
+              <span>    </span>
             </button>
           </div>
         </div>
         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.25rem;">
           <div style="background: #f8fafc; padding: 1rem; border-radius: 10px; border: 1px solid var(--border-color);">
-            <h5 style="margin-bottom: 0.75rem; color: #0d9488;">📊 نمودار میله‌ای فروش نمایندگان (ریال)</h5>
-            <div style="display: flex; align-items: flex-end; gap: 1rem; height: 140px; padding: 0.5rem 0; border-bottom: 2px solid var(--border-color);">
+            <h5 style="margin-bottom: 0.75rem; color: #0d9488;">     ()</h5>
+            <div style="display: flex; align-items: flex-end; gap: 1rem; height: 140px; padding: 0.5rem 0; border-bottom
+: 2px solid var(--border-color);">
               <div style="flex: 1; text-align: center;">
-                <div style="background: #0d9488; height: 100px; border-radius: 6px 6px 0 0;" title="380,000,000 ریال"></div>
-                <span style="font-size: 0.75rem; font-weight: 700;">جواد علمدار</span>
+                <div style="background: #0d9488; height: 100px; border-radius: 6px 6px 0 0;" title="380,000,000 "></
+div>
+                <span style="font-size: 0.75rem; font-weight: 700;"> </span>
               </div>
               <div style="flex: 1; text-align: center;">
-                <div style="background: #10b981; height: 120px; border-radius: 6px 6px 0 0;" title="410,000,000 ریال"></div>
-                <span style="font-size: 0.75rem; font-weight: 700;">نیلا محرمی</span>
+                <div style="background: #10b981; height: 120px; border-radius: 6px 6px 0 0;" title="410,000,000 "></
+div>
+                <span style="font-size: 0.75rem; font-weight: 700;"> </span>
               </div>
+
               <div style="flex: 1; text-align: center;">
-                <div style="background: #f59e0b; height: 60px; border-radius: 6px 6px 0 0;" title="150,000,000 ریال"></div>
-                <span style="font-size: 0.75rem; font-weight: 700;">داوود عقبایی</span>
+                <div style="background: #f59e0b; height: 60px; border-radius: 6px 6px 0 0;" title="150,000,000 "></d
+iv>
+                <span style="font-size: 0.75rem; font-weight: 700;"> </span>
               </div>
             </div>
           </div>
-
           <div style="background: #f8fafc; padding: 1rem; border-radius: 10px; border: 1px solid var(--border-color);">
-            <h5 style="margin-bottom: 0.75rem; color: #0d9488;">🥧 نسبت سهم ویزیت پزشکان به داروخانه‌ها</h5>
+            <h5 style="margin-bottom: 0.75rem; color: #0d9488;">      </h5>
             <div style="display: flex; align-items: center; justify-content: center; gap: 1.5rem; height: 140px;">
-              <div style="width: 100px; height: 100px; border-radius: 50%; background: conic-gradient(#0d9488 0% 65%, #10b981 65% 100%); box-shadow: var(--shadow-sm);"></div>
+              <div style="width: 100px; height: 100px; border-radius: 50%; background: conic-gradient(#0d9488 0% 65%, #1
+0b981 65% 100%); box-shadow: var(--shadow-sm);"></div>
               <div style="font-size: 0.82rem; color: #334155;">
-                <div><span style="color: #0d9488;">●</span> پزشکان و مطب‌ها (۶۵٪)</div>
-                <div><span style="color: #10b981;">●</span> داروخانه‌ها (۳۵٪)</div>
+                <div><span style="color: #0d9488;">●</span>    ()</div>
+                <div><span style="color: #10b981;">●</span>  ()</div>
               </div>
             </div>
           </div>
         </div>
       </div>
-
       <!-- Quick Overview Map -->
       <div class="card">
         <div class="card-header">
           <div class="card-title">
-            <span>🗺️ نقشه جامع شبکه درمان (نمایش لوکیشن و نام ثابت داروخانه‌ها، پزشکان و نمایندگان)</span>
+            <span>     (        )</span>
           </div>
           <button id="btnRefreshOverviewMap" class="btn btn-outline btn-sm">
-            <span>🔄 بروزرسانی نقشه</span>
+            <span>  </span>
           </button>
         </div>
         <p style="font-size: 0.88rem; color: #64748b; margin-bottom: 1rem;">
-          بر اساس تنظیمات، در کنار موقعیت هر داروخانه (🏥)، پزشک (👨‍⚕️) و نماینده علمی (👔)، <strong>نام آن به صورت ثابت</strong> روی نقشه نمایش داده می‌شود.
+                  ()  ()    () <strong>    <
+/strong>     .
         </p>
         <div id="map-dashboard-overview" class="map-container map-container-large"></div>
       </div>
     </section>
-
     <!-- ======================================================================
-         2. TAB: PHARMACIES (داروخانه‌ها) - Matching Screenshots 2 & 3
+         2. TAB: PHARMACIES () - Matching Screenshots 2 & 3
          ====================================================================== -->
     <section id="tab-pharmacies" class="tab-pane">
       <div class="card" id="cardPhForm">
         <div class="card-header" style="justify-content: space-between;">
           <div style="display: flex; align-items: center; gap: 0.5rem;">
-            <button class="btn btn-outline btn-sm" onclick="switchTab('tab-dashboard')">→ بازگشت</button>
-            <button class="btn btn-outline btn-sm" onclick="switchTab('tab-dashboard')">🏠 صفحه اصلی</button>
+            <button class="btn btn-outline btn-sm" onclick="switchTab('tab-dashboard')">→ </button>
+            <button class="btn btn-outline btn-sm" onclick="switchTab('tab-dashboard')">  </button>
           </div>
           <div class="card-title" style="font-size: 1.25rem;">
-            <span>ثبت اطلاعات داروخانه 🏥</span>
+            <span>   </span>
           </div>
         </div>
-
         <!-- Tab switcher inside Pharmacy card -->
-        <div style="display: flex; gap: 0.5rem; margin-bottom: 1.25rem; border-bottom: 2px solid var(--border-color); padding-bottom: 0.5rem;">
-          <button type="button" class="btn btn-primary btn-sm" id="btnShowPhForm">فرم ثبت</button>
-          <button type="button" class="btn btn-outline btn-sm" id="btnShowPhList">لیست (<span id="phListCountBadge">0</span>)</button>
+        <div style="display: flex; gap: 0.5rem; margin-bottom: 1.25rem; border-bottom: 2px solid var(--border-color); pa
+dding-bottom: 0.5rem;">
+          <button type="button" class="btn btn-primary btn-sm" id="btnShowPhForm"> </button>
+          <button type="button" class="btn btn-outline btn-sm" id="btnShowPhList"> (<span id="phListCountBadge">0</s
+pan>)</button>
         </div>
-
         <form id="formPharmacy" onsubmit="return false;">
           <input type="hidden" id="pharmacyEditId" value="" />
           <div class="form-grid">
             <div class="form-group">
-              <label class="form-label" for="pharmacyDate">تاریخ ثبت *</label>
-              <input type="text" id="pharmacyDate" class="form-input" placeholder="1405/05/20 - تایپ با درج خودکار اسلش یا انتخاب از تقویم" required />
+              <label class="form-label" for="pharmacyDate">  *</label>
+              <input type="text" id="pharmacyDate" class="form-input" placeholder="1405/05/20 -      
+   " required />
             </div>
-
             <!-- Cascading Provinces / Cities / Sorted Districts (Req 4) -->
             <div class="form-group">
-              <label class="form-label" for="pharmacyProvince">نام استان * (۳۱ استان کشور - فقط انتخاب کنید)</label>
+              <label class="form-label" for="pharmacyProvince">  * (   -   )</label>
               <select id="pharmacyProvince" class="form-select dropdown-auto-clear" required>
-                <option value="">انتخاب استان...</option>
+                <option value=""> ...</option>
               </select>
             </div>
             <div class="form-group">
-              <label class="form-label" for="pharmacyCity">شهر (شهرهای همان استان - فقط انتخاب کنید)</label>
+              <label class="form-label" for="pharmacyCity"> (   -   )</label>
               <select id="pharmacyCity" class="form-select dropdown-auto-clear" required>
-                <option value="">ابتدا استان را انتخاب کنید</option>
-              </select>
-            </div>
-            <div class="form-group">
-              <label class="form-label" for="pharmacyDistrict">منطقه (مناطق همان شهر - فقط انتخاب کنید)</label>
-              <select id="pharmacyDistrict" class="form-select dropdown-auto-clear" required>
-                <option value="">ابتدا شهر را انتخاب کنید</option>
+                <option value="">    </option>
               </select>
             </div>
 
             <div class="form-group">
-              <label class="form-label" for="pharmacyName">نام داروخانه * (انتخاب یا تایپ کنید... قابل تایپ + افزودن لحظه‌ای)</label>
-              <input type="text" id="pharmacyName" class="form-input" placeholder="مثال: داروخانه دکتر عرفانی..." required />
+              <label class="form-label" for="pharmacyDistrict"> (   -   )</label>
+              <select id="pharmacyDistrict" class="form-select dropdown-auto-clear" required>
+                <option value="">    </option>
+              </select>
             </div>
             <div class="form-group">
-              <label class="form-label" for="pharmacyPhone">شماره ثابت داروخانه (...۰۲۱)</label>
+              <label class="form-label" for="pharmacyName">  * (   ...   +  
+)</label>
+              <input type="text" id="pharmacyName" class="form-input" placeholder=":   ..." requir
+ed />
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="pharmacyPhone">   (...)</label>
               <input type="text" id="pharmacyPhone" class="form-input" placeholder="02188776655..." />
             </div>
             <div class="form-group">
-              <label class="form-label" for="pharmacyManager">نام مسئول سفارش (انتخاب یا تایپ کنید...)</label>
-              <input type="text" id="pharmacyManager" class="form-input" placeholder="نام مسئول فنی یا مدیر..." />
+              <label class="form-label" for="pharmacyManager">   (   ...)</label>
+              <input type="text" id="pharmacyManager" class="form-input" placeholder="    ..." />
             </div>
             <div class="form-group">
-              <label class="form-label" for="pharmacyManagerPhone">شماره همراه مسئول سفارش</label>
+              <label class="form-label" for="pharmacyManagerPhone">   </label>
               <input type="text" id="pharmacyManagerPhone" class="form-input" placeholder="0912..." />
             </div>
-
             <div class="form-group full-width">
-              <label class="form-label" for="pharmacyAddress">آدرس داروخانه</label>
-              <input type="text" id="pharmacyAddress" class="form-input" placeholder="آدرس دقیق داروخانه..." required />
+              <label class="form-label" for="pharmacyAddress"> </label>
+              <input type="text" id="pharmacyAddress" class="form-input" placeholder="  ..." required />
             </div>
-
-            <!-- Toggle: آیا این داروخانه درصدی می‌باشد؟ (Matching Screenshot 3) -->
-            <div class="form-group full-width" style="background: #fef9c3; border: 1px solid #fde047; padding: 1rem; border-radius: 10px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap;">
-              <span style="font-weight: 700; color: #854d0e;">آیا این داروخانه درصدی می‌باشد؟</span>
+            <!-- Toggle:      (Matching Screenshot 3) -->
+            <div class="form-group full-width" style="background: #fef9c3; border: 1px solid #fde047; padding: 1rem; bor
+der-radius: 10px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap;">
+              <span style="font-weight: 700; color: #854d0e;">    </span>
               <div style="display: flex; gap: 0.5rem;">
-                <button type="button" id="btnPhPercentageNo" class="btn-toggle-option active">خیر</button>
-                <button type="button" id="btnPhPercentageYes" class="btn-toggle-option">بله</button>
+                <button type="button" id="btnPhPercentageNo" class="btn-toggle-option active"></button>
+                <button type="button" id="btnPhPercentageYes" class="btn-toggle-option"></button>
               </div>
               <input type="hidden" id="pharmacyIsPercentage" value="false" />
             </div>
-
-            <!-- File Upload: بارگذاری عکس یا فایل داروخانه (Matching Screenshot 3) -->
-            <div class="form-group full-width" style="background: #f0fdf4; border: 1px solid #bbf7d0; padding: 1rem; border-radius: 10px;">
+            <!-- File Upload:      (Matching Screenshot 3) -->
+            <div class="form-group full-width" style="background: #f0fdf4; border: 1px solid #bbf7d0; padding: 1rem; bor
+der-radius: 10px;">
               <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap;">
                 <div>
-                  <h4 style="color: #166534; font-size: 0.95rem; margin-bottom: 2px;">📎 بارگذاری عکس یا فایل داروخانه</h4>
-                  <p style="font-size: 0.78rem; color: #15803d; margin: 0;">عکس، PDF و آفیس - حداکثر ۳ مگابایت</p>
+                  <h4 style="color: #166534; font-size: 0.95rem; margin-bottom: 2px;">     </
+h4>
+                  <p style="font-size: 0.78rem; color: #15803d; margin: 0;"> PDF   -   </p>
                 </div>
                 <div>
-                  <button type="button" class="btn btn-outline btn-sm" onclick="document.getElementById('phFileInput').click()">
-                    <span>📎 انتخاب عکس یا فایل</span>
+                  <button type="button" class="btn btn-outline btn-sm" onclick="document.getElementById('phFileInput').c
+lick()">
+                    <span>    </span>
                   </button>
                   <input type="file" id="phFileInput" style="display: none;" />
                 </div>
               </div>
-              <div id="phFileDisplay" style="margin-top: 0.5rem; font-size: 0.82rem; color: #166534;">فایلی بارگذاری نشده است</div>
+              <div id="phFileDisplay" style="margin-top: 0.5rem; font-size: 0.82rem; color: #166534;">  
+ </div>
             </div>
-
             <!-- Dynamic Custom Fields for Pharmacy -->
-            <div id="pharmacyCustomFieldsContainer" class="form-group full-width form-grid" style="margin-top: 0.5rem;"></div>
-
+            <div id="pharmacyCustomFieldsContainer" class="form-group full-width form-grid" style="margin-top: 0.5rem;">
+</div>
             <!-- Location Features (GPS + Map Search + Reverse Geocode) Matching Screenshot 3 -->
-            <div class="form-group full-width" style="background: #ecfeff; padding: 1rem; border-radius: 10px; border: 1px solid #a5f3fc;">
-              <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.75rem; margin-bottom: 0.75rem;">
+            <div class="form-group full-width" style="background: #ecfeff; padding: 1rem; border-radius: 10px; border: 1
+px solid #a5f3fc;">
+              <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.75
+rem; margin-bottom: 0.75rem;">
                 <label class="form-label" style="margin: 0; color: #0e7490;">
-                  <span>📍 لوکیشن و نقشه داروخانه (ثبت نام ثابت 🏥)</span>
+                  <span>     (   )</span>
                 </label>
                 <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
                   <button type="button" id="btnPharmacyCurrentLocation" class="btn btn-primary btn-sm">
-                    <span>📡 موقعیت فعلی من</span>
+                    <span>   </span>
                   </button>
                   <button type="button" id="btnPharmacyGetAddressFromPoint" class="btn btn-success btn-sm">
-                    <span>🔍 دریافت آدرس این نقطه</span>
+                    <span>    </span>
                   </button>
                 </div>
               </div>
 
               <!-- Map Search bar (Matching Screenshot 3) -->
               <div style="display: flex; gap: 0.5rem; margin-bottom: 0.75rem;">
-                <input type="text" id="phMapSearchInput" class="form-input" placeholder="🔍 جستجوی آدرس یا نام محل... (مثلاً: میدان ونک تهران)" />
-                <button type="button" id="btnPhMapSearch" class="btn btn-outline" style="white-space: nowrap;">جستجو</button>
+                <input type="text" id="phMapSearchInput" class="form-input" placeholder="     ... (
+:   )" />
+                <button type="button" id="btnPhMapSearch" class="btn btn-outline" style="white-space: nowrap;"></bu
+tton>
               </div>
-
               <div class="form-grid">
                 <div class="form-group">
-                  <label class="form-label">عرض جغرافیایی (lat)</label>
+                  <label class="form-label">  (lat)</label>
                   <input type="number" step="any" id="pharmacyLat" class="form-input" value="35.7605" />
                 </div>
                 <div class="form-group">
-                  <label class="form-label">طول جغرافیایی (lng)</label>
+                  <label class="form-label">  (lng)</label>
                   <input type="number" step="any" id="pharmacyLng" class="form-input" value="51.4180" />
                 </div>
                 <div class="form-group full-width">
-                  <label class="form-label">توضیحات لوکیشن / آدرس استخراج شده از نقشه</label>
-                  <input type="text" id="pharmacyLocationText" class="form-input" placeholder="آدرس استخراج شده از موقعیت..." readonly style="background: #f8fafc;" />
+                  <label class="form-label">  /     </label>
+                  <input type="text" id="pharmacyLocationText" class="form-input" placeholder="    
+..." readonly style="background: #f8fafc;" />
                 </div>
               </div>
             </div>
           </div>
-
           <!-- Pharmacy Form Map -->
           <div style="margin: 1.25rem 0;">
             <div id="map-pharmacy-form" class="map-container"></div>
           </div>
-
           <div style="display: flex; justify-content: flex-end; gap: 0.75rem; margin-top: 1rem;">
-            <button type="submit" id="btnSavePharmacy" class="btn btn-primary" style="background: #0d9488; font-size: 1rem; padding: 0.75rem 1.75rem;">
-              <span>💾 ثبت اطلاعات</span>
+            <button type="submit" id="btnSavePharmacy" class="btn btn-primary" style="background: #0d9488; font-size: 1r
+em; padding: 0.75rem 1.75rem;">
+              <span>  </span>
             </button>
           </div>
           <p style="text-align: center; font-size: 0.78rem; color: #64748b; margin-top: 1.5rem;">
-            نسخه سبک وب‌اپلیکیشن - قابل نصب روی ویندوز و موبایل
+               -      
           </p>
         </form>
       </div>
-
       <!-- Pharmacy List Card -->
       <div class="card" id="cardPhList" style="display: none;">
         <div class="card-header">
           <div class="card-title">
-            <span>📋 لیست داروخانه‌های ثبت شده (<span id="phTableCountBadge">0</span>)</span>
+            <span>     (<span id="phTableCountBadge">0</span>)</span>
           </div>
           <div style="display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap;">
             <select id="phMonthFilter" class="form-select dropdown-auto-clear" style="width: 150px;">
-              <option value="">همه ماه‌ها</option>
-              <option value="05">مرداد 1405</option>
-              <option value="06">شهریور 1405</option>
+              <option value=""> </option>
+              <option value="05"> 1405</option>
+              <option value="06"> 1405</option>
             </select>
-            <input type="text" id="searchPharmacyInput" class="form-input dropdown-auto-clear" placeholder="🔍 جستجو..." style="width: 220px;" />
+            <input type="text" id="searchPharmacyInput" class="form-input dropdown-auto-clear" placeholder=" ..."
+ style="width: 220px;" />
             <button id="btnExportPharmaciesCSV" class="btn btn-success btn-sm" style="background: #0d9488;">
-              <span>⬇️ خروجی اکسل</span>
+              <span>  </span>
             </button>
           </div>
         </div>
-
         <div class="table-responsive">
           <table class="data-table" id="tablePharmacies">
             <thead>
               <tr id="tablePharmaciesHeader">
-                <th>ردیف</th>
-                <th>نام نماینده</th>
-                <th>تاریخ ثبت</th>
-                <th>استان</th>
-                <th>شهر</th>
-                <th>نام داروخانه</th>
-                <th>شماره همراه</th>
-                <th>درصدی</th>
-                <th>فایل</th>
-                <th>عملیات</th>
+                <th></th>
+                <th> </th>
+                <th> </th>
+                <th></th>
+                <th></th>
+                <th> </th>
+                <th> </th>
+                <th></th>
+                <th></th>
+                <th></th>
               </tr>
             </thead>
             <tbody id="tablePharmaciesBody">
@@ -396,181 +398,185 @@
           </table>
         </div>
       </div>
-    </section>
 
+    </section>
     <!-- ======================================================================
-         3. TAB: DOCTORS AND CLINICS (پزشکان)
+         3. TAB: DOCTORS AND CLINICS ()
          ====================================================================== -->
     <section id="tab-doctors" class="tab-pane">
       <div class="card" id="cardDocForm">
         <div class="card-header" style="justify-content: space-between;">
           <div style="display: flex; align-items: center; gap: 0.5rem;">
-            <button class="btn btn-outline btn-sm" onclick="switchTab('tab-dashboard')">→ بازگشت</button>
-            <button class="btn btn-outline btn-sm" onclick="switchTab('tab-dashboard')">🏠 صفحه اصلی</button>
+            <button class="btn btn-outline btn-sm" onclick="switchTab('tab-dashboard')">→ </button>
+            <button class="btn btn-outline btn-sm" onclick="switchTab('tab-dashboard')">  </button>
           </div>
           <div class="card-title" style="font-size: 1.25rem;">
-            <span>ثبت اطلاعات پزشک و مطب 👨‍⚕️</span>
+            <span>     </span>
           </div>
         </div>
-        <div style="display: flex; gap: 0.5rem; margin-bottom: 1.25rem; border-bottom: 2px solid var(--border-color); padding-bottom: 0.5rem;">
-          <button type="button" class="btn btn-primary btn-sm" id="btnShowDocForm" style="background: #0d9488;">فرم ثبت</button>
-          <button type="button" class="btn btn-outline btn-sm" id="btnShowDocList">لیست (<span id="docListCountBadge">0</span>)</button>
+        <div style="display: flex; gap: 0.5rem; margin-bottom: 1.25rem; border-bottom: 2px solid var(--border-color); pa
+dding-bottom: 0.5rem;">
+          <button type="button" class="btn btn-primary btn-sm" id="btnShowDocForm" style="background: #0d9488;"> <
+/button>
+          <button type="button" class="btn btn-outline btn-sm" id="btnShowDocList"> (<span id="docListCountBadge">0<
+/span>)</button>
         </div>
-
         <form id="formDoctor" onsubmit="return false;">
           <input type="hidden" id="doctorEditId" value="" />
           <div class="form-grid">
             <div class="form-group">
-              <label class="form-label" for="doctorDate">تاریخ ثبت *</label>
+              <label class="form-label" for="doctorDate">  *</label>
               <input type="text" id="doctorDate" class="form-input" placeholder="1405/05/20" required />
             </div>
             <div class="form-group">
-              <label class="form-label" for="doctorName">نام پزشک / مطب *</label>
-              <input type="text" id="doctorName" class="form-input" placeholder="مثال: دکتر کاوه سعیدی" required />
+              <label class="form-label" for="doctorName">  /  *</label>
+              <input type="text" id="doctorName" class="form-input" placeholder=":   " required />
             </div>
             <div class="form-group">
-              <label class="form-label" for="doctorSpecialty">تخصص *</label>
-              <input type="text" id="doctorSpecialty" class="form-input" placeholder="مثال: متخصص قلب و عروق" required />
+              <label class="form-label" for="doctorSpecialty"> *</label>
+              <input type="text" id="doctorSpecialty" class="form-input" placeholder=":    " required /
+>
             </div>
             <div class="form-group">
-              <label class="form-label" for="doctorPhone">شماره تماس مطب</label>
-              <input type="text" id="doctorPhone" class="form-input" placeholder="مثال: 021-88990011" />
+              <label class="form-label" for="doctorPhone">  </label>
+              <input type="text" id="doctorPhone" class="form-input" placeholder=": 021-88990011" />
             </div>
-
             <!-- Cascading Provinces / Cities / Sorted Districts -->
             <div class="form-group">
-              <label class="form-label" for="doctorProvince">استان *</label>
+              <label class="form-label" for="doctorProvince"> *</label>
               <select id="doctorProvince" class="form-select dropdown-auto-clear" required>
-                <option value="">انتخاب استان...</option>
+                <option value=""> ...</option>
               </select>
             </div>
             <div class="form-group">
-              <label class="form-label" for="doctorCity">شهر *</label>
+              <label class="form-label" for="doctorCity"> *</label>
               <select id="doctorCity" class="form-select dropdown-auto-clear" required>
-                <option value="">ابتدا استان را انتخاب کنید</option>
+                <option value="">    </option>
               </select>
             </div>
             <div class="form-group">
-              <label class="form-label" for="doctorDistrict">منطقه (مرتب بدون تکرار) *</label>
+              <label class="form-label" for="doctorDistrict"> (  ) *</label>
               <select id="doctorDistrict" class="form-select dropdown-auto-clear" required>
-                <option value="">ابتدا شهر را انتخاب کنید</option>
+                <option value="">    </option>
               </select>
             </div>
-
             <div class="form-group full-width">
-              <label class="form-label" for="doctorAddress">آدرس متنی کامل مطب *</label>
-              <input type="text" id="doctorAddress" class="form-input" placeholder="آدرس دقیق مطب..." required />
+              <label class="form-label" for="doctorAddress">    *</label>
+              <input type="text" id="doctorAddress" class="form-input" placeholder="  ..." required />
             </div>
-
-            <!-- Toggle: آیا این پزشک درصدی می‌باشد؟ -->
-            <div class="form-group full-width" style="background: #fef9c3; border: 1px solid #fde047; padding: 1rem; border-radius: 10px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap;">
-              <span style="font-weight: 700; color: #854d0e;">آیا این پزشک درصدی می‌باشد؟</span>
+            <!-- Toggle:      -->
+            <div class="form-group full-width" style="background: #fef9c3; border: 1px solid #fde047; padding: 1rem; bor
+der-radius: 10px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap;">
+              <span style="font-weight: 700; color: #854d0e;">    </span>
               <div style="display: flex; gap: 0.5rem;">
-                <button type="button" id="btnDocPercentageNo" class="btn-toggle-option active">خیر</button>
-                <button type="button" id="btnDocPercentageYes" class="btn-toggle-option">بله</button>
+                <button type="button" id="btnDocPercentageNo" class="btn-toggle-option active"></button>
+                <button type="button" id="btnDocPercentageYes" class="btn-toggle-option"></button>
               </div>
               <input type="hidden" id="doctorIsPercentage" value="false" />
             </div>
-
-            <!-- File Upload: بارگذاری عکس یا فایل پزشک -->
-            <div class="form-group full-width" style="background: #f0fdf4; border: 1px solid #bbf7d0; padding: 1rem; border-radius: 10px;">
+            <!-- File Upload:      -->
+            <div class="form-group full-width" style="background: #f0fdf4; border: 1px solid #bbf7d0; padding: 1rem; bor
+der-radius: 10px;">
               <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap;">
+
                 <div>
-                  <h4 style="color: #166534; font-size: 0.95rem; margin-bottom: 2px;">📎 بارگذاری فایل و عکس پزشک</h4>
-                  <p style="font-size: 0.78rem; color: #15803d; margin: 0;">عکس، PDF و آفیس - حداکثر ۳ مگابایت</p>
+                  <h4 style="color: #166534; font-size: 0.95rem; margin-bottom: 2px;">     </h4>
+                  <p style="font-size: 0.78rem; color: #15803d; margin: 0;"> PDF   -   </p>
                 </div>
                 <div>
-                  <button type="button" class="btn btn-outline btn-sm" onclick="document.getElementById('docFileInput').click()">
-                    <span>📎 انتخاب فایل پزشک</span>
+                  <button type="button" class="btn btn-outline btn-sm" onclick="document.getElementById('docFileInput').
+click()">
+                    <span>   </span>
                   </button>
                   <input type="file" id="docFileInput" style="display: none;" />
                 </div>
               </div>
-              <div id="docFileDisplay" style="margin-top: 0.5rem; font-size: 0.82rem; color: #166534;">فایلی بارگذاری نشده است</div>
+              <div id="docFileDisplay" style="margin-top: 0.5rem; font-size: 0.82rem; color: #166534;">  
+ </div>
             </div>
-
             <!-- Dynamic Custom Fields for Doctor -->
-            <div id="doctorCustomFieldsContainer" class="form-group full-width form-grid" style="margin-top: 0.5rem;"></div>
-
+            <div id="doctorCustomFieldsContainer" class="form-group full-width form-grid" style="margin-top: 0.5rem;"></
+div>
             <!-- Location Features (GPS + Map Search + Reverse Geocode) -->
-            <div class="form-group full-width" style="background: #ecfeff; padding: 1rem; border-radius: 10px; border: 1px solid #a5f3fc;">
-              <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.75rem; margin-bottom: 0.75rem;">
+            <div class="form-group full-width" style="background: #ecfeff; padding: 1rem; border-radius: 10px; border: 1
+px solid #a5f3fc;">
+              <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.75
+rem; margin-bottom: 0.75rem;">
                 <label class="form-label" style="margin: 0; color: #0e7490;">
-                  <span>📍 لوکیشن و نقشه مطب (ثبت نام ثابت 👨‍⚕️)</span>
+                  <span>     (   )</span>
                 </label>
                 <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
                   <button type="button" id="btnDoctorCurrentLocation" class="btn btn-primary btn-sm">
-                    <span>📡 موقعیت فعلی من</span>
+                    <span>   </span>
                   </button>
                   <button type="button" id="btnDoctorGetAddressFromPoint" class="btn btn-success btn-sm">
-                    <span>🔍 دریافت آدرس این نقطه</span>
+                    <span>    </span>
                   </button>
                 </div>
               </div>
-
               <!-- Map Search bar -->
               <div style="display: flex; gap: 0.5rem; margin-bottom: 0.75rem;">
-                <input type="text" id="docMapSearchInput" class="form-input" placeholder="🔍 جستجوی آدرس یا نام محل مطب..." />
-                <button type="button" id="btnDocMapSearch" class="btn btn-outline">جستجو</button>
+                <input type="text" id="docMapSearchInput" class="form-input" placeholder="      .
+.." />
+                <button type="button" id="btnDocMapSearch" class="btn btn-outline"></button>
               </div>
-
               <div class="form-grid">
                 <div class="form-group">
-                  <label class="form-label">عرض جغرافیایی (lat)</label>
+                  <label class="form-label">  (lat)</label>
                   <input type="number" step="any" id="doctorLat" class="form-input" value="35.7580" />
                 </div>
                 <div class="form-group">
-                  <label class="form-label">طول جغرافیایی (lng)</label>
+                  <label class="form-label">  (lng)</label>
                   <input type="number" step="any" id="doctorLng" class="form-input" value="51.4400" />
                 </div>
                 <div class="form-group full-width">
-                  <label class="form-label">توضیحات لوکیشن / آدرس استخراج شده مطب</label>
-                  <input type="text" id="doctorLocationText" class="form-input" placeholder="آدرس استخراج شده مطب از موقعیت..." readonly style="background: #f8fafc;" />
+                  <label class="form-label">  /    </label>
+                  <input type="text" id="doctorLocationText" class="form-input" placeholder="     
+..." readonly style="background: #f8fafc;" />
                 </div>
               </div>
             </div>
           </div>
-
           <!-- Doctor Form Map -->
           <div style="margin: 1.25rem 0;">
             <div id="map-doctor-form" class="map-container"></div>
           </div>
-
           <div style="display: flex; justify-content: flex-end; gap: 0.75rem; margin-top: 1rem;">
-            <button type="submit" id="btnSaveDoctor" class="btn btn-primary" style="background: #0d9488; font-size: 1rem; padding: 0.75rem 1.75rem;">
-              <span>💾 ثبت اطلاعات پزشک</span>
+            <button type="submit" id="btnSaveDoctor" class="btn btn-primary" style="background: #0d9488; font-size: 1rem
+; padding: 0.75rem 1.75rem;">
+              <span>   </span>
             </button>
           </div>
         </form>
       </div>
-
       <!-- Doctor List Card -->
       <div class="card" id="cardDocList" style="display: none;">
         <div class="card-header">
           <div class="card-title">
-            <span>📋 لیست پزشکان و مطب‌های ثبت شده</span>
+            <span>      </span>
           </div>
           <div style="display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap;">
-            <input type="text" id="searchDoctorInput" class="form-input dropdown-auto-clear" placeholder="🔍 جستجو در پزشکان..." style="width: 220px;" />
+            <input type="text" id="searchDoctorInput" class="form-input dropdown-auto-clear" placeholder="   
+
+..." style="width: 220px;" />
             <button id="btnExportDoctorsCSV" class="btn btn-success btn-sm" style="background: #0d9488;">
-              <span>⬇️ خروجی اکسل</span>
+              <span>  </span>
             </button>
           </div>
         </div>
-
         <div class="table-responsive">
           <table class="data-table" id="tableDoctors">
             <thead>
               <tr id="tableDoctorsHeader">
-                <th>ردیف</th>
-                <th>نام نماینده</th>
-                <th>تاریخ ثبت</th>
-                <th>استان / شهر / منطقه</th>
-                <th>نام پزشک / مطب</th>
-                <th>تخصص</th>
-                <th>درصدی</th>
-                <th>فایل</th>
-                <th>عملیات</th>
+                <th></th>
+                <th> </th>
+                <th> </th>
+                <th> /  / </th>
+                <th>  / </th>
+                <th></th>
+                <th></th>
+                <th></th>
+                <th></th>
               </tr>
             </thead>
             <tbody id="tableDoctorsBody">
@@ -580,154 +586,152 @@
         </div>
       </div>
     </section>
-
     <!-- ======================================================================
-         4. TAB: ORDERS (سفارشات) - Requirement 3: Top Alert Banner
+         4. TAB: ORDERS () - Requirement 3: Top Alert Banner
          ====================================================================== -->
     <section id="tab-orders" class="tab-pane">
       <div id="existingPharmacyTopAlert" style="display: none;">
         <div class="alert-info-content">
-          <div class="alert-info-icon">⚠️</div>
+          <div class="alert-info-icon"></div>
           <div class="alert-info-text">
-            <h4>توجه: این داروخانه قبلاً در سیستم ثبت شده است!</h4>
-            <p id="existingPharmacyAlertText">جزئیات داروخانه...</p>
+            <h4>:        !</h4>
+            <p id="existingPharmacyAlertText"> ...</p>
           </div>
         </div>
         <div>
           <button type="button" id="btnTopAutoFillPharmacy" class="btn-autofill-pharmacy">
-            <span>⚡ پر کردن خودکار فیلدها از کادر این داروخانه قبلا ثبت شده است</span>
+            <span>            </span>
           </button>
         </div>
       </div>
-      
       <div class="card" id="cardOrdForm">
         <div class="card-header">
           <div class="card-title">
-            <span>📦 ثبت سفارش جدید برای داروخانه</span>
+            <span>     </span>
           </div>
           <button id="btnResetOrderForm" class="btn btn-outline btn-sm">
-            <span>➕ پاک کردن فرم / سفارش جدید</span>
+            <span>    /  </span>
           </button>
         </div>
-        <div style="display: flex; gap: 0.5rem; margin-bottom: 1.25rem; border-bottom: 2px solid var(--border-color); padding-bottom: 0.5rem;">
-          <button type="button" class="btn btn-primary btn-sm" id="btnShowOrdForm" style="background: #0d9488;">فرم ثبت</button>
-          <button type="button" class="btn btn-outline btn-sm" id="btnShowOrdList">لیست (<span id="ordListCountBadge">0</span>)</button>
+        <div style="display: flex; gap: 0.5rem; margin-bottom: 1.25rem; border-bottom: 2px solid var(--border-color); pa
+dding-bottom: 0.5rem;">
+          <button type="button" class="btn btn-primary btn-sm" id="btnShowOrdForm" style="background: #0d9488;"> <
+/button>
+          <button type="button" class="btn btn-outline btn-sm" id="btnShowOrdList"> (<span id="ordListCountBadge">0<
+/span>)</button>
         </div>
-
         <form id="formOrder" onsubmit="return false;">
           <input type="hidden" id="orderEditId" value="" />
           <input type="hidden" id="orderPharmacyMatchedId" value="" />
-
           <div class="form-grid">
             <div class="form-group">
               <label class="form-label" for="orderPharmacyName">
-                <span>نام داروخانه * (تایپ یا انتخاب کنید)</span>
+                <span>  * (   )</span>
               </label>
-              <input type="text" id="orderPharmacyName" class="form-input" list="pharmacyNamesList" placeholder="نام داروخانه را وارد کنید..." required autocomplete="off" />
+              <input type="text" id="orderPharmacyName" class="form-input" list="pharmacyNamesList" placeholder=" 
+   ..." required autocomplete="off" />
               <datalist id="pharmacyNamesList"></datalist>
             </div>
-
             <div class="form-group">
-              <label class="form-label" for="orderProvince">استان *</label>
+              <label class="form-label" for="orderProvince"> *</label>
               <select id="orderProvince" class="form-select dropdown-auto-clear">
-                <option value="">انتخاب استان...</option>
+                <option value=""> ...</option>
               </select>
+
             </div>
             <div class="form-group">
-              <label class="form-label" for="orderCity">شهر *</label>
+              <label class="form-label" for="orderCity"> *</label>
               <select id="orderCity" class="form-select dropdown-auto-clear">
-                <option value="">ابتدا استان را انتخاب کنید</option>
+                <option value="">    </option>
               </select>
             </div>
             <div class="form-group">
-              <label class="form-label" for="orderDistrict">منطقه (مرتب بدون تکرار) *</label>
+              <label class="form-label" for="orderDistrict"> (  ) *</label>
               <select id="orderDistrict" class="form-select dropdown-auto-clear">
-                <option value="">ابتدا شهر را انتخاب کنید</option>
+                <option value="">    </option>
               </select>
             </div>
-
             <div class="form-group full-width">
-              <label class="form-label" for="orderAddress">آدرس داروخانه</label>
-              <input type="text" id="orderAddress" class="form-input" placeholder="آدرس داروخانه..." />
+              <label class="form-label" for="orderAddress"> </label>
+              <input type="text" id="orderAddress" class="form-input" placeholder=" ..." />
             </div>
-
             <div class="form-group">
-              <label class="form-label" for="orderRepName">نماینده علمی ثبت‌کننده</label>
+              <label class="form-label" for="orderRepName">  </label>
               <select id="orderRepName" class="form-select dropdown-auto-clear">
-                <option value="">انتخاب نماینده علمی...</option>
+                <option value="">  ...</option>
               </select>
             </div>
             <div class="form-group">
-              <label class="form-label" for="orderDate">تاریخ سفارش</label>
+              <label class="form-label" for="orderDate"> </label>
               <input type="text" id="orderDate" class="form-input" placeholder="1405/05/18" />
             </div>
             <div class="form-group">
-              <label class="form-label" for="orderStatus">وضعیت سفارش</label>
+              <label class="form-label" for="orderStatus"> </label>
               <select id="orderStatus" class="form-select dropdown-auto-clear">
-                <option value="تایید شده">تایید شده</option>
-                <option value="در حال بررسی">در حال بررسی</option>
-                <option value="ارسال شده">ارسال شده</option>
-                <option value="لغو شده">لغو شده</option>
+                <option value=" "> </option>
+                <option value="  ">  </option>
+                <option value=" "> </option>
+                <option value=" "> </option>
               </select>
             </div>
-
-            <div class="form-group full-width" style="background: #f8fafc; padding: 1rem; border-radius: 10px; border: 1px solid var(--border-color);">
+            <div class="form-group full-width" style="background: #f8fafc; padding: 1rem; border-radius: 10px; border: 1
+px solid var(--border-color);">
               <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.75rem;">
-                <label class="form-label" style="margin: 0;">اقلام دارویی سفارش</label>
+                <label class="form-label" style="margin: 0;">  </label>
                 <button type="button" id="btnAddOrderItemRow" class="btn btn-outline btn-sm">
-                  <span>➕ افزودن قلم دارویی</span>
+                  <span>   </span>
                 </button>
               </div>
               <div id="orderItemsContainer" style="display: flex; flex-direction: column; gap: 0.5rem;"></div>
-              <div style="display: flex; justify-content: flex-end; margin-top: 0.75rem; font-weight: 700; color: #0f172a;">
-                <span>مبلغ کل سفارش: </span>
+              <div style="display: flex; justify-content: flex-end; margin-top: 0.75rem; font-weight: 700; color: #0f172
+a;">
+                <span>  : </span>
                 <span id="orderTotalAmountDisplay" style="margin-right: 0.5rem; color: #2563eb;">0</span>
-                <span style="margin-right: 0.25rem;"> ریال</span>
+                <span style="margin-right: 0.25rem;"> </span>
               </div>
             </div>
-
-            <div id="orderCustomFieldsContainer" class="form-group full-width form-grid" style="margin-top: 0.5rem;"></div>
-
+            <div id="orderCustomFieldsContainer" class="form-group full-width form-grid" style="margin-top: 0.5rem;"></d
+iv>
             <div class="form-group full-width">
-              <label class="form-label" for="orderNotes">توضیحات و یادداشت ارسال</label>
-              <textarea id="orderNotes" class="form-textarea" placeholder="یادداشت‌های اضافی در خصوص نحوه ارسال یا تسویه..."></textarea>
+              <label class="form-label" for="orderNotes">   </label>
+              <textarea id="orderNotes" class="form-textarea" placeholder="       .
+.."></textarea>
             </div>
           </div>
-
           <div style="display: flex; justify-content: flex-end; gap: 0.75rem; margin-top: 1rem;">
             <button type="submit" id="btnSaveOrder" class="btn btn-primary" style="background: #0d9488;">
-              <span>💾 ثبت و ذخیره سفارش</span>
+              <span>    </span>
             </button>
           </div>
         </form>
       </div>
-
       <div class="card" id="cardOrdList" style="display: none;">
         <div class="card-header">
           <div class="card-title">
-            <span>📋 لیست سفارشات ثبت شده</span>
+            <span>    </span>
           </div>
           <div style="display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap;">
-            <input type="text" id="searchOrderInput" class="form-input dropdown-auto-clear" placeholder="🔍 جستجو بر اساس نام داروخانه..." style="width: 220px;" />
+            <input type="text" id="searchOrderInput" class="form-input dropdown-auto-clear" placeholder="   
+  ..." style="width: 220px;" />
             <button id="btnExportOrdersCSV" class="btn btn-success btn-sm" style="background: #0d9488;">
-              <span>⬇️ خروجی اکسل</span>
+              <span>  </span>
             </button>
+
           </div>
         </div>
-
         <div class="table-responsive">
           <table class="data-table" id="tableOrders">
             <thead>
               <tr id="tableOrdersHeader">
-                <th>ردیف</th>
-                <th>نام داروخانه</th>
-                <th>استان / شهر / منطقه</th>
-                <th>نماینده علمی</th>
-                <th>تاریخ سفارش</th>
-                <th>تعداد اقلام</th>
-                <th>مبلغ کل (ریال)</th>
-                <th>وضعیت</th>
-                <th>عملیات</th>
+                <th></th>
+                <th> </th>
+                <th> /  / </th>
+                <th> </th>
+                <th> </th>
+                <th> </th>
+                <th>  ()</th>
+                <th></th>
+                <th></th>
               </tr>
             </thead>
             <tbody id="tableOrdersBody">
@@ -737,31 +741,30 @@
         </div>
       </div>
     </section>
-
     <!-- ======================================================================
-         5. TAB: INSTANT ACTIVITY LOG (فعالیت لحظه‌ای) - Menu Item 5
+         5. TAB: INSTANT ACTIVITY LOG ( ) - Menu Item 5
          ====================================================================== -->
     <section id="tab-activity-log" class="tab-pane">
       <div class="card">
         <div class="card-header">
           <div class="card-title">
-            <span>⏱️ فعالیت لحظه‌ای و کارتابل زنده نمایندگان</span>
+            <span>      </span>
           </div>
           <button id="btnRefreshActivity" class="btn btn-outline btn-sm">
-            <span>🔄 بروزرسانی فعالیت‌ها</span>
+            <span>  </span>
           </button>
         </div>
         <p style="font-size: 0.88rem; color: #64748b; margin-bottom: 1rem;">
-          ثبت تردد، ویزیت‌ها و اقدامات لحظه‌ای انجام‌شده توسط تمامی نمایندگان در شبکه درمان.
+                      .
         </p>
         <div class="table-responsive">
           <table class="data-table">
             <thead>
               <tr>
-                <th>زمان ثبت</th>
-                <th>نام نماینده علمی</th>
-                <th>اقدام انجام‌شده</th>
-                <th>وضعیت</th>
+                <th> </th>
+                <th>  </th>
+                <th> </th>
+                <th></th>
               </tr>
             </thead>
             <tbody id="tableActivityLogBody">
@@ -771,79 +774,81 @@
         </div>
       </div>
     </section>
-
     <!-- ======================================================================
-         6. TAB: COMPREHENSIVE MAP (نقشه جامع) - Menu Item 6 + Province/City/District Zoom
+         6. TAB: COMPREHENSIVE MAP ( ) - Menu Item 6 + Province/City/District Zoom
          ====================================================================== -->
     <section id="tab-overview-map" class="tab-pane">
       <div class="card">
         <div class="card-header">
           <div class="card-title">
-            <span>🗺️ نقشه جامع شبکه درمان (داروخانه‌ها 🏥، پزشکان 👨‍⚕️ و بیمارستان‌ها 🏥 با نام ثابت)</span>
+            <span>     (         )</span>
           </div>
           <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
             <select id="mapFilterProvince" class="form-select dropdown-auto-clear" style="width: 140px;">
-              <option value="">همه استان‌ها</option>
+              <option value=""> </option>
             </select>
             <select id="mapFilterCity" class="form-select dropdown-auto-clear" style="width: 140px;">
-              <option value="">همه شهرها</option>
+              <option value=""> </option>
             </select>
             <select id="mapFilterDistrict" class="form-select dropdown-auto-clear" style="width: 140px;">
-              <option value="">همه مناطق</option>
+              <option value=""> </option>
             </select>
             <button id="btnFocusMapRegion" class="btn btn-primary btn-sm" style="background: #0d9488;">
-              <span>🔍 بزرگنمایی و فیلتر موقعیت</span>
+              <span>    </span>
             </button>
           </div>
         </div>
         <div id="map-full-overview" class="map-container" style="height: 520px; margin-bottom: 1rem;"></div>
 
         <!-- Summary Counts Box for Selected Region -->
-        <div id="overviewMapSummaryBox" style="background: #f0fdf4; border: 1.5px solid #bbf7d0; border-radius: 10px; padding: 1rem; display: flex; align-items: center; justify-content: space-around; flex-wrap: wrap; gap: 1rem; color: #166534; font-weight: 700;">
-          <div>🏥 تعداد داروخانه‌ها در موقعیت: <strong id="cntOverviewPharmacies" style="color: #0d9488; font-size: 1.15rem;">0</strong></div>
-          <div>👨‍⚕️ تعداد پزشکان و مطب‌ها: <strong id="cntOverviewDoctors" style="color: #10b981; font-size: 1.15rem;">0</strong></div>
-          <div>🏥 درمانگاه‌ها و بیمارستان‌ها: <strong id="cntOverviewHospitals" style="color: #059669; font-size: 1.15rem;">0</strong></div>
+        <div id="overviewMapSummaryBox" style="background: #f0fdf4; border: 1.5px solid #bbf7d0; border-radius: 10px; pa
+dding: 1rem; display: flex; align-items: center; justify-content: space-around; flex-wrap: wrap; gap: 1rem; color: #1665
+34; font-weight: 700;">
+          <div>    : <strong id="cntOverviewPharmacies" style="color: #0d9488; font-size: 1.15r
+em;">0</strong></div>
+          <div>    : <strong id="cntOverviewDoctors" style="color: #10b981; font-size: 1.15rem;">0</
+strong></div>
+          <div>   : <strong id="cntOverviewHospitals" style="color: #059669; font-size: 1.15rem;
+">0</strong></div>
         </div>
       </div>
     </section>
-
     <!-- ======================================================================
-         7. TAB: LIVE LOCATION (موقعیت زنده) - Menu Item 7
+         7. TAB: LIVE LOCATION ( ) - Menu Item 7
          ====================================================================== -->
     <section id="tab-live-location" class="tab-pane">
       <div class="card">
         <div class="card-header">
           <div class="card-title">
-            <span>📍 ردیابی و موقعیت زنده نمایندگان علمی روی نقشه (با نام ثابت 👔)</span>
+            <span>         (   )</span>
           </div>
           <div style="display: flex; gap: 0.5rem;">
             <button id="btnSimulateLiveMovement" class="btn btn-primary btn-sm" style="background: #0d9488;">
-              <span>▶️ شبیه‌سازی حرکت زنده نمایندگان</span>
+              <span>    </span>
             </button>
             <button id="btnRefreshLiveMap" class="btn btn-outline btn-sm">
-              <span>🔄 بروزرسانی</span>
+              <span> </span>
             </button>
           </div>
         </div>
         <div id="map-live-reps" class="map-container map-container-large"></div>
       </div>
-
       <div class="card">
         <div class="card-header">
           <div class="card-title">
-            <span>📍 جزئیات لحظه‌ای موقعیت نمایندگان علمی</span>
+            <span>     </span>
           </div>
         </div>
         <div class="table-responsive">
           <table class="data-table" id="tableLiveReps">
             <thead>
               <tr>
-                <th>نماینده علمی</th>
-                <th>وضعیت</th>
-                <th>موقعیت جغرافیایی (Lat, Lng)</th>
-                <th>آخرین بروزرسانی</th>
-                <th>هدف ویزیت فعلی</th>
-                <th>عملیات</th>
+                <th> </th>
+                <th></th>
+                <th>  (Lat, Lng)</th>
+                <th> </th>
+                <th>  </th>
+                <th></th>
               </tr>
             </thead>
             <tbody id="tableLiveRepsBody">
@@ -853,27 +858,27 @@
         </div>
       </div>
     </section>
-
     <!-- ======================================================================
-         8. TAB: REP ROUTES & TRAFFIC MONITORING (رصد تردد) - Menu Item 8
+         8. TAB: REP ROUTES & TRAFFIC MONITORING ( ) - Menu Item 8
          ====================================================================== -->
     <section id="tab-rep-routes" class="tab-pane">
       <div class="card">
         <div class="card-header">
           <div class="card-title">
-            <span>🛣️ رصد تردد، مسیرهای روزانه، زمان شروع و پایان ویزیت و توقف‌ها روی نقشه</span>
+            <span>             </span>
           </div>
           <div style="display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap;">
             <select id="routeRepFilterSelect" class="form-select dropdown-auto-clear" style="width: 200px;">
-              <option value="">همه نمایندگان</option>
+              <option value=""> </option>
             </select>
             <button id="btnRefreshRepRoutesMap" class="btn btn-outline btn-sm">
-              <span>🔄 بروزرسانی نقشه تردد</span>
+              <span>   </span>
             </button>
           </div>
         </div>
         <p style="font-size: 0.88rem; color: #64748b; margin-bottom: 1rem;">
-          مراکز ویزیت‌شده با رنگ <strong>سبز (✅ ویزیت‌شده)</strong> و مراکز در انتظار با رنگ <strong>زرد/نارنجی (⏳ در انتظار)</strong> روی مسیر تردد نمایش داده می‌شوند. همچنین ساعت شروع، پایان و زمان هر توقف روی نقشه مشخص است.
+              <strong> ( )</strong>       <strong>/ (  
+)</strong>      .            .
         </p>
         <div id="map-rep-routes-full" class="map-container" style="height: 480px; margin-bottom: 1.5rem;"></div>
 
@@ -881,12 +886,12 @@
           <table class="data-table">
             <thead>
               <tr>
-                <th>نام نماینده علمی</th>
-                <th>ساعت شروع ویزیت</th>
-                <th>ساعت پایان ویزیت</th>
-                <th>آخرین ایستگاه / وقفه در مسیر</th>
-                <th>تعداد ویزیت‌شده (✅) / در انتظار (⏳)</th>
-                <th>وضعیت تردد</th>
+                <th>  </th>
+                <th>  </th>
+                <th>  </th>
+                <th>  /   </th>
+                <th>  () /   ()</th>
+                <th> </th>
               </tr>
             </thead>
             <tbody id="tableRepRoutesBody">
@@ -896,33 +901,32 @@
         </div>
       </div>
     </section>
-
     <!-- ======================================================================
-         9. TAB: REP HOMES (منزل نمایندگان) - Menu Item 9
+         9. TAB: REP HOMES ( ) - Menu Item 9
          ====================================================================== -->
     <section id="tab-rep-homes" class="tab-pane">
       <div class="card">
         <div class="card-header">
           <div class="card-title">
-            <span>🏠 نقشه و آدرس ثبت‌شده منزل نمایندگان علمی (ثبت لوکیشن منزل)</span>
+            <span>        (  )</span>
           </div>
           <button id="btnRepHomeCurrentLocation" class="btn btn-primary btn-sm" style="background: #0d9488;">
-            <span>📍 موقعیت فعلی من (ثبت لوکیشن منزل روی نقشه)</span>
+            <span>    (    )</span>
           </button>
         </div>
         <p style="font-size: 0.88rem; color: #64748b; margin-bottom: 1rem;">
-          با کلیک بر روی «موقعیت فعلی من»، مختصات دقیق منزل شما روی نقشه درج شده و در مسیر تردد روزانه به عنوان نقطه شروع/پایان لحاظ می‌شود.
+              «  »                 
+/  .
         </p>
         <div id="map-rep-homes" class="map-container" style="height: 360px; margin-bottom: 1.5rem;"></div>
-
         <div class="table-responsive">
           <table class="data-table">
             <thead>
               <tr>
-                <th>نام نماینده علمی</th>
-                <th>آدرس منزل</th>
-                <th>مختصات جغرافیایی</th>
-                <th>عملیات روی نقشه</th>
+                <th>  </th>
+                <th> </th>
+                <th> </th>
+                <th>  </th>
               </tr>
             </thead>
             <tbody id="tableRepHomesBody">
@@ -932,75 +936,75 @@
         </div>
       </div>
     </section>
-
     <!-- ======================================================================
-         10. TAB: LEAVES (مرخصی‌ها) - Menu Item 10 + Hourly/Daily + 2-Tier Approval
+         10. TAB: LEAVES () - Menu Item 10 + Hourly/Daily + 2-Tier Approval
          ====================================================================== -->
     <section id="tab-leaves" class="tab-pane">
       <div class="card">
         <div class="card-header">
           <div class="card-title">
-            <span>📝 مدیریت درخواست‌های مرخصی و مأموریت (با دو تاییدیه سرپرست و مدیر کل)</span>
+            <span>      (      )</span>
           </div>
           <button id="btnExportLeavesCSV" class="btn btn-success btn-sm" style="background: #0d9488;">
-            <span>⬇️ خروجی اکسل مرخصی‌ها</span>
+            <span>   </span>
           </button>
         </div>
-
-        <form id="formLeaveRequest" onsubmit="return false;" style="background: #f8fafc; padding: 1.25rem; border-radius: 10px; border: 1px solid var(--border-color); margin-bottom: 1.5rem;">
-          <h4 style="margin-bottom: 1rem; color: #1e293b;">📝 ثبت درخواست مرخصی / مأموریت جدید</h4>
+        <form id="formLeaveRequest" onsubmit="return false;" style="background: #f8fafc; padding: 1.25rem; border-radius
+: 10px; border: 1px solid var(--border-color); margin-bottom: 1.5rem;">
+          <h4 style="margin-bottom: 1rem; color: #1e293b;">    /  </h4>
           <div class="form-grid">
             <div class="form-group">
-              <label class="form-label">نام نماینده *</label>
+              <label class="form-label">  *</label>
               <select id="leaveRepSelect" class="form-select dropdown-auto-clear" required>
-                <option value="">انتخاب نماینده...</option>
+                <option value=""> ...</option>
               </select>
             </div>
             <div class="form-group">
-              <label class="form-label">نوع مرخصی *</label>
+              <label class="form-label">  *</label>
               <select id="leaveTypeSelect" class="form-select dropdown-auto-clear" required>
-                <option value="روزانه (استحقاقی)">روزانه (استحقاقی)</option>
-                <option value="روزانه (استعلاجی)">روزانه (استعلاجی)</option>
-                <option value="ساعتی">مرخصی ساعتی</option>
-                <option value="مأموریت اداری">مأموریت اداری</option>
+
+                <option value=" ()"> ()</option>
+                <option value=" ()"> ()</option>
+                <option value=""> </option>
+                <option value=" "> </option>
               </select>
             </div>
             <div class="form-group">
-              <label class="form-label">از تاریخ * (با اسلش خودکار)</label>
+              <label class="form-label">  * (  )</label>
               <input type="text" id="leaveFromDate" class="form-input" placeholder="1405/05/22" required />
             </div>
             <div class="form-group">
-              <label class="form-label">تا تاریخ *</label>
+              <label class="form-label">  *</label>
               <input type="text" id="leaveToDate" class="form-input" placeholder="1405/05/23" required />
             </div>
             <div class="form-group" id="leaveHoursGroup" style="display: none;">
-              <label class="form-label">ساعت مرخصی (از ساعت - تا ساعت)</label>
-              <input type="text" id="leaveHoursInput" class="form-input" placeholder="مثال: از ۰۹:۰۰ تا ۱۲:۰۰" />
+              <label class="form-label">  (  -  )</label>
+              <input type="text" id="leaveHoursInput" class="form-input" placeholder=":  :  :" />
             </div>
             <div class="form-group full-width">
-              <label class="form-label">توضیحات و دلیل مرخصی *</label>
-              <input type="text" id="leaveReasonInput" class="form-input" placeholder="علت درخواست مرخصی یا مأموریت..." required />
+              <label class="form-label">    *</label>
+              <input type="text" id="leaveReasonInput" class="form-input" placeholder="    ..." 
+required />
             </div>
           </div>
           <div style="display: flex; justify-content: flex-end; margin-top: 1rem;">
             <button type="submit" class="btn btn-primary" style="background: #0d9488;">
-              <span>📝 ثبت درخواست مرخصی</span>
+              <span>   </span>
             </button>
           </div>
         </form>
-
         <div class="table-responsive">
           <table class="data-table">
             <thead>
               <tr>
-                <th>نام نماینده علمی</th>
-                <th>نوع مرخصی</th>
-                <th>از تاریخ / ساعت</th>
-                <th>تا تاریخ</th>
-                <th>دلیل</th>
-                <th>تایید سرپرست</th>
-                <th>تایید مدیر کل</th>
-                <th>عملیات</th>
+                <th>  </th>
+                <th> </th>
+                <th>  / </th>
+                <th> </th>
+                <th></th>
+                <th> </th>
+                <th>  </th>
+                <th></th>
               </tr>
             </thead>
             <tbody id="tableLeavesBody">
@@ -1010,58 +1014,59 @@
         </div>
       </div>
     </section>
-
     <!-- ======================================================================
-         11. TAB: NOTIFICATIONS (اعلان‌ها) - Menu Item 11 + Send/Reply Message
+         11. TAB: NOTIFICATIONS () - Menu Item 11 + Send/Reply Message
          ====================================================================== -->
     <section id="tab-notifications" class="tab-pane">
       <div class="card">
         <div class="card-header">
           <div class="card-title">
-            <span>🔔 ارسال و مشاهده اعلان‌ها و پیام‌رسانی داخلی (امکان ارسال و پاسخ پیام)</span>
+            <span>        (    )</span>
           </div>
         </div>
-
         <!-- Send / Reply Message Box -->
-        <form id="formSendMessage" onsubmit="return false;" style="background: #f8fafc; padding: 1.25rem; border-radius: 10px; border: 1px solid var(--border-color); margin-bottom: 1.5rem;">
-          <h4 style="margin-bottom: 1rem; color: #1e293b;">💬 ارسال پیام جدید / پاسخ به پیام در اعلان‌ها</h4>
+        <form id="formSendMessage" onsubmit="return false;" style="background: #f8fafc; padding: 1.25rem; border-radius:
+ 10px; border: 1px solid var(--border-color); margin-bottom: 1.5rem;">
+          <h4 style="margin-bottom: 1rem; color: #1e293b;">    /     </h4>
           <div class="form-grid">
             <div class="form-group">
-              <label class="form-label">گیرنده پیام *</label>
+              <label class="form-label">  *</label>
               <select id="msgRecipientSelect" class="form-select dropdown-auto-clear" required>
-                <option value="همه کاربران (اعلان عمومی)">همه کاربران (اعلان عمومی)</option>
-                <option value="مدیر سیستم">مدیر سیستم (Admin)</option>
-                <option value="جواد علمدار">جواد علمدار (نماینده علمی)</option>
-                <option value="خانم نیلا محرمی">خانم نیلا محرمی (نماینده علمی)</option>
-                <option value="آقای داوود عقبایی">آقای داوود عقبایی (سرپرست)</option>
+                <option value="  ( )">  ( )</option>
+                <option value=" ">  (Admin)</option>
+                <option value=" ">  ( )</option>
+                <option value="  ">   ( )</option>
+                <option value="  ">   ()</option>
               </select>
             </div>
             <div class="form-group">
-              <label class="form-label">عنوان پیام / اعلان *</label>
-              <input type="text" id="msgTitleInput" class="form-input" placeholder="مثال: پاسخ مرخصی یا اعلام تارگت..." required />
+              <label class="form-label">  /  *</label>
+              <input type="text" id="msgTitleInput" class="form-input" placeholder=":     ..." 
+required />
             </div>
             <div class="form-group full-width">
-              <label class="form-label">متن پیام *</label>
-              <input type="text" id="msgBodyInput" class="form-input" placeholder="متن کامل پیام یا پاسخ خود را تایپ کنید..." required />
+
+              <label class="form-label">  *</label>
+              <input type="text" id="msgBodyInput" class="form-input" placeholder="        
+..." required />
             </div>
           </div>
           <div style="display: flex; justify-content: flex-end; margin-top: 1rem;">
             <button type="submit" class="btn btn-primary" style="background: #0d9488;">
-              <span>📤 ارسال پیام و اعلان (با صدای هشدار)</span>
+              <span>     (  )</span>
             </button>
           </div>
         </form>
-
         <div class="table-responsive">
           <table class="data-table">
             <thead>
               <tr>
-                <th>تاریخ ارسال</th>
-                <th>عنوان اعلان</th>
-                <th>متن پیام</th>
-                <th>فرستنده / گیرنده</th>
-                <th>وضعیت</th>
-                <th>عملیات</th>
+                <th> </th>
+                <th> </th>
+                <th> </th>
+                <th> / </th>
+                <th></th>
+                <th></th>
               </tr>
             </thead>
             <tbody id="tableNotificationsBody">
@@ -1071,29 +1076,28 @@
         </div>
       </div>
     </section>
-
     <!-- ======================================================================
-         12. TAB: MONTHLY REPORTS (گزارش ماهانه) - Menu Item 12
+         12. TAB: MONTHLY REPORTS ( ) - Menu Item 12
          ====================================================================== -->
     <section id="tab-monthly-reports" class="tab-pane">
       <div class="card">
         <div class="card-header">
           <div class="card-title">
-            <span>📈 گزارش ماهانه عملکرد نمایندگان و فروش محصولات</span>
+            <span>       </span>
           </div>
           <button id="btnExportMonthlyCSV" class="btn btn-success btn-sm" style="background: #0d9488;">
-            <span>⬇️ دریافت خروجی اکسل</span>
+            <span>   </span>
           </button>
         </div>
         <div class="table-responsive">
           <table class="data-table">
             <thead>
               <tr>
-                <th>نام نماینده علمی</th>
-                <th>تعداد ویزیت‌های ثبت‌شده</th>
-                <th>تعداد سفارشات ماه</th>
-                <th>مجموع فروش (ریال)</th>
-                <th>درصد تحقق هدف</th>
+                <th>  </th>
+                <th>  </th>
+                <th>  </th>
+                <th>  ()</th>
+                <th>  </th>
               </tr>
             </thead>
             <tbody id="tableMonthlyReportsBody">
@@ -1103,90 +1107,91 @@
         </div>
       </div>
     </section>
-
     <!-- ======================================================================
-         13. TAB: SALES TARGETS (تارگت فروش) - Menu Item 13 + Real-Time Calc
+         13. TAB: SALES TARGETS ( ) - Menu Item 13 + Real-Time Calc
          ====================================================================== -->
     <section id="tab-sales-targets" class="tab-pane">
       <div class="card">
         <div class="card-header">
           <div class="card-title">
-            <span>🎯 تعیین و نظارت بر تارگت فروش (KPI) به تفکیک نماینده و کالا</span>
+            <span>       (KPI)     </span>
           </div>
         </div>
         <p style="font-size: 0.88rem; color: #64748b; margin-bottom: 1.25rem;">
-          بر اساس درخواست شما: با وارد کردن تعداد تارگت برای هر کالا، مبلغ تارگت (ضربدر قیمت پخش و قیمت داروخانه) به صورت لحظه‌ای محاسبه شده و در گزارش‌های سفارش از باقیمانده آن کسر می‌شود.
+             :           (     )  
+            .
         </p>
-
-        <form id="formSalesTarget" onsubmit="return false;" style="background: #f8fafc; padding: 1.25rem; border-radius: 10px; border: 1px solid var(--border-color); margin-bottom: 1.5rem;">
+        <form id="formSalesTarget" onsubmit="return false;" style="background: #f8fafc; padding: 1.25rem; border-radius:
+ 10px; border: 1px solid var(--border-color); margin-bottom: 1.5rem;">
           <div class="form-grid">
             <div class="form-group">
-              <label class="form-label">نماینده علمی *</label>
+              <label class="form-label">  *</label>
               <select id="tgtRepSelect" class="form-select dropdown-auto-clear" required>
-                <option value="">انتخاب نماینده...</option>
+
+                <option value=""> ...</option>
               </select>
             </div>
             <div class="form-group">
-              <label class="form-label">محصول / کالا *</label>
+              <label class="form-label"> /  *</label>
               <select id="tgtProductSelect" class="form-select dropdown-auto-clear" required>
-                <option value="">انتخاب کالا...</option>
+                <option value=""> ...</option>
               </select>
             </div>
             <div class="form-group">
-              <label class="form-label">تعداد تارگت (عدد) *</label>
-              <input type="number" id="tgtCountInput" class="form-input" placeholder="مثال: 500" required />
+              <label class="form-label">  () *</label>
+              <input type="number" id="tgtCountInput" class="form-input" placeholder=": 500" required />
             </div>
             <div class="form-group">
-              <label class="form-label">سال هدف</label>
+              <label class="form-label"> </label>
               <input type="number" id="tgtYearInput" class="form-input" value="1405" />
             </div>
             <div class="form-group">
-              <label class="form-label">ماه هدف</label>
+              <label class="form-label"> </label>
               <select id="tgtMonthSelect" class="form-select dropdown-auto-clear">
-                <option value="فروردین">فروردین</option>
-                <option value="اردیبهشت">اردیبهشت</option>
-                <option value="خرداد">خرداد</option>
-                <option value="تیر">تیر</option>
-                <option value="مرداد" selected>مرداد</option>
-                <option value="شهریور">شهریور</option>
-                <option value="مهر">مهر</option>
-                <option value="آبان">آبان</option>
-                <option value="آذر">آذر</option>
-                <option value="دی">دی</option>
-                <option value="بهمن">بهمن</option>
-                <option value="اسفند">اسفند</option>
+                <option value=""></option>
+                <option value=""></option>
+                <option value=""></option>
+                <option value=""></option>
+                <option value="" selected></option>
+                <option value=""></option>
+                <option value=""></option>
+                <option value=""></option>
+                <option value=""></option>
+                <option value=""></option>
+                <option value=""></option>
+                <option value=""></option>
               </select>
             </div>
-            <div class="form-group full-width" style="background: #eff6ff; padding: 0.75rem 1rem; border-radius: 8px; border: 1px solid #bfdbfe; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap;">
+            <div class="form-group full-width" style="background: #eff6ff; padding: 0.75rem 1rem; border-radius: 8px; bo
+rder: 1px solid #bfdbfe; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap;">
               <div>
-                <span>مبلغ کل بر اساس قیمت پخش: </span>
-                <strong id="tgtCalcDistPrice" style="color: #1e40af;">0 ریال</strong>
+                <span>     : </span>
+                <strong id="tgtCalcDistPrice" style="color: #1e40af;">0 </strong>
               </div>
               <div>
-                <span>مبلغ کل بر اساس قیمت داروخانه: </span>
-                <strong id="tgtCalcPhPrice" style="color: #0d9488;">0 ریال</strong>
+                <span>     : </span>
+                <strong id="tgtCalcPhPrice" style="color: #0d9488;">0 </strong>
               </div>
             </div>
           </div>
           <div style="display: flex; justify-content: flex-end; margin-top: 1rem;">
             <button type="submit" class="btn btn-primary" style="background: #0d9488;">
-              <span>🎯 ثبت و محاسبه تارگت نماینده</span>
+              <span>     </span>
             </button>
           </div>
         </form>
-
         <div class="table-responsive">
           <table class="data-table">
             <thead>
               <tr>
-                <th>نام نماینده علمی</th>
-                <th>محصول / کالا</th>
-                <th>تعداد تارگت</th>
-                <th>سفارش گرفته</th>
-                <th>باقیمانده</th>
-                <th>مبلغ کل تارگت (ریال)</th>
-                <th>درصد تحقق</th>
-                <th>عملیات</th>
+                <th>  </th>
+                <th> / </th>
+                <th> </th>
+                <th> </th>
+                <th></th>
+                <th>   ()</th>
+                <th> </th>
+                <th></th>
               </tr>
             </thead>
             <tbody id="tableSalesTargetsBody">
@@ -1196,87 +1201,86 @@
         </div>
       </div>
     </section>
-
     <!-- ======================================================================
-         14. TAB: CUSTOM FIELDS / ADDITIONS (افزودن‌ها) - Menu Item 14
+         14. TAB: CUSTOM FIELDS / ADDITIONS () - Menu Item 14
          ====================================================================== -->
     <section id="tab-custom-fields" class="tab-pane">
       <div class="card">
         <div class="card-header">
           <div class="card-title">
-            <span>➕ مدیریت مقادیر کشویی و افزودن‌های لحظه‌ای (Requirement 1)</span>
+            <span>       (Requirement 1)</span>
           </div>
         </div>
+
         <p style="font-size: 0.88rem; color: #64748b; margin-bottom: 1.25rem;">
-          فیلدها می‌توانند در فرم ثبت، در جدول لیست یا هر دو نمایش داده شوند. برای فیلدهای کشویی، دکمه افزودن گزینه جدید در فرم ثبت فعال می‌شود.
+                       .        
+    .
         </p>
-        <form id="formCustomField" onsubmit="return false;" style="background: #f8fafc; padding: 1.25rem; border-radius: var(--radius-lg); border: 1px solid var(--border-color); margin-bottom: 1.5rem;">
-          <h4 style="margin-bottom: 1rem; color: #1e293b;">➕ افزودن فیلد جدید</h4>
+        <form id="formCustomField" onsubmit="return false;" style="background: #f8fafc; padding: 1.25rem; border-radius:
+ var(--radius-lg); border: 1px solid var(--border-color); margin-bottom: 1.5rem;">
+          <h4 style="margin-bottom: 1rem; color: #1e293b;">   </h4>
           <div class="form-grid">
             <div class="form-group">
-              <label class="form-label" for="cfTargetEntity">بخش مربوطه (موجودیت) *</label>
+              <label class="form-label" for="cfTargetEntity">  () *</label>
               <select id="cfTargetEntity" class="form-select dropdown-auto-clear" required>
-                <option value="pharmacy">داروخانه‌ها (Pharmacy)</option>
-                <option value="doctor">پزشکان و مطب‌ها (Doctor)</option>
-                <option value="order">سفارشات (Order)</option>
+                <option value="pharmacy"> (Pharmacy)</option>
+                <option value="doctor">   (Doctor)</option>
+                <option value="order"> (Order)</option>
               </select>
             </div>
             <div class="form-group">
-              <label class="form-label" for="cfLabel">عنوان فیلد *</label>
-              <input type="text" id="cfLabel" class="form-input" placeholder="مثال: کد اقتصادی یا نوع قرارداد" required />
+              <label class="form-label" for="cfLabel">  *</label>
+              <input type="text" id="cfLabel" class="form-input" placeholder=":     " required 
+/>
             </div>
             <div class="form-group">
-              <label class="form-label" for="cfType">نوع فیلد *</label>
+              <label class="form-label" for="cfType">  *</label>
               <select id="cfType" class="form-select dropdown-auto-clear" required>
-                <option value="simple">ساده (متنی / عددی)</option>
-                <option value="select">کشویی (انتخابی)</option>
+                <option value="simple"> ( / )</option>
+                <option value="select"> ()</option>
               </select>
             </div>
-
             <div id="cfOptionsWrapper" class="form-group full-width" style="display: none;">
-              <label class="form-label" for="cfOptions">گزینه‌های اولیه (با ویرگول «،» جدا کنید)</label>
-              <input type="text" id="cfOptions" class="form-input" placeholder="مثال: نقدی، چکی یک‌ماهه، چکی دو‌ماهه" />
+              <label class="form-label" for="cfOptions">  (  «»  )</label>
+              <input type="text" id="cfOptions" class="form-input" placeholder=":     " />
               <div style="margin-top: 0.5rem; display: flex; align-items: center; gap: 0.5rem;">
                 <input type="checkbox" id="cfAllowAddOption" checked style="width: 18px; height: 18px;" />
                 <label for="cfAllowAddOption" style="font-size: 0.85rem; font-weight: 600; color: #0d9488;">
-                  امکان افزودن گزینه جدید به منوی کشویی توسط کاربر در فرم ثبت و بخش افزودن‌ها
+                                
                 </label>
               </div>
             </div>
-
             <div class="form-group full-width">
-              <label class="form-label">محل نمایش فیلد جدید</label>
+              <label class="form-label">   </label>
               <div style="display: flex; gap: 1.5rem; flex-wrap: wrap; margin-top: 0.5rem;">
                 <label style="display: flex; align-items: center; gap: 0.5rem; font-weight: 600;">
                   <input type="checkbox" id="cfShowInForm" checked style="width: 18px; height: 18px;" />
-                  <span>نمایش در فرم ثبت</span>
+                  <span>   </span>
                 </label>
                 <label style="display: flex; align-items: center; gap: 0.5rem; font-weight: 600;">
                   <input type="checkbox" id="cfShowInList" checked style="width: 18px; height: 18px;" />
-                  <span>نمایش در جدول لیست</span>
+                  <span>   </span>
                 </label>
               </div>
             </div>
           </div>
-
           <div style="display: flex; justify-content: flex-end; margin-top: 1rem;">
             <button type="submit" id="btnSaveCustomField" class="btn btn-primary" style="background: #0d9488;">
-              <span>➕ افزودن فیلد سفارشی</span>
+              <span>   </span>
             </button>
           </div>
         </form>
-
         <div class="table-responsive">
           <table class="data-table" id="tableCustomFields">
             <thead>
               <tr>
-                <th>بخش مربوطه</th>
-                <th>عنوان فیلد</th>
-                <th>نوع فیلد</th>
-                <th>گزینه‌های منوی کشویی</th>
-                <th>نمایش در فرم ثبت</th>
-                <th>نمایش در لیست</th>
-                <th>عملیات</th>
+                <th> </th>
+                <th> </th>
+                <th> </th>
+                <th>  </th>
+                <th>   </th>
+                <th>  </th>
+                <th></th>
               </tr>
             </thead>
             <tbody id="tableCustomFieldsBody">
@@ -1286,46 +1290,47 @@
         </div>
       </div>
     </section>
-
     <!-- ======================================================================
-         15. TAB: COLUMNS & PRODUCTS (ستون‌ها و کالاها) - Menu Item 15
+         15. TAB: COLUMNS & PRODUCTS (  ) - Menu Item 15
+
          ====================================================================== -->
     <section id="tab-columns-products" class="tab-pane">
       <div class="card">
         <div class="card-header">
           <div class="card-title">
-            <span>🧱 مدیریت ستون‌های جدول و کاتالوگ کالاهای دارویی</span>
+            <span>       </span>
           </div>
           <button id="btnResetProductForm" class="btn btn-outline btn-sm">
-            <span>➕ ثبت کالای جدید</span>
+            <span>   </span>
           </button>
         </div>
         <form id="formProduct" onsubmit="return false;" style="margin-bottom: 1.5rem;">
           <div class="form-grid">
             <div class="form-group">
-              <label class="form-label">نام دارو / محصول *</label>
-              <input type="text" id="productName" class="form-input" placeholder="مثال: کپسول امپرازول ۲۰ میلی‌گرم" required />
+              <label class="form-label">  /  *</label>
+              <input type="text" id="productName" class="form-input" placeholder=":    " requi
+red />
             </div>
             <div class="form-group">
-              <label class="form-label">دسته درمانی *</label>
-              <input type="text" id="productCategory" class="form-input" placeholder="مثال: گوارش / دیابت" required />
+              <label class="form-label">  *</label>
+              <input type="text" id="productCategory" class="form-input" placeholder=":  / " required />
             </div>
             <div class="form-group">
-              <label class="form-label">قیمت پخش (ریال) *</label>
+              <label class="form-label">  () *</label>
               <input type="number" id="productDistPrice" class="form-input" placeholder="40000" required />
             </div>
             <div class="form-group">
-              <label class="form-label">قیمت داروخانه (ریال) *</label>
+              <label class="form-label">  () *</label>
               <input type="number" id="productPrice" class="form-input" placeholder="45000" required />
             </div>
             <div class="form-group">
-              <label class="form-label">موجودی انبار</label>
+              <label class="form-label"> </label>
               <input type="number" id="productStock" class="form-input" placeholder="5000" />
             </div>
           </div>
           <div style="display: flex; justify-content: flex-end; margin-top: 1rem;">
             <button type="submit" id="btnSaveProduct" class="btn btn-primary" style="background: #0d9488;">
-              <span>💾 ثبت و ذخیره کالا</span>
+              <span>    </span>
             </button>
           </div>
         </form>
@@ -1333,13 +1338,13 @@
           <table class="data-table">
             <thead>
               <tr>
-                <th>ردیف</th>
-                <th>نام دارو / محصول</th>
-                <th>دسته درمانی</th>
-                <th>قیمت پخش (ریال)</th>
-                <th>قیمت داروخانه (ریال)</th>
-                <th>موجودی</th>
-                <th>عملیات</th>
+                <th></th>
+                <th>  / </th>
+                <th> </th>
+                <th>  ()</th>
+                <th>  ()</th>
+                <th></th>
+                <th></th>
               </tr>
             </thead>
             <tbody id="tableProductsBody">
@@ -1349,328 +1354,343 @@
         </div>
       </div>
     </section>
-
     <!-- ======================================================================
-         16. TAB: USERS & PERMISSIONS (کاربران و دسترسی) - Matching Screenshots 4,5,6,7
+         16. TAB: USERS & PERMISSIONS (  ) - Matching Screenshots 4,5,6,7
          ====================================================================== -->
     <section id="tab-users-permissions" class="tab-pane">
       <div class="card">
         <div class="card-header" style="justify-content: space-between;">
           <div style="display: flex; align-items: center; gap: 0.5rem;">
-            <button class="btn btn-outline btn-sm" onclick="switchTab('tab-dashboard')">→ بازگشت</button>
-            <button class="btn btn-outline btn-sm" onclick="switchTab('tab-dashboard')">🏠 صفحه اصلی</button>
+            <button class="btn btn-outline btn-sm" onclick="switchTab('tab-dashboard')">→ </button>
+            <button class="btn btn-outline btn-sm" onclick="switchTab('tab-dashboard')">  </button>
           </div>
           <div class="card-title" style="font-size: 1.25rem;">
-            <span>کاربران، رمز عبور و سطح دسترسی 👤</span>
+            <span>      </span>
           </div>
         </div>
-
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 0.75rem;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap
+: wrap; gap: 0.75rem;">
           <button id="btnExportUsersCSV" class="btn btn-success btn-sm" style="background: #0d9488;">
-            <span>⬇️ خروجی اکسل</span>
+            <span>  </span>
           </button>
           <button id="btnToggleShowAllPasswords" class="btn btn-outline btn-sm">
-            <span>👁️ نمایش همه رمزها</span>
+            <span>   </span>
           </button>
+
         </div>
-
         <!-- CREATE NEW USER CARD (Matching Screenshot 4) -->
-        <div style="background: #f8fafc; border: 1.5px solid var(--border-color); border-radius: var(--radius-lg); padding: 1.5rem; margin-bottom: 2rem;">
-          <h4 style="margin-bottom: 1rem; color: #1e293b; font-size: 1.1rem;">ایجاد کاربر جدید</h4>
-
+        <div style="background: #f8fafc; border: 1.5px solid var(--border-color); border-radius: var(--radius-lg); paddi
+ng: 1.5rem; margin-bottom: 2rem;">
+          <h4 style="margin-bottom: 1rem; color: #1e293b; font-size: 1.1rem;">  </h4>
           <form id="formCreateUser" onsubmit="return false;">
             <div class="form-grid">
               <div class="form-group full-width">
-                <label class="form-label">نام و نام خانوادگی *</label>
-                <input type="text" id="newFullName" class="form-input" placeholder="نام کاربر..." required />
+                <label class="form-label">    *</label>
+                <input type="text" id="newFullName" class="form-input" placeholder=" ..." required />
               </div>
               <div class="form-group">
-                <label class="form-label">نام کاربری *</label>
-                <input type="text" id="newUsername" class="form-input" placeholder="admin / davood..." required style="direction: ltr;" />
+                <label class="form-label">  *</label>
+                <input type="text" id="newUsername" class="form-input" placeholder="admin / davood..." required style="d
+irection: ltr;" />
               </div>
               <div class="form-group">
-                <label class="form-label">رمز عبور *</label>
-                <input type="text" id="newPassword" class="form-input" placeholder="رمز عبور کاربر جدید..." required style="direction: ltr;" />
+                <label class="form-label">  *</label>
+                <input type="text" id="newPassword" class="form-input" placeholder="   ..." required sty
+le="direction: ltr;" />
               </div>
               <div class="form-group">
-                <label class="form-label">شماره همراه ورود</label>
+                <label class="form-label">  </label>
                 <input type="text" id="newPhone" class="form-input" placeholder="09120000000" style="direction: ltr;" />
               </div>
               <div class="form-group">
-                <label class="form-label">نقش</label>
+                <label class="form-label"></label>
                 <select id="newRole" class="form-select dropdown-auto-clear">
-                  <option value="نماینده علمی">نماینده علمی</option>
-                  <option value="مدیر سیستم">مدیر سیستم</option>
-                  <option value="سرپرست">سرپرست</option>
+                  <option value=" "> </option>
+                  <option value=" "> </option>
+                  <option value=""></option>
                 </select>
               </div>
               <div class="form-group">
-                <label class="form-label">کنترل سیم‌کارت</label>
+                <label class="form-label"> </label>
                 <select id="newSimControl" class="form-select dropdown-auto-clear">
-                  <option value="بدون بررسی">بدون بررسی</option>
-                  <option value="قفل گوشی (توصیه شده)">قفل گوشی (توصیه شده)</option>
+                  <option value=" "> </option>
+                  <option value="  ( )">  ( )</option>
                 </select>
               </div>
             </div>
-
             <!-- Permission filter pill bar matching Screenshot 4 -->
-            <div style="margin-top: 1.5rem; background: #fff; padding: 1rem; border-radius: 10px; border: 1px solid var(--border-color);">
-              <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.75rem; margin-bottom: 1rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.75rem;">
-                <span style="font-weight: 700; color: #1e293b;">سطح دسترسی کاربر جدید:</span>
+            <div style="margin-top: 1.5rem; background: #fff; padding: 1rem; border-radius: 10px; border: 1px solid var(
+--border-color);">
+              <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.75
+rem; margin-bottom: 1rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.75rem;">
+                <span style="font-weight: 700; color: #1e293b;">   :</span>
                 <div style="display: flex; gap: 0.5rem; align-items: center;">
-                  <button type="button" id="btnPermSelectAll" class="btn btn-primary btn-sm" style="background: #0d9488;">همه</button>
-                  <button type="button" id="btnPermSelectNone" class="btn btn-outline btn-sm">هیچ</button>
-                  <span class="badge-status-online" id="selectedPermCountBadge">۴۹ مورد</span>
+                  <button type="button" id="btnPermSelectAll" class="btn btn-primary btn-sm" style="background: #0d9488;
+"></button>
+                  <button type="button" id="btnPermSelectNone" class="btn btn-outline btn-sm"></button>
+                  <span class="badge-status-online" id="selectedPermCountBadge"> </span>
                 </div>
               </div>
-
               <!-- Permission groups container matching Screenshot 5, 6, 7 -->
               <div id="permissionGroupsContainer" style="display: flex; flex-direction: column; gap: 1.25rem;"></div>
             </div>
-
-            <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; margin-top: 1.5rem; gap: 1rem;">
-              <label style="display: flex; align-items: center; gap: 0.5rem; font-weight: 700; color: #0f172a; cursor: pointer;">
-                <input type="checkbox" id="newForcePhoneLogin" checked style="width: 20px; height: 20px; accent-color: #0d9488;" />
-                <span>ورود با شماره همراه اجباری باشد</span>
+            <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; margin-top:
+ 1.5rem; gap: 1rem;">
+              <label style="display: flex; align-items: center; gap: 0.5rem; font-weight: 700; color: #0f172a; cursor: p
+ointer;">
+                <input type="checkbox" id="newForcePhoneLogin" checked style="width: 20px; height: 20px; accent-color: #
+0d9488;" />
+                <span>     </span>
               </label>
-              <button type="submit" class="btn btn-primary" style="background: #0d9488; font-size: 1rem; padding: 0.75rem 2rem;">
-                <span>➕ ایجاد کاربر</span>
+              <button type="submit" class="btn btn-primary" style="background: #0d9488; font-size: 1rem; padding: 0.75re
+m 2rem;">
+                <span>  </span>
               </button>
             </div>
           </form>
         </div>
-
-        <!-- USERS LIST CARDS matching Screenshot 4, 7 (مدیر سیستم، جواد علمدار، خانم نیلا محرمی، آقای داوود عقبایی) -->
-        <h4 style="margin-bottom: 1rem; color: #1e293b;">فهرست کاربران و سطح دسترسی فعال</h4>
+        <!-- USERS LIST CARDS matching Screenshot 4, 7 (         ) -->
+        <h4 style="margin-bottom: 1rem; color: #1e293b;">     </h4>
         <div id="userCardsContainer" style="display: flex; flex-direction: column; gap: 1.25rem;"></div>
       </div>
     </section>
-
     <!-- ======================================================================
-         17. TAB: MESSENGERS (پیام‌رسان‌ها) - Menu Item 17
+
+         17. TAB: MESSENGERS () - Menu Item 17
          ====================================================================== -->
     <section id="tab-messengers" class="tab-pane">
       <div class="card">
         <div class="card-header">
           <div class="card-title">
-            <span>💬 تنظیمات اتصال به پیام‌رسان‌ها (پیامک، تلگرام، ایتا و واتساپ)</span>
+            <span>     (    )</span>
           </div>
         </div>
         <div class="form-grid">
           <div class="form-group full-width">
-            <label class="form-label">توکن ربات تلگرام / ایتا</label>
-            <input type="text" class="form-input" value="123456:ABC-DEF1234ghIkl-zyx57W2v1u123ew11" style="direction: ltr;" />
+            <label class="form-label">   / </label>
+            <input type="text" class="form-input" value="123456:ABC-DEF1234ghIkl-zyx57W2v1u123ew11" style="direction: lt
+r;" />
           </div>
           <div class="form-group">
-            <label class="form-label">شماره پیش‌فرض واتساپ / پیامک</label>
+            <label class="form-label">   / </label>
             <input type="text" class="form-input" value="09120000000" style="direction: ltr;" />
           </div>
           <div class="form-group">
-            <label class="form-label">کانال رسمی اعلان‌ها</label>
+            <label class="form-label">  </label>
             <input type="text" class="form-input" value="@namayande_channel" style="direction: ltr;" />
           </div>
         </div>
       </div>
     </section>
-
     <!-- ======================================================================
-         18. TAB: BACKUP & RESTORE (پشتیبان‌گیری) - Menu Item 18 (Requirement 8)
+         18. TAB: BACKUP & RESTORE () - Menu Item 18 (Requirement 8)
          ====================================================================== -->
     <section id="tab-backup" class="tab-pane">
       <div class="card">
         <div class="card-header">
           <div class="card-title">
-            <span>💾 پشتیبان‌گیری خودکار، فایل تک‌نام (crm-backup-latest.json) و بخش بازیابی</span>
+            <span>     (crm-backup-latest.json)   </span>
           </div>
         </div>
         <p style="font-size: 0.88rem; color: #64748b; margin-bottom: 1rem;">
-          بر اساس درخواست شما: هر فایل پشتیبان جدید جایگزین فایل قبلی می‌شود (نام فایل ثابت: <code>crm-backup-latest.json</code>)، و بخش بازیابی اطلاعات (Restore Data) نیز در پایین صفحه فعال است.
+             :         (  : <code>crm-backup-latest.json
+</code>)     (Restore Data)      .
         </p>
-
-        <div style="background: #f8fafc; padding: 1.25rem; border-radius: var(--radius-lg); border: 1px solid var(--border-color); margin-bottom: 1.5rem;">
-          <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem; margin-bottom: 1rem;">
+        <div style="background: #f8fafc; padding: 1.25rem; border-radius: var(--radius-lg); border: 1px solid var(--bord
+er-color); margin-bottom: 1.5rem;">
+          <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem; ma
+rgin-bottom: 1rem;">
             <div>
-              <h4 style="margin-bottom: 0.25rem; color: #1e293b;">⚡ پشتیبان‌گیری خودکار در پوشه مدیر (File System Access)</h4>
+              <h4 style="margin-bottom: 0.25rem; color: #1e293b;">      (File System Access
+)</h4>
               <p style="font-size: 0.85rem; color: var(--text-muted); margin: 0;">
-                با انتخاب فایل ذخیره‌سازی، برنامه هر ۵ دقیقه (یا بعد از هر تغییر داده) به صورت خودکار اطلاعات را جایگزین فایل <code>crm-backup-latest.json</code> می‌کند.
+                        (     )       
+ <code>crm-backup-latest.json</code> .
               </p>
             </div>
             <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
               <button id="btnSelectAutoBackupFolder" class="btn btn-primary" style="background: #0d9488;">
-                <span>📁 انتخاب فایل پشتیبان‌گیری خودکار (crm-backup-latest.json)</span>
+                <span>     (crm-backup-latest.json)</span>
               </button>
               <button id="btnManualBackupNow" class="btn btn-success" style="background: #0d9488;">
-                <span>💾 پشتیبان‌گیری دستی فوری (جایگزین فایل قبلی)</span>
+                <span>    (  )</span>
               </button>
             </div>
           </div>
-
-          <div style="display: flex; align-items: center; gap: 0.75rem; background: #ffffff; padding: 0.85rem; border-radius: 8px; border: 1px solid var(--border-color);">
-            <input type="checkbox" id="chkAutoBackupEnabled" checked style="width: 20px; height: 20px; accent-color: #0d9488;" />
+          <div style="display: flex; align-items: center; gap: 0.75rem; background: #ffffff; padding: 0.85rem; border-ra
+dius: 8px; border: 1px solid var(--border-color);">
+            <input type="checkbox" id="chkAutoBackupEnabled" checked style="width: 20px; height: 20px; accent-color: #0d
+9488;" />
             <label for="chkAutoBackupEnabled" style="font-weight: 700; color: #0f172a; cursor: pointer;">
-              فعال‌سازی پشتیبان‌گیری خودکار هر ۵ دقیقه و پس از هر تغییر در اطلاعات برنامه
+                           
             </label>
-            <span id="autoBackupHandleStatus" style="margin-right: auto; font-size: 0.82rem; background: #eff6ff; color: #2563eb; padding: 0.3rem 0.75rem; border-radius: 999px; font-weight: 700;">
-              ذخیره خودکار در حافظه محلی + دانلود تک‌فایلی
+            <span id="autoBackupHandleStatus" style="margin-right: auto; font-size: 0.82rem; background: #eff6ff; color:
+ #2563eb; padding: 0.3rem 0.75rem; border-radius: 999px; font-weight: 700;">
+                   +  
             </span>
           </div>
         </div>
-
         <div class="card" style="border: 2px solid #0d9488; background: #f0fdf4; margin-bottom: 0;">
           <div class="card-header">
             <div class="card-title" style="color: #166534;">
-              <span>📥 بخش بازیابی اطلاعات (Restore Data) - بازیابی از فایل پشتیبان</span>
+              <span>    (Restore Data) -    </span>
             </div>
           </div>
           <p style="font-size: 0.88rem; color: #475569; margin-bottom: 1.25rem;">
-            با انتخاب یا کشیدن فایل پشتیبان (<code>crm-backup-latest.json</code> یا هر فایل <code>.json</code> پشتیبان دیگر)، تمامی اطلاعات داروخانه‌ها، پزشکان، کاربران و دسترسی‌ها بازیابی خواهند شد.
-          </p>
 
+                  (<code>crm-backup-latest.json</code>    <code>.json</code>  
+)          .
+          </p>
           <div id="dropzoneRestore" class="dropzone-restore">
-            <div style="font-size: 2.5rem; margin-bottom: 0.5rem;">📥</div>
-            <h4 style="color: #166534; margin-bottom: 0.5rem;">برای بازیابی، فایل پشتیبان (json) را اینجا رها کنید یا کلیک کنید</h4>
-            <p style="font-size: 0.85rem; color: #64748b;">فرمت مجاز: <code>.json</code> (شامل داده‌های پشتیبان‌گیری شده سیستم)</p>
+            <div style="font-size: 2.5rem; margin-bottom: 0.5rem;"></div>
+            <h4 style="color: #166534; margin-bottom: 0.5rem;">    (json)      
+ </h4>
+            <p style="font-size: 0.85rem; color: #64748b;"> : <code>.json</code> (    
+)</p>
             <input type="file" id="fileInputRestore" accept=".json" style="display: none;" />
           </div>
-
-          <div id="restorePreviewCard" style="display: none; margin-top: 1.25rem; background: #ffffff; padding: 1.25rem; border-radius: var(--radius-md); border: 1px solid var(--border-color);">
-            <h4 style="margin-bottom: 0.75rem; color: #0f172a;">📊 خلاصه فایل پشتیبان انتخاب شده آماده بازیابی:</h4>
+          <div id="restorePreviewCard" style="display: none; margin-top: 1.25rem; background: #ffffff; padding: 1.25rem;
+ border-radius: var(--radius-md); border: 1px solid var(--border-color);">
+            <h4 style="margin-bottom: 0.75rem; color: #0f172a;">       :</h4>
             <div style="display: flex; gap: 1.5rem; flex-wrap: wrap; font-size: 0.9rem; margin-bottom: 1rem;">
-              <div>داروخانه‌ها: <strong id="resCountPharmacies" style="color: #0d9488;">0</strong></div>
-              <div>پزشکان: <strong id="resCountDoctors" style="color: #10b981;">0</strong></div>
-              <div>کاربران: <strong id="resCountUsers" style="color: #9333ea;">0</strong></div>
-              <div>سفارشات: <strong id="resCountOrders" style="color: #f59e0b;">0</strong></div>
-              <div>فیلدهای سفارشی: <strong id="resCountFields" style="color: #8b5cf6;">0</strong></div>
+              <div>: <strong id="resCountPharmacies" style="color: #0d9488;">0</strong></div>
+              <div>: <strong id="resCountDoctors" style="color: #10b981;">0</strong></div>
+              <div>: <strong id="resCountUsers" style="color: #9333ea;">0</strong></div>
+              <div>: <strong id="resCountOrders" style="color: #f59e0b;">0</strong></div>
+              <div> : <strong id="resCountFields" style="color: #8b5cf6;">0</strong></div>
             </div>
             <div style="display: flex; justify-content: flex-end; gap: 0.75rem;">
-              <button type="button" id="btnCancelRestore" class="btn btn-outline">انصراف</button>
+              <button type="button" id="btnCancelRestore" class="btn btn-outline"></button>
               <button type="button" id="btnConfirmRestore" class="btn btn-primary" style="background: #0d9488;">
-                <span>⚡ تایید و بازیابی کامل اطلاعات</span>
+                <span>     </span>
               </button>
             </div>
           </div>
         </div>
       </div>
     </section>
-
     <!-- ======================================================================
-         19. TAB: INSTALL APP (نصب اپ) - Menu Item 19
+         19. TAB: INSTALL APP ( ) - Menu Item 19
          ====================================================================== -->
     <section id="tab-install-app" class="tab-pane">
       <div class="card">
         <div class="card-header">
           <div class="card-title">
-            <span>📲 نصب اپلیکیشن روی تلفن همراه و کامپیوتر (PWA)</span>
+            <span>        (PWA)</span>
           </div>
         </div>
         <p style="font-size: 0.95rem; color: #334155; line-height: 1.8;">
-          این برنامه مجهز به فناوری <strong>Progressive Web App (PWA)</strong> است و می‌توانید آن را مانند یک اپلیکیشن بومی روی صفحه اصلی موبایل یا ویندوز نصب کنید:
+               <strong>Progressive Web App (PWA)</strong>         
+        :
           <br /><br />
-          <strong>در گوشی‌های اندروید (Chrome):</strong> از منوی سه نقطه مرورگر، گزینه «افزودن به صفحه اصلی (Add to Home screen)» یا «Install app» را انتخاب کنید.
+          <strong>   (Chrome):</strong>       «    (Add to Home 
+screen)»  «Install app»   .
           <br />
-          <strong>در گوشی‌های آیفون (Safari):</strong> دکمه Share پایین مرورگر را زده و گزینه «Add to Home Screen» را انتخاب کنید.
+          <strong>   (Safari):</strong>  Share       «Add to Home Screen»  
+ .
         </p>
       </div>
     </section>
-
     <!-- ======================================================================
-         20. TAB: TROUBLESHOOTING & DIAGNOSTICS (عیب‌یابی) - Menu Item 20
+         20. TAB: TROUBLESHOOTING & DIAGNOSTICS () - Menu Item 20
          ====================================================================== -->
     <section id="tab-troubleshooting" class="tab-pane">
       <div class="card">
         <div class="card-header">
           <div class="card-title">
-            <span>🛠️ عیب‌یابی سامانه و بررسی اتصال به سرور (Render / Neon / آفلاین)</span>
+            <span>        (Render / Neon / )</span>
           </div>
           <button class="btn btn-primary btn-sm" style="background: #0d9488;" onclick="testServerConnectivity()">
-            <span>🔄 بررسی مجدد اتصال</span>
+            <span>   </span>
           </button>
         </div>
         <p style="font-size: 0.88rem; color: #64748b; margin-bottom: 1rem;">
-          وضعیت سرویس‌دهی سرورهای ابری (`namayandeelmi-javad.onrender.com` و `ndcohub.ir`) و هماهنگی حافظه محلی سیستم.
+              (`namayandeelmi-javad.onrender.com`  `ndcohub.ir`)     .
         </p>
-        <div id="diagnosticsStatusBox" style="background: #f0fdf4; border: 1px solid #bbf7d0; padding: 1.25rem; border-radius: 10px; color: #166534; font-weight: 700;">
-          ✅ سیستم در وضعیت سالم قرار دارد. تمامی امکانات محلی و ابری در دسترس است.
+        <div id="diagnosticsStatusBox" style="background: #f0fdf4; border: 1px solid #bbf7d0; padding: 1.25rem; border-r
+adius: 10px; color: #166534; font-weight: 700;">
+                .        .
         </div>
       </div>
     </section>
-
   </main>
-
   <!-- ======================================================================
        BOTTOM OFFLINE / DIAGNOSTIC ORANGE BANNER (Matching Screenshot 8)
-       "ارتباط با سرور برقرار نیست... لطفاً اتصال اینترنت خود را بررسی کنید..."
+       "    ...       ..."
+
        ====================================================================== -->
   <div id="diagnosticOfflineBanner" class="offline-diagnostic-banner" style="display: none;">
     <div class="offline-banner-content">
-      <div class="offline-icon">📡</div>
+      <div class="offline-icon"></div>
       <div class="offline-text">
-        <h4>ارتباط با سرور برقرار نیست</h4>
-        <p>لطفاً اتصال اینترنت خود را بررسی کنید. می‌توانید به کار ادامه دهید؛ اطلاعات ذخیره می‌شود و پس از وصل شدن ارسال خواهد شد.</p>
+        <h4>    </h4>
+        <p>      .               
+ .</p>
       </div>
     </div>
     <div class="offline-actions">
-      <button type="button" class="btn-banner-retry" onclick="retryServerConnection()">🔄 بررسی مجدد</button>
-      <button type="button" class="btn-banner-diag" onclick="switchTab('tab-troubleshooting'); document.getElementById('diagnosticOfflineBanner').style.display='none';">🛠️ عیب‌یابی</button>
-      <button type="button" class="btn-banner-close" onclick="document.getElementById('diagnosticOfflineBanner').style.display='none';">بستن</button>
+      <button type="button" class="btn-banner-retry" onclick="retryServerConnection()">  </button>
+      <button type="button" class="btn-banner-diag" onclick="switchTab('tab-troubleshooting'); document.getElementById('
+diagnosticOfflineBanner').style.display='none';"> </button>
+      <button type="button" class="btn-banner-close" onclick="document.getElementById('diagnosticOfflineBanner').style.d
+isplay='none';"></button>
     </div>
   </div>
-
   <!-- ======================================================================
-       MODAL: ADD NEW OPTION TO SELECT FIELD (افزودن گزینه جدید به فیلد کشویی)
+       MODAL: ADD NEW OPTION TO SELECT FIELD (     )
        ====================================================================== -->
   <div id="modalAddOption" class="modal-overlay">
     <div class="modal-content">
       <div class="card-header">
         <div class="card-title">
-          <span>➕ افزودن گزینه جدید به منوی کشویی</span>
+          <span>      </span>
         </div>
       </div>
       <form id="formAddOptionModal" onsubmit="return false;">
         <input type="hidden" id="modalAddOptionFieldId" value="" />
         <input type="hidden" id="modalAddOptionEntityType" value="" />
         <div class="form-group">
-          <label class="form-label" id="modalAddOptionLabel">گزینه جدید</label>
-          <input type="text" id="modalAddOptionValue" class="form-input" placeholder="عنوان گزینه جدید را وارد کنید..." required />
+          <label class="form-label" id="modalAddOptionLabel"> </label>
+          <input type="text" id="modalAddOptionValue" class="form-input" placeholder="     ..." 
+required />
         </div>
         <div style="display: flex; justify-content: flex-end; gap: 0.75rem; margin-top: 1.25rem;">
-          <button type="button" class="btn btn-outline" onclick="closeModalAddOption()">انصراف</button>
-          <button type="submit" class="btn btn-primary" style="background: #0d9488;">ثبت گزینه جدید</button>
+          <button type="button" class="btn btn-outline" onclick="closeModalAddOption()"></button>
+          <button type="submit" class="btn btn-primary" style="background: #0d9488;">  </button>
         </div>
       </form>
     </div>
   </div>
-
     <!-- ======================================================================
-         21. TAB: SEARCH INFORMATION (جستجوی اطلاعات) - Section 6 Requirement
+         21. TAB: SEARCH INFORMATION ( ) - Section 6 Requirement
          ====================================================================== -->
     <section id="tab-search-info" class="tab-pane">
       <div class="card">
         <div class="card-header">
           <div class="card-title">
-            <span>🔍 جستجوی اطلاعات پیشرفته داروخانه‌ها، پزشکان و بیمارستان‌ها روی نقشه و لیست</span>
+            <span>           </span>
           </div>
         </div>
         <div class="form-grid" style="margin-bottom: 1.25rem;">
           <div class="form-group">
-            <label class="form-label">نام داروخانه</label>
-            <input type="text" id="searchInfoPhInput" class="form-input" placeholder="جستجوی نام داروخانه..." />
+            <label class="form-label"> </label>
+            <input type="text" id="searchInfoPhInput" class="form-input" placeholder="  ..." />
           </div>
           <div class="form-group">
-            <label class="form-label">نام پزشک</label>
-            <input type="text" id="searchInfoDocInput" class="form-input" placeholder="جستجوی نام پزشک..." />
+            <label class="form-label"> </label>
+            <input type="text" id="searchInfoDocInput" class="form-input" placeholder="  ..." />
           </div>
           <div class="form-group">
-            <label class="form-label">نام بیمارستان / مرکز درمانی</label>
-            <input type="text" id="searchInfoHospInput" class="form-input" placeholder="جستجوی نام بیمارستان..." />
+            <label class="form-label">  /  </label>
+            <input type="text" id="searchInfoHospInput" class="form-input" placeholder="  ..." />
           </div>
         </div>
         <div style="display: flex; gap: 0.75rem; margin-bottom: 1.5rem;">
           <button type="button" id="btnRunSearchInfo" class="btn btn-primary" style="background: #0d9488;">
-            <span>🔍 جستجو و نمایش روی نقشه و لیست</span>
+            <span>       </span>
           </button>
           <button type="button" id="btnExportSearchInfoCSV" class="btn btn-success" style="background: #0d9488;">
-            <span>⬇️ خروجی اکسل نتایج</span>
+            <span>   </span>
           </button>
         </div>
         <div id="map-search-info" class="map-container" style="height: 380px; margin-bottom: 1.5rem;"></div>
@@ -1678,13 +1698,14 @@
           <table class="data-table">
             <thead>
               <tr>
-                <th>ردیف</th>
-                <th>نام نماینده</th>
-                <th>نوع مرکز</th>
-                <th>نام مرکز / پزشک</th>
-                <th>شهر / منطقه</th>
-                <th>آدرس</th>
-                <th>عملیات</th>
+                <th></th>
+                <th> </th>
+                <th> </th>
+
+                <th>  / </th>
+                <th> / </th>
+                <th></th>
+                <th></th>
               </tr>
             </thead>
             <tbody id="tableSearchInfoBody">
@@ -1694,51 +1715,54 @@
         </div>
       </div>
     </section>
-
   <!-- ======================================================================
-       MODAL: ROW DETAILS & MESSAGING (نمایش جزئیات ردیف و ارسال به بله، ایتا، تلگرام، سروش، واتساپ)
+       MODAL: ROW DETAILS & MESSAGING (          )
        ====================================================================== -->
   <div id="modalRowDetails" class="modal-overlay">
     <div class="modal-content" style="max-width: 600px;">
       <div class="card-header">
         <div class="card-title">
-          <span>📋 جزئیات کامل رکورد و ارسال مستقیم به پیام‌رسان‌ها</span>
+          <span>        </span>
         </div>
       </div>
-      <div id="rowDetailsContentBox" style="background: #f8fafc; padding: 1rem; border-radius: 10px; border: 1px solid var(--border-color); margin-bottom: 1.25rem; font-size: 0.9rem; line-height: 1.8;">
+      <div id="rowDetailsContentBox" style="background: #f8fafc; padding: 1rem; border-radius: 10px; border: 1px solid v
+ar(--border-color); margin-bottom: 1.25rem; font-size: 0.9rem; line-height: 1.8;">
         <!-- Dynamic row details text -->
       </div>
       <div id="rowDetailsMiniMap" class="map-container" style="height: 200px; margin-bottom: 1.25rem;"></div>
-      
-      <h5 style="margin-bottom: 0.6rem; color: #1e293b;">📤 ارسال اطلاعات آماده به پیام‌رسان‌ها (با کلیک مستقیم):</h5>
+      <h5 style="margin-bottom: 0.6rem; color: #1e293b;">      (  ):</h5>
       <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1.25rem;">
-        <button type="button" id="btnShareBale" class="btn btn-outline btn-sm" style="background: #f0fdf4; color: #166534; border-color: #bbf7d0;">
-          <span>🟢 بله (Bale)</span>
+        <button type="button" id="btnShareBale" class="btn btn-outline btn-sm" style="background: #f0fdf4; color: #16653
+4; border-color: #bbf7d0;">
+          <span>  (Bale)</span>
         </button>
-        <button type="button" id="btnShareEitaa" class="btn btn-outline btn-sm" style="background: #fff7ed; color: #9a3412; border-color: #ffedd5;">
-          <span>🟠 ایتا (Eitaa)</span>
+        <button type="button" id="btnShareEitaa" class="btn btn-outline btn-sm" style="background: #fff7ed; color: #9a34
+12; border-color: #ffedd5;">
+          <span>  (Eitaa)</span>
         </button>
-        <button type="button" id="btnShareTelegram" class="btn btn-outline btn-sm" style="background: #eff6ff; color: #1e40af; border-color: #bfdbfe;">
-          <span>🔵 تلگرام (Telegram)</span>
+        <button type="button" id="btnShareTelegram" class="btn btn-outline btn-sm" style="background: #eff6ff; color: #1
+e40af; border-color: #bfdbfe;">
+          <span>  (Telegram)</span>
         </button>
-        <button type="button" id="btnShareSoroush" class="btn btn-outline btn-sm" style="background: #f5f3ff; color: #6d28d9; border-color: #ddd6fe;">
-          <span>🟣 سروش (Soroush)</span>
+        <button type="button" id="btnShareSoroush" class="btn btn-outline btn-sm" style="background: #f5f3ff; color: #6d
+28d9; border-color: #ddd6fe;">
+          <span>  (Soroush)</span>
         </button>
-        <button type="button" id="btnShareWhatsApp" class="btn btn-outline btn-sm" style="background: #ecfdf5; color: #047857; border-color: #a7f3d0;">
-          <span>🟢 واتساپ (WhatsApp)</span>
+        <button type="button" id="btnShareWhatsApp" class="btn btn-outline btn-sm" style="background: #ecfdf5; color: #0
+47857; border-color: #a7f3d0;">
+          <span>  (WhatsApp)</span>
         </button>
       </div>
-
       <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.75rem;">
         <div style="display: flex; gap: 0.5rem;">
           <button type="button" id="btnRowCopyText" class="btn btn-primary btn-sm" style="background: #0d9488;">
-            <span>📋 کپی کردن متن اطلاعات</span>
+            <span>    </span>
           </button>
         </div>
         <div style="display: flex; gap: 0.5rem;">
-          <button type="button" id="btnRowEdit" class="btn btn-outline btn-sm">✏️ ویرایش</button>
-          <button type="button" id="btnRowDelete" class="btn btn-danger btn-sm">🗑️ حذف</button>
-          <button type="button" class="btn btn-outline btn-sm" onclick="closeModalRowDetails()">✕ بستن</button>
+          <button type="button" id="btnRowEdit" class="btn btn-outline btn-sm"> </button>
+          <button type="button" id="btnRowDelete" class="btn btn-danger btn-sm"> </button>
+          <button type="button" class="btn btn-outline btn-sm" onclick="closeModalRowDetails()"> </button>
         </div>
       </div>
     </div>
@@ -1747,127 +1771,133 @@
     <div class="modal-content" style="max-width: 440px;">
       <div class="card-header">
         <div class="card-title">
-          <span>🧭 انتخاب مسیریاب برای هدایت به مقصد</span>
+          <span>      </span>
         </div>
       </div>
       <p style="font-size: 0.88rem; color: #64748b; margin-bottom: 1.25rem;">
-        مسیریاب مورد نظر خود را انتخاب کنید تا مستقیماً مسیر شما تا مقصد روی نقشه باز شود:
+                        :
       </p>
       <div style="display: flex; flex-direction: column; gap: 0.75rem;">
-        <button type="button" id="btnNavNeshan" class="btn btn-outline" style="justify-content: flex-start; font-size: 0.95rem; padding: 0.75rem 1rem;">
-          <span style="font-size: 1.3rem;">🟢</span>
-          <span>مسیریاب نشان (Neshan)</span>
+        <button type="button" id="btnNavNeshan" class="btn btn-outline" style="justify-content: flex-start; font-size: 0
+.95rem; padding: 0.75rem 1rem;">
+          <span style="font-size: 1.3rem;"></span>
+          <span>  (Neshan)</span>
         </button>
-        <button type="button" id="btnNavBalad" class="btn btn-outline" style="justify-content: flex-start; font-size: 0.95rem; padding: 0.75rem 1rem;">
-          <span style="font-size: 1.3rem;">🔵</span>
-          <span>مسیریاب بلد (Balad)</span>
+        <button type="button" id="btnNavBalad" class="btn btn-outline" style="justify-content: flex-start; font-size: 0.
+
+95rem; padding: 0.75rem 1rem;">
+          <span style="font-size: 1.3rem;"></span>
+          <span>  (Balad)</span>
         </button>
-        <button type="button" id="btnNavGoogle" class="btn btn-outline" style="justify-content: flex-start; font-size: 0.95rem; padding: 0.75rem 1rem;">
-          <span style="font-size: 1.3rem;">🔴</span>
-          <span>گوگل مپس (Google Maps)</span>
+        <button type="button" id="btnNavGoogle" class="btn btn-outline" style="justify-content: flex-start; font-size: 0
+.95rem; padding: 0.75rem 1rem;">
+          <span style="font-size: 1.3rem;"></span>
+          <span>  (Google Maps)</span>
         </button>
-        <button type="button" id="btnNavWaze" class="btn btn-outline" style="justify-content: flex-start; font-size: 0.95rem; padding: 0.75rem 1rem;">
-          <span style="font-size: 1.3rem;">🟠</span>
-          <span>ویز (Waze)</span>
+        <button type="button" id="btnNavWaze" class="btn btn-outline" style="justify-content: flex-start; font-size: 0.9
+5rem; padding: 0.75rem 1rem;">
+          <span style="font-size: 1.3rem;"></span>
+          <span> (Waze)</span>
         </button>
       </div>
       <div style="display: flex; justify-content: flex-end; margin-top: 1.25rem;">
-        <button type="button" class="btn btn-outline" onclick="closeModalNavigationApps()">بستن</button>
+        <button type="button" class="btn btn-outline" onclick="closeModalNavigationApps()"></button>
       </div>
     </div>
   </div>
-
   <!-- ======================================================================
-       MODAL: LOGIN & ROLE SWITCHING (ورود و تغییر نقش کاربری)
+       MODAL: LOGIN & ROLE SWITCHING (    )
        ====================================================================== -->
   <div id="modalLogin" class="modal-overlay">
     <div class="modal-content" style="max-width: 480px;">
       <div style="text-align: center; margin-bottom: 1rem;">
-        <div style="width: 64px; height: 64px; background: linear-gradient(135deg, #0d9488 0%, #1e3a8a 100%); color: #fff; font-size: 2.2rem; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(13, 148, 136, 0.4);">
-          💊
+        <div style="width: 64px; height: 64px; background: linear-gradient(135deg, #0d9488 0%, #1e3a8a 100%); color: #ff
+f; font-size: 2.2rem; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; box-shadow
+: 0 4px 12px rgba(13, 148, 136, 0.4);">
+          
         </div>
       </div>
       <div class="card-header">
         <div class="card-title">
-          <span>🔐 ورود به سیستم / تغییر نقش کاربری</span>
+          <span>    /   </span>
         </div>
       </div>
       <p style="font-size: 0.88rem; color: #64748b; margin-bottom: 1.25rem;">
-        نقش کاربری خود را انتخاب کنید تا دسترسی‌های تعیین‌شده در بخش «👤 کاربران و دسترسی» به صورت هوشمند برای شما اعمال شود:
+                   «   »       
+:
       </p>
       <form id="formLoginModal" onsubmit="return false;">
         <div class="form-group">
-          <label class="form-label" for="loginRoleSelect">نقش کاربری *</label>
+          <label class="form-label" for="loginRoleSelect">  *</label>
           <select id="loginRoleSelect" class="form-select dropdown-auto-clear" required>
-            <option value="0">مدیر سیستم (Admin)</option>
-            <option value="1">جواد علمدار (نماینده علمی)</option>
-            <option value="2">خانم نیلا محرمی (نماینده علمی)</option>
-            <option value="3">آقای داوود عقبایی (سرپرست)</option>
+            <option value="0">  (Admin)</option>
+            <option value="1">  ( )</option>
+            <option value="2">   ( )</option>
+            <option value="3">   ()</option>
           </select>
         </div>
         <div class="form-group" style="margin-top: 0.5rem;">
-          <label class="form-label" for="loginUserName">شماره همراه ورود</label>
+          <label class="form-label" for="loginUserName">  </label>
           <input type="text" id="loginUserName" class="form-input" value="09120000000" style="direction: ltr;" />
         </div>
         <div class="form-group" style="margin-top: 0.5rem;">
-          <label class="form-label" for="loginSimAuthMode">حالت تایید دو مرحله‌ای سیم‌کارت (تنظیم مدیر)</label>
+          <label class="form-label" for="loginSimAuthMode">     ( )</label>
           <select id="loginSimAuthMode" class="form-select dropdown-auto-clear">
-            <option value="3">۳. ورود عادی (غیرفعال بودن تایید دو مرحله‌ای)</option>
-            <option value="1">۱. دریافت پیامک رمز یک‌بارمصرف (OTP SMS)</option>
-            <option value="2">۲. ارسال کد تایید به مدیر سیستم</option>
+            <option value="3">.   (    )</option>
+            <option value="1">.     (OTP SMS)</option>
+            <option value="2">.      </option>
           </select>
         </div>
         <div style="display: flex; justify-content: flex-end; gap: 0.75rem; margin-top: 1.5rem;">
-          <button type="button" class="btn btn-outline" onclick="closeModalLogin()">انصراف</button>
+          <button type="button" class="btn btn-outline" onclick="closeModalLogin()"></button>
           <button type="submit" class="btn btn-primary" style="background: #0d9488;">
-            <span>🚀 ورود و اعمال سطح دسترسی</span>
+            <span>     </span>
           </button>
         </div>
       </form>
     </div>
   </div>
-
   <!-- ======================================================================
-       PERSIAN JALALI CALENDAR POPUP PICKER (تقویم تعاملی شمسی هماهنگ با اسکرین‌شات)
+       PERSIAN JALALI CALENDAR POPUP PICKER (     )
        ====================================================================== -->
   <div id="jalaliCalendarPopup" class="jalali-popup-picker">
     <div class="jalali-picker-header">
       <button type="button" class="jalali-nav-arrow" id="jalaliPrevMonth">&gt;</button>
       <div class="jalali-header-selects">
         <select id="jalaliYearSelect" class="jalali-select">
-          <option value="1404">۱۴۰۴</option>
-          <option value="1405" selected>۱۴۰۵</option>
-          <option value="1406">۱۴۰۶</option>
+          <option value="1404"></option>
+          <option value="1405" selected></option>
+          <option value="1406"></option>
+
         </select>
         <select id="jalaliMonthSelect" class="jalali-select">
-          <option value="01">فروردین</option>
-          <option value="02">اردیبهشت</option>
-          <option value="03">خرداد</option>
-          <option value="04">تیر</option>
-          <option value="05" selected>مرداد</option>
-          <option value="06">شهریور</option>
-          <option value="07">مهر</option>
-          <option value="08">آبان</option>
-          <option value="09">آذر</option>
-          <option value="10">دی</option>
-          <option value="11">بهمن</option>
-          <option value="12">اسفند</option>
+          <option value="01"></option>
+          <option value="02"></option>
+          <option value="03"></option>
+          <option value="04"></option>
+          <option value="05" selected></option>
+          <option value="06"></option>
+          <option value="07"></option>
+          <option value="08"></option>
+          <option value="09"></option>
+          <option value="10"></option>
+          <option value="11"></option>
+          <option value="12"></option>
         </select>
       </div>
       <button type="button" class="jalali-nav-arrow" id="jalaliNextMonth">&lt;</button>
     </div>
     <div class="jalali-weekdays">
-      <div>ش</div><div>ی</div><div>د</div><div>س</div><div>چ</div><div>پ</div><div>ج</div>
+      <div></div><div></div><div></div><div></div><div></div><div></div><div></div>
     </div>
     <div id="jalaliDaysGrid" class="jalali-days-grid"></div>
-    <button type="button" id="jalaliTodayBtn" class="jalali-today-btn">امروز: ۱۴۰۵/۰۵/۲۱</button>
+    <button type="button" id="jalaliTodayBtn" class="jalali-today-btn">: //</button>
   </div>
-
   <!-- Leaflet JS -->
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-  
   <!-- Data & Application Logic with Anti-Cache Version 8.0.0 -->
   <script src="crm-data.js?v=8.0.0"></script>
   <script src="crm-app.js?v=8.0.0"></script>
+  <script src="crm-enhancements.js?v=8.1.0"></script>
 </body>
 </html>

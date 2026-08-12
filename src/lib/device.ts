@@ -1,7 +1,9 @@
+
 "use client";
 export type SimStatus = {
   ok: boolean;
   cellular: boolean;
+
   online: boolean;
   reason: string;
   detail: string;
@@ -67,7 +69,6 @@ export function watchSim(cb: (s: SimStatus) => void) {
     c?.removeEventListener?.("change", emit);
   };
 }
-
 const DEVICE_KEY = "sek_device_sim";
 /**       (      ) */
 export function getDeviceSim(): string {
@@ -87,6 +88,7 @@ export function setDeviceSim(phone: string) {
 export function normalizePhone(p: string) {
   return String(p ?? "")
     .replace(/[\u06F0-\u06F9]/g, (c) => String(c.charCodeAt(0) - 0x06f0))
+
     .replace(/\D/g, "")
     .replace(/^0098/, "0")
     .replace(/^98/, "0");

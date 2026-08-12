@@ -1,3 +1,4 @@
+
 "use client";
 import { useCallback, useEffect, useState } from "react";
 import { Alert, Badge, Button, Card, Field, Input, SectionTitle } from "@/components/ui";
@@ -22,6 +23,7 @@ type Peer = {
 };
 type Log = {
   id: number;
+
   peer: string;
   direction: string;
   tableName: string;
@@ -44,7 +46,6 @@ export default function SyncPage() {
   const [dlBusy, setDlBusy] = useState(false);
   const confirm = useConfirm();
   const load = useCallback(async () => {
-
     const res = await fetch("/api/sync/status", { cache: "no-store" });
     if (!res.ok) return;
     const d = await res.json();
@@ -96,7 +97,6 @@ export default function SyncPage() {
         <SectionTitle icon="">  </SectionTitle>
         <div className="flex gap-2">
           <Button variant="ghost" onClick={testSpeed}>
-               
           </Button>
           <Button onClick={runSync} disabled={busy}>
             {busy ? " ..." : "  "}
@@ -107,9 +107,9 @@ export default function SyncPage() {
       {/* ----------      GitHub / GitLab ---------- */}
       <Card>
         <h3 className="mb-2 text-sm font-black text-slate-800">    </h3>
+
         <Alert kind="info">
                 .    <b>GitHub</b>  <b>GitLab</b>     ZIP
-                          
           <span dir="ltr"> git add -A && git commit && git push </span> .       .
         </Alert>
         <div className="mt-3 flex flex-wrap items-center gap-2">
@@ -123,7 +123,6 @@ export default function SyncPage() {
             }}
             disabled={dlBusy}
           >
-
             {dlBusy ? "   ..." : "    (ZIP)"}
           </Button>
           <Button
@@ -136,12 +135,11 @@ export default function SyncPage() {
               setMsg(` ${d.count}     `);
             }}
           >
-               
           </Button>
           {srcInfo ? <Badge tone="green">{toPersianDigits(srcInfo.count)} </Badge> : null}
         </div>
         <p className="mt-2 text-[11px] text-slate-500">
-          :  <span dir="ltr">node_modules</span>  <span dir="ltr">.next</span>  
+          :  <span dir="ltr">node_modules</span>  <span dir="ltr">.next</span>
           <span dir="ltr"> .env </span>    (    ).
         </p>
       </Card>
@@ -192,6 +190,7 @@ d-200"
           </Alert>
         ) : null}
         <div className="space-y-2">
+
           {peers.map((p) => (
             <div key={p.id} className="rounded-xl bg-slate-50 p-3 ring-1 ring-slate-200">
               <div className="flex flex-wrap items-center gap-2">
@@ -206,7 +205,6 @@ d-200"
                     className="rounded-lg bg-slate-200 px-2 py-1 text-[11px] font-bold text-slate-700"
                   >
                     {p.enabled ? "" : ""}
-
                   </button>
                   <button
                     onClick={async () => {
@@ -223,7 +221,6 @@ d-200"
                     }}
                     className="rounded-lg bg-amber-100 px-2 py-1 text-[11px] font-bold text-amber-700"
                   >
-                     
                   </button>
                 </div>
               </div>
@@ -251,7 +248,7 @@ r}</div> : null}
         </div>
         <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-3">
           <Field label="  ">
-            <Input value={form.peer} onChange={(e) => setForm({ ...form, peer: e.target.value })} placeholder="ndcohub" 
+            <Input value={form.peer} onChange={(e) => setForm({ ...form, peer: e.target.value })} placeholder="ndcohub"
 />
           </Field>
           <Field label="  ">
@@ -264,7 +261,6 @@ r}</div> : null}
           </Field>
           <div className="flex items-end">
             <Button onClick={addPeer} className="w-full">
-                
             </Button>
           </div>
         </div>
@@ -277,6 +273,7 @@ r}</div> : null}
               <span className={l.ok ? "text-emerald-700" : "text-rose-700"}>{l.ok ? "" : ""}</span>{" "}
               <b>{l.peer}</b> — {l.direction === "pull" ? "" : l.direction === "push" ? "" : ""}
               {l.tableName ? ` | ${l.tableName}` : ""}
+
               {l.applied || l.skipped ? ` |  ${toPersianDigits(l.applied)} /  ${toPersianDigits(l.skipped)}` : ""
 }
               {l.detail ? <div className="text-slate-500">{l.detail}</div> : null}
@@ -287,7 +284,6 @@ r}</div> : null}
         </div>
       </Card>
       <Card>
-
         <h3 className="mb-2 text-sm font-bold text-slate-700">  </h3>
         <ol className="list-inside list-decimal space-y-1 text-[11px] leading-6 text-slate-600">
           <li>

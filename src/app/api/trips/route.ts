@@ -1,3 +1,4 @@
+
 import { db } from "@/db";
 import { activityLogs, tripPoints, trips } from "@/db/schema";
 import { getSessionUser } from "@/lib/auth";
@@ -55,7 +56,6 @@ export async function POST(req: Request) {
     .returning();
   if (Number.isFinite(Number(b.lat)) && Number.isFinite(Number(b.lng))) {
     await db.insert(tripPoints).values({
-
       tripId: row.id,
       lat: Number(b.lat),
       lng: Number(b.lng),
@@ -81,6 +81,7 @@ export async function PATCH(req: Request) {
   const rows = await db.select().from(trips).where(eq(trips.id, id)).limit(1);
   const trip = rows[0];
   if (!trip || (user.role !== "admin" && trip.userId !== user.id)) {
+
     return Response.json({ error: "  " }, { status: 404 });
   }
   if (b.action === "end") {

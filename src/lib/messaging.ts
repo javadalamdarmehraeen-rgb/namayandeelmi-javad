@@ -1,3 +1,4 @@
+
 import { db, dbRetrySafe } from "@/db";
 import { messageLogs, messengers, settings } from "@/db/schema";
 import { bonusKeyOf } from "./defaults";
@@ -6,14 +7,14 @@ import { toPersianDigits } from "./jalali";
 import { fetchWithRetry } from "./retry";
 import { eq } from "drizzle-orm";
 /* ============================================================
- *      
+ *
  *
  *  :     (  )
  *
  *  :
- *   -        
- *   -    (Exponential Backoff)   
- *   -       
+ *   -
+ *   -    (Exponential Backoff)
+ *   -
  *   -     (    )
  *   -    /
  * ============================================================ */
@@ -40,6 +41,7 @@ export const WHATSAPP_PROVIDERS = [
     key: "whatsiplus",
     label: " (whatsiplus.ir)",
     hint: " API   whatsiplus.ir | :     ",
+
   },
   {
     key: "ultramsg",
@@ -54,7 +56,6 @@ export const WHATSAPP_PROVIDERS = [
   {
     key: "custom",
     label: " ",
-
     hint: " API   {phone}  {text}  {token}",
   },
 ] as const;
@@ -125,11 +126,11 @@ export async function formatOrderMessage(o: OrderLike, withLocation = true) {
   L.push(` : ${toPersianDigits(o.dateShamsi)}`);
   L.push(` : ${o.repName}`);
   L.push(` : ${o.pharmacyName}`);
+
   if (o.managerName) L.push(` : ${o.managerName}`);
   if (o.managerPhone) L.push(` : ${toPersianDigits(o.managerPhone)}`);
   if (o.address) L.push(`: ${o.address}`);
   if (withLocation && o.lat && o.lng) L.push(`: https://www.google.com/maps?q=${o.lat},${o.lng}`);
-
   L.push("────   ────");
   let totalUnits = 0;
   let totalBonus = 0;
@@ -207,9 +208,9 @@ async function sendEitaa(token: string, chatId: string, text: string) {
     { ...RETRY, label: "" },
   );
   const { raw, json } = await readJson(res);
-
   if (res.ok && json?.ok !== false) return { ok: true, detail: " " };
   return { ok: false, detail: friendly("", res.status, (json?.description as string) ?? raw) };
+
 }
 /**  —    */
 async function sendWhatsapp(m: MessengerTarget, token: string, text: string) {
@@ -221,7 +222,7 @@ async function sendWhatsapp(m: MessengerTarget, token: string, text: string) {
     const url = `${base}/${token}?phonenumber=${encodeURIComponent(digits)}&message=${encodeURIComponent(text)}`;
     const res = await fetchWithRetry(url, { method: "GET" }, { ...RETRY, label: "" });
     const { raw, json } = await readJson(res);
-    // whatsiplus           
+    // whatsiplus
     const okFlag = json ? isTruthy(json.success) ?? isTruthy(json.status) : null;
     const failed = okFlag === false || (json?.message && okFlag !== true);
     return res.ok && !failed
@@ -272,7 +273,7 @@ async function sendWhatsapp(m: MessengerTarget, token: string, text: string) {
     const { raw } = await readJson(res);
     return res.ok ? { ok: true, detail: " " } : { ok: false, detail: friendly("", res.status, raw) };
   }
-  //  
+  //
   if (!m.apiUrl) return { ok: false, detail: "     " };
   const url = m.apiUrl
     .replace("{phone}", encodeURIComponent(digits))
@@ -287,7 +288,6 @@ async function sendWhatsapp(m: MessengerTarget, token: string, text: string) {
 async function sendDirect(m: MessengerTarget, token: string, text: string): Promise<{ ok: boolean; detail: string }> {
   try {
     switch (m.platform) {
-
       case "telegram":
         return await sendBotApi("https://api.telegram.org", token, m.target, text, "");
       case "bale":
@@ -295,6 +295,7 @@ async function sendDirect(m: MessengerTarget, token: string, text: string): Prom
       case "eitaa":
         return await sendEitaa(token, m.target, text);
       case "whatsapp":
+
         return await sendWhatsapp(m, token, text);
       default:
         return { ok: false, detail: "  " };
@@ -361,13 +362,12 @@ export async function sendOne(
   if (token) {
     const direct = await sendDirect(input, token, text);
     if (direct.ok) return { ...direct, via: "direct" };
-    // )       
+    // )
     if (proxy.enabled && proxy.url) {
       const viaProxy = await sendViaProxy(proxy, input, token, text);
       if (viaProxy.ok) return { ...viaProxy, via: "proxy" };
       return { ok: false, detail: `: ${direct.detail} | ${viaProxy.detail}`, via: "none" };
     }
-
     return { ...direct, via: "none" };
   }
   //   (     )
@@ -380,6 +380,7 @@ export async function sendOne(
 /* ------------------------------------------------------------------ */
 /*                                            */
 /* ------------------------------------------------------------------ */
+
 export type DispatchReport = {
   total: number;
   sent: number;
@@ -416,7 +417,7 @@ export async function dispatchText(text: string, orderId?: number): Promise<Disp
         text,
         proxy,
       );
-      //      
+      //
       await dbRetrySafe(
         () =>
           db.insert(messageLogs).values({
@@ -444,7 +445,6 @@ export async function dispatchText(text: string, orderId?: number): Promise<Disp
       return {
         platform: t.platform,
         label: t.label || PLATFORM_LABEL[t.platform] || t.platform,
-
         target: t.target,
         ok: r.ok,
         detail: r.detail,
@@ -465,6 +465,7 @@ export async function dispatchText(text: string, orderId?: number): Promise<Disp
   const sent = results.filter((r) => r.ok).length;
   const summary = results
     .map((r) => `${PLATFORM_LABEL[r.platform] ?? r.platform}: ${r.ok ? "  " : ` ${r.detail}`}`)
+
     .join(" | ");
   return { total: results.length, sent, failed: results.length - sent, summary, results };
 }
@@ -518,7 +519,6 @@ outMs: 15_000 });
       lastErr = err instanceof Error ? err.message : " ";
     }
   }
-
   const proxy = await getProxy();
   if (proxy.enabled && proxy.url) {
     try {

@@ -1,3 +1,4 @@
+
 "use client";
 import type { ReactNode, InputHTMLAttributes, TextareaHTMLAttributes } from "react";
 export function Card({ children, className = "" }: { children: ReactNode; className?: string }) {
@@ -6,7 +7,6 @@ export function Card({ children, className = "" }: { children: ReactNode; classN
       className={`rounded-2xl bg-white/95 p-4 shadow-[0_8px_30px_rgba(15,23,42,0.05)] ring-1 ring-slate-200/90 backdrop-
 blur-sm transition-shadow hover:shadow-[0_12px_36px_rgba(15,23,42,0.075)] sm:p-5 ${className}`}
     >
-
       {children}
     </div>
   );
@@ -42,10 +42,11 @@ export function Field({
 }
 const inputBase =
   "w-full rounded-xl border border-slate-300/90 bg-white px-3 py-2.5 text-sm text-slate-900 shadow-[0_1px_2px_rgba(15,23
-,42,0.03)] outline-none transition placeholder:text-slate-400 hover:border-slate-400 focus:border-teal-500 focus:ring-4 
+,42,0.03)] outline-none transition placeholder:text-slate-400 hover:border-slate-400 focus:border-teal-500 focus:ring-4
 focus:ring-teal-100/70 disabled:bg-slate-100";
 export function Input(props: InputHTMLAttributes<HTMLInputElement>) {
   const { className = "", ...rest } = props;
+
   return <input {...rest} className={`${inputBase} ${className}`} />;
 }
 export function TextArea(props: TextareaHTMLAttributes<HTMLTextAreaElement>) {
@@ -85,7 +86,6 @@ export function Button({
       disabled={disabled}
       className={`inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-bold transition disa
 bled:cursor-not-allowed disabled:opacity-50 ${styles[variant]} ${className}`}
-
     >
       {children}
     </button>

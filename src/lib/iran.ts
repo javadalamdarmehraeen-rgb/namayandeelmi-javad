@@ -1,5 +1,6 @@
+
 /**
- *    —        
+ *    —
  * (          )
  */
 export const IRAN: Record<string, string[]> = {
@@ -42,6 +43,7 @@ export const IRAN: Record<string, string[]> = {
     "", "", "",
   ],
   : [
+
     "", "", "", "", "", "", "", "", "",
     "", "", "", "", "", "", "  ",
     "", "", "", "", "", "", "", "",
@@ -79,7 +81,6 @@ export const IRAN: Record<string, string[]> = {
   ],
   : [
     "", " ", " ", "", "", " ", "",
-
     "", "", "", " ", "", "", "", "",
     " ", "",
   ],
@@ -127,6 +128,7 @@ export const IRAN: Record<string, string[]> = {
     "", "", "", "", "", "", "", "",
     "", "", "", "", "", "",
   ],
+
   : ["", "", "", "", "", "", "", "", "", "", "", "
 "],
 };
@@ -164,7 +166,6 @@ export const REGIONS: Record<string, string[]> = {
   : Array.from({ length: 2 }, (_, i) => ` ${i + 1}`),
   : Array.from({ length: 2 }, (_, i) => ` ${i + 1}`),
   : Array.from({ length: 3 }, (_, i) => ` ${i + 1}`),
-
   : Array.from({ length: 3 }, (_, i) => ` ${i + 1}`),
   : Array.from({ length: 2 }, (_, i) => ` ${i + 1}`),
   : Array.from({ length: 2 }, (_, i) => ` ${i + 1}`),

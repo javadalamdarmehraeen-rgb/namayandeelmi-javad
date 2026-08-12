@@ -1,6 +1,6 @@
+
 "use client";
 import { useEffect, useState } from "react";
-
 import { createPortal } from "react-dom";
 type App = {
   key: string;
@@ -9,6 +9,7 @@ type App = {
   /**      */
   scheme?: (lat: number, lng: number, name: string) => string;
   /**     */
+
   web: (lat: number, lng: number, name: string) => string;
   platforms?: ("android" | "ios" | "desktop")[];
 };
@@ -83,7 +84,6 @@ function platform(): "android" | "ios" | "desktop" {
   if (/iPhone|iPad|iPod/i.test(ua)) return "ios";
   return "desktop";
 }
-
 /**   —         */
 export default function NavButton({
   lat,
@@ -94,6 +94,7 @@ export default function NavButton({
   lat?: number | null;
   lng?: number | null;
   label?: string;
+
   compact?: boolean;
 }) {
   const [open, setOpen] = useState(false);
@@ -117,13 +118,13 @@ export default function NavButton({
   const go = (a: App) => {
     setOpen(false);
     const webUrl = a.web(lat, lng, name);
-    //       
+    //
     if (plat === "desktop" || !a.scheme) {
       const w = window.open(webUrl, "_blank", "noopener,noreferrer");
-      if (!w) window.location.href = webUrl; //    
+      if (!w) window.location.href = webUrl; //
       return;
     }
-    //              
+    //
     const started = Date.now();
     const fb = setTimeout(() => {
       if (!document.hidden && Date.now() - started < 2500) window.open(webUrl, "_blank", "noopener");
@@ -160,8 +161,7 @@ export default function NavButton({
       <div
         className={
           mobileMenu
-            ? "fade-in fixed inset-x-3 bottom-3 max-h-[78vh] overflow-y-auto rounded-3xl bg-white p-3 shadow-2xl ring-1 
-
+            ? "fade-in fixed inset-x-3 bottom-3 max-h-[78vh] overflow-y-auto rounded-3xl bg-white p-3 shadow-2xl ring-1
 ring-white/80"
             : "fade-in fixed w-60 max-h-[75vh] overflow-y-auto rounded-2xl bg-white p-2 shadow-2xl ring-1 ring-slate-200
 "
@@ -179,12 +179,12 @@ ring-white/80"
           </div>
           <button
             type="button"
+
             onClick={() => setOpen(false)}
             className="flex size-8 items-center justify-center rounded-full bg-slate-100 text-sm font-bold text-slate-60
 0"
             aria-label=""
           >
-            
           </button>
         </div>
         <div className={mobileMenu ? "grid grid-cols-2 gap-2" : "space-y-1"}>
@@ -212,7 +212,6 @@ ring-white/80"
               className="rounded-xl bg-sky-50 px-3 py-2.5 text-right text-[11px] font-bold text-sky-700 ring-1 ring-sky-
 200"
             >
-               
             </button>
           ) : null}
           <button
@@ -221,7 +220,6 @@ ring-white/80"
             className="rounded-xl bg-slate-100 px-3 py-2.5 text-right text-[11px] font-bold text-slate-700 ring-1 ring-s
 late-200"
           >
-              
           </button>
         </div>
       </div>
@@ -244,7 +242,6 @@ late-200"
                 ? r.bottom + 6
                 : Math.max(8, r.top - estimatedHeight - 6);
             setPos({ top, left });
-
             setOpen(true);
           }}
           title=" "
@@ -253,7 +250,6 @@ late-200"
             compact ? "px-2.5 py-1.5 text-[11px]" : "px-4 py-2.5 text-xs"
           }`}
         >
-           
         </button>
       </span>
       {mounted && menu ? createPortal(menu, document.body) : null}

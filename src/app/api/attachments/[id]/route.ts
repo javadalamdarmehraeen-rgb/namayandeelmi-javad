@@ -1,3 +1,4 @@
+
 import { db } from "@/db";
 import { attachments } from "@/db/schema";
 import { getSessionUser } from "@/lib/auth";
@@ -15,6 +16,7 @@ export async function GET(req: Request, ctx: { params: Promise<{ id: string }> }
   const isAdmin = user?.role === "admin" || user?.role === "supervisor";
   if (!user || (!isAdmin && f.userId !== user.id)) return new Response("forbidden", { status: 403 });
   const download = new URL(req.url).searchParams.get("download") === "1";
+
   const buffer = Buffer.from(f.data, "base64");
   const bytes = new Uint8Array(buffer);
   return new Response(bytes, {

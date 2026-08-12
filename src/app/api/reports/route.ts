@@ -1,3 +1,4 @@
+
 import { db, dbRetry } from "@/db";
 import { doctors, orders, pharmacies, trips } from "@/db/schema";
 import { getSessionUser } from "@/lib/auth";
@@ -44,6 +45,7 @@ export async function GET(req: Request) {
   const map = new Map<string, MonthlyRow>();
   const key = (d: string, rep: string) => `${d.slice(0, 7)}|${rep}`;
   const get = (d: string, rep: string) => {
+
     const k = key(d, rep);
     let row = map.get(k);
     if (!row) {
@@ -73,10 +75,9 @@ export async function GET(req: Request) {
     }
   }
   const rows = [...map.values()].sort((a, b) =>
-
     a.period === b.period ? a.repName.localeCompare(b.repName) : b.period.localeCompare(a.period),
   );
-  //   :     
+  //   :
   const productTotals: Record<string, Record<string, number>> = {};
   const productByRep: {
     period: string;

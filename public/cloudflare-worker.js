@@ -1,10 +1,11 @@
+
 /**
  * ============================================================
  *       «  »
  *  Cloudflare Worker —   (   )
  * ------------------------------------------------------------
  *        :
- *   )   chat_id      →   
+ *   )   chat_id      →
  *               .
  *   )          .
  *   )    (WhatsApp Cloud API).
@@ -22,7 +23,7 @@ const CONFIG = {
   ITA_CHAT_ID: "",
   WHATSAPP_TOKEN: "", //   phoneNumberId:accessToken
   WHATSAPP_TO: "",
-  //        x-proxy-secret     
+  //        x-proxy-secret
   PROXY_SECRET: "",
 };
 const CORS = {
@@ -34,6 +35,7 @@ const json = (obj, status = 200) =>
   new Response(JSON.stringify(obj), {
     status,
     headers: { "Content-Type": "application/json; charset=utf-8", ...CORS },
+
   });
 export default {
   async fetch(request) {
@@ -70,7 +72,6 @@ export default {
     }
     const messenger = String(body.messenger || body.platform || "").toLowerCase();
     const text = body.text;
-
     const chatId = body.chatId || body.chat_id;
     const token = body.token;
     if (!messenger) return json({ success: false, error: ' "messenger"  ' }, 400);
@@ -119,6 +120,7 @@ async function sendTelegram(text, chatId, token) {
   const tk = token || CONFIG.TELEGRAM_BOT_TOKEN;
   const cid = chatId || CONFIG.TELEGRAM_CHAT_ID;
   if (!tk || !cid) throw new Error("  chat_id    ");
+
   const { data } = await postJson(`https://api.telegram.org/bot${tk}/sendMessage`, { chat_id: cid, text });
   if (data.ok === false) throw new Error(data.description || "    ");
   return data;
@@ -150,7 +152,6 @@ async function sendEitaa(text, chatId, token) {
     headers: { "Content-Type": "application/x-www-form-urlencoded" },
     body: new URLSearchParams({ chat_id: cid, text }).toString(),
   });
-
   const raw = await res.text();
   let data;
   try {
@@ -204,6 +205,7 @@ async function sendWhatsappCloud(text, to, token) {
     headers: { "Content-Type": "application/json", Authorization: `Bearer ${accessToken}` },
     body: JSON.stringify({
       messaging_product: "whatsapp",
+
       recipient_type: "individual",
       to: target,
       type: "text",

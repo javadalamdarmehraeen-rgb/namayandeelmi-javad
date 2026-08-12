@@ -1,7 +1,8 @@
+
 import { fetchWithRetry } from "@/lib/retry";
 export const dynamic = "force-dynamic";
 /**
- *   OpenStreetMap. /Service Worker     
+ *   OpenStreetMap. /Service Worker
  *              .
  */
 export async function GET(_req: Request, ctx: { params: Promise<{ z: string; x: string; y: string }> }) {
@@ -15,6 +16,7 @@ export async function GET(_req: Request, ctx: { params: Promise<{ z: string; x: 
       headers: { "User-Agent": "SabtEtelaatKol/1.0 (offline map cache)" },
     }, { retries: 2, timeoutMs: 12000, label: "tile" });
     if (!res.ok) return new Response("tile unavailable", { status: res.status });
+
     const bytes = new Uint8Array(await res.arrayBuffer());
     return new Response(bytes, {
       headers: {
@@ -24,7 +26,7 @@ export async function GET(_req: Request, ctx: { params: Promise<{ z: string; x: 
       },
     });
   } catch {
-    //  /      
+    //  /
     return new Response(null, { status: 204, headers: { "Cache-Control": "no-store" } });
   }
 }

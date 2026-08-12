@@ -1,10 +1,11 @@
+
 "use client";
 import { useCallback, useEffect, useState } from "react";
-
 import { Alert, Badge, Button, Card, Field, Input, SectionTitle, TextArea } from "@/components/ui";
 import { useSession } from "@/components/SessionProvider";
 import { tehranDateTime, toPersianDigits } from "@/lib/jalali";
 import { useLive } from "@/lib/useLive";
+
 import { useConfirm } from "@/components/Confirm";
 type N = {
   id: number;
@@ -43,7 +44,7 @@ export default function NotificationScreen() {
     if (
       !(await confirm({
         title: " ",
-        message: isRep ? "    " : Number(to) ? "     " : "   
+        message: isRep ? "    " : Number(to) ? "     " : "
   ",
         confirmText: "",
       }))
@@ -75,9 +76,7 @@ export default function NotificationScreen() {
       <div className="flex items-center justify-between">
         <SectionTitle icon="">  </SectionTitle>
         <Button variant="ghost" onClick={markAll}>
-           
         </Button>
-
       </div>
       {msg ? <Alert kind="success">{msg}</Alert> : null}
       <Card>
@@ -90,6 +89,7 @@ export default function NotificationScreen() {
           </Field>
           <Field label=" ">
             <TextArea value={body} onChange={(e) => setBody(e.target.value)} />
+
           </Field>
           {!isRep ? (
             <Field label="">

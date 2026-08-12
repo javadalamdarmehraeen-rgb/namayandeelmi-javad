@@ -1,3 +1,4 @@
+
 import { db } from "@/db";
 import { notifications } from "@/db/schema";
 type NotifyInput = {
@@ -19,6 +20,7 @@ export async function notify(input: NotifyInput) {
       kind: input.kind ?? "info",
       title: input.title.slice(0, 200),
       body: (input.body ?? "").slice(0, 2000),
+
       link: (input.link ?? "").slice(0, 200),
     });
   } catch {

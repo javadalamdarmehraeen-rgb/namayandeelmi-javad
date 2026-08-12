@@ -1,10 +1,10 @@
+
 /**   :       */
 const collator = new Intl.Collator("fa", {
   numeric: true,
   sensitivity: "base",
   ignorePunctuation: true,
 });
-
 export function faCompare(a: string, b: string) {
   return collator.compare(String(a ?? ""), String(b ?? ""));
 }

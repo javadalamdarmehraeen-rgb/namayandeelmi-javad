@@ -1,3 +1,4 @@
+
 import { db, dbRetry } from "@/db";
 import { activityLogs, attachments, doctors, orders, pharmacies, settings } from "@/db/schema";
 import { getSessionUser } from "@/lib/auth";
@@ -10,7 +11,7 @@ const num = (v: unknown): number | null => {
 };
 const str = (v: unknown, max = 0) => {
   const t = String(v ?? "").trim();
-  return max > 0 ? t.slice(0, max) : t; // max=0    
+  return max > 0 ? t.slice(0, max) : t; // max=0
 };
 export async function GET(req: Request, ctx: Ctx) {
   const user = await getSessionUser();
@@ -20,6 +21,7 @@ export async function GET(req: Request, ctx: Ctx) {
   const userIdFilter = url.searchParams.get("userId");
   const isAdmin = user.role === "admin" || user.role === "supervisor";
   const limit = Math.min(Number(url.searchParams.get("limit")) || 300, 1000);
+
   try {
     if (type === "pharmacies") {
       const w: SQL | undefined = !isAdmin
@@ -54,7 +56,6 @@ export async function GET(req: Request, ctx: Ctx) {
       const rows = await dbRetry(
         () => db.select().from(orders).where(w).orderBy(desc(orders.id)).limit(limit),
         "orders:list",
-
       );
       return Response.json({ rows });
     }
@@ -105,6 +106,7 @@ export async function POST(req: Request, ctx: Ctx) {
       const phFiles: number[] = Array.isArray(body.fileIds)
         ? body.fileIds.map(Number).filter((n: number) => Number.isFinite(n))
         : [];
+
       if (phFiles.length) {
         await db
           .update(attachments)
@@ -138,7 +140,6 @@ export async function POST(req: Request, ctx: Ctx) {
         })
         .returning();
       const fileIds: number[] = Array.isArray(body.fileIds)
-
         ? body.fileIds.map(Number).filter((n: number) => Number.isFinite(n))
         : [];
       if (fileIds.length) {
@@ -190,6 +191,7 @@ export async function POST(req: Request, ctx: Ctx) {
               managerPhone: row.managerPhone,
               address: row.address,
               lat: row.lat,
+
               lng: row.lng,
               items: row.items ?? {},
               distributor: row.distributor,
@@ -221,7 +223,6 @@ export async function POST(req: Request, ctx: Ctx) {
 /**         (: ) */
 async function getAutoSend(): Promise<boolean> {
   try {
-
     const rows = await db.select().from(settings).where(eq(settings.key, "autoSendOrders")).limit(1);
     const v = rows[0]?.value as { enabled?: boolean } | boolean | undefined;
     if (typeof v === "boolean") return v;
@@ -275,6 +276,7 @@ export async function PATCH(req: Request, ctx: Ctx) {
       setIf("city", body.city !== undefined ? str(body.city, 100) : undefined);
       setIf("region", body.region !== undefined ? str(body.region, 100) : undefined);
       setIf("name", body.name !== undefined ? str(body.name) : undefined);
+
       setIf("specialty", body.specialty !== undefined ? str(body.specialty, 160) : undefined);
       setIf("phone", body.phone !== undefined ? str(body.phone, 20) : undefined);
       setIf("secretaryName", body.secretaryName !== undefined ? str(body.secretaryName, 160) : undefined);
@@ -303,7 +305,6 @@ export async function PATCH(req: Request, ctx: Ctx) {
         const items: Record<string, number> = {};
         for (const [k, v] of Object.entries(body.items as Record<string, unknown>)) {
           const n = Number(v);
-
           if (Number.isFinite(n) && n !== 0) items[k] = n;
         }
         patch.items = items;

@@ -1,3 +1,4 @@
+
 export async function register() {
   if (process.env.NEXT_RUNTIME !== "nodejs") return;
   try {
@@ -6,7 +7,7 @@ export async function register() {
   } catch (err) {
     console.error("instrumentation bootstrap failed", err);
   }
-  //      
+  //
   try {
     const { configuredPeers, syncSecret } = await import("@/lib/sync-config");
     if (configuredPeers().length === 0 || !syncSecret()) return;
@@ -24,7 +25,7 @@ export async function register() {
         console.error("[sync]   :", err instanceof Error ? err.message : err);
       }
     };
-    //         
+    //
     setTimeout(run, 25_000);
     g.__sekSyncTimer = setInterval(run, minutes * 60_000);
     console.log(`    ${minutes}   `);

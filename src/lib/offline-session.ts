@@ -1,9 +1,10 @@
+
 "use client";
 /**
  *            .
  *      :
  *   sessionStorage →    (    =  )
- *   localStorage   →   «   »      
+ *   localStorage   →   «   »
  */
 export type CachedUser = {
   id: number;
@@ -16,7 +17,6 @@ export type CachedUser = {
   requirePhone: boolean;
   permissions: string[];
 };
-
 const TOKEN_TAB = "sek_token";
 const TOKEN_PERSIST = "sek_token_p";
 const USER_CACHE = "sek_user_cache";
@@ -72,9 +72,10 @@ export function getCachedUser(): CachedUser | null {
   const at = Number(safeGet(localStorage, CACHE_AT) ?? 0);
   if (!raw) return null;
   if (at && Date.now() - at > MAX_AGE) return null;
-  //            
+  //
   if (!getToken()) return null;
   try {
+
     return JSON.parse(raw) as CachedUser;
   } catch {
     return null;

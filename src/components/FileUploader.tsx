@@ -1,3 +1,4 @@
+
 "use client";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Badge, Button } from "./ui";
@@ -40,7 +41,6 @@ export function FileList({
   return (
     <div className={`grid gap-2 ${compact ? "grid-cols-2 sm:grid-cols-3" : "grid-cols-1 sm:grid-cols-2"}`}>
       {files.map((f) => (
-
         <div key={f.id} className="rounded-xl bg-slate-50 p-2 ring-1 ring-slate-200">
           {f.mimeType.startsWith("image/") ? (
             // eslint-disable-next-line @next/next/no-img-element
@@ -66,26 +66,23 @@ export function FileList({
               rel="noreferrer"
               className="rounded-lg bg-sky-100 px-2 py-1 text-[10px] font-bold text-sky-700"
             >
-               
             </a>
             <a
               href={`/api/attachments/${f.id}?download=1`}
               className="rounded-lg bg-emerald-100 px-2 py-1 text-[10px] font-bold text-emerald-700"
             >
-               
             </a>
             <button
               onClick={() => printFile(f.id, f.mimeType)}
               className="rounded-lg bg-slate-200 px-2 py-1 text-[10px] font-bold text-slate-700"
             >
-               
             </button>
             {onDelete ? (
+
               <button
                 onClick={() => onDelete(f.id)}
                 className="rounded-lg bg-rose-100 px-2 py-1 text-[10px] font-bold text-rose-700"
               >
-                
               </button>
             ) : null}
           </div>
@@ -121,7 +118,6 @@ export default function FileUploader({
   useEffect(() => {
     load();
   }, [load]);
-
   const upload = async (list: FileList | null) => {
     if (!list?.length) return;
     setErr("");
@@ -166,6 +162,7 @@ export default function FileUploader({
           accept="image/*,application/pdf,.doc,.docx,.xls,.xlsx"
           onChange={(e) => upload(e.target.files)}
           className="hidden"
+
           id={`file-${ownerType}`}
         />
         <Button variant="soft" onClick={() => inputRef.current?.click()} disabled={busy}>

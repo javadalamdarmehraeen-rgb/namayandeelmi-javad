@@ -1,8 +1,9 @@
+
 {
   "id": "/?source=pwa",
   "name": "   —   ",
   "short_name": " ",
-  "description": "                
+  "description": "
       .",
   "start_url": "/?source=pwa",
   "scope": "/",
@@ -31,6 +32,7 @@
       "sizes": "96x96",
       "type": "image/png",
       "purpose": "any"
+
     },
     {
       "src": "/icons/icon-128.png",
@@ -72,7 +74,6 @@
       "src": "/icons/icon-384.png",
       "sizes": "384x384",
       "type": "image/png",
-
       "purpose": "any"
     },
     {
@@ -116,6 +117,7 @@
       "label": "     "
     },
     {
+
       "src": "/screenshots/mobile-720x1280.png",
       "sizes": "720x1280",
       "type": "image/png",
@@ -158,7 +160,6 @@
           "sizes": "192x192",
           "type": "image/png"
         }
-
       ]
     },
     {

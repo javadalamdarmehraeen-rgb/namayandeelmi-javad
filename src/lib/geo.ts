@@ -1,10 +1,11 @@
+
 /**
  * ============================================================
- *      
+ *
  * ------------------------------------------------------------
  *         :
- *   •    / 
- *   •         
+ *   •    /
+ *   •
  * ============================================================
  */
 export type GeoArea = {
@@ -41,7 +42,6 @@ export const PROVINCE_EN_FA: Record<string, string> = {
   Markazi: "",
   Lorestan: "",
   Kurdistan: "",
-
   Hormozgan: "",
   Bushehr: "",
   Semnan: "",
@@ -81,6 +81,7 @@ export const PROVINCE_GEO: Record<string, GeoArea> = {
   : { name: "", lat: 38.2498, lng: 48.2933, zoom: 9, radiusKm: 90 },
   : { name: "", lat: 36.2688, lng: 50.0041, zoom: 9, radiusKm: 70 },
   : { name: "", lat: 36.6736, lng: 48.4787, zoom: 9, radiusKm: 90 },
+
   : { name: "", lat: 34.0917, lng: 49.6892, zoom: 9, radiusKm: 100 },
   : { name: "", lat: 33.4878, lng: 48.3558, zoom: 9, radiusKm: 100 },
   : { name: "", lat: 35.3219, lng: 46.9862, zoom: 9, radiusKm: 100 },
@@ -124,7 +125,6 @@ export const CITY_GEO: Record<string, GeoArea> = {
   : { name: "", lat: 32.3266, lng: 50.8644, zoom: 12, radiusKm: 10 },
   : { name: "", lat: 37.4747, lng: 57.329, zoom: 12, radiusKm: 10 },
   : { name: "", lat: 32.8649, lng: 59.2211, zoom: 12, radiusKm: 10 },
-
   : { name: "", lat: 33.6374, lng: 46.4227, zoom: 12, radiusKm: 10 },
   : { name: "", lat: 30.6682, lng: 51.5876, zoom: 12, radiusKm: 10 },
   : { name: "", lat: 35.5729, lng: 53.3971, zoom: 12, radiusKm: 10 },
@@ -166,6 +166,7 @@ function norm(s: string) {
 /**      ( « ») */
 function toEn(s: string) {
   return s.replace(/[\u06F0-\u06F9]/g, (c) => String(c.charCodeAt(0) - 0x06f0));
+
 }
 /**
  *       /  / .
@@ -203,5 +204,4 @@ export function provinceOf(point: { lat: number; lng: number }): string {
   }
   return best;
 }
-
 export const PROVINCE_NAMES = Object.keys(PROVINCE_GEO);

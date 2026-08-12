@@ -1,3 +1,5 @@
+
+
 "use client";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Badge, Button, Card, Input, SectionTitle } from "@/components/ui";
@@ -31,7 +33,6 @@ export default function ActivityPage() {
     const d = await res.json();
     setLogs(d.logs ?? []);
     setReps(d.reps ?? []);
-
   }, []);
   useLive(load, 12000, live);
   const filtered = useMemo(
@@ -83,6 +84,7 @@ export default function ActivityPage() {
               }`}
             >
               <div className="flex flex-wrap items-center gap-1">
+
                 <span className="text-sm font-bold text-slate-800">{r.fullName}</span>
                 {r.activeTrip > 0 ? <Badge tone="green">   </Badge> : null}
                 {!r.active ? <Badge tone="amber"></Badge> : null}
@@ -107,9 +109,7 @@ export default function ActivityPage() {
           <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
             <h3 className="text-sm font-black text-teal-800">   «{rep}»</h3>
             <Button variant="ghost" onClick={() => setRep("")}>
-                
             </Button>
-
           </div>
           <div className="mb-3 grid grid-cols-2 gap-2 sm:grid-cols-4">
             {(() => {
@@ -168,6 +168,7 @@ n>
             <div key={l.id} className="flex flex-wrap items-center gap-2 rounded-xl bg-slate-50 px-3 py-2 text-xs">
               <span className="font-bold text-slate-800">{l.userName}</span>
               <span className="rounded-lg bg-teal-100 px-2 py-0.5 text-[10px] font-bold text-teal-700">{l.action}</span>
+
               {l.detail ? <span className="text-slate-600">{l.detail}</span> : null}
               <span className="mr-auto text-[10px] text-slate-400">{tehranDateTime(l.createdAt)}</span>
             </div>

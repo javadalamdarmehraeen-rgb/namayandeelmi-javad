@@ -1,9 +1,10 @@
+
 #!/usr/bin/env node
 /**
  *       build.
  *
- *       React   HTML  
- *    .   HTML    
+ *       React   HTML
+ *    .   HTML
  *  ()       .
  *     JS/CSS  build     .
  */
@@ -24,6 +25,7 @@ function walk(dir, base) {
   }
   return out;
 }
+
 const PAGES = [
   "/",
   "/login",
@@ -55,7 +57,6 @@ const PAGES = [
   "/admin/reports",
   "/admin/options",
   "/admin/columns",
-
   "/admin/users",
   "/admin/messengers",
   "/admin/backup",
@@ -75,13 +76,13 @@ function main() {
   }
   const assets = walk(NEXT_STATIC, "/_next/static")
     .filter((a) => /\.(js|css|woff2?)$/i.test(a.url))
-    //    (   )     
+    //    (   )
     .filter((a) => a.size < 700 * 1024)
     .map((a) => a.url)
     .sort();
   const total = walk(NEXT_STATIC, "/_next/static").reduce((s, a) => s + a.size, 0);
   const build = `${Date.now().toString(36)}-${assets.length}`;
-  //  RSC          
+  //  RSC
   const rscPages = PAGES.map((p) => `${p}${p.includes("?") ? "&" : "?"}_rsc=offline`);
   let sw = readFileSync(SW_SRC, "utf8");
   sw = sw
@@ -92,7 +93,7 @@ function main() {
     .replace("__EXTRAS__", JSON.stringify(EXTRAS, null, 2));
   writeFileSync(SW_OUT, sw);
   console.log(
-    `   : ${PAGES.length}  + ${assets.length}   (${Math.round(total / 1024)} ) 
+    `   : ${PAGES.length}  + ${assets.length}   (${Math.round(total / 1024)} )
  `,
   );
 }

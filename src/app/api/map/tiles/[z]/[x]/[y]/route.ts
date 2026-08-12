@@ -1,11 +1,12 @@
+
 import { fetchWithRetry } from "@/lib/retry";
 export const dynamic = "force-dynamic";
 export const revalidate = 86400;
 /**
  *       403   .
  *
- *     tile.openstreetmap.org    
- *      Route     User-Agent   
+ *     tile.openstreetmap.org
+ *      Route     User-Agent
  *  .          .
  */
 const SOURCES = [
@@ -37,7 +38,6 @@ xt>
   });
 }
 export async function GET(
-
   _req: Request,
   ctx: { params: Promise<{ z: string; x: string; y: string }> },
 ) {
@@ -68,6 +68,7 @@ export async function GET(
       if (!res.ok) continue;
       const type = res.headers.get("content-type") ?? "";
       if (!type.startsWith("image/")) continue;
+
       const bytes = new Uint8Array(await res.arrayBuffer());
       if (bytes.length < 50) continue;
       return new Response(bytes, {
@@ -80,7 +81,7 @@ export async function GET(
         },
       });
     } catch {
-      //  
+      //
     }
   }
   return fallbackTile(z, x, y);

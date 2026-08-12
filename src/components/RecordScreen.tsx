@@ -1,3 +1,4 @@
+
 "use client";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import dynamicImport from "next/dynamic";
@@ -22,6 +23,7 @@ import { useConfirm } from "@/components/Confirm";
 import { useLive } from "@/lib/useLive";
 import { downloadFile } from "@/lib/download";
 const MapBox = dynamicImport(() => import("./MapBox"), { ssr: false });
+
 export type RecordType = "pharmacies" | "doctors" | "orders";
 export type Row = {
   id: number;
@@ -69,7 +71,6 @@ type DupRow = {
   managerPhone?: string;
   address?: string;
   lat?: number | null;
-
   lng?: number | null;
   accuracy?: number | null;
   isPercent?: boolean;
@@ -107,6 +108,7 @@ const emptyForm = (): Record<string, string> => ({
   managerPhone: "",
   address: "",
   specialty: "",
+
   phone: "",
   secretaryName: "",
   secretaryPhone: "",
@@ -149,7 +151,6 @@ export default function RecordScreen({ type, isAdmin = false }: { type: RecordTy
   const [targets, setTargets] = useState<TargetRow[]>([]);
   const [editRow, setEditRow] = useState<Row | null>(null);
   const [editDraft, setEditDraft] = useState<Record<string, string>>({});
-
   const [editItems, setEditItems] = useState<Record<string, number>>({});
   const [columns, setColumns] = useState<ColumnConfig[]>(DEFAULT_COLUMNS[type]);
   const [formFields, setFormFields] = useState<FormFieldConfig[]>(DEFAULT_FORM_FIELDS[type]);
@@ -182,16 +183,17 @@ export default function RecordScreen({ type, isAdmin = false }: { type: RecordTy
     setProducts((v.products as ProductConfig[])?.filter((p) => p.enabled) ?? DEFAULT_PRODUCTS);
     /**
      *     .
-     *          
-     *     ( «»)    
+     *
+     *     ( «»)
      *          .
      */
     const stored = v[`columns.${type}`] as ColumnConfig[] | undefined;
     const defaults = DEFAULT_COLUMNS[type];
     if (Array.isArray(stored) && stored.length) {
       const have = new Set(stored.map((c) => c.key));
-      //          
+      //
       //         .
+
       const mandatory = defaults.filter((c) => c.key === "actions" && !have.has(c.key));
       setColumns([...stored, ...mandatory]);
     } else {
@@ -211,7 +213,7 @@ export default function RecordScreen({ type, isAdmin = false }: { type: RecordTy
     loadOptions();
     loadSettings();
   }, [loadOptions, loadSettings]);
-  //        
+  //
   useLive(loadRows, 15000, tab === "list");
   const recordName = type === "orders" ? form.pharmacyName : form.name;
   const showField = (key: string) => formFields.some((f) => f.key === key && f.visible);
@@ -224,8 +226,7 @@ export default function RecordScreen({ type, isAdmin = false }: { type: RecordTy
       setMsg({ kind: "error", text: `${meta.nameLabel}  ` });
       return;
     }
-    //      
-
+    //
     if (type !== "orders" && dupes.length > 0) {
       const ok = await confirm({
         title: "  ",
@@ -277,6 +278,7 @@ export default function RecordScreen({ type, isAdmin = false }: { type: RecordTy
       loadRows();
       loadTargets();
       setTab("list");
+
     } else {
       const d = await res.json().catch(() => ({}));
       setMsg({ kind: "error", text: d.error ?? "   " });
@@ -291,7 +293,7 @@ export default function RecordScreen({ type, isAdmin = false }: { type: RecordTy
     if (
       !(await confirm({
         title: "   ",
-        message: `${toPersianDigits(ids.length)}   ${type === "orders" ? "      
+        message: `${toPersianDigits(ids.length)}   ${type === "orders" ? "
  ." : ""}`,
         confirmText: "",
       }))
@@ -310,7 +312,6 @@ export default function RecordScreen({ type, isAdmin = false }: { type: RecordTy
       setMsg({
         kind: "success",
         text:
-
           type === "orders"
             ? `  .  : ${d.status ?? "—"}`
             : ` ${toPersianDigits(ids.length)}     `,
@@ -362,6 +363,7 @@ city ?? ""} ${r.province ?? ""} ${r.managerPhone ?? ""} ${r.phone ?? ""}`;
     lines.push(` : ${r.distributor ?? ""}`);
     lines.push(` : ${r.visitor ?? ""}`);
     if (r.notes) lines.push(`: ${r.notes}`);
+
     return lines.join("\n");
   };
   /* ----        ---- */
@@ -387,7 +389,6 @@ city ?? ""} ${r.province ?? ""} ${r.managerPhone ?? ""} ${r.phone ?? ""}`;
       setHistory(null);
       setSuggestion(null);
       return;
-
     }
     const t = setTimeout(async () => {
       const q = new URLSearchParams({ type, name: n, phone: lookupPhone ?? "" });
@@ -447,6 +448,7 @@ city ?? ""} ${r.province ?? ""} ${r.managerPhone ?? ""} ${r.phone ?? ""}`;
       otherAddresses: r.otherAddresses ?? "",
       distributor: r.distributor ?? "",
       visitor: r.visitor ?? "",
+
       notes: r.notes ?? "",
       percentValue: r.percentValue ?? "",
     });
@@ -470,7 +472,6 @@ city ?? ""} ${r.province ?? ""} ${r.managerPhone ?? ""} ${r.phone ?? ""}`;
     });
     setBusy(false);
     const d = await res.json().catch(() => ({}));
-
     if (res.ok) {
       setMsg({ kind: "success", text: "   " });
       setEditRow(null);
@@ -532,6 +533,7 @@ city ?? ""} ${r.province ?? ""} ${r.managerPhone ?? ""} ${r.phone ?? ""}`;
       case "location":
         return r.lat && r.lng ? (
           <Badge tone="green">{r.accuracy ? `${toPersianDigits(Math.round(r.accuracy))}` : ""}</Badge>
+
         ) : (
           <Badge tone="amber"></Badge>
         );
@@ -547,15 +549,12 @@ city ?? ""} ${r.province ?? ""} ${r.managerPhone ?? ""} ${r.phone ?? ""}`;
               className="rounded-lg bg-sky-100 px-2 py-1 text-[10px] font-bold text-sky-700"
               title=""
             >
-               
             </button>
             <button
               onClick={() => removeRow(r)}
-
               className="rounded-lg bg-rose-100 px-2 py-1 text-[10px] font-bold text-rose-700"
               title=""
             >
-               
             </button>
           </div>
         );
@@ -566,7 +565,6 @@ city ?? ""} ${r.province ?? ""} ${r.managerPhone ?? ""} ${r.phone ?? ""}`;
       case "files":
         return (
           <button onClick={() => setDetail(r)} className="text-[11px] font-bold text-sky-700 underline">
-             
           </button>
         );
       case "createdAt":
@@ -586,7 +584,7 @@ city ?? ""} ${r.province ?? ""} ${r.managerPhone ?? ""} ${r.phone ?? ""}`;
               .filter((p) => (r.items?.[p.key] ?? 0) || (r.items?.[bonusKeyOf(p.key)] ?? 0))
               .map(
                 (p) =>
-                  `${p.label}: ${toPersianDigits(r.items?.[p.key] ?? 0)}+${toPersianDigits(r.items?.[bonusKeyOf(p.key)] 
+                  `${p.label}: ${toPersianDigits(r.items?.[p.key] ?? 0)}+${toPersianDigits(r.items?.[bonusKeyOf(p.key)]
 ?? 0)}`,
               )
               .join(" | ") || "—"}
@@ -612,11 +610,11 @@ city ?? ""} ${r.province ?? ""} ${r.managerPhone ?? ""} ${r.phone ?? ""}`;
             onClick={() => setTab("form")}
             className={`rounded-lg px-3 py-1.5 ${tab === "form" ? "bg-white text-teal-700 shadow" : "text-slate-600"}`}
           >
-             
           </button>
           <button
             onClick={() => setTab("list")}
             className={`rounded-lg px-3 py-1.5 ${tab === "list" ? "bg-white text-teal-700 shadow" : "text-slate-600"}`}
+
           >
              ({toPersianDigits(rows.length)})
           </button>
@@ -627,13 +625,12 @@ city ?? ""} ${r.province ?? ""} ${r.managerPhone ?? ""} ${r.phone ?? ""}`;
         <Card>
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {showField("dateShamsi") ? (
-              <Field label={type === "orders" ? " " : " "} required hint="      
+              <Field label={type === "orders" ? " " : " "} required hint="
   ">
                 <JalaliDateInput value={form.dateShamsi} onChange={(v) => set("dateShamsi", v)} />
               </Field>
             ) : null}
             {type !== "orders" ? (
-
               <>
                 {showField("province") ? (
                   <Field label=" " required hint="   —   ">
@@ -702,6 +699,7 @@ city ?? ""} ${r.province ?? ""} ${r.managerPhone ?? ""} ${r.phone ?? ""}`;
                 {showField("specialty") ? (
                   <Field label="" hint=" +   +  ">
                     <Combobox
+
                       value={form.specialty}
                       onChange={(v) => set("specialty", v)}
                       options={opts.specialty ?? []}
@@ -718,7 +716,6 @@ city ?? ""} ${r.province ?? ""} ${r.managerPhone ?? ""} ${r.phone ?? ""}`;
                 {showField("secretaryName") ? (
                   <Field label=" ">
                     <Combobox
-
                       value={form.secretaryName}
                       onChange={(v) => set("secretaryName", v)}
                       options={opts.secretary ?? []}
@@ -787,6 +784,7 @@ laceholder="..." />
                 ) : null}
                 {showField("managerPhone") ? (
                   <Field label="   ">
+
                     <Input
                       inputMode="numeric"
                       value={form.managerPhone}
@@ -804,7 +802,6 @@ laceholder="..." />
               </>
             )}
           </div>
-
           {/* ----------    ---------- */}
           {dupes.length > 0 ? (
             <div className="mt-3 rounded-2xl bg-amber-50 p-3 ring-1 ring-amber-300">
@@ -832,7 +829,6 @@ x]">
                         onClick={() => applySuggestion(d)}
                         className="mr-auto rounded-lg bg-teal-600 px-2 py-1 text-[10px] font-bold text-white"
                       >
-                           
                       </button>
                     ) : null}
                   </div>
@@ -848,7 +844,7 @@ x]">
             <div className="mt-3 rounded-2xl bg-sky-50 p-3 ring-1 ring-sky-300">
               <div className="flex flex-wrap items-center gap-2">
                 <span className="text-xs font-black text-sky-900">
-                     : {toPersianDigits(history.orderCount)} 
+                     : {toPersianDigits(history.orderCount)}
                 </span>
                 <Badge tone="green"> : {toPersianDigits(history.totalUnits)}</Badge>
                 <Badge tone="amber"> : {toPersianDigits(history.totalBonus)}</Badge>
@@ -863,7 +859,6 @@ x]">
                     onClick={() => applySuggestion()}
                     className="mr-auto rounded-lg bg-sky-700 px-2 py-1 text-[10px] font-bold text-white"
                   >
-                       
                   </button>
                 ) : null}
               </div>
@@ -872,6 +867,7 @@ x]">
                   {history.items.map((it) => (
                     <span key={it.key} className="rounded-lg bg-white px-2 py-1 text-[10px] text-slate-700 ring-1 ring-s
 ky-200">
+
                       {it.label}: <b>{toPersianDigits(it.qty)}</b>
                       {it.bonus ? <span className="text-emerald-600"> +{toPersianDigits(it.bonus)}</span> : null}
                     </span>
@@ -886,7 +882,6 @@ ky-200">
             </div>
           ) : null}
           {type === "orders" && showField("products") && targets.some((t) => t.quantity > 0) ? (
-
             <div className="mt-4 rounded-2xl bg-teal-50 p-3 ring-1 ring-teal-200">
               <div className="flex flex-wrap items-center gap-2">
                 <span className="text-xs font-black text-teal-900">     </span>
@@ -937,7 +932,7 @@ ky-200">
                       ) : null}
                     </div>
                     {tg && tg.quantity > 0 ? (
-                      <div className="mb-1.5 rounded-lg bg-white px-1.5 py-1 text-[9px] leading-4 text-slate-600 ring-1 
+                      <div className="mb-1.5 rounded-lg bg-white px-1.5 py-1 text-[9px] leading-4 text-slate-600 ring-1
 ring-slate-200">
                         <div className="flex justify-between">
                           <span>:</span>
@@ -957,6 +952,7 @@ ring-slate-200">
                           <div
                             className={`h-full ${tg.percent >= 100 ? "bg-emerald-500" : "bg-teal-500"}`}
                             style={{ width: `${Math.min(100, tg.percent)}%` }}
+
                           />
                         </div>
                       </div>
@@ -971,7 +967,6 @@ ring-slate-200">
                             setItems({ ...items, [p.key]: Number(e.target.value.replace(/\D/g, "")) || 0 })
                           }
                           className="px-2 py-1.5 text-center"
-
                         />
                       </label>
                       <label>
@@ -1027,7 +1022,7 @@ ring-slate-200">
             <div className="mt-4 rounded-2xl bg-amber-50 p-3 ring-1 ring-amber-200">
               <div className="flex flex-wrap items-center gap-3">
                 <span className="text-sm font-bold text-amber-900">
-                   {type === "doctors" ? " " : " "}  
+                   {type === "doctors" ? " " : " "}
                 </span>
                 <div className="flex rounded-xl bg-white p-1 text-xs font-bold ring-1 ring-amber-200">
                   <button
@@ -1035,17 +1030,16 @@ ring-slate-200">
                     onClick={() => setIsPercent(true)}
                     className={`rounded-lg px-4 py-1.5 ${isPercent ? "bg-emerald-600 text-white" : "text-slate-600"}`}
                   >
-                    
                   </button>
                   <button
                     type="button"
                     onClick={() => {
                       setIsPercent(false);
                       setPercentValue("");
+
                     }}
                     className={`rounded-lg px-4 py-1.5 ${!isPercent ? "bg-slate-700 text-white" : "text-slate-600"}`}
                   >
-                    
                   </button>
                 </div>
                 {isPercent ? (
@@ -1056,7 +1050,6 @@ ring-slate-200">
                       onChange={(e) => setPercentValue(e.target.value)}
                       placeholder=" "
                       className="max-w-[160px] px-2 py-1.5"
-
                     />
                   </label>
                 ) : null}
@@ -1124,9 +1117,9 @@ ring-slate-200">
                 setMsg({ kind: "success", text: await downloadFile(`/api/export?type=${type}`, `${type}.xls`) })
               }
             >
-                
             </Button>
             {!isAdmin ? (
+
               <Button variant="success" onClick={sendSelected} disabled={busy}>
                   {selected.length ? `(${toPersianDigits(selected.length)})` : ""}
               </Button>
@@ -1138,7 +1131,6 @@ ring-slate-200">
                 <tr className="bg-slate-100 text-slate-600">
                   {visibleCols.map((c) => (
                     <th key={c.key} className="px-2 py-2 whitespace-nowrap">
-
                       {c.label}
                     </th>
                   ))}
@@ -1148,7 +1140,6 @@ ring-slate-200">
                 {pageRows.length === 0 ? (
                   <tr>
                     <td colSpan={visibleCols.length} className="py-8 text-center text-slate-400">
-                        
                     </td>
                   </tr>
                 ) : (
@@ -1186,7 +1177,6 @@ ring-slate-200">
             <div className="mb-3 flex items-center justify-between">
               <h3 className="text-base font-black text-sky-800">  </h3>
               <button onClick={() => setEditRow(null)} className="rounded-lg bg-slate-100 px-3 py-1 text-sm">
-                 
               </button>
             </div>
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
@@ -1212,16 +1202,16 @@ ring-slate-200">
                   <Field label="">
                     <Input value={editDraft.specialty} onChange={(e) => setEditDraft({ ...editDraft, specialty: e.target
 .value })} />
+
                   </Field>
                   <Field label="  ">
                     <Input value={editDraft.phone} onChange={(e) => setEditDraft({ ...editDraft, phone: e.target.value }
 )} />
                   </Field>
                   <Field label=" ">
-                    <Input value={editDraft.secretaryName} onChange={(e) => setEditDraft({ ...editDraft, secretaryName: 
+                    <Input value={editDraft.secretaryName} onChange={(e) => setEditDraft({ ...editDraft, secretaryName:
 e.target.value })} />
                   </Field>
-
                   <Field label=" ">
                     <Input value={editDraft.secretaryPhone} onChange={(e) => setEditDraft({ ...editDraft, secretaryPhone
 : e.target.value })} />
@@ -1297,6 +1287,7 @@ e })} />
                           inputMode="numeric"
                           value={editItems[bonusKeyOf(p.key)] ?? ""}
                           onChange={(e) =>
+
                             setEditItems({
                               ...editItems,
                               [bonusKeyOf(p.key)]: Number(e.target.value.replace(/\D/g, "")) || 0,
@@ -1304,7 +1295,6 @@ e })} />
                           }
                           className="px-1 py-1 text-center text-xs"
                         />
-
                       </div>
                     </div>
                   ))}
@@ -1313,10 +1303,8 @@ e })} />
             ) : null}
             <div className="mt-4 flex gap-2">
               <Button onClick={saveEdit} disabled={busy}>
-                  
               </Button>
               <Button variant="ghost" onClick={() => setEditRow(null)}>
-                
               </Button>
             </div>
           </div>
@@ -1343,7 +1331,6 @@ e })} />
                   }}
                   className="rounded-lg bg-sky-100 px-2 py-1 text-xs font-bold text-sky-700"
                 >
-                   
                 </button>
                 <button
                   onClick={() => {
@@ -1353,10 +1340,8 @@ e })} />
                   }}
                   className="rounded-lg bg-rose-100 px-2 py-1 text-xs font-bold text-rose-700"
                 >
-                   
                 </button>
                 <button onClick={() => setDetail(null)} className="rounded-lg bg-slate-100 px-3 py-1 text-sm">
-                   
                 </button>
               </div>
             </div>
@@ -1382,13 +1367,13 @@ e })} />
               ) : (
                 <>
                   {type === "pharmacies" ? <D k=" " v={toPersianDigits(detail.landline ?? "")} /> : null}
+
                   <D k=" " v={detail.managerName} />
                   <D k=" " v={toPersianDigits(detail.managerPhone ?? "")} />
                   <D k="" v={detail.address} full />
                 </>
               )}
               {type !== "orders" ? (
-
                 <D
                   k=" "
                   v={detail.isPercent ? `${detail.percentValue ? ` — ${detail.percentValue}` : ""}` : ""}
@@ -1467,11 +1452,11 @@ e })} />
         </div>
       ) : null}
     </div>
+
   );
 }
 function D({ k, v, full }: { k: string; v?: string | null; full?: boolean }) {
   return (
-
     <div className={`rounded-xl bg-slate-50 px-3 py-2 ${full ? "sm:col-span-2" : ""}`}>
       <dt className="text-[11px] font-bold text-slate-500">{k}</dt>
       <dd className="whitespace-pre-wrap text-slate-800">{v || "—"}</dd>

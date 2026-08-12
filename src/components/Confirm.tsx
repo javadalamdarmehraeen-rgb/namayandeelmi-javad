@@ -1,3 +1,4 @@
+
 "use client";
 import { createContext, useCallback, useContext, useState, type ReactNode } from "react";
 type Opts = {
@@ -54,7 +55,6 @@ export default function ConfirmProvider({ children }: { children: ReactNode }) {
                 {state.confirmText ?? ""}
               </button>
               <button
-
                 onClick={() => close(false)}
                 className="flex-1 rounded-xl bg-white px-4 py-2.5 text-sm font-bold text-slate-700 ring-1 ring-slate-300
  hover:bg-slate-50"

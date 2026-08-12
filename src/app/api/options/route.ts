@@ -1,3 +1,4 @@
+
 import { db } from "@/db";
 import { activityLogs, options } from "@/db/schema";
 import { getSessionUser } from "@/lib/auth";
@@ -5,6 +6,7 @@ import { ensureSeed } from "@/lib/bootstrap";
 import { OPTION_CATEGORIES } from "@/lib/constants";
 import { and, asc, eq } from "drizzle-orm";
 export const dynamic = "force-dynamic";
+
 const VALID = OPTION_CATEGORIES.map((c) => c.key);
 export async function GET(req: Request) {
   await ensureSeed();
@@ -50,7 +52,6 @@ export async function POST(req: Request) {
     .from(options)
     .where(and(eq(options.category, category), eq(options.value, value), eq(options.parent, parent)))
     .limit(1);
-
   if (exists.length) return Response.json({ row: exists[0], duplicate: true });
   const [row] = await db
     .insert(options)

@@ -1,3 +1,4 @@
+
 import { getSessionUser } from "@/lib/auth";
 import { createZip, type ZipEntry } from "@/lib/zip";
 export const dynamic = "force-dynamic";
@@ -5,15 +6,15 @@ export const maxDuration = 60;
 /**
  *       ZIP ( ).
  *
- * :          
+ * :
  * GitHub / GitLab         .
  *
- * GET /api/source            →   
+ * GET /api/source            →
  * GET /api/source?list=1     →    (JSON)
  *
- *  :    «»     
+ *  :    «»
  *  .    import    Turbopack
- *          
+ *
  * «Encountered unexpected file in NFT list» .
  */
 /**        */
@@ -64,6 +65,7 @@ async function walk(fs: FsApi, dir: string, base = ""): Promise<string[]> {
     const full = fs.join(dir, name);
     let st;
     try {
+
       st = await fs.stat(full);
     } catch {
       continue;
@@ -74,7 +76,6 @@ async function walk(fs: FsApi, dir: string, base = ""): Promise<string[]> {
     } else {
       if (SKIP_FILES.has(name)) continue;
       if (st.size > MAX_FILE_BYTES) continue;
-
       out.push(rel);
     }
   }
@@ -100,15 +101,15 @@ export async function GET(req: Request) {
   }
   entries.push({
     path: "namayandeelmi-javad/HOW-TO-UPDATE.md",
-    content: `#   
+    content: `#
           (${entries.length} ).
-## 
-1.   ZIP         
+##
+1.   ZIP
    (    —  node_modules  .next   ).
 2.     :
 \`\`\`bash
 npm install
-npm run build      #     
+npm run build      #
 git add -A
 git status
 git commit -m "  "
@@ -116,10 +117,10 @@ git push origin main
 \`\`\`
 3.   GitLab  :
 \`\`\`bash
-git remote add gitlab https://gitlab.com/USER/REPO.git   #   
+git remote add gitlab https://gitlab.com/USER/REPO.git   #
 git push gitlab main
 \`\`\`
-##  
+##
  \`.env\`     (  ).
      \`.env.ndcohub.example\`  .
  : ${new Date().toISOString()}

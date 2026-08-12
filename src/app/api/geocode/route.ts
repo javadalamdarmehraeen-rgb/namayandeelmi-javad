@@ -1,15 +1,17 @@
+
 import { getSessionUser } from "@/lib/auth";
 import { fetchWithRetry } from "@/lib/retry";
 export const dynamic = "force-dynamic";
 /**
  *     (Geocoding) —   .
  *
- *       CORS    
+ *       CORS
  *             .
  *
- * GET /api/geocode?q=  
+ * GET /api/geocode?q=
  * GET /api/geocode?lat=35.7&lng=51.4        ( :  → )
  */
+
 type Hit = { label: string; lat: number; lng: number; type: string };
 const UA = "SabtEtelaatKol/1.0 (contact: admin@ndcohub.ir)";
 async function nominatim(q: string): Promise<Hit[]> {
@@ -20,7 +22,6 @@ async function nominatim(q: string): Promise<Hit[]> {
     url,
     { headers: { "User-Agent": UA, "Accept-Language": "fa" } },
     { retries: 2, timeoutMs: 12000, label: "geocode" },
-
   );
   const data = (await res.json()) as { display_name: string; lat: string; lon: string; type?: string }[];
   return data.map((d) => ({
@@ -31,7 +32,7 @@ async function nominatim(q: string): Promise<Hit[]> {
   }));
 }
 async function photon(q: string): Promise<Hit[]> {
-  // lat/lon       
+  // lat/lon
   const url =
     `https://photon.komoot.io/api/?limit=10&lang=default&lat=32.4279&lon=53.6880` +
     `&q=${encodeURIComponent(q)}`;
@@ -42,7 +43,7 @@ async function photon(q: string): Promise<Hit[]> {
   return (data.features ?? [])
     .filter((f) => {
       const c = (f.properties?.countrycode ?? "").toUpperCase();
-      return !c || c === "IR"; //    
+      return !c || c === "IR"; //
     })
     .map((f) => {
       const p = f.properties ?? {};
@@ -71,7 +72,7 @@ export async function GET(req: Request) {
   if (!user) return Response.json({ error: " " }, { status: 401 });
   const url = new URL(req.url);
   const q = (url.searchParams.get("q") ?? "").trim();
-  // : Number(null)          
+  // : Number(null)
   //      «    »  .
   const latRaw = url.searchParams.get("lat");
   const lngRaw = url.searchParams.get("lng");
@@ -95,10 +96,10 @@ export async function GET(req: Request) {
      *            .
      * Photon       Nominatim  /search
      *         .
+
      */
     const providers: { name: string; run: () => Promise<Hit[]> }[] = [
       { name: "photon", run: () => photon(q) },
-
       { name: "nominatim", run: () => nominatim(q) },
     ];
     let results: Hit[] = [];

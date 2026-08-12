@@ -1,3 +1,4 @@
+
 import { getSessionUser } from "@/lib/auth";
 import { ensureSeed } from "@/lib/bootstrap";
 import { syncAll } from "@/lib/sync";
@@ -6,7 +7,7 @@ export const dynamic = "force-dynamic";
 export const maxDuration = 60;
 /**
  *  / .
- * -   
+ * -
  * -   Cron   x-sync-key
  */
 async function authorize(req: Request) {

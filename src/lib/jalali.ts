@@ -1,3 +1,4 @@
+
 // Lightweight Jalali (Shamsi) date utilities - no external dependency.
 export const JALALI_MONTHS = [
   "",
@@ -36,6 +37,7 @@ export function gregorianToJalali(gy: number, gm: number, gd: number): [number, 
     jy += div(days - 1, 365);
     days = (days - 1) % 365;
   }
+
   const jm = days < 186 ? 1 + div(days, 31) : 7 + div(days - 186, 30);
   const jd = 1 + (days < 186 ? days % 31 : (days - 186) % 30);
   return [jy, jm, jd];
@@ -67,7 +69,6 @@ export function jalaliToGregorian(jy: number, jm: number, jd: number): [number, 
     31,
     30,
     31,
-
     31,
     30,
     31,
@@ -121,6 +122,7 @@ export function maskJalaliInput(raw: string) {
   if (digits.length <= 6) return `${digits.slice(0, 4)}/${digits.slice(4)}`;
   return `${digits.slice(0, 4)}/${digits.slice(4, 6)}/${digits.slice(6)}`;
 }
+
 export function parseJalali(value: string): [number, number, number] | null {
   const m = toEnglishDigits(value).match(/^(\d{4})\/(\d{1,2})\/(\d{1,2})$/);
   if (!m) return null;
@@ -141,7 +143,6 @@ export function jalaliWeekDay(jy: number, jm: number, jd: number) {
   return (day + 1) % 7;
 }
 export function tehranTime(date: Date | string | number) {
-
   const d = new Date(date);
   return new Intl.DateTimeFormat("fa-IR", {
     timeZone: "Asia/Tehran",

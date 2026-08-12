@@ -1,3 +1,4 @@
+
 import { collectChanges, verifySync } from "@/lib/sync";
 import { ensureSeed } from "@/lib/bootstrap";
 import { nodeName } from "@/lib/sync-config";
@@ -21,11 +22,11 @@ export async function POST(req: Request) {
     /* ignore */
   }
   const since = body.since ? new Date(body.since) : null;
+
   const changes = await collectChanges(Number.isNaN(since?.getTime()) ? null : since, body.excludeOrigin);
   const count = Object.values(changes).reduce((a, r) => a + r.length, 0);
   return Response.json(
     { node: nodeName(), cursor: new Date().toISOString(), count, changes },
     { headers: { "Cache-Control": "no-store" } },
-
   );
 }

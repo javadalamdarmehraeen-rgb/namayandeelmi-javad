@@ -1,3 +1,4 @@
+
 import { db } from "@/db";
 import { settings } from "@/db/schema";
 import { getSessionUser } from "@/lib/auth";
@@ -31,6 +32,7 @@ export async function PUT(req: Request) {
   const b0 = user ? null : null;
   void b0;
   if (!user) return Response.json({ error: " " }, { status: 401 });
+
   const allowed =
     user.role === "admin" ||
     user.permissions.includes("columns") ||

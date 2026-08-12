@@ -1,3 +1,4 @@
+
 "use client";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Alert, Badge, Button, Card, Field, Input, SectionTitle } from "@/components/ui";
@@ -23,7 +24,7 @@ export default function TargetsPage() {
   const [users, setUsers] = useState<User[]>([]);
   const [products, setProducts] = useState<ProductConfig[]>(DEFAULT_PRODUCTS);
   const [userId, setUserId] = useState<number | null>(null);
-  //    
+  //
   const [year, setYear] = useState<number>(nowYear());
   const [month, setMonth] = useState<number>(nowMonth());
   const [years, setYears] = useState<number[]>([]);
@@ -44,10 +45,10 @@ export default function TargetsPage() {
     const pr = await fetch("/api/settings?key=products", { cache: "no-store" });
     if (pr.ok) {
       const v = (await pr.json()).value as ProductConfig[] | null;
+
       if (Array.isArray(v) && v.length) setProducts(v.filter((p) => p.enabled !== false));
     }
-    //     
-
+    //
     const yr = await fetch("/api/options?category=year", { cache: "no-store" });
     const saved: number[] = yr.ok
       ? ((await yr.json()).rows ?? []).map((r: { value: string }) => Number(r.value)).filter(Boolean)
@@ -127,8 +128,8 @@ export default function TargetsPage() {
       pm = 12;
       py -= 1;
     }
-
     const prev = `${py}/${String(pm).padStart(2, "0")}`;
+
     const res = await fetch(`/api/targets?userId=${userId}&period=${encodeURIComponent(prev)}`, { cache: "no-store" });
     if (!res.ok) return setMsg("     ");
     const d = await res.json();
@@ -136,7 +137,7 @@ export default function TargetsPage() {
     setRows((cur) =>
       cur.map((r) => {
         const p = prevRows.find((x) => x.productKey === r.productKey);
-        return p ? { ...r, quantity: p.quantity, priceDistributor: p.priceDistributor, pricePharmacy: p.pricePharmacy } 
+        return p ? { ...r, quantity: p.quantity, priceDistributor: p.priceDistributor, pricePharmacy: p.pricePharmacy }
 : r;
       }),
     );
@@ -208,12 +209,12 @@ export default function TargetsPage() {
               className="w-full rounded-xl border border-slate-300 px-3 py-2.5 text-sm"
             >
               {JALALI_MONTHS.map((m, i) => (
-
                 <option key={m} value={i + 1}>
                   {m}
                 </option>
               ))}
             </select>
+
           </Field>
           <Field label="  " hint=" ">
             <div className="flex gap-1">
@@ -225,7 +226,6 @@ export default function TargetsPage() {
                 className="text-center"
               />
               <Button variant="soft" onClick={addYear}>
-                
               </Button>
             </div>
           </Field>
@@ -235,10 +235,8 @@ export default function TargetsPage() {
             {rep?.fullName ?? "—"} | {JALALI_MONTHS[month - 1]} {toPersianDigits(year)}
           </Badge>
           <Button onClick={save} disabled={busy}>
-                
           </Button>
           <Button variant="ghost" onClick={copyPrev}>
-                
           </Button>
         </div>
         <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4">
@@ -257,7 +255,7 @@ export default function TargetsPage() {
       </Card>
       <Card>
         <h3 className="mb-2 text-sm font-bold text-slate-700">
-               —      
+               —
         </h3>
         <div className="scroll-x">
           <table className="w-full min-w-[980px] text-right text-xs">
@@ -290,7 +288,6 @@ export default function TargetsPage() {
                         onChange={(e) => setField(r.productKey, "quantity", Number(e.target.value.replace(/\D/g, "")) ||
  0)}
                         className="w-24 px-2 py-1 text-center text-xs"
-
                         placeholder="0"
                       />
                     </td>
@@ -299,6 +296,7 @@ export default function TargetsPage() {
                         inputMode="numeric"
                         value={r.priceDistributor || ""}
                         onChange={(e) =>
+
                           setField(r.productKey, "priceDistributor", Number(e.target.value.replace(/\D/g, "")) || 0)
                         }
                         className="w-32 px-2 py-1 text-center text-xs"

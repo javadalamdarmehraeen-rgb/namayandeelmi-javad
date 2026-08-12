@@ -1,8 +1,9 @@
+
 import { NextResponse, type NextRequest } from "next/server";
 /**
  * CORS    .
  *
- *      ndcohub.ir  onrender.com ( )  
+ *      ndcohub.ir  onrender.com ( )
  *      /    .
  */
 const ALLOWED = (process.env.NEXT_PUBLIC_ENDPOINTS || "https://ndcohub.ir,https://namayandeelmi-javad.onrender.com")
@@ -14,7 +15,7 @@ function isAllowed(origin: string) {
   if (!origin) return false;
   const clean = origin.replace(/\/$/, "");
   if (ALLOWED.includes(clean)) return true;
-  //       
+  //
   return /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(clean) || /\.ndcohub\.ir$/.test(clean);
 }
 export default function proxy(req: NextRequest) {

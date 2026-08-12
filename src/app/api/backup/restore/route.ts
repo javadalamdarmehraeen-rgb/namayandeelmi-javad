@@ -1,3 +1,4 @@
+
 import { db } from "@/db";
 import {
   activityLogs,
@@ -55,13 +56,12 @@ export async function POST(req: Request) {
   const data = (payload?.data ?? {}) as Record<string, unknown>;
   if (!data || typeof data !== "object" || !Array.isArray(data.users)) {
     return Response.json({ error: "   " }, { status: 400 });
-
   }
   const mode = body?.mode === "merge" ? "merge" : "replace";
   const report: Record<string, number> = {};
   try {
     if (mode === "replace") {
-      //         
+      //
       for (const t of [
         "attachments",
         "trip_points",
@@ -76,6 +76,7 @@ export async function POST(req: Request) {
         "messengers",
         "activity_logs",
         "options",
+
         "settings",
         "roles",
         "users",
@@ -114,7 +115,7 @@ export async function POST(req: Request) {
     await put(messageLogs, "messageLogs", "message_logs", ["createdAt"]);
     await put(notifications, "notifications", "notifications", ["createdAt", "readAt"]);
     await put(activityLogs, "activityLogs", "activity_logs", ["createdAt"]);
-    //     base64   
+    //     base64
     const atts = clean(data.attachments, ["createdAt"]).filter((a) => typeof a.data === "string" && a.data);
     if (atts.length) {
       for (let i = 0; i < atts.length; i += 50) {
@@ -135,7 +136,6 @@ export async function POST(req: Request) {
         detail: `: ${mode === "replace" ? " " : ""} | ${JSON.stringify(report)}`.slice(0, 400),
       })
       .catch(() => undefined);
-
     return Response.json({ ok: true, mode, report });
   } catch (err) {
     console.error("restore error", err);

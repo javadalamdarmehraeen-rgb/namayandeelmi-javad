@@ -1,10 +1,11 @@
+
 import { deflateRawSync } from "node:zlib";
 /**
  * ============================================================
- *    ZIP    
+ *    ZIP
  * ------------------------------------------------------------
- *           
- *            
+ *
+ *
  *  GitHub / GitLab  .
  * ============================================================
  */
@@ -34,20 +35,19 @@ export function createZip(entries: ZipEntry[], modified = new Date()): Buffer {
   const { time, date } = dosDateTime(modified);
   const chunks: Buffer[] = [];
   const central: Buffer[] = [];
-
   let offset = 0;
   for (const entry of entries) {
     const nameBuf = Buffer.from(entry.path.replace(/\\/g, "/"), "utf8");
     const raw = Buffer.isBuffer(entry.content) ? entry.content : Buffer.from(entry.content, "utf8");
     const crc = crc32(raw);
-    //         
+    //
     const deflated = deflateRawSync(raw, { level: 9 });
     const useDeflate = deflated.length < raw.length;
     const data = useDeflate ? deflated : raw;
     const method = useDeflate ? 8 : 0;
     const local = Buffer.alloc(30);
-    local.writeUInt32LE(0x04034b50, 0); //   
-    local.writeUInt16LE(20, 4); //  
+    local.writeUInt32LE(0x04034b50, 0); //
+    local.writeUInt16LE(20, 4); //
     local.writeUInt16LE(0x0800, 6); // :   UTF-8
     local.writeUInt16LE(method, 8);
     local.writeUInt16LE(time, 10);
@@ -59,7 +59,7 @@ export function createZip(entries: ZipEntry[], modified = new Date()): Buffer {
     local.writeUInt16LE(0, 28);
     chunks.push(local, nameBuf, data);
     const cd = Buffer.alloc(46);
-    cd.writeUInt32LE(0x02014b50, 0); //   
+    cd.writeUInt32LE(0x02014b50, 0); //
     cd.writeUInt16LE(20, 4);
     cd.writeUInt16LE(20, 6);
     cd.writeUInt16LE(0x0800, 8);
@@ -69,6 +69,7 @@ export function createZip(entries: ZipEntry[], modified = new Date()): Buffer {
     cd.writeUInt32LE(crc, 16);
     cd.writeUInt32LE(data.length, 20);
     cd.writeUInt32LE(raw.length, 24);
+
     cd.writeUInt16LE(nameBuf.length, 28);
     cd.writeUInt16LE(0, 30);
     cd.writeUInt16LE(0, 32);
@@ -81,7 +82,7 @@ export function createZip(entries: ZipEntry[], modified = new Date()): Buffer {
   }
   const centralBuf = Buffer.concat(central);
   const end = Buffer.alloc(22);
-  end.writeUInt32LE(0x06054b50, 0); //   
+  end.writeUInt32LE(0x06054b50, 0); //
   end.writeUInt16LE(0, 4);
   end.writeUInt16LE(0, 6);
   end.writeUInt16LE(entries.length, 8);
