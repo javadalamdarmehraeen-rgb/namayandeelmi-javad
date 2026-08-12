@@ -91,7 +91,7 @@ const server = http.createServer((req, res) => {
     return send(req, res, 200, JSON.stringify({
       ok: true, status: "healthy", message: "OK",
       service: "namayandeelmi-javad-crm",
-      version: "11.1.0",
+      version: "11.2.0",
       timestamp: new Date().toISOString()
     }), "application/json; charset=utf-8");
   }
@@ -108,7 +108,7 @@ const server = http.createServer((req, res) => {
       ? "https://nominatim.openstreetmap.org/reverse?format=json&lat=" + encodeURIComponent(lat) + "&lon=" + encodeURIComponent(lng) + "&zoom=18&addressdetails=1"
       : "https://nominatim.openstreetmap.org/search?format=json&q=" + encodeURIComponent(q) + "&limit=" + encodeURIComponent(limit) + "&addressdetails=1&countrycodes=ir";
     fetch(target, {
-      headers: { "Accept-Language": "fa,en", "User-Agent": "namayandeelmi-javad-crm/11.1" }
+      headers: { "Accept-Language": "fa,en", "User-Agent": "namayandeelmi-javad-crm/11.2" }
     }).then(async (up) => {
       const text = await up.text();
       send(req, res, up.ok ? 200 : up.status, text, "application/json; charset=utf-8", { "Cache-Control": "public, max-age=120" });
@@ -185,5 +185,5 @@ const server = http.createServer((req, res) => {
 });
 
 server.listen(PORT, "0.0.0.0", () => {
-  console.log("CRM v11.1 listening on 0.0.0.0:" + PORT);
+  console.log("CRM v11.2 listening on 0.0.0.0:" + PORT);
 });

@@ -16,7 +16,7 @@
   <meta name="theme-color" content="#0d9488" />
   
   <!-- Custom Style with Anti-Cache Version 9.1.0 -->
-  <link rel="stylesheet" href="style.css?v=11.1.0" />
+  <link rel="stylesheet" href="style.css?v=11.2.0" />
 </head>
 <body>
 
@@ -679,11 +679,20 @@
 
             <div class="form-group full-width" style="background: #f8fafc; padding: 1rem; border-radius: 10px; border: 1px solid var(--border-color);">
               <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.75rem;">
-                <label class="form-label" style="margin: 0;">اقلام دارویی سفارش</label>
+                <label class="form-label" style="margin: 0;">اقلام دارویی سفارش (از کالاهای ثبت‌شده + تعداد جایزه)</label>
                 <button type="button" id="btnAddOrderItemRow" class="btn btn-outline btn-sm">
                   <span>➕ افزودن قلم دارویی</span>
                 </button>
               </div>
+              <div id="orderProductCatalogBar" class="order-catalog-bar"></div>
+              <div class="order-item-head">
+                <span>نام کالا</span>
+                <span>تعداد</span>
+                <span>تعداد جایزه 🎁</span>
+                <span>قیمت واحد</span>
+                <span></span>
+              </div>
+              <datalist id="orderProductCatalogList"></datalist>
               <div id="orderItemsContainer" style="display: flex; flex-direction: column; gap: 0.5rem;"></div>
               <div style="display: flex; justify-content: flex-end; margin-top: 0.75rem; font-weight: 700; color: #0f172a;">
                 <span>مبلغ کل سفارش: </span>
@@ -1966,12 +1975,12 @@
   <script src="vendor/leaflet.js"></script>
   
   <!-- Data & Application Logic with Anti-Cache Version 9.1.0 -->
-  <script src="crm-data.js?v=11.1.0"></script>
-  <script src="crm-app.js?v=11.1.0"></script>
-  <script src="crm-features-v9.js?v=11.1.0"></script>
-  <script src="iran-facilities.js?v=11.1.0" defer></script>
-  <script src="crm-features-v10.js?v=11.1.0"></script>
-  <script src="crm-features-v11.js?v=11.1.0"></script>
+  <script src="crm-data.js?v=11.2.0"></script>
+  <script src="crm-app.js?v=11.2.0"></script>
+  <script src="crm-features-v9.js?v=11.2.0"></script>
+  <script src="iran-facilities.js?v=11.2.0" defer></script>
+  <script src="crm-features-v10.js?v=11.2.0"></script>
+  <script src="crm-features-v11.js?v=11.2.0"></script>
   <!-- فیلدهای مخفی سازگاری با کد قبلی (نباید در UI دیده شوند) -->
   <input type="hidden" id="pharmacyLocationText" value="" />
   <input type="hidden" id="doctorLocationText" value="" />

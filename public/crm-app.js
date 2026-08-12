@@ -71,6 +71,7 @@ function loadState() {
       if (!state.products) state.products = DEFAULT_INITIAL_DATA.products;
       if (!state.hospitals) state.hospitals = DEFAULT_INITIAL_DATA.hospitals || [];
       if (!state.visits) state.visits = DEFAULT_INITIAL_DATA.visits || [];
+      if (!state.formFieldMeta) state.formFieldMeta = {};
     } catch (e) {
       console.error("خطا در خواندن اطلاعات قبلی، بارگذاری اطلاعات پیش‌فرض:", e);
       state = JSON.parse(JSON.stringify(DEFAULT_INITIAL_DATA));
@@ -78,6 +79,8 @@ function loadState() {
   } else {
     state = JSON.parse(JSON.stringify(DEFAULT_INITIAL_DATA));
   }
+  if (!state.formFieldMeta) state.formFieldMeta = {};
+  if (!state.customFields) state.customFields = {};
   applyGeneralSettingsToUI();
 }
 
@@ -757,15 +760,26 @@ function renderCustomFieldsTable() {
 
 function deleteCustomField(entity, fieldId) {
   if (!confirm("آیا از حذف این فیلد سفارشی اطمینان دارید؟")) return;
-  state.customFields[entity] = state.customFields[entity].filter(f => f.id !== fieldId);
+  if (state.customFields[entity]) {
+    state.customFields[entity] = state.customFields[entity].filter(f => f.id !== fieldId);
+  }
+  document.querySelectorAll('[data-custom-field-id="' + fieldId + '"]').forEach(function (inp) {
+    var g = inp.closest(".form-group");
+    if (g) g.remove();
+    else inp.remove();
+  });
   saveState();
   renderCustomFieldsTable();
   renderAllCustomFieldsInFormsAndTables();
+  if (typeof window.applyAllFormLayouts === "function") window.applyAllFormLayouts();
 }
 
 function renderCustomFieldsInForm(entityType, containerId, currentValues = {}) {
   const container = document.getElementById(containerId);
   if (!container) return;
+  if (typeof window.cleanupOrphanCustomFields === "function") {
+    window.cleanupOrphanCustomFields(entityType, containerId, true);
+  }
   container.innerHTML = "";
 
   const fields = (state.customFields[entityType] || []).slice().sort((a, b) => {
@@ -845,11 +859,13 @@ function renderCustomFieldsInForm(entityType, containerId, currentValues = {}) {
 
 function extractCustomFieldValuesFromForm(entityType, containerId) {
   const container = document.getElementById(containerId);
-  if (!container) return {};
+  const form = container ? container.closest("form") : null;
+  const root = form || container;
+  if (!root) return {};
   const values = {};
   const fields = state.customFields[entityType] || [];
   fields.forEach(field => {
-    const el = container.querySelector(`[data-custom-field-id="${field.id}"]`);
+    const el = root.querySelector(`[data-custom-field-id="${field.id}"]`);
     if (el) values[field.label] = el.value.trim();
   });
   return values;
@@ -1153,7 +1169,7 @@ function editPharmacy(id) {
   populateCities(ph.province, cityEl, ph.city);
   populateDistricts(ph.province, ph.city, distEl, ph.district);
 
-  updatePharmacyFormMarker(ph.lat || 35.7605, ph.lng || 51.4180, ph.name, true);
+  updatePharmupdatePharmacyFormMarker(ph.lat || 35.7605, ph.lng || 51.4180, ph.name, true);
   renderCustomFieldsInForm("pharmacy", "pharmacyCustomFieldsContainer", ph.customFields || {});
 
   document.getElementById("tab-pharmacies").scrollIntoView({ behavior: "smooth" });
@@ -2125,7 +2141,7 @@ function resetOrderForm() {
   const container = document.getElementById("orderItemsContainer");
   if (container) {
     container.innerHTML = "";
-    addOrderItemRow("", 10, 45000);
+    mergeCatalogIntoOrderItems();
   }
 
   renderCustomFieldsInForm("order", "orderCustomFieldsContainer");
@@ -2156,28 +2172,110 @@ function populatePharmacyDatalistInOrders() {
   });
 }
 
-function addOrderItemRow(name = "", count = 1, price = 0) {
+function refreshOrderProductCatalog() {
+  let dl = document.getElementById("orderProductCatalogList");
+  if (!dl) {
+    dl = document.createElement("datalist");
+    dl.id = "orderProductCatalogList";
+    document.body.appendChild(dl);
+  }
+  dl.innerHTML = "";
+  (state.products || []).forEach(p => {
+    const o = document.createElement("option");
+    o.value = p.name;
+    o.label = p.name + " — " + Number(p.pharmacyPrice || p.price || 0).toLocaleString("fa-IR") + " ریال";
+    dl.appendChild(o);
+  });
+  document.querySelectorAll(".order-item-name").forEach(inp => {
+    inp.setAttribute("list", "orderProductCatalogList");
+  });
+  const bar = document.getElementById("orderProductCatalogBar");
+  if (bar) {
+    if (!(state.products || []).length) {
+      bar.innerHTML = "<span class='order-catalog-empty'>هنوز کالایی در «اضافه کردن کالا» ثبت نشده.</span>";
+    } else {
+      bar.innerHTML = (state.products || []).map(p =>
+        `<button type="button" class="btn btn-outline btn-sm order-pick-prod" data-pname="${String(p.name).replace(/"/g, "&quot;")}">${p.name}</button>`
+      ).join("");
+      bar.querySelectorAll(".order-pick-prod").forEach(btn => {
+        btn.addEventListener("click", () => {
+          const prod = (state.products || []).find(x => x.name === btn.getAttribute("data-pname"));
+          if (!prod) return;
+          const container = document.getElementById("orderItemsContainer");
+          let found = null;
+          if (container) {
+            Array.prototype.forEach.call(container.querySelectorAll(".order-item-name"), inp => {
+              if (inp.value.trim() === prod.name) found = inp.closest(".order-item-row") || inp.parentElement;
+            });
+          }
+          if (found) {
+            const c = found.querySelector(".order-item-count");
+            if (c) c.focus();
+          } else {
+            addOrderItemRow(prod.name, 1, prod.pharmacyPrice || prod.price || 0, 0);
+          }
+        });
+      });
+    }
+  }
+}
+
+function mergeCatalogIntoOrderItems() {
+  refreshOrderProductCatalog();
+  const container = document.getElementById("orderItemsContainer");
+  if (!container) return;
+  const names = {};
+  (state.products || []).forEach(p => { if (p.name) names[p.name] = p; });
+  Array.prototype.slice.call(container.children).forEach(row => {
+    const n = row.querySelector(".order-item-name");
+    const c = row.querySelector(".order-item-count");
+    if (!n) return;
+    const name = n.value.trim();
+    const cnt = parseInt(c && c.value, 10) || 0;
+    if (!name || (!names[name] && cnt <= 0)) row.remove();
+  });
+  const existing = {};
+  Array.prototype.forEach.call(container.querySelectorAll(".order-item-name"), inp => {
+    if (inp.value.trim()) existing[inp.value.trim()] = true;
+  });
+  (state.products || []).forEach(p => {
+    if (p.name && !existing[p.name]) {
+      addOrderItemRow(p.name, 0, p.pharmacyPrice || p.price || 0, 0);
+    }
+  });
+  if (!(state.products || []).length && !container.children.length) {
+    addOrderItemRow("", 1, 0, 0);
+  }
+}
+
+function addOrderItemRow(name = "", count = 1, price = 0, giftCount = 0) {
   const container = document.getElementById("orderItemsContainer");
   if (!container) return;
 
   const rowId = "item-row-" + Date.now() + "-" + Math.floor(Math.random() * 1000);
   const row = document.createElement("div");
   row.id = rowId;
-  row.style.display = "grid";
-  row.style.gridTemplateColumns = "3fr 1fr 2fr auto";
-  row.style.gap = "0.5rem";
-  row.style.alignItems = "center";
+  row.className = "order-item-row";
 
+  const safeName = String(name || "").replace(/"/g, "&quot;");
   row.innerHTML = `
-    <input type="text" class="form-input order-item-name" placeholder="نام کالا (مثال: امگا۳)..." value="${name}" required />
-    <input type="number" class="form-input order-item-count" placeholder="تعداد کالا" min="1" value="${count}" required />
-    <input type="number" class="form-input order-item-gift" placeholder="تعداد جایزه 🎁" min="0" value="0" />
-    <input type="number" class="form-input order-item-price" placeholder="قیمت واحد (ریال)" min="0" value="${price}" required />
+    <input type="text" class="form-input order-item-name" list="orderProductCatalogList" placeholder="نام کالا از فهرست ثبت‌شده..." value="${safeName}" />
+    <input type="number" class="form-input order-item-count" placeholder="تعداد" min="0" value="${count}" />
+    <input type="number" class="form-input order-item-gift" placeholder="جایزه 🎁" min="0" value="${giftCount || 0}" title="تعداد جایزه" />
+    <input type="number" class="form-input order-item-price" placeholder="قیمت واحد" min="0" value="${price}" />
     <button type="button" class="btn btn-danger btn-sm" onclick="removeOrderItemRow('${rowId}')">🗑️</button>
   `;
 
-  const inputs = row.querySelectorAll("input");
-  inputs.forEach(inp => {
+  const nameInp = row.querySelector(".order-item-name");
+  nameInp.addEventListener("change", () => {
+    const prod = (state.products || []).find(p => p.name === nameInp.value.trim());
+    if (prod) {
+      const priceEl = row.querySelector(".order-item-price");
+      if (priceEl) priceEl.value = prod.pharmacyPrice || prod.price || 0;
+    }
+    updateOrderTotalAmountDisplay();
+  });
+  row.querySelectorAll("input").forEach(inp => {
     inp.addEventListener("input", updateOrderTotalAmountDisplay);
   });
 
@@ -2204,9 +2302,11 @@ function getOrderItemsFromUI() {
     const priceEl = rows[i].querySelector(".order-item-price");
     if (nameEl && nameEl.value.trim()) {
       const giftEl = rows[i].querySelector(".order-item-gift");
+      const cnt = parseInt(countEl.value, 10);
+      if (!(cnt > 0)) continue;
       items.push({
         name: nameEl.value.trim(),
-        count: parseInt(countEl.value) || 1,
+        count: cnt,
         giftCount: giftEl ? (parseInt(giftEl.value) || 0) : 0,
         price: parseInt(priceEl.value) || 0
       });
@@ -2321,8 +2421,9 @@ function editOrder(id) {
   const container = document.getElementById("orderItemsContainer");
   container.innerHTML = "";
   (ord.items || []).forEach(item => {
-    addOrderItemRow(item.name, item.count, item.price);
+    addOrderItemRow(item.name, item.count, item.price, item.giftCount || 0);
   });
+  mergeCatalogIntoOrderItems();
   updateOrderTotalAmountDisplay();
 
   renderCustomFieldsInForm("order", "orderCustomFieldsContainer", ord.customFields || {});
@@ -3656,8 +3757,9 @@ function setupColumnsProductsTab() {
     }
     renderColumnsProductsTable();
     setupSalesTargetsTab();
+    mergeCatalogIntoOrderItems();
     updateNavBadges();
-    alert("کالا ثبت شد: «" + name + "»");
+    alert("کالا ثبت شد: «" + name + "» و در تب سفارشات با فیلد تعداد جایزه اضافه شد.");
   };
 
   if (btnProd) btnProd.onclick = (e) => { e.preventDefault(); handleSaveProd(); };
@@ -3706,5 +3808,6 @@ function deleteProductCatalogItem(id) {
   saveState();
   renderColumnsProductsTable();
   setupSalesTargetsTab();
+  mergeCatalogIntoOrderItems();
   updateNavBadges();
 }
