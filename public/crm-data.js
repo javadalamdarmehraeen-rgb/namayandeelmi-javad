@@ -650,15 +650,15 @@ const DEFAULT_INITIAL_DATA = {
   ],
   customFields: {
     pharmacy: [
-      { id: "cf-ph-1", label: "نوع قرارداد", type: "select", options: ["نقدی", "چکی یک‌ماهه", "چکی دو‌ماهه", "امانی"], showInForm: true, showInList: true, allowAddOption: true },
-      { id: "cf-ph-2", label: "درجه اعتبار", type: "select", options: ["A+", "A", "B+", "B", "C"], showInForm: true, showInList: true, allowAddOption: true }
+      { id: "cf-ph-1", label: "نوع قرارداد", type: "select", options: ["نقدی", "چکی یک‌ماهه", "چکی دو‌ماهه", "امانی"], showInForm: true, showInList: true, allowAddOption: true, order: 6, size: 220 },
+      { id: "cf-ph-2", label: "درجه اعتبار", type: "select", options: ["A+", "A", "B+", "B", "C"], showInForm: true, showInList: true, allowAddOption: true, order: 7, size: 180 }
     ],
     doctor: [
-      { id: "cf-doc-1", label: "تعداد ویزیت روزانه", type: "simple", showInForm: true, showInList: true },
-      { id: "cf-doc-2", label: "داروهای ترجیحی", type: "simple", showInForm: true, showInList: false }
+      { id: "cf-doc-1", label: "تعداد ویزیت روزانه", type: "simple", showInForm: true, showInList: true, order: 5, size: 200 },
+      { id: "cf-doc-2", label: "داروهای ترجیحی", type: "simple", showInForm: true, showInList: false, order: 6, size: 240 }
     ],
     order: [
-      { id: "cf-ord-1", label: "اولویت ارسال", type: "select", options: ["عادی", "فوری", "ویژه (کمتر از ۲ ساعت)"], showInForm: true, showInList: true, allowAddOption: true }
+      { id: "cf-ord-1", label: "اولویت ارسال", type: "select", options: ["عادی", "فوری", "ویژه (کمتر از ۲ ساعت)"], showInForm: true, showInList: true, allowAddOption: true, order: 8, size: 220 }
     ]
   },
   permissions: [], // ساختار قبلی برای پشتیبانی هم‌زمان

@@ -768,12 +768,21 @@ function renderCustomFieldsInForm(entityType, containerId, currentValues = {}) {
   if (!container) return;
   container.innerHTML = "";
 
-  const fields = state.customFields[entityType] || [];
+  const fields = (state.customFields[entityType] || []).slice().sort((a, b) => {
+    const ao = a.order == null || a.order === "" ? 999 : Number(a.order);
+    const bo = b.order == null || b.order === "" ? 999 : Number(b.order);
+    return ao - bo;
+  });
   fields.forEach(field => {
-    if (!field.showInForm) return;
+    if (field.showInForm === false) return;
 
     const div = document.createElement("div");
     div.className = "form-group";
+    const size = parseInt(field.size, 10);
+    if (size > 40) {
+      div.style.maxWidth = size + "px";
+      div.style.width = "100%";
+    }
 
     const labelRow = document.createElement("div");
     labelRow.style.display = "flex";
@@ -785,7 +794,8 @@ function renderCustomFieldsInForm(entityType, containerId, currentValues = {}) {
     labelEl.textContent = field.label;
     labelRow.appendChild(labelEl);
 
-    if (field.type === "select" && field.allowAddOption) {
+    const kind = field.inputKind || (field.type === "select" ? "select" : "simple");
+    if ((kind === "select" || field.type === "select") && field.allowAddOption) {
       const btnAddOpt = document.createElement("button");
       btnAddOpt.type = "button";
       btnAddOpt.className = "btn-add-option";
@@ -795,7 +805,7 @@ function renderCustomFieldsInForm(entityType, containerId, currentValues = {}) {
     }
     div.appendChild(labelRow);
 
-    if (field.type === "select") {
+    if (kind === "select" || field.type === "select") {
       const sel = document.createElement("select");
       sel.className = "form-select dropdown-auto-clear";
       sel.dataset.customFieldId = field.id;
@@ -813,11 +823,14 @@ function renderCustomFieldsInForm(entityType, containerId, currentValues = {}) {
       div.appendChild(sel);
     } else {
       const input = document.createElement("input");
-      input.type = "text";
+      input.type = kind === "number" ? "number" : "text";
       input.className = "form-input";
       input.dataset.customFieldId = field.id;
-      input.placeholder = `وارد کنید: ${field.label}...`;
+      input.placeholder = kind === "date"
+        ? `تاریخ ${field.label} (مثال: 1405/05/21)`
+        : `وارد کنید: ${field.label}...`;
       if (currentValues[field.label]) input.value = currentValues[field.label];
+      else if (currentValues[field.id]) input.value = currentValues[field.id];
       div.appendChild(input);
     }
 
@@ -825,6 +838,9 @@ function renderCustomFieldsInForm(entityType, containerId, currentValues = {}) {
   });
 
   setupDropdownAutoClear();
+  if (typeof window.applyCustomFieldOrderInForm === "function") {
+    window.applyCustomFieldOrderInForm(entityType, containerId);
+  }
 }
 
 function extractCustomFieldValuesFromForm(entityType, containerId) {
@@ -892,6 +908,9 @@ function renderAllCustomFieldsInFormsAndTables() {
   renderCustomFieldsInForm("pharmacy", "pharmacyCustomFieldsContainer");
   renderCustomFieldsInForm("doctor", "doctorCustomFieldsContainer");
   renderCustomFieldsInForm("order", "orderCustomFieldsContainer");
+  if (typeof window.renderExtraTabCustomFields === "function") {
+    window.renderExtraTabCustomFields();
+  }
   renderPharmaciesList();
   renderDoctorsList();
   renderOrdersList();
@@ -1046,7 +1065,8 @@ function renderPharmaciesList(searchQuery = "") {
     <th>عملیات</th>
   `;
 
-  const fieldsList = (state.customFields.pharmacy || []).filter(f => f.showInList);
+  const fieldsList = (state.customFields.pharmacy || []).filter(f => f.showInList)
+    .slice().sort((a, b) => (Number(a.order) || 999) - (Number(b.order) || 999));
   fieldsList.forEach(f => {
     const th = document.createElement("th");
     th.textContent = f.label;
@@ -2220,7 +2240,8 @@ function renderOrdersList(searchQuery = "") {
     <th>وضعیت</th>
   `;
 
-  const fieldsList = (state.customFields.order || []).filter(f => f.showInList);
+  const fieldsList = (state.customFields.order || []).filter(f => f.showInList)
+    .slice().sort((a, b) => (Number(a.order) || 999) - (Number(b.order) || 999));
   fieldsList.forEach(f => {
     const th = document.createElement("th");
     th.textContent = f.label;
@@ -3595,44 +3616,62 @@ function setupColumnsProductsTab() {
   const btnProd = document.getElementById("btnSaveProduct");
 
   const handleSaveProd = () => {
-    const name = document.getElementById("productName").value.trim();
-    const category = document.getElementById("productCategory").value.trim();
+    const nameEl = document.getElementById("productName");
+    const name = nameEl ? nameEl.value.trim() : "";
     const distPrice = parseInt(document.getElementById("productDistPrice") ? document.getElementById("productDistPrice").value : 40000) || 40000;
     const phPrice = parseInt(document.getElementById("productPrice") ? document.getElementById("productPrice").value : 45000) || 45000;
     const stock = parseInt(document.getElementById("productStock") ? document.getElementById("productStock").value : 5000) || 5000;
 
-    if (!name || !category) {
-      alert("لطفاً نام محصول و دسته درمانی را وارد کنید.");
+    if (!name) {
+      alert("لطفاً نام کالا را وارد کنید.");
       return;
     }
 
     if (!state.products) state.products = [];
     const idx = state.products.findIndex(p => p.name === name);
     if (idx !== -1) {
-      state.products[idx] = { ...state.products[idx], category, distributorPrice: distPrice, pharmacyPrice: phPrice, stock };
-      alert(`✅ کالای «${name}» با قیمت‌های جدید بروزرسانی شد.`);
+      state.products[idx] = { ...state.products[idx], name, distributorPrice: distPrice, pharmacyPrice: phPrice, stock };
     } else {
       state.products.push({
         id: "prod-" + Date.now(),
         name,
-        category,
         distributorPrice: distPrice,
         pharmacyPrice: phPrice,
-        stock,
-        description: `قیمت پخش: ${distPrice.toLocaleString("fa-IR")} ریال | قیمت داروخانه: ${phPrice.toLocaleString("fa-IR")} ریال`
+        stock
       });
-      alert(`✅ کالای جدید «${name}» به لیست کالاها اضافه شد.`);
     }
 
     saveState();
+    window._lastSavedProductName = name;
+    window._lastSavedProductId = (idx !== -1 ? state.products[idx].id : state.products[state.products.length - 1].id);
     if (formProd) formProd.reset();
+    if (nameEl) {
+      nameEl.value = name;
+      nameEl.classList.add("product-name-just-saved");
+    }
+    const banner = document.getElementById("productSavedBanner");
+    if (banner) {
+      banner.hidden = false;
+      banner.innerHTML = "کالا ثبت شد: <strong>«" + name + "»</strong>";
+    }
     renderColumnsProductsTable();
     setupSalesTargetsTab();
     updateNavBadges();
+    alert("کالا ثبت شد: «" + name + "»");
   };
 
   if (btnProd) btnProd.onclick = (e) => { e.preventDefault(); handleSaveProd(); };
   if (formProd) formProd.onsubmit = (e) => { e.preventDefault(); handleSaveProd(); };
+  const btnResetProd = document.getElementById("btnResetProductForm");
+  if (btnResetProd) {
+    btnResetProd.onclick = () => {
+      if (formProd) formProd.reset();
+      const nameEl = document.getElementById("productName");
+      if (nameEl) nameEl.classList.remove("product-name-just-saved");
+      const banner = document.getElementById("productSavedBanner");
+      if (banner) { banner.hidden = true; banner.textContent = ""; }
+    };
+  }
 
   renderColumnsProductsTable();
 }
@@ -3643,12 +3682,15 @@ function renderColumnsProductsTable() {
   tbody.innerHTML = "";
   (state.products || []).forEach((prod, index) => {
     const tr = document.createElement("tr");
+    if (window._lastSavedProductId && prod.id === window._lastSavedProductId) {
+      tr.className = "product-row-just-saved";
+    }
+    const shownName = prod.name || window._lastSavedProductName || "—";
     tr.innerHTML = `
       <td>${index + 1}</td>
-      <td><strong style="color:#0f172a;">${prod.name}</strong></td>
-      <td><span class="badge-status-online" style="background:#0d9488;">${prod.category}</span></td>
-      <td><strong style="color:#1e40af;">${Number(prod.distributorPrice || 40000).toLocaleString("fa-IR")} ریال</strong></td>
-      <td><strong style="color:#0d9488;">${Number(prod.pharmacyPrice || 45000).toLocaleString("fa-IR")} ریال</strong></td>
+      <td class="product-name-cell"><strong>${shownName}</strong></td>
+      <td><strong style="color:#1e40af;">${Number(prod.distributorPrice || prod.price || 40000).toLocaleString("fa-IR")} ریال</strong></td>
+      <td><strong style="color:#0d9488;">${Number(prod.pharmacyPrice || prod.price || 45000).toLocaleString("fa-IR")} ریال</strong></td>
       <td>${prod.stock || 5000} عدد</td>
       <td>
         <button class="btn btn-danger btn-sm" onclick="deleteProductCatalogItem('${prod.id}')">🗑️ حذف</button>

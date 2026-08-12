@@ -721,11 +721,25 @@
       : '<span class="loc-miss">ثبت نشده</span>';
   }
 
+  function sortedListFields(entity) {
+    return ((state.customFields || {})[entity] || []).filter(function (f) { return f.showInList; })
+      .slice().sort(function (a, b) { return (Number(a.order) || 999) - (Number(b.order) || 999); });
+  }
+  function cfHeaderHtml(entity) {
+    return sortedListFields(entity).map(function (f) { return "<th>" + f.label + "</th>"; }).join("");
+  }
+  function cfCellHtml(entity, rec) {
+    return sortedListFields(entity).map(function (f) {
+      var val = (rec.customFields && rec.customFields[f.label]) ? rec.customFields[f.label] : "—";
+      return "<td><strong>" + val + "</strong></td>";
+    }).join("");
+  }
+
   function renderPharmaciesListV9(q) {
     const tbody = $("tablePharmaciesBody");
     const thead = $("tablePharmaciesHeader");
     if (!tbody || !thead) return;
-    thead.innerHTML = "<th>ردیف</th><th>نام نماینده</th><th>تاریخ ثبت</th><th>استان</th><th>شهر</th><th>نام داروخانه</th><th>شماره همراه</th><th>درصدی</th><th>لوکیشن</th><th>مسیریابی</th><th>عملیات</th>";
+    thead.innerHTML = "<th>ردیف</th><th>نام نماینده</th><th>تاریخ ثبت</th><th>استان</th><th>شهر</th><th>نام داروخانه</th><th>شماره همراه</th><th>درصدی</th><th>لوکیشن</th><th>مسیریابی</th>" + cfHeaderHtml("pharmacy") + "<th>عملیات</th>";
     const query = (q != null ? q : val("searchPharmacyInput")).toLowerCase();
     const filtered = visiblePharmacies().filter(function (ph) {
       if (!query) return true;
@@ -748,6 +762,7 @@
         "<td>" + (ph.isPercentage ? "بله" : "خیر") + "</td>" +
         "<td>" + locCell(ph) + "</td>" +
         "<td><button type='button' class='btn btn-outline btn-sm btn-route'>مسیریابی</button></td>" +
+        cfCellHtml("pharmacy", ph) +
         "<td><button type='button' class='btn btn-outline btn-sm btn-edit'>ویرایش</button> <button type='button' class='btn btn-danger btn-sm btn-del'>حذف</button></td>";
       tr.addEventListener("click", function () { if (typeof openRowDetailsModal === "function") openRowDetailsModal(ph, "pharmacy"); });
       const showBtn = tr.querySelector(".btn-show-on-map");
@@ -769,7 +784,7 @@
     const tbody = $("tableDoctorsBody");
     const thead = $("tableDoctorsHeader");
     if (!tbody || !thead) return;
-    thead.innerHTML = "<th>ردیف</th><th>نام نماینده</th><th>تاریخ ثبت</th><th>استان / شهر / منطقه</th><th>نام پزشک / مطب</th><th>تخصص</th><th>درصدی</th><th>لوکیشن</th><th>مسیریابی</th><th>عملیات</th>";
+    thead.innerHTML = "<th>ردیف</th><th>نام نماینده</th><th>تاریخ ثبت</th><th>استان / شهر / منطقه</th><th>نام پزشک / مطب</th><th>تخصص</th><th>درصدی</th><th>لوکیشن</th><th>مسیریابی</th>" + cfHeaderHtml("doctor") + "<th>عملیات</th>";
     const query = (q != null ? q : val("searchDoctorInput")).toLowerCase();
     const filtered = visibleDoctors().filter(function (d) {
       if (!query) return true;
@@ -791,6 +806,7 @@
         "<td>" + (doc.isPercentage ? "بله" : "خیر") + "</td>" +
         "<td>" + locCell(doc) + "</td>" +
         "<td><button type='button' class='btn btn-outline btn-sm btn-route'>مسیریابی</button></td>" +
+        cfCellHtml("doctor", doc) +
         "<td><button type='button' class='btn btn-outline btn-sm btn-edit'>ویرایش</button> <button type='button' class='btn btn-danger btn-sm btn-del'>حذف</button></td>";
       tr.addEventListener("click", function () { if (typeof openRowDetailsModal === "function") openRowDetailsModal(doc, "doctor"); });
       const showBtn = tr.querySelector(".btn-show-on-map");
@@ -829,6 +845,7 @@
         "<td>" + (gifts || "—") + "</td>" +
         "<td>" + Number(ord.totalAmount || 0).toLocaleString("fa-IR") + "</td>" +
         "<td>" + (ord.status || "—") + "</td>" +
+        cfCellHtml("order", ord) +
         "<td><button type='button' class='btn btn-outline btn-sm btn-edit'>ویرایش</button> <button type='button' class='btn btn-danger btn-sm btn-del'>حذف</button></td>";
       tr.addEventListener("click", function () { if (typeof openRowDetailsModal === "function") openRowDetailsModal(ord, "order"); });
       tr.querySelector(".btn-edit").addEventListener("click", function (e) { e.stopPropagation(); if (typeof editOrder === "function") editOrder(ord.id); });

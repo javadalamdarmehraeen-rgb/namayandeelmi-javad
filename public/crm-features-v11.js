@@ -333,74 +333,428 @@
     }
   }
 
+  var COL_TAB_KEYS = {
+    "tab-dashboard": "dashboard",
+    "tab-pharmacies": "pharmacy",
+    "tab-doctors": "doctor",
+    "tab-orders": "order",
+    "tab-activity-log": "activity",
+    "tab-overview-map": "overview",
+    "tab-live-location": "live",
+    "tab-search-info": "search",
+    "tab-rep-routes": "routes",
+    "tab-my-visit": "visit",
+    "tab-rep-homes": "homes",
+    "tab-leaves": "leave",
+    "tab-notifications": "notifications",
+    "tab-monthly-reports": "reports",
+    "tab-sales-targets": "target",
+    "tab-custom-fields": "additions",
+    "tab-columns-products": "products",
+    "tab-users-permissions": "users",
+    "tab-messengers": "messengers",
+    "tab-backup": "backup",
+    "tab-install-app": "install",
+    "tab-troubleshooting": "diagnostics"
+  };
+  var COL_KNOWN_HOSTS = {
+    pharmacy: "pharmacyCustomFieldsContainer",
+    doctor: "doctorCustomFieldsContainer",
+    order: "orderCustomFieldsContainer"
+  };
+
+  function escHtml(s) {
+    return String(s == null ? "" : s)
+      .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+  }
+
+  function fieldKeyForTab(tabId) {
+    return COL_TAB_KEYS[tabId] || String(tabId || "").replace(/^tab-/, "") || "misc";
+  }
+
+  function containerIdForKey(key) {
+    return COL_KNOWN_HOSTS[key] || ("cfHost-" + key);
+  }
+
+  function getFieldList(key) {
+    if (!state.customFields) state.customFields = {};
+    if (!state.customFields[key]) state.customFields[key] = [];
+    return state.customFields[key];
+  }
+
+  function sortedFields(key) {
+    return getFieldList(key).slice().sort(function (a, b) {
+      var ao = a.order == null || a.order === "" ? 999 : Number(a.order);
+      var bo = b.order == null || b.order === "" ? 999 : Number(b.order);
+      if (ao !== bo) return ao - bo;
+      return String(a.id || "").localeCompare(String(b.id || ""));
+    });
+  }
+
+  function ensureFieldHost(tabId, key) {
+    var cid = containerIdForKey(key);
+    if ($(cid)) return cid;
+    var pane = $(tabId);
+    if (!pane) return null;
+    var card = pane.querySelector(".card") || pane;
+    var form = card.querySelector("form");
+    var grid = form && form.querySelector(".form-grid");
+    var host = document.createElement("div");
+    host.id = cid;
+    host.className = "form-group full-width form-grid extra-cf-host";
+    host.setAttribute("data-cf-host", key);
+    if (grid) grid.appendChild(host);
+    else if (form) form.appendChild(host);
+    else {
+      var header = card.querySelector(".card-header");
+      if (header && header.nextSibling) card.insertBefore(host, header.nextSibling);
+      else card.appendChild(host);
+    }
+    return cid;
+  }
+
+  window.applyCustomFieldOrderInForm = function (entityType, containerId) {
+    var container = document.getElementById(containerId);
+    if (!container) return;
+    var form = container.closest("form");
+    var grid = form ? form.querySelector(".form-grid") : null;
+    if (grid === container) grid = null;
+    var fields = ((state.customFields || {})[entityType] || []).slice()
+      .filter(function (f) { return f.showInForm !== false; })
+      .sort(function (a, b) {
+        return (Number(a.order) || 999) - (Number(b.order) || 999);
+      });
+    var items = [];
+    fields.forEach(function (field) {
+      var root = grid || container;
+      var input = root.querySelector('[data-custom-field-id="' + field.id + '"]') ||
+        container.querySelector('[data-custom-field-id="' + field.id + '"]');
+      if (!input) return;
+      var group = input.closest(".form-group");
+      if (!group) return;
+      var size = parseInt(field.size, 10);
+      if (size > 40) {
+        group.style.maxWidth = size + "px";
+        group.style.width = "100%";
+      } else {
+        group.style.maxWidth = "";
+      }
+      group.setAttribute("data-cf-order", String(field.order || ""));
+      items.push({ field: field, group: group });
+      if (group.parentNode) group.parentNode.removeChild(group);
+    });
+    if (!grid) {
+      items.forEach(function (it) { container.appendChild(it.group); });
+      bindFieldDependencies(entityType, containerId);
+      return;
+    }
+    items.forEach(function (it) {
+      var order = parseInt(it.field.order, 10);
+      var kids = Array.prototype.filter.call(grid.children, function (ch) {
+        return ch !== container && ch.nodeType === 1;
+      });
+      if (!order || order < 1) {
+        grid.insertBefore(it.group, container);
+        return;
+      }
+      var idx = Math.min(order - 1, kids.length);
+      if (kids[idx]) grid.insertBefore(it.group, kids[idx]);
+      else grid.insertBefore(it.group, container);
+    });
+    bindFieldDependencies(entityType, containerId);
+  };
+
+  function bindFieldDependencies(entityType, containerId) {
+    var container = document.getElementById(containerId);
+    var form = container ? container.closest("form") : null;
+    var root = form || container;
+    if (!root) return;
+    var fields = (state.customFields && state.customFields[entityType]) || [];
+    function applyDeps() {
+      fields.forEach(function (f) {
+        if (!f.dependsOn) return;
+        var input = root.querySelector('[data-custom-field-id="' + f.id + '"]');
+        var parent = root.querySelector('[data-custom-field-id="' + f.dependsOn + '"]');
+        if (!input) return;
+        var group = input.closest(".form-group");
+        if (!group) return;
+        var parentVal = parent ? String(parent.value || "").trim() : "";
+        group.style.display = parentVal ? "" : "none";
+      });
+    }
+    fields.forEach(function (f) {
+      if (!f.dependsOn) return;
+      var parent = root.querySelector('[data-custom-field-id="' + f.dependsOn + '"]');
+      if (parent && parent.dataset.depBound !== "1") {
+        parent.dataset.depBound = "1";
+        parent.addEventListener("change", applyDeps);
+        parent.addEventListener("input", applyDeps);
+      }
+    });
+    applyDeps();
+  }
+
+  window.renderExtraTabCustomFields = function () {
+    if (typeof MENU_SECTIONS_LIST === "undefined") return;
+    MENU_SECTIONS_LIST.forEach(function (sec) {
+      var key = fieldKeyForTab(sec.id);
+      if (key === "pharmacy" || key === "doctor" || key === "order") return;
+      var cid = ensureFieldHost(sec.id, key);
+      if (cid && typeof renderCustomFieldsInForm === "function") {
+        renderCustomFieldsInForm(key, cid);
+      }
+    });
+  };
+
+  window.refreshColumnsDesigner = function () {
+    renderColTabGrid();
+    if (window._activeColTab) renderColDesignerPanel();
+  };
+
   function setupColumnsDesigner() {
     var host = $("columnsDesignerHost");
-    if (!host || host.dataset.ready === "1") return;
-    host.dataset.ready = "1";
-    var tabs = [
-      { id: "pharmacy", label: "داروخانه‌ها" },
-      { id: "doctor", label: "پزشکان" },
-      { id: "order", label: "سفارشات" },
-      { id: "leave", label: "مرخصی" },
-      { id: "target", label: "تارگت فروش" }
-    ];
-    host.innerHTML = '<div class="form-grid">' +
-      '<div class="form-group"><label class="form-label">تب هدف</label><select id="colTabSelect" class="form-select">' +
-      tabs.map(function (t) { return '<option value="' + t.id + '">' + t.label + "</option>"; }).join("") +
-      '</select></div>' +
-      '<div class="form-group"><label class="form-label">عنوان فیلد</label><input id="colFieldLabel" class="form-input" placeholder="مثلاً کد اقتصادی"></div>' +
-      '<div class="form-group"><label class="form-label">نوع</label><select id="colFieldType" class="form-select"><option value="simple">ساده</option><option value="select">کشویی</option><option value="date">تاریخ</option><option value="number">عددی</option></select></div>' +
-      '<div class="form-group"><label class="form-label">شماره ترتیب</label><input id="colFieldOrder" class="form-input" type="number" value="10"></div>' +
-      '<div class="form-group"><label class="form-label">اندازه (px)</label><input id="colFieldSize" class="form-input" type="number" value="220"></div>' +
-      '<div class="form-group"><label class="form-label">وابسته به فیلد</label><input id="colFieldDep" class="form-input" placeholder="شناسه فیلد والد (اختیاری)"></div>' +
-      '<div class="form-group"><label class="form-label">گزینه‌های کشویی</label><input id="colFieldOpts" class="form-input" placeholder="با ویرگول"></div>' +
-      '<div class="form-group"><label><input type="checkbox" id="colFieldFly" checked> افزودن لحظه‌ای</label></div>' +
-      '</div><div style="margin-top:1rem;text-align:left"><button type="button" id="btnSaveColField" class="btn btn-primary" style="background:#0d9488">ثبت فیلد در تب</button></div>' +
-      '<div id="colFieldList" class="table-responsive" style="margin-top:1rem"></div>';
-    $("btnSaveColField").addEventListener("click", function () {
-      if (!state.customFields) state.customFields = {};
-      var tab = $("colTabSelect").value;
-      if (!state.customFields[tab]) state.customFields[tab] = [];
-      var type = $("colFieldType").value;
-      var label = $("colFieldLabel").value.trim();
-      if (!label) { alert("عنوان فیلد را بنویسید."); return; }
-      var opts = ($("colFieldOpts").value || "").split(/[،,]/).map(function (s) { return s.trim(); }).filter(Boolean);
-      var rec = {
-        id: "cf-" + tab + "-" + Date.now(),
-        label: label,
-        type: type === "select" ? "select" : "simple",
-        inputKind: type,
-        options: opts,
-        allowAddOption: $("colFieldFly").checked,
-        showInForm: true,
-        showInList: true,
-        order: parseInt($("colFieldOrder").value, 10) || 10,
-        size: parseInt($("colFieldSize").value, 10) || 220,
-        dependsOn: $("colFieldDep").value.trim()
-      };
-      state.customFields[tab].push(rec);
-      saveState();
-      logOp("افزودن فیلد «" + label + "» به تب " + tab);
-      if (typeof renderCustomFieldsTable === "function") renderCustomFieldsTable();
-      if (typeof renderAllCustomFieldsInFormsAndTables === "function") renderAllCustomFieldsInFormsAndTables();
-      renderColFieldList();
-      alert("فیلد به تب مربوطه و بخش افزودن‌ها اضافه شد.");
+    if (!host) return;
+    if (host.dataset.v111 !== "1") {
+      host.dataset.v111 = "1";
+      host.dataset.ready = "1";
+      host.innerHTML =
+        '<p class="col-tab-hint">همه تب‌های برنامه مثل داشبورد اینجاست. روی یک تب بزنید تا فقط فیلدهای همان تب را اضافه یا حذف کنید.</p>' +
+        '<div class="col-tab-grid" id="colTabGrid"></div>' +
+        '<div class="col-designer-panel" id="colDesignerPanel" hidden></div>';
+    }
+    renderColTabGrid();
+    if (window._activeColTab) renderColDesignerPanel();
+  }
+
+  function renderColTabGrid() {
+    var grid = $("colTabGrid");
+    if (!grid || typeof MENU_SECTIONS_LIST === "undefined") return;
+    var html = "";
+    MENU_SECTIONS_LIST.forEach(function (sec) {
+      var key = fieldKeyForTab(sec.id);
+      var n = ((state && state.customFields && state.customFields[key]) || []).length;
+      var active = window._activeColTab === sec.id ? " active" : "";
+      html += '<button type="button" class="col-tab-card' + active + '" data-col-tab="' + sec.id + '">' +
+        '<span class="col-tab-icon">' + sec.icon + '</span>' +
+        '<span class="col-tab-meta"><span class="col-tab-label">' + escHtml(sec.label) + '</span>' +
+        '<span class="col-tab-count">' + n + " فیلد</span></span></button>";
     });
+    grid.innerHTML = html;
+    Array.prototype.forEach.call(grid.querySelectorAll(".col-tab-card"), function (btn) {
+      btn.addEventListener("click", function () {
+        window._activeColTab = btn.getAttribute("data-col-tab");
+        renderColTabGrid();
+        renderColDesignerPanel();
+        var panel = $("colDesignerPanel");
+        if (panel) panel.scrollIntoView({ behavior: "smooth", block: "start" });
+      });
+    });
+  }
+
+  function renderColDesignerPanel() {
+    var panel = $("colDesignerPanel");
+    if (!panel) return;
+    var tabId = window._activeColTab;
+    if (!tabId) {
+      panel.hidden = true;
+      panel.innerHTML = "";
+      return;
+    }
+    var sec = ((typeof MENU_SECTIONS_LIST !== "undefined" ? MENU_SECTIONS_LIST : []).filter(function (s) {
+      return s.id === tabId;
+    })[0]) || { label: tabId, icon: "🧱" };
+    var key = fieldKeyForTab(tabId);
+    ensureFieldHost(tabId, key);
+    var rawList = getFieldList(key);
+    var maxOrd = 0;
+    rawList.forEach(function (f) {
+      if (Number(f.order) > maxOrd) maxOrd = Number(f.order);
+    });
+    var filled = false;
+    rawList.forEach(function (f) {
+      if (f.order == null || f.order === "" || isNaN(Number(f.order))) {
+        maxOrd += 1;
+        f.order = maxOrd;
+        filled = true;
+      }
+    });
+    if (filled) { try { saveState(false); } catch (e) {} }
+    var list = sortedFields(key);
+    panel.hidden = false;
+    panel.innerHTML =
+      '<div class="col-panel-head">' +
+        "<div><strong>" + sec.icon + " " + escHtml(sec.label) + "</strong>" +
+        '<div class="col-panel-sub">حذف و اضافه فقط برای همین تب. شماره ترتیب، جای فیلد را در فرم همین تب عوض می‌کند (۱ = اولین فیلد فرم).</div></div>' +
+        '<div class="col-panel-actions">' +
+          '<button type="button" class="btn btn-primary btn-sm" id="btnColOpenTab" style="background:#0d9488">باز کردن فرم این تب</button>' +
+          '<button type="button" class="btn btn-outline btn-sm" id="btnColBackToGrid">بازگشت به لیست تب‌ها</button>' +
+        "</div>" +
+      "</div>" +
+      '<div class="form-grid col-add-grid">' +
+        '<div class="form-group"><label class="form-label">عنوان فیلد</label><input id="colFieldLabel" class="form-input" placeholder="مثلاً کد اقتصادی"></div>' +
+        '<div class="form-group"><label class="form-label">نوع</label><select id="colFieldType" class="form-select"><option value="simple">ساده (متنی)</option><option value="select">کشویی</option><option value="date">تاریخ</option><option value="number">عددی</option></select></div>' +
+        '<div class="form-group"><label class="form-label">شماره ترتیب در فرم</label><input id="colFieldOrder" class="form-input" type="number" min="1" value="' + (list.length + 1) + '"><small class="col-help">۱ یعنی اولین فیلد فرم این تب، ۲ یعنی دوم</small></div>' +
+        '<div class="form-group"><label class="form-label">اندازه (پیکسل)</label><input id="colFieldSize" class="form-input" type="number" min="80" value="220"></div>' +
+        '<div class="form-group" id="colFieldOptsWrap"><label class="form-label">گزینه‌های کشویی</label><input id="colFieldOpts" class="form-input" placeholder="با ویرگول جدا کنید"></div>' +
+        '<div class="form-group"><label class="form-label">وابسته به فیلد (شناسه اختیاری)</label><input id="colFieldDep" class="form-input" placeholder="خالی بماند اگر مستقل است"></div>' +
+        '<div class="form-group"><label><input type="checkbox" id="colFieldFly" checked> افزودن لحظه‌ای گزینه</label></div>' +
+        '<div class="form-group"><label><input type="checkbox" id="colFieldInForm" checked> نمایش در فرم</label></div>' +
+        '<div class="form-group"><label><input type="checkbox" id="colFieldInList" checked> نمایش در لیست</label></div>' +
+      "</div>" +
+      '<div class="col-add-actions"><button type="button" id="btnSaveColField" class="btn btn-primary" style="background:#0d9488">ثبت فیلد در تب «' + escHtml(sec.label) + "»</button></div>" +
+      '<div class="col-preview" id="colOrderPreview"></div>' +
+      '<div id="colFieldList" class="table-responsive" style="margin-top:1rem"></div>';
+
+    var typeSel = $("colFieldType");
+    var optsWrap = $("colFieldOptsWrap");
+    function toggleOpts() {
+      if (optsWrap) optsWrap.style.display = typeSel && typeSel.value === "select" ? "" : "none";
+    }
+    if (typeSel) typeSel.addEventListener("change", toggleOpts);
+    toggleOpts();
+
+    if ($("btnColBackToGrid")) {
+      $("btnColBackToGrid").addEventListener("click", function () {
+        window._activeColTab = "";
+        renderColTabGrid();
+        renderColDesignerPanel();
+      });
+    }
+    if ($("btnColOpenTab")) {
+      $("btnColOpenTab").addEventListener("click", function () {
+        if (typeof switchTab === "function") switchTab(tabId);
+      });
+    }
+
+    if ($("btnSaveColField")) {
+      $("btnSaveColField").addEventListener("click", function () {
+        var label = ($("colFieldLabel").value || "").trim();
+        if (!label) { alert("عنوان فیلد را بنویسید."); return; }
+        var type = $("colFieldType").value;
+        var opts = ($("colFieldOpts").value || "").split(/[،,]/).map(function (s) { return s.trim(); }).filter(Boolean);
+        var order = parseInt($("colFieldOrder").value, 10);
+        if (!order || order < 1) order = getFieldList(key).length + 1;
+        var rec = {
+          id: "cf-" + key + "-" + Date.now(),
+          label: label,
+          type: type === "select" ? "select" : "simple",
+          inputKind: type,
+          options: opts,
+          allowAddOption: $("colFieldFly").checked,
+          showInForm: $("colFieldInForm").checked,
+          showInList: $("colFieldInList").checked,
+          order: order,
+          size: parseInt($("colFieldSize").value, 10) || 220,
+          dependsOn: ($("colFieldDep").value || "").trim()
+        };
+        getFieldList(key).push(rec);
+        saveState();
+        logOp("افزودن فیلد «" + label + "» به تب " + sec.label + " با ترتیب " + order);
+        if (typeof renderCustomFieldsTable === "function") renderCustomFieldsTable();
+        if (typeof renderAllCustomFieldsInFormsAndTables === "function") renderAllCustomFieldsInFormsAndTables();
+        renderColDesignerPanel();
+        renderColTabGrid();
+        alert("فیلد «" + label + "» در تب «" + sec.label + "» ثبت شد و در جایگاه " + order + " فرم قرار گرفت.");
+      });
+    }
+
     renderColFieldList();
   }
 
   function renderColFieldList() {
     var box = $("colFieldList");
-    if (!box || !state) return;
-    var html = "<table class='data-table'><thead><tr><th>تب</th><th>عنوان</th><th>نوع</th><th>ترتیب</th><th>اندازه</th><th>حذف</th></tr></thead><tbody>";
-    Object.keys(state.customFields || {}).forEach(function (tab) {
-      (state.customFields[tab] || []).forEach(function (f) {
-        html += "<tr><td>" + tab + "</td><td>" + f.label + "</td><td>" + (f.type === "select" ? "کشویی" : "ساده") + "</td><td>" + (f.order || "-") + "</td><td>" + (f.size || "-") + "</td>" +
-          "<td><button class='btn btn-danger btn-sm' onclick=\"deleteCustomField('" + tab + "','" + f.id + "')\">حذف</button></td></tr>";
-      });
+    var preview = $("colOrderPreview");
+    if (!window._activeColTab) return;
+    var key = fieldKeyForTab(window._activeColTab);
+    var list = sortedFields(key);
+    if (preview) {
+      preview.innerHTML = list.length
+        ? ("<strong>ترتیب فعلی در فرم:</strong> " + list.map(function (f, i) {
+          return (f.order || (i + 1)) + ". " + escHtml(f.label);
+        }).join("  ←  "))
+        : "هنوز فیلدی برای این تب نیست.";
+    }
+    if (!box) return;
+    if (!list.length) {
+      box.innerHTML = "<div class='col-empty'>فیلدی در این تب نیست. از فرم بالا اضافه کنید.</div>";
+      return;
+    }
+    var html = "<table class='data-table'><thead><tr><th>ترتیب</th><th>عنوان</th><th>نوع</th><th>اندازه</th><th>جابجایی</th><th>حذف</th></tr></thead><tbody>";
+    list.forEach(function (f, i) {
+      var kind = f.inputKind || (f.type === "select" ? "select" : "simple");
+      var kindFa = kind === "select" ? "کشویی" : kind === "date" ? "تاریخ" : kind === "number" ? "عددی" : "ساده";
+      html += "<tr>" +
+        "<td><input type='number' min='1' class='form-input col-order-input' data-fid='" + escHtml(f.id) + "' value='" + (f.order || i + 1) + "'></td>" +
+        "<td><strong>" + escHtml(f.label) + "</strong></td>" +
+        "<td>" + kindFa + "</td>" +
+        "<td>" + (f.size || "—") + "</td>" +
+        "<td><button type='button' class='btn btn-outline btn-sm col-move-up' data-fid='" + escHtml(f.id) + "'>▲ بالاتر</button> " +
+        "<button type='button' class='btn btn-outline btn-sm col-move-down' data-fid='" + escHtml(f.id) + "'>▼ پایین‌تر</button></td>" +
+        "<td><button type='button' class='btn btn-danger btn-sm col-del-field' data-fid='" + escHtml(f.id) + "'>حذف</button></td></tr>";
     });
     html += "</tbody></table>";
     box.innerHTML = html;
+
+    Array.prototype.forEach.call(box.querySelectorAll(".col-order-input"), function (inp) {
+      inp.addEventListener("change", function () {
+        setColFieldOrder(key, inp.getAttribute("data-fid"), parseInt(inp.value, 10));
+      });
+    });
+    Array.prototype.forEach.call(box.querySelectorAll(".col-move-up"), function (btn) {
+      btn.addEventListener("click", function () { nudgeColField(key, btn.getAttribute("data-fid"), -1); });
+    });
+    Array.prototype.forEach.call(box.querySelectorAll(".col-move-down"), function (btn) {
+      btn.addEventListener("click", function () { nudgeColField(key, btn.getAttribute("data-fid"), 1); });
+    });
+    Array.prototype.forEach.call(box.querySelectorAll(".col-del-field"), function (btn) {
+      btn.addEventListener("click", function () {
+        var id = btn.getAttribute("data-fid");
+        if (typeof deleteCustomField === "function") deleteCustomField(key, id);
+        else {
+          state.customFields[key] = getFieldList(key).filter(function (f) { return f.id !== id; });
+          saveState();
+          if (typeof renderAllCustomFieldsInFormsAndTables === "function") renderAllCustomFieldsInFormsAndTables();
+        }
+        renderColDesignerPanel();
+        renderColTabGrid();
+      });
+    });
+  }
+
+  function setColFieldOrder(key, fieldId, newOrder) {
+    var list = getFieldList(key);
+    var field = null;
+    list.forEach(function (f) { if (f.id === fieldId) field = f; });
+    if (!field) return;
+    if (!newOrder || newOrder < 1) newOrder = 1;
+    field.order = newOrder;
+    saveState();
+    logOp("تغییر ترتیب فیلد «" + field.label + "» به " + newOrder);
+    if (typeof renderAllCustomFieldsInFormsAndTables === "function") renderAllCustomFieldsInFormsAndTables();
+    renderColFieldList();
+  }
+
+  function nudgeColField(key, fieldId, dir) {
+    var list = sortedFields(key);
+    var idx = -1;
+    list.forEach(function (f, i) { if (f.id === fieldId) idx = i; });
+    var swap = idx + dir;
+    if (idx < 0 || swap < 0 || swap >= list.length) return;
+    var a = list[idx];
+    var b = list[swap];
+    var ao = Number(a.order) || (idx + 1);
+    var bo = Number(b.order) || (swap + 1);
+    if (ao === bo) {
+      a.order = idx + 1 + dir;
+      b.order = idx + 1;
+    } else {
+      a.order = bo;
+      b.order = ao;
+    }
+    saveState();
+    logOp("جابجایی فیلد «" + a.label + "»");
+    if (typeof renderAllCustomFieldsInFormsAndTables === "function") renderAllCustomFieldsInFormsAndTables();
+    renderColFieldList();
   }
 
   function applyFieldPermissions() {
@@ -490,7 +844,18 @@
     try { patchExcel(); } catch (e) {}
     try { setupVisitButtons(); } catch (e) {}
     try { renderActivityMapAndChart(); } catch (e) {}
+    try {
+      if (typeof deleteCustomField === "function" && !window._colDelPatched) {
+        window._colDelPatched = true;
+        var origDel = deleteCustomField;
+        window.deleteCustomField = function (entity, fieldId) {
+          origDel(entity, fieldId);
+          if (typeof window.refreshColumnsDesigner === "function") window.refreshColumnsDesigner();
+        };
+      }
+    } catch (e) {}
     try { setupColumnsDesigner(); } catch (e) {}
+    try { if (typeof window.renderExtraTabCustomFields === "function") window.renderExtraTabCustomFields(); } catch (e) {}
     try { applyFieldPermissions(); } catch (e) {}
     try { renderDiagOps(); } catch (e) {}
     try { enhanceOverviewSearch(); } catch (e) {}
@@ -519,8 +884,8 @@
       obs.observe(el, { childList: true });
     });
 
-    logOp("بارگذاری نسخه ۱۱");
-    console.log("v11 ready");
+    logOp("بارگذاری نسخه ۱۱.۱");
+    console.log("v11.1 ready");
   }
 
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot);

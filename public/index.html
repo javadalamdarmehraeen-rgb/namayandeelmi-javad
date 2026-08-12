@@ -16,7 +16,7 @@
   <meta name="theme-color" content="#0d9488" />
   
   <!-- Custom Style with Anti-Cache Version 9.1.0 -->
-  <link rel="stylesheet" href="style.css?v=11.0.0" />
+  <link rel="stylesheet" href="style.css?v=11.1.0" />
 </head>
 <body>
 
@@ -1351,27 +1351,24 @@
             <span>🧱 طراحی فیلد و ستون برای همه تب‌ها</span>
           </div>
         </div>
-        <p style="font-size:.88rem;color:#64748b;margin-bottom:1rem;">برای هر تب فیلد ساده/کشویی با ترتیب، اندازه، وابستگی و افزودن لحظه‌ای بسازید. فیلد کشویی خودکار به تب افزودن‌ها هم می‌رود.</p>
+        <p style="font-size:.88rem;color:#64748b;margin-bottom:1rem;">مثل داشبورد، اول تب را انتخاب کنید. بعد فقط فیلدهای همان تب را اضافه یا حذف کنید تا صفحه شلوغ نشود. شماره ترتیب محل قرارگیری فیلد در فرم همان تب را مشخص می‌کند.</p>
         <div id="columnsDesignerHost"></div>
       </div>
       <div class="card">
         <div class="card-header">
           <div class="card-title">
-            <span>🧱 کاتالوگ کالاهای دارویی</span>
+            <span>➕ اضافه کردن کالا</span>
           </div>
           <button id="btnResetProductForm" class="btn btn-outline btn-sm">
-            <span>➕ ثبت کالای جدید</span>
+            <span>➕ کالای جدید</span>
           </button>
         </div>
+        <div id="productSavedBanner" class="product-saved-banner" hidden></div>
         <form id="formProduct" onsubmit="return false;" style="margin-bottom: 1.5rem;">
           <div class="form-grid">
             <div class="form-group">
-              <label class="form-label">نام دارو / محصول *</label>
+              <label class="form-label">نام کالا *</label>
               <input type="text" id="productName" class="form-input" placeholder="مثال: کپسول امپرازول ۲۰ میلی‌گرم" required />
-            </div>
-            <div class="form-group">
-              <label class="form-label">دسته درمانی *</label>
-              <input type="text" id="productCategory" class="form-input" placeholder="مثال: گوارش / دیابت" required />
             </div>
             <div class="form-group">
               <label class="form-label">قیمت پخش (ریال) *</label>
@@ -1397,8 +1394,7 @@
             <thead>
               <tr>
                 <th>ردیف</th>
-                <th>نام دارو / محصول</th>
-                <th>دسته درمانی</th>
+                <th>نام کالا</th>
                 <th>قیمت پخش (ریال)</th>
                 <th>قیمت داروخانه (ریال)</th>
                 <th>موجودی</th>
@@ -1970,12 +1966,12 @@
   <script src="vendor/leaflet.js"></script>
   
   <!-- Data & Application Logic with Anti-Cache Version 9.1.0 -->
-  <script src="crm-data.js?v=11.0.0"></script>
-  <script src="crm-app.js?v=11.0.0"></script>
-  <script src="crm-features-v9.js?v=11.0.0"></script>
-  <script src="iran-facilities.js?v=11.0.0" defer></script>
-  <script src="crm-features-v10.js?v=11.0.0"></script>
-  <script src="crm-features-v11.js?v=11.0.0"></script>
+  <script src="crm-data.js?v=11.1.0"></script>
+  <script src="crm-app.js?v=11.1.0"></script>
+  <script src="crm-features-v9.js?v=11.1.0"></script>
+  <script src="iran-facilities.js?v=11.1.0" defer></script>
+  <script src="crm-features-v10.js?v=11.1.0"></script>
+  <script src="crm-features-v11.js?v=11.1.0"></script>
   <!-- فیلدهای مخفی سازگاری با کد قبلی (نباید در UI دیده شوند) -->
   <input type="hidden" id="pharmacyLocationText" value="" />
   <input type="hidden" id="doctorLocationText" value="" />
