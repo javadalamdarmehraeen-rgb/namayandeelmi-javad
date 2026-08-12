@@ -2911,6 +2911,7 @@ document.addEventListener("DOMContentLoaded", () => {
   try { setupNotificationsMessaging(); } catch(e) {}
 
   try { setupJalaliDateAutoSlash(); } catch(e) {}
+  try { setupJalaliCalendarPicker(); } catch(e) {}
   try { setupFormListSwitchers(); } catch(e) {}
   try { setupDropdownAutoClear(); } catch(e) {}
   try { setupCSVExportButtons(); } catch(e) {}
@@ -3169,4 +3170,127 @@ function setupFormListSwitchers() {
   switchCard("btnShowPhForm", "btnShowPhList", "cardPhForm", "cardPhList");
   switchCard("btnShowDocForm", "btnShowDocList", "cardDocForm", "cardDocList");
   switchCard("btnShowOrdForm", "btnShowOrdList", "cardOrdForm", "cardOrdList");
+}
+
+
+// ============================================================================
+// 29. تقویم تعاملی شمسی با پاپ‌آپ و نشانگر روز (Matching Screenshot Date Picker)
+// ============================================================================
+let activeDateInputForPicker = null;
+
+function setupJalaliCalendarPicker() {
+  const popup = document.getElementById("jalaliCalendarPopup");
+  if (!popup) return;
+
+  const dateInputs = document.querySelectorAll("#pharmacyDate, #doctorDate, #orderDate, #visitDate, #leaveFromDate, #leaveToDate");
+  dateInputs.forEach(inp => {
+    if (inp.dataset.pickerBound === "true") return;
+    inp.dataset.pickerBound = "true";
+
+    // ساخت کادر نشانگر تقویم در سمت راست/چپ فیلد (هماهنگ با اسکرین‌شات)
+    const wrapper = document.createElement("div");
+    wrapper.className = "jalali-input-wrapper";
+    inp.parentNode.insertBefore(wrapper, inp);
+    wrapper.appendChild(inp);
+
+    const badge = document.createElement("div");
+    badge.className = "jalali-badge";
+    badge.title = "انتخاب تاریخ از تقویم";
+    badge.innerHTML = `
+      <span class="jalali-badge-header">July</span>
+      <span class="jalali-badge-day">17</span>
+    `;
+    wrapper.insertBefore(badge, inp);
+
+    const openPicker = (e) => {
+      e.stopPropagation();
+      activeDateInputForPicker = inp;
+      renderJalaliCalendarDays();
+      const rect = inp.getBoundingClientRect();
+      popup.style.top = (window.scrollY + rect.bottom + 6) + "px";
+      popup.style.left = (window.scrollX + rect.left) + "px";
+      popup.classList.add("active");
+    };
+
+    badge.addEventListener("click", openPicker);
+    inp.addEventListener("click", openPicker);
+  });
+
+  const btnPrev = document.getElementById("jalaliPrevMonth");
+  const btnNext = document.getElementById("jalaliNextMonth");
+  const monthSel = document.getElementById("jalaliMonthSelect");
+  const yearSel = document.getElementById("jalaliYearSelect");
+  const btnToday = document.getElementById("jalaliTodayBtn");
+
+  if (monthSel && yearSel) {
+    monthSel.onchange = () => renderJalaliCalendarDays();
+    yearSel.onchange = () => renderJalaliCalendarDays();
+  }
+
+  if (btnPrev && monthSel) {
+    btnPrev.onclick = () => {
+      let idx = monthSel.selectedIndex;
+      if (idx > 0) { monthSel.selectedIndex = idx - 1; renderJalaliCalendarDays(); }
+    };
+  }
+
+  if (btnNext && monthSel) {
+    btnNext.onclick = () => {
+      let idx = monthSel.selectedIndex;
+      if (idx < monthSel.options.length - 1) { monthSel.selectedIndex = idx + 1; renderJalaliCalendarDays(); }
+    };
+  }
+
+  if (btnToday) {
+    btnToday.onclick = () => {
+      if (activeDateInputForPicker) {
+        activeDateInputForPicker.value = "1405/05/21";
+      }
+      popup.classList.remove("active");
+    };
+  }
+
+  document.addEventListener("click", (e) => {
+    if (!popup.contains(e.target) && !e.target.classList.contains("jalali-badge") && e.target !== activeDateInputForPicker) {
+      popup.classList.remove("active");
+    }
+  });
+}
+
+function renderJalaliCalendarDays() {
+  const grid = document.getElementById("jalaliDaysGrid");
+  const monthSel = document.getElementById("jalaliMonthSelect");
+  const yearSel = document.getElementById("jalaliYearSelect");
+  if (!grid) return;
+
+  grid.innerHTML = "";
+  const year = yearSel ? yearSel.value : "1405";
+  const month = monthSel ? monthSel.value : "05";
+
+  // افزودن چند خانه خالی اولیه برای شروع ماه
+  for (let i = 0; i < 2; i++) {
+    const empty = document.createElement("div");
+    empty.className = "jalali-day-cell empty";
+    grid.appendChild(empty);
+  }
+
+  const persianNumbers = ["۱", "۲", "۳", "۴", "۵", "۶", "۷", "۸", "۹", "۱۰", "۱۱", "۱۲", "۱۳", "۱۴", "۱۵", "۱۶", "۱۷", "۱۸", "۱۹", "۲۰", "۲۱", "۲۲", "۲۳", "۲۴", "۲۵", "۲۶", "۲۷", "۲۸", "۲۹", "۳۰", "۳۱"];
+
+  for (let d = 1; d <= 31; d++) {
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "jalali-day-cell" + (d === 21 ? " active" : "");
+    btn.textContent = persianNumbers[d - 1] || d;
+
+    btn.onclick = (e) => {
+      e.stopPropagation();
+      const dStr = d < 10 ? "0" + d : String(d);
+      if (activeDateInputForPicker) {
+        activeDateInputForPicker.value = `${year}/${month}/${dStr}`;
+      }
+      document.getElementById("jalaliCalendarPopup").classList.remove("active");
+    };
+
+    grid.appendChild(btn);
+  }
 }

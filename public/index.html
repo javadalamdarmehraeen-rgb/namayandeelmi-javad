@@ -12,8 +12,8 @@
   <link rel="manifest" href="manifest.json" />
   <meta name="theme-color" content="#0d9488" />
   
-  <!-- Custom Style with Anti-Cache Version 6.0.0 -->
-  <link rel="stylesheet" href="style.css?v=6.0.0" />
+  <!-- Custom Style with Anti-Cache Version 7.0.0 -->
+  <link rel="stylesheet" href="style.css?v=7.0.0" />
 </head>
 <body>
 
@@ -1668,11 +1668,47 @@
     </div>
   </div>
 
+  <!-- ======================================================================
+       PERSIAN JALALI CALENDAR POPUP PICKER (تقویم تعاملی شمسی هماهنگ با اسکرین‌شات)
+       ====================================================================== -->
+  <div id="jalaliCalendarPopup" class="jalali-popup-picker">
+    <div class="jalali-picker-header">
+      <button type="button" class="jalali-nav-arrow" id="jalaliPrevMonth">&gt;</button>
+      <div class="jalali-header-selects">
+        <select id="jalaliYearSelect" class="jalali-select">
+          <option value="1404">۱۴۰۴</option>
+          <option value="1405" selected>۱۴۰۵</option>
+          <option value="1406">۱۴۰۶</option>
+        </select>
+        <select id="jalaliMonthSelect" class="jalali-select">
+          <option value="01">فروردین</option>
+          <option value="02">اردیبهشت</option>
+          <option value="03">خرداد</option>
+          <option value="04">تیر</option>
+          <option value="05" selected>مرداد</option>
+          <option value="06">شهریور</option>
+          <option value="07">مهر</option>
+          <option value="08">آبان</option>
+          <option value="09">آذر</option>
+          <option value="10">دی</option>
+          <option value="11">بهمن</option>
+          <option value="12">اسفند</option>
+        </select>
+      </div>
+      <button type="button" class="jalali-nav-arrow" id="jalaliNextMonth">&lt;</button>
+    </div>
+    <div class="jalali-weekdays">
+      <div>ش</div><div>ی</div><div>د</div><div>س</div><div>چ</div><div>پ</div><div>ج</div>
+    </div>
+    <div id="jalaliDaysGrid" class="jalali-days-grid"></div>
+    <button type="button" id="jalaliTodayBtn" class="jalali-today-btn">امروز: ۱۴۰۵/۰۵/۲۱</button>
+  </div>
+
   <!-- Leaflet JS -->
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   
-  <!-- Data & Application Logic with Anti-Cache Version 6.0.0 -->
-  <script src="crm-data.js?v=6.0.0"></script>
-  <script src="crm-app.js?v=6.0.0"></script>
+  <!-- Data & Application Logic with Anti-Cache Version 7.0.0 -->
+  <script src="crm-data.js?v=7.0.0"></script>
+  <script src="crm-app.js?v=7.0.0"></script>
 </body>
 </html>
