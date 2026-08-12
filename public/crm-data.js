@@ -555,16 +555,61 @@ const DEFAULT_INITIAL_DATA = {
     { id: "home-2", repName: "خانم نیلا محرمی", address: "تهران، منطقه ۶، بلوار کشاورز", lat: 35.7100, lng: 51.3950 }
   ],
   repRoutes: [
-    { id: "rt-1", repName: "جواد علمدار", date: "1405/05/19", checkpoint: "ورود به منطقه ۳ - میدان ظفر", status: "تردد عادی" },
-    { id: "rt-2", repName: "خانم نیلا محرمی", date: "1405/05/19", checkpoint: "ویزیت مطب‌های شریعتی", status: "در حال ویزیت" }
+    {
+      id: "rt-1",
+      repName: "جواد علمدار",
+      date: "1405/05/22",
+      startTime: "08:10",
+      endTime: "16:40",
+      checkpoint: "داروخانه دکتر عرفانی",
+      lastStop: "میدان ونک — توقف ۱۲ دقیقه",
+      visited: 2,
+      pending: 1,
+      status: "تردد عادی",
+      path: [[35.7550, 51.4350], [35.7605, 51.4180], [35.7008, 51.3912], [35.7590, 51.4280]],
+      stops: [
+        { name: "منزل", lat: 35.7550, lng: 51.4350, visited: true, time: "08:10" },
+        { name: "داروخانه دکتر عرفانی", lat: 35.7605, lng: 51.4180, visited: true, time: "09:20" },
+        { name: "داروخانه شبانه‌روزی رازی", lat: 35.7008, lng: 51.3912, visited: false, time: "—" }
+      ]
+    },
+    {
+      id: "rt-2",
+      repName: "خانم نیلا محرمی",
+      date: "1405/05/22",
+      startTime: "08:40",
+      endTime: "15:10",
+      checkpoint: "مطب دکتر الناز تهرانی",
+      lastStop: "مطب شریعتی — توقف ۱۸ دقیقه",
+      visited: 1,
+      pending: 1,
+      status: "در حال ویزیت",
+      path: [[35.7100, 51.3950], [35.7250, 51.4100], [35.7590, 51.4280]],
+      stops: [
+        { name: "منزل", lat: 35.7100, lng: 51.3950, visited: true, time: "08:40" },
+        { name: "مطب دکتر الناز تهرانی", lat: 35.7250, lng: 51.4100, visited: true, time: "10:05" },
+        { name: "داروخانه دکتر عقبایی", lat: 35.7590, lng: 51.4280, visited: false, time: "—" }
+      ]
+    }
   ],
   leaves: [
     { id: "lv-1", repName: "آقای داوود عقبایی", fromDate: "1405/05/22", toDate: "1405/05/24", reason: "مرخصی استحقاقی", status: "تایید شده" },
     { id: "lv-2", repName: "خانم نیلا محرمی", fromDate: "1405/05/28", toDate: "1405/05/29", reason: "امور شخصی", status: "در حال بررسی" }
   ],
+  visits: [
+    { id: "v-1", repName: "جواد علمدار", target: "داروخانه دکتر عرفانی", date: "1405/05/22" },
+    { id: "v-2", repName: "خانم نیلا محرمی", target: "مطب دکتر الناز تهرانی", date: "1405/05/22" },
+    { id: "v-3", repName: "جواد علمدار", target: "داروخانه شبانه‌روزی رازی", date: "1405/05/21" }
+  ],
+  hospitals: [
+    { id: "h-1", name: "بیمارستان شریعتی", type: "بیمارستان", specialty: "عمومی و تخصصی", province: "تهران", city: "تهران", district: "منطقه ۶", address: "خیابان کارگر شمالی، جنب دانشگاه تهران", lat: 35.7215, lng: 51.3908, hours: "شبانه‌روزی" },
+    { id: "h-2", name: "بیمارستان قلب شهید رجایی", type: "بیمارستان", specialty: "قلب و عروق", province: "تهران", city: "تهران", district: "منطقه ۳", address: "ولیعصر، نیایش", lat: 35.7770, lng: 51.3980, hours: "شبانه‌روزی" },
+    { id: "h-3", name: "درمانگاه شبانه روزی ولیعصر", type: "درمانگاه", specialty: "عمومی", province: "تهران", city: "تهران", district: "منطقه ۳", address: "خیابان ولیعصر، بالاتر از پارک وی", lat: 35.7820, lng: 51.4185, hours: "شبانه‌روزی" },
+    { id: "h-4", name: "بیمارستان امام رضا (ع)", type: "بیمارستان", specialty: "عمومی", province: "خراسان رضوی", city: "مشهد", district: "منطقه ۱", address: "مشهد، خیابان امام رضا", lat: 36.2870, lng: 59.6150, hours: "شبانه‌روزی" }
+  ],
   notifications: [
-    { id: "not-1", date: "1405/05/19", title: "اعلام تارگت فروش ماه جدید", message: "همکاران گرامی، تارگت ماه شهریور در کارتابل قرار گرفت.", sender: "مدیر سیستم" },
-    { id: "not-2", date: "1405/05/15", title: "بروزرسانی نسخه 2.5.1", message: "امکان بارگذاری عکس داروخانه و وضعیت درصدی فعال شد.", sender: "مدیر سیستم" }
+    { id: "not-1", date: "1405/05/19", title: "اعلام تارگت فروش ماه جدید", message: "همکاران گرامی، تارگت ماه شهریور در کارتابل قرار گرفت.", sender: "مدیر سیستم", recipient: "همه کاربران (اعلان عمومی)", isRead: false },
+    { id: "not-2", date: "1405/05/15", title: "بروزرسانی نسخه 2.5.1", message: "امکان بارگذاری عکس داروخانه و وضعیت درصدی فعال شد.", sender: "مدیر سیستم", recipient: "همه کاربران (اعلان عمومی)", isRead: false }
   ],
   salesTargets: [
     { id: "tgt-1", repName: "جواد علمدار", month: "مرداد 1405", targetAmount: 500000000, achievedAmount: 380000000 },
@@ -574,7 +619,16 @@ const DEFAULT_INITIAL_DATA = {
     smsEnabled: true,
     telegramToken: "123456:ABC-DEF1234ghIkl-zyx57W2v1u123ew11",
     whatsappNumber: "09120000000",
-    eitaaChannel: "@namayande_channel"
+    eitaaChannel: "@namayande_channel",
+    allowPeerMessaging: false,
+    channels: {
+      bale: { auto: false, manual: true },
+      eitaa: { auto: false, manual: true },
+      telegram: { auto: true, manual: true },
+      soroush: { auto: false, manual: true },
+      whatsapp: { auto: false, manual: true },
+      sms: { auto: false, manual: true }
+    }
   },
   products: [
     {

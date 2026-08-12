@@ -1262,3 +1262,152 @@ body {
   color: #0d9488;
 }
 
+
+/* ===========================================================================
+   v9.1.0 — Logo, login gate, geo autocomplete, split lists, charts
+   ============================================================================ */
+.logo-icon-img {
+  background: #ffffff !important;
+  padding: 3px;
+  overflow: hidden;
+}
+.logo-icon-img img {
+  width: 42px;
+  height: 42px;
+  object-fit: contain;
+  display: block;
+}
+.side-logo-img {
+  width: 36px;
+  height: 36px;
+  object-fit: contain;
+  background: #fff;
+  border-radius: 8px;
+  padding: 2px;
+}
+.login-logo-img {
+  width: 110px;
+  height: auto;
+  display: inline-block;
+  margin-bottom: 0.35rem;
+}
+.login-gate {
+  position: fixed;
+  inset: 0;
+  z-index: 8000;
+  background: linear-gradient(160deg, #0f766e 0%, #134e4a 55%, #0f172a 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+.login-gate.hidden { display: none; }
+.login-gate-card {
+  width: 100%;
+  max-width: 420px;
+  background: #fff;
+  border-radius: 18px;
+  padding: 1.5rem 1.35rem 1.25rem;
+  box-shadow: 0 20px 50px rgba(0,0,0,0.28);
+  text-align: center;
+}
+.login-gate-card h2 {
+  font-size: 1.15rem;
+  margin: 0.35rem 0 0.35rem;
+  color: #0f172a;
+}
+.login-gate-card p { color: #64748b; font-size: 0.86rem; margin-bottom: 0.85rem; }
+.login-gate-card .form-group { text-align: right; margin-bottom: 0.65rem; }
+.login-gate-hint { font-size: 0.78rem; color: #94a3b8; margin-top: 0.75rem; }
+
+.geo-suggest-wrap { position: relative; width: 100%; }
+.geo-suggest-box {
+  position: absolute;
+  top: calc(100% + 4px);
+  right: 0;
+  left: 0;
+  background: #fff;
+  border: 1.5px solid #0d9488;
+  border-radius: 10px;
+  box-shadow: 0 10px 24px rgba(15,23,42,0.16);
+  z-index: 50;
+  max-height: 240px;
+  overflow-y: auto;
+}
+.geo-suggest-item {
+  display: block;
+  width: 100%;
+  text-align: right;
+  background: #fff;
+  border: none;
+  border-bottom: 1px solid #e2e8f0;
+  padding: 0.65rem 0.8rem;
+  font-family: inherit;
+  font-size: 0.86rem;
+  color: #0f172a;
+  cursor: pointer;
+}
+.geo-suggest-item:last-child { border-bottom: none; }
+.geo-suggest-item:hover { background: #f0fdf4; color: #0f766e; }
+
+.activity-chart-box {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 0.85rem;
+  margin: 0 0 1.25rem;
+}
+.activity-bar-card {
+  background: #f8fafc;
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  padding: 0.75rem;
+}
+.activity-bar-track {
+  height: 10px;
+  background: #e2e8f0;
+  border-radius: 999px;
+  overflow: hidden;
+  margin-top: 0.45rem;
+}
+.activity-bar-fill {
+  height: 100%;
+  background: #0d9488;
+  border-radius: 999px;
+}
+
+.install-links-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 0.75rem;
+  margin-bottom: 1.15rem;
+}
+.install-link-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  background: #f0fdf4;
+  border: 1.5px solid #bbf7d0;
+  border-radius: 12px;
+  padding: 0.9rem;
+  text-decoration: none;
+  color: #166534;
+  font-weight: 700;
+}
+.install-link-card span { font-weight: 500; font-size: 0.8rem; color: #15803d; }
+
+.loc-ok { color: #047857; font-weight: 800; }
+.loc-miss { color: #b45309; font-weight: 700; }
+.table-pager {
+  display: flex;
+  gap: 0.4rem;
+  justify-content: flex-end;
+  margin-top: 0.75rem;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 720px) {
+  .logo-text h1 { font-size: 0.95rem; }
+  .header-user-pill { display: none; }
+  .map-container { height: 280px; }
+  .login-gate-card { padding: 1.1rem; }
+}

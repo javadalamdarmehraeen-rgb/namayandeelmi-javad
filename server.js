@@ -54,6 +54,32 @@ const server = http.createServer((req, res) => {
     }));
   }
 
+  // 1b. پروکسی ژئوکد (برای جستجوی لحظه‌ای آدرس حتی وقتی Nominatim از مرورگر محدود است)
+  if ((pathname === '/api/geocode' || pathname === '/api/reverse') && req.method === 'GET') {
+    const q = parsedUrl.searchParams.get('q') || '';
+    const lat = parsedUrl.searchParams.get('lat') || '';
+    const lng = parsedUrl.searchParams.get('lng') || parsedUrl.searchParams.get('lon') || '';
+    const limit = parsedUrl.searchParams.get('limit') || '5';
+    const target = pathname === '/api/reverse'
+      ? `https://nominatim.openstreetmap.org/reverse?format=json&lat=${encodeURIComponent(lat)}&lon=${encodeURIComponent(lng)}&zoom=18&addressdetails=1`
+      : `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(q)}&limit=${encodeURIComponent(limit)}&addressdetails=1&countrycodes=ir`;
+
+    fetch(target, {
+      headers: {
+        'Accept-Language': 'fa,en',
+        'User-Agent': 'namayandeelmi-javad-crm/9.1 (scientific-rep-app)'
+      }
+    }).then(async (up) => {
+      const text = await up.text();
+      res.writeHead(up.ok ? 200 : up.status, { 'Content-Type': 'application/json; charset=utf-8' });
+      res.end(text);
+    }).catch((err) => {
+      res.writeHead(502, { 'Content-Type': 'application/json; charset=utf-8' });
+      res.end(JSON.stringify({ status: 'error', message: String(err.message || err) }));
+    });
+    return;
+  }
+
   // 2. وب‌سرویس دریافت اطلاعات (GET /api/state)
   if (pathname === '/api/state' && req.method === 'GET') {
     res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });

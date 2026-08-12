@@ -3,7 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>سیستم جامع مدیریت و ویزیت علمی، داروخانه‌ها و پزشکان (CRM / PWA)</title>
+  <title>سیستم جامع مدیریت و ویزیت علمی — طنین طب طاها</title>
+  <link rel="icon" type="image/png" href="favicon.png" />
+  <link rel="apple-touch-icon" href="apple-touch-icon.png" />
+  <meta name="application-name" content="طنین طب طاها" />
   
   <!-- Leaflet CSS -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -12,10 +15,34 @@
   <link rel="manifest" href="manifest.json" />
   <meta name="theme-color" content="#0d9488" />
   
-  <!-- Custom Style with Anti-Cache Version 8.0.0 -->
-  <link rel="stylesheet" href="style.css?v=8.0.0" />
+  <!-- Custom Style with Anti-Cache Version 9.1.0 -->
+  <link rel="stylesheet" href="style.css?v=9.1.0" />
 </head>
 <body>
+
+  <div id="loginGateOverlay" class="login-gate">
+    <div class="login-gate-card">
+      <img src="logo.png" alt="Tanin Teb Taha" class="login-logo-img" />
+      <h2>ورود به سامانه طنین طب طاها</h2>
+      <p>نام کاربری، رمز عبور و شماره همراه خود را وارد کنید.</p>
+      <div class="form-group">
+        <label class="form-label" for="gateUsername">نام کاربری</label>
+        <input type="text" id="gateUsername" class="form-input" placeholder="admin" style="direction:ltr;" />
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="gatePassword">رمز عبور</label>
+        <input type="password" id="gatePassword" class="form-input" placeholder="123" style="direction:ltr;" />
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="gatePhone">شماره همراه</label>
+        <input type="text" id="gatePhone" class="form-input" placeholder="09120000000" style="direction:ltr;" />
+      </div>
+      <button type="button" id="btnGateLogin" class="btn btn-primary" style="width:100%; background:#0d9488; margin-top:0.75rem;">
+        ورود به برنامه
+      </button>
+      <p class="login-gate-hint">نمونه ورود مدیر: admin / 123</p>
+    </div>
+  </div>
 
   <!-- Top App Header matching Screenshot 1 -->
   <header class="app-header">
@@ -24,10 +51,12 @@
         <button id="btnToggleSideMenu" class="btn-menu-hamburger" title="منوی امکانات برنامه">
           <span>☰</span>
         </button>
-        <div class="logo-icon">🏥</div>
+        <div class="logo-icon logo-icon-img" title="طنین طب طاها">
+          <img src="logo.png" alt="Tanin Teb Taha" />
+        </div>
         <div class="logo-text">
           <h1 id="headerCompanyNameDisplay">سیستم مدیریت ویزیت علمی و شبکه درمان</h1>
-          <p>هماهنگ با Render.com، Neon، و منوی ۲۰ قابلیت مدیریتی</p>
+          <p>طنین طب طاها — Tanin Teb Taha</p>
         </div>
       </div>
       <div class="header-actions">
@@ -60,8 +89,8 @@
   <aside id="sideMenuDrawer" class="side-menu-drawer">
     <div class="side-menu-header">
       <div style="display: flex; align-items: center; gap: 0.5rem;">
-        <span style="font-size: 1.5rem;">🏥</span>
-        <span style="font-weight: 800; font-size: 1.1rem; color: #fff;">امکانات و منوی جامع</span>
+        <img src="logo.png" alt="3T" class="side-logo-img" />
+        <span style="font-weight: 800; font-size: 1.05rem; color: #fff;">طنین طب طاها</span>
       </div>
       <button id="btnCloseSideMenu" class="btn-close-side" title="بستن">✕</button>
     </div>
@@ -123,20 +152,8 @@
         </div>
       </div>
 
-      <!-- 20-Section Quick Launchpad Grid (لانچ‌پد امکانات سامانه - بدون اسکرول افقی) -->
-      <div class="card" style="margin-bottom: 1.5rem;">
-        <div class="card-header">
-          <div class="card-title">
-            <span>🚀 دسترسی یکجا به تمامی ۲۰ قابلیت مدیریتی (بدون نیاز به اسکرول به چپ و راست)</span>
-          </div>
-        </div>
-        <p style="font-size: 0.88rem; color: #64748b; margin-bottom: 1rem;">
-          تمامی امکانات سامانه در یک صفحه چیده شده‌اند تا بدون اسکرول به چپ و راست، با یک کلیک وارد هر بخش شوید:
-        </p>
-        <div class="launchpad-grid" id="dashboardLaunchpadGrid">
-          <!-- Generated dynamically for all 20 sections -->
-        </div>
-      </div>
+      <!-- لانچ‌پد پایین داشبورد حذف شد (منوی بالا و سایدبار کافی است) -->
+      <div id="dashboardLaunchpadGrid" style="display:none;"></div>
 
       <!-- Interactive Chart Analytics Widget (Section 1 Requirement) -->
       <div class="card" id="dashboardChartsWidget" style="margin-bottom: 1.5rem;">
@@ -316,10 +333,13 @@
                 </div>
               </div>
 
-              <!-- Map Search bar (Matching Screenshot 3) -->
-              <div style="display: flex; gap: 0.5rem; margin-bottom: 0.75rem;">
-                <input type="text" id="phMapSearchInput" class="form-input" placeholder="🔍 جستجوی آدرس یا نام محل... (مثلاً: میدان ونک تهران)" />
-                <button type="button" id="btnPhMapSearch" class="btn btn-outline" style="white-space: nowrap;">جستجو</button>
+              <!-- Map Search bar + live autocomplete (فیلد لوکیشن و نقشه) -->
+              <div class="geo-suggest-wrap" style="margin-bottom: 0.75rem;">
+                <div style="display: flex; gap: 0.5rem;">
+                  <input type="text" id="phMapSearchInput" class="form-input" autocomplete="off" placeholder="🔍 لوکیشن و نقشه: آدرس را تایپ کنید تا پیشنهادها بیاید..." />
+                  <button type="button" id="btnPhMapSearch" class="btn btn-outline" style="white-space: nowrap;">جستجو</button>
+                </div>
+                <div id="phMapSuggestBox" class="geo-suggest-box" hidden></div>
               </div>
 
               <div class="form-grid">
@@ -330,10 +350,6 @@
                 <div class="form-group">
                   <label class="form-label">طول جغرافیایی (lng)</label>
                   <input type="number" step="any" id="pharmacyLng" class="form-input" value="51.4180" />
-                </div>
-                <div class="form-group full-width">
-                  <label class="form-label">توضیحات لوکیشن / آدرس استخراج شده از نقشه</label>
-                  <input type="text" id="pharmacyLocationText" class="form-input" placeholder="آدرس استخراج شده از موقعیت..." readonly style="background: #f8fafc;" />
                 </div>
               </div>
             </div>
@@ -356,7 +372,7 @@
       </div>
 
       <!-- Pharmacy List Card -->
-      <div class="card" id="cardPhList" style="display: none;">
+      <div class="card" id="cardPhList">
         <div class="card-header">
           <div class="card-title">
             <span>📋 لیست داروخانه‌های ثبت شده (<span id="phTableCountBadge">0</span>)</span>
@@ -508,10 +524,13 @@
                 </div>
               </div>
 
-              <!-- Map Search bar -->
-              <div style="display: flex; gap: 0.5rem; margin-bottom: 0.75rem;">
-                <input type="text" id="docMapSearchInput" class="form-input" placeholder="🔍 جستجوی آدرس یا نام محل مطب..." />
-                <button type="button" id="btnDocMapSearch" class="btn btn-outline">جستجو</button>
+              <!-- Map Search bar + live autocomplete -->
+              <div class="geo-suggest-wrap" style="margin-bottom: 0.75rem;">
+                <div style="display: flex; gap: 0.5rem;">
+                  <input type="text" id="docMapSearchInput" class="form-input" autocomplete="off" placeholder="🔍 لوکیشن و نقشه مطب: آدرس را تایپ کنید..." />
+                  <button type="button" id="btnDocMapSearch" class="btn btn-outline">جستجو</button>
+                </div>
+                <div id="docMapSuggestBox" class="geo-suggest-box" hidden></div>
               </div>
 
               <div class="form-grid">
@@ -522,10 +541,6 @@
                 <div class="form-group">
                   <label class="form-label">طول جغرافیایی (lng)</label>
                   <input type="number" step="any" id="doctorLng" class="form-input" value="51.4400" />
-                </div>
-                <div class="form-group full-width">
-                  <label class="form-label">توضیحات لوکیشن / آدرس استخراج شده مطب</label>
-                  <input type="text" id="doctorLocationText" class="form-input" placeholder="آدرس استخراج شده مطب از موقعیت..." readonly style="background: #f8fafc;" />
                 </div>
               </div>
             </div>
@@ -545,7 +560,7 @@
       </div>
 
       <!-- Doctor List Card -->
-      <div class="card" id="cardDocList" style="display: none;">
+      <div class="card" id="cardDocList">
         <div class="card-header">
           <div class="card-title">
             <span>📋 لیست پزشکان و مطب‌های ثبت شده</span>
@@ -702,7 +717,7 @@
         </form>
       </div>
 
-      <div class="card" id="cardOrdList" style="display: none;">
+      <div class="card" id="cardOrdList">
         <div class="card-header">
           <div class="card-title">
             <span>📋 لیست سفارشات ثبت شده</span>
@@ -754,6 +769,7 @@
         <p style="font-size: 0.88rem; color: #64748b; margin-bottom: 1rem;">
           ثبت تردد، ویزیت‌ها و اقدامات لحظه‌ای انجام‌شده توسط تمامی نمایندگان در شبکه درمان.
         </p>
+        <div id="activityChartBox" class="activity-chart-box"></div>
         <div class="table-responsive">
           <table class="data-table">
             <thead>
@@ -781,18 +797,31 @@
           <div class="card-title">
             <span>🗺️ نقشه جامع شبکه درمان (داروخانه‌ها 🏥، پزشکان 👨‍⚕️ و بیمارستان‌ها 🏥 با نام ثابت)</span>
           </div>
-          <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
-            <select id="mapFilterProvince" class="form-select dropdown-auto-clear" style="width: 140px;">
-              <option value="">همه استان‌ها</option>
-            </select>
-            <select id="mapFilterCity" class="form-select dropdown-auto-clear" style="width: 140px;">
-              <option value="">همه شهرها</option>
-            </select>
-            <select id="mapFilterDistrict" class="form-select dropdown-auto-clear" style="width: 140px;">
-              <option value="">همه مناطق</option>
-            </select>
+          <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: flex-end;">
+            <div>
+              <label class="form-label" style="margin:0 0 4px;">استان</label>
+              <select id="mapFilterProvince" class="form-select dropdown-auto-clear" style="width: 150px;">
+                <option value="ایران">ایران</option>
+                <option value="">همه استان‌ها</option>
+              </select>
+            </div>
+            <div>
+              <label class="form-label" style="margin:0 0 4px;">شهر</label>
+              <select id="mapFilterCity" class="form-select dropdown-auto-clear" style="width: 140px;">
+                <option value="">همه شهرها</option>
+              </select>
+            </div>
+            <div>
+              <label class="form-label" style="margin:0 0 4px;">منطقه</label>
+              <select id="mapFilterDistrict" class="form-select dropdown-auto-clear" style="width: 140px;">
+                <option value="">همه مناطق</option>
+              </select>
+            </div>
             <button id="btnFocusMapRegion" class="btn btn-primary btn-sm" style="background: #0d9488;">
-              <span>🔍 بزرگنمایی و فیلتر موقعیت</span>
+              <span>🔍 جستجو روی نقشه</span>
+            </button>
+            <button id="btnExportOverviewMapCSV" class="btn btn-success btn-sm" style="background: #0d9488;">
+              <span>⬇️ خروجی اکسل نتایج</span>
             </button>
           </div>
         </div>
@@ -816,7 +845,13 @@
           <div class="card-title">
             <span>📍 ردیابی و موقعیت زنده نمایندگان علمی روی نقشه (با نام ثابت 👔)</span>
           </div>
-          <div style="display: flex; gap: 0.5rem;">
+          <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center;">
+            <select id="liveRepSearchSelect" class="form-select dropdown-auto-clear" style="width: 220px;">
+              <option value="">جستجوی نماینده روی نقشه...</option>
+            </select>
+            <button id="btnFindLiveRep" class="btn btn-primary btn-sm" style="background: #0d9488;">
+              <span>📍 نمایش لوکیشن زنده</span>
+            </button>
             <button id="btnSimulateLiveMovement" class="btn btn-primary btn-sm" style="background: #0d9488;">
               <span>▶️ شبیه‌سازی حرکت زنده نمایندگان</span>
             </button>
@@ -911,8 +946,18 @@
           </button>
         </div>
         <p style="font-size: 0.88rem; color: #64748b; margin-bottom: 1rem;">
-          با کلیک بر روی «موقعیت فعلی من»، مختصات دقیق منزل شما روی نقشه درج شده و در مسیر تردد روزانه به عنوان نقطه شروع/پایان لحاظ می‌شود.
+          با کلیک بر روی «موقعیت فعلی من»، مختصات دقیق منزل شما روی نقشه درج شده و آدرس متنی همان نقطه در فیلد زیر نوشته می‌شود.
         </p>
+        <div class="form-grid" style="margin-bottom: 1rem;">
+          <div class="form-group">
+            <label class="form-label" for="repHomeSelect">نماینده علمی</label>
+            <select id="repHomeSelect" class="form-select dropdown-auto-clear"></select>
+          </div>
+          <div class="form-group full-width">
+            <label class="form-label" for="repHomeAddressInput">آدرس منزل</label>
+            <input type="text" id="repHomeAddressInput" class="form-input" placeholder="آدرس منزل یا موقعیت فعلی..." />
+          </div>
+        </div>
         <div id="map-rep-homes" class="map-container" style="height: 360px; margin-bottom: 1.5rem;"></div>
 
         <div class="table-responsive">
@@ -1456,19 +1501,20 @@
             <span>💬 تنظیمات اتصال به پیام‌رسان‌ها (پیامک، تلگرام، ایتا و واتساپ)</span>
           </div>
         </div>
-        <div class="form-grid">
+        <div class="form-grid" id="messengersSettingsGrid">
           <div class="form-group full-width">
             <label class="form-label">توکن ربات تلگرام / ایتا</label>
-            <input type="text" class="form-input" value="123456:ABC-DEF1234ghIkl-zyx57W2v1u123ew11" style="direction: ltr;" />
+            <input type="text" id="msgTelegramToken" class="form-input" value="123456:ABC-DEF1234ghIkl-zyx57W2v1u123ew11" style="direction: ltr;" />
           </div>
           <div class="form-group">
             <label class="form-label">شماره پیش‌فرض واتساپ / پیامک</label>
-            <input type="text" class="form-input" value="09120000000" style="direction: ltr;" />
+            <input type="text" id="msgWhatsappNumber" class="form-input" value="09120000000" style="direction: ltr;" />
           </div>
           <div class="form-group">
             <label class="form-label">کانال رسمی اعلان‌ها</label>
-            <input type="text" class="form-input" value="@namayande_channel" style="direction: ltr;" />
+            <input type="text" id="msgEitaaChannel" class="form-input" value="@namayande_channel" style="direction: ltr;" />
           </div>
+          <div class="form-group full-width" id="messengerTogglesBox"></div>
         </div>
       </div>
     </section>
@@ -1505,10 +1551,25 @@
             </div>
           </div>
 
+          <div class="form-grid" style="margin-bottom: 1rem;">
+            <div class="form-group">
+              <label class="form-label" for="backupIntervalSelect">تایم پشتیبان خودکار</label>
+              <select id="backupIntervalSelect" class="form-select">
+                <option value="1">هر ۱ دقیقه</option>
+                <option value="5" selected>هر ۵ دقیقه</option>
+                <option value="15">هر ۱۵ دقیقه</option>
+                <option value="60">هر ۶۰ دقیقه</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="backupEmailInput">ارسال نسخه به ایمیل</label>
+              <input type="email" id="backupEmailInput" class="form-input" placeholder="manager@example.com" />
+            </div>
+          </div>
           <div style="display: flex; align-items: center; gap: 0.75rem; background: #ffffff; padding: 0.85rem; border-radius: 8px; border: 1px solid var(--border-color);">
             <input type="checkbox" id="chkAutoBackupEnabled" checked style="width: 20px; height: 20px; accent-color: #0d9488;" />
             <label for="chkAutoBackupEnabled" style="font-weight: 700; color: #0f172a; cursor: pointer;">
-              فعال‌سازی پشتیبان‌گیری خودکار هر ۵ دقیقه و پس از هر تغییر در اطلاعات برنامه
+              فعال‌سازی پشتیبان‌گیری خودکار و جایگزینی فایل قدیمی crm-backup-latest.json
             </label>
             <span id="autoBackupHandleStatus" style="margin-right: auto; font-size: 0.82rem; background: #eff6ff; color: #2563eb; padding: 0.3rem 0.75rem; border-radius: 999px; font-weight: 700;">
               ذخیره خودکار در حافظه محلی + دانلود تک‌فایلی
@@ -1563,12 +1624,26 @@
             <span>📲 نصب اپلیکیشن روی تلفن همراه و کامپیوتر (PWA)</span>
           </div>
         </div>
+        <div style="text-align:center; margin-bottom:1.25rem;">
+          <img src="logo.png" alt="طنین طب طاها" style="width:96px;height:auto;" />
+        </div>
+        <div class="install-links-grid">
+          <a class="install-link-card" id="btnInstallWindows" href="#" download>
+            <strong>💻 ویندوز</strong>
+            <span>نصب PWA روی دسکتاپ</span>
+          </a>
+          <a class="install-link-card" id="btnInstallAndroid" href="#">
+            <strong>🤖 اندروید</strong>
+            <span>افزودن به صفحه اصلی</span>
+          </a>
+          <a class="install-link-card" id="btnInstallIos" href="#">
+            <strong>🍎 آیفون</strong>
+            <span>Add to Home Screen</span>
+          </a>
+        </div>
         <p style="font-size: 0.95rem; color: #334155; line-height: 1.8;">
-          این برنامه مجهز به فناوری <strong>Progressive Web App (PWA)</strong> است و می‌توانید آن را مانند یک اپلیکیشن بومی روی صفحه اصلی موبایل یا ویندوز نصب کنید:
-          <br /><br />
-          <strong>در گوشی‌های اندروید (Chrome):</strong> از منوی سه نقطه مرورگر، گزینه «افزودن به صفحه اصلی (Add to Home screen)» یا «Install app» را انتخاب کنید.
-          <br />
-          <strong>در گوشی‌های آیفون (Safari):</strong> دکمه Share پایین مرورگر را زده و گزینه «Add to Home Screen» را انتخاب کنید.
+          این برنامه مجهز به فناوری <strong>Progressive Web App (PWA)</strong> است و می‌توانید آن را مانند یک اپلیکیشن بومی روی صفحه اصلی موبایل یا ویندوز نصب کنید.
+          آیکون برنامه، لوگوی کپسول طنین طب طاها است.
         </p>
       </div>
     </section>
@@ -1594,52 +1669,6 @@
         </div>
       </div>
     </section>
-
-  </main>
-
-  <!-- ======================================================================
-       BOTTOM OFFLINE / DIAGNOSTIC ORANGE BANNER (Matching Screenshot 8)
-       "ارتباط با سرور برقرار نیست... لطفاً اتصال اینترنت خود را بررسی کنید..."
-       ====================================================================== -->
-  <div id="diagnosticOfflineBanner" class="offline-diagnostic-banner" style="display: none;">
-    <div class="offline-banner-content">
-      <div class="offline-icon">📡</div>
-      <div class="offline-text">
-        <h4>ارتباط با سرور برقرار نیست</h4>
-        <p>لطفاً اتصال اینترنت خود را بررسی کنید. می‌توانید به کار ادامه دهید؛ اطلاعات ذخیره می‌شود و پس از وصل شدن ارسال خواهد شد.</p>
-      </div>
-    </div>
-    <div class="offline-actions">
-      <button type="button" class="btn-banner-retry" onclick="retryServerConnection()">🔄 بررسی مجدد</button>
-      <button type="button" class="btn-banner-diag" onclick="switchTab('tab-troubleshooting'); document.getElementById('diagnosticOfflineBanner').style.display='none';">🛠️ عیب‌یابی</button>
-      <button type="button" class="btn-banner-close" onclick="document.getElementById('diagnosticOfflineBanner').style.display='none';">بستن</button>
-    </div>
-  </div>
-
-  <!-- ======================================================================
-       MODAL: ADD NEW OPTION TO SELECT FIELD (افزودن گزینه جدید به فیلد کشویی)
-       ====================================================================== -->
-  <div id="modalAddOption" class="modal-overlay">
-    <div class="modal-content">
-      <div class="card-header">
-        <div class="card-title">
-          <span>➕ افزودن گزینه جدید به منوی کشویی</span>
-        </div>
-      </div>
-      <form id="formAddOptionModal" onsubmit="return false;">
-        <input type="hidden" id="modalAddOptionFieldId" value="" />
-        <input type="hidden" id="modalAddOptionEntityType" value="" />
-        <div class="form-group">
-          <label class="form-label" id="modalAddOptionLabel">گزینه جدید</label>
-          <input type="text" id="modalAddOptionValue" class="form-input" placeholder="عنوان گزینه جدید را وارد کنید..." required />
-        </div>
-        <div style="display: flex; justify-content: flex-end; gap: 0.75rem; margin-top: 1.25rem;">
-          <button type="button" class="btn btn-outline" onclick="closeModalAddOption()">انصراف</button>
-          <button type="submit" class="btn btn-primary" style="background: #0d9488;">ثبت گزینه جدید</button>
-        </div>
-      </form>
-    </div>
-  </div>
 
     <!-- ======================================================================
          21. TAB: SEARCH INFORMATION (جستجوی اطلاعات) - Section 6 Requirement
@@ -1694,6 +1723,53 @@
         </div>
       </div>
     </section>
+
+
+  </main>
+
+  <!-- ======================================================================
+       BOTTOM OFFLINE / DIAGNOSTIC ORANGE BANNER (Matching Screenshot 8)
+       "ارتباط با سرور برقرار نیست... لطفاً اتصال اینترنت خود را بررسی کنید..."
+       ====================================================================== -->
+  <div id="diagnosticOfflineBanner" class="offline-diagnostic-banner" style="display: none;">
+    <div class="offline-banner-content">
+      <div class="offline-icon">📡</div>
+      <div class="offline-text">
+        <h4>ارتباط با سرور برقرار نیست</h4>
+        <p>لطفاً اتصال اینترنت خود را بررسی کنید. می‌توانید به کار ادامه دهید؛ اطلاعات ذخیره می‌شود و پس از وصل شدن ارسال خواهد شد.</p>
+      </div>
+    </div>
+    <div class="offline-actions">
+      <button type="button" class="btn-banner-retry" onclick="retryServerConnection()">🔄 بررسی مجدد</button>
+      <button type="button" class="btn-banner-diag" onclick="switchTab('tab-troubleshooting'); document.getElementById('diagnosticOfflineBanner').style.display='none';">🛠️ عیب‌یابی</button>
+      <button type="button" class="btn-banner-close" onclick="document.getElementById('diagnosticOfflineBanner').style.display='none';">بستن</button>
+    </div>
+  </div>
+
+  <!-- ======================================================================
+       MODAL: ADD NEW OPTION TO SELECT FIELD (افزودن گزینه جدید به فیلد کشویی)
+       ====================================================================== -->
+  <div id="modalAddOption" class="modal-overlay">
+    <div class="modal-content">
+      <div class="card-header">
+        <div class="card-title">
+          <span>➕ افزودن گزینه جدید به منوی کشویی</span>
+        </div>
+      </div>
+      <form id="formAddOptionModal" onsubmit="return false;">
+        <input type="hidden" id="modalAddOptionFieldId" value="" />
+        <input type="hidden" id="modalAddOptionEntityType" value="" />
+        <div class="form-group">
+          <label class="form-label" id="modalAddOptionLabel">گزینه جدید</label>
+          <input type="text" id="modalAddOptionValue" class="form-input" placeholder="عنوان گزینه جدید را وارد کنید..." required />
+        </div>
+        <div style="display: flex; justify-content: flex-end; gap: 0.75rem; margin-top: 1.25rem;">
+          <button type="button" class="btn btn-outline" onclick="closeModalAddOption()">انصراف</button>
+          <button type="submit" class="btn btn-primary" style="background: #0d9488;">ثبت گزینه جدید</button>
+        </div>
+      </form>
+    </div>
+  </div>
 
   <!-- ======================================================================
        MODAL: ROW DETAILS & MESSAGING (نمایش جزئیات ردیف و ارسال به بله، ایتا، تلگرام، سروش، واتساپ)
@@ -1783,9 +1859,7 @@
   <div id="modalLogin" class="modal-overlay">
     <div class="modal-content" style="max-width: 480px;">
       <div style="text-align: center; margin-bottom: 1rem;">
-        <div style="width: 64px; height: 64px; background: linear-gradient(135deg, #0d9488 0%, #1e3a8a 100%); color: #fff; font-size: 2.2rem; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(13, 148, 136, 0.4);">
-          💊
-        </div>
+        <img src="logo.png" alt="Tanin Teb Taha" class="login-logo-img" />
       </div>
       <div class="card-header">
         <div class="card-title">
@@ -1797,6 +1871,14 @@
       </p>
       <form id="formLoginModal" onsubmit="return false;">
         <div class="form-group">
+          <label class="form-label" for="loginUsernameInput">نام کاربری *</label>
+          <input type="text" id="loginUsernameInput" class="form-input" placeholder="admin" style="direction: ltr;" autocomplete="username" />
+        </div>
+        <div class="form-group" style="margin-top: 0.5rem;">
+          <label class="form-label" for="loginPasswordInput">رمز عبور *</label>
+          <input type="password" id="loginPasswordInput" class="form-input" placeholder="رمز عبور" style="direction: ltr;" autocomplete="current-password" />
+        </div>
+        <div class="form-group" style="margin-top: 0.5rem;">
           <label class="form-label" for="loginRoleSelect">نقش کاربری *</label>
           <select id="loginRoleSelect" class="form-select dropdown-auto-clear" required>
             <option value="0">مدیر سیستم (Admin)</option>
@@ -1866,8 +1948,12 @@
   <!-- Leaflet JS -->
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   
-  <!-- Data & Application Logic with Anti-Cache Version 8.0.0 -->
-  <script src="crm-data.js?v=8.0.0"></script>
-  <script src="crm-app.js?v=8.0.0"></script>
+  <!-- Data & Application Logic with Anti-Cache Version 9.1.0 -->
+  <script src="crm-data.js?v=9.1.0"></script>
+  <script src="crm-app.js?v=9.1.0"></script>
+  <script src="crm-features-v9.js?v=9.1.0"></script>
+  <!-- فیلدهای مخفی سازگاری با کد قبلی (نباید در UI دیده شوند) -->
+  <input type="hidden" id="pharmacyLocationText" value="" />
+  <input type="hidden" id="doctorLocationText" value="" />
 </body>
 </html>

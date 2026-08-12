@@ -68,6 +68,8 @@ function loadState() {
       if (!state.salesTargets) state.salesTargets = DEFAULT_INITIAL_DATA.salesTargets;
       if (!state.messengers) state.messengers = DEFAULT_INITIAL_DATA.messengers;
       if (!state.products) state.products = DEFAULT_INITIAL_DATA.products;
+      if (!state.hospitals) state.hospitals = DEFAULT_INITIAL_DATA.hospitals || [];
+      if (!state.visits) state.visits = DEFAULT_INITIAL_DATA.visits || [];
     } catch (e) {
       console.error("خطا در خواندن اطلاعات قبلی، بارگذاری اطلاعات پیش‌فرض:", e);
       state = JSON.parse(JSON.stringify(DEFAULT_INITIAL_DATA));

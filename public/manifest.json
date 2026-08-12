@@ -1,0 +1,21 @@
+{
+  "id": "/?source=pwa",
+  "name": "سیستم مدیریت ویزیت علمی — طنین طب طاها",
+  "short_name": "نماینده علمی",
+  "description": "برنامه مدیریت نمایندگان علمی، داروخانه‌ها، پزشکان و سفارشات",
+  "start_url": "/login?source=pwa",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#ffffff",
+  "theme_color": "#0d9488",
+  "dir": "rtl",
+  "lang": "fa-IR",
+  "categories": ["business", "productivity", "medical"],
+  "icons": [
+    { "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/icons/maskable-192.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable" },
+    { "src": "/icons/maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
