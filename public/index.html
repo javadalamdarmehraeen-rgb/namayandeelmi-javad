@@ -159,7 +159,7 @@
          2. TAB: PHARMACIES (داروخانه‌ها) - Matching Screenshots 2 & 3
          ====================================================================== -->
     <section id="tab-pharmacies" class="tab-pane">
-      <div class="card">
+      <div class="card" id="cardPhForm">
         <div class="card-header" style="justify-content: space-between;">
           <div style="display: flex; align-items: center; gap: 0.5rem;">
             <button class="btn btn-outline btn-sm" onclick="switchTab('tab-dashboard')">→ بازگشت</button>
@@ -311,8 +311,8 @@
         </form>
       </div>
 
-      <!-- Pharmacy List Card (Matching Screenshot 2) -->
-      <div class="card">
+      <!-- Pharmacy List Card -->
+      <div class="card" id="cardPhList" style="display: none;">
         <div class="card-header">
           <div class="card-title">
             <span>📋 لیست داروخانه‌های ثبت شده (<span id="phTableCountBadge">0</span>)</span>
@@ -358,7 +358,7 @@
          3. TAB: DOCTORS AND CLINICS (پزشکان)
          ====================================================================== -->
     <section id="tab-doctors" class="tab-pane">
-      <div class="card">
+      <div class="card" id="cardDocForm">
         <div class="card-header" style="justify-content: space-between;">
           <div style="display: flex; align-items: center; gap: 0.5rem;">
             <button class="btn btn-outline btn-sm" onclick="switchTab('tab-dashboard')">→ بازگشت</button>
@@ -367,6 +367,10 @@
           <div class="card-title" style="font-size: 1.25rem;">
             <span>ثبت اطلاعات پزشک و مطب 👨‍⚕️</span>
           </div>
+        </div>
+        <div style="display: flex; gap: 0.5rem; margin-bottom: 1.25rem; border-bottom: 2px solid var(--border-color); padding-bottom: 0.5rem;">
+          <button type="button" class="btn btn-primary btn-sm" id="btnShowDocForm" style="background: #0d9488;">فرم ثبت</button>
+          <button type="button" class="btn btn-outline btn-sm" id="btnShowDocList">لیست (<span id="docListCountBadge">0</span>)</button>
         </div>
 
         <form id="formDoctor" onsubmit="return false;">
@@ -497,7 +501,7 @@
       </div>
 
       <!-- Doctor List Card -->
-      <div class="card">
+      <div class="card" id="cardDocList" style="display: none;">
         <div class="card-header">
           <div class="card-title">
             <span>📋 لیست پزشکان و مطب‌های ثبت شده</span>
@@ -552,7 +556,7 @@
         </div>
       </div>
       
-      <div class="card">
+      <div class="card" id="cardOrdForm">
         <div class="card-header">
           <div class="card-title">
             <span>📦 ثبت سفارش جدید برای داروخانه</span>
@@ -560,6 +564,10 @@
           <button id="btnResetOrderForm" class="btn btn-outline btn-sm">
             <span>➕ پاک کردن فرم / سفارش جدید</span>
           </button>
+        </div>
+        <div style="display: flex; gap: 0.5rem; margin-bottom: 1.25rem; border-bottom: 2px solid var(--border-color); padding-bottom: 0.5rem;">
+          <button type="button" class="btn btn-primary btn-sm" id="btnShowOrdForm" style="background: #0d9488;">فرم ثبت</button>
+          <button type="button" class="btn btn-outline btn-sm" id="btnShowOrdList">لیست (<span id="ordListCountBadge">0</span>)</button>
         </div>
 
         <form id="formOrder" onsubmit="return false;">
@@ -650,7 +658,7 @@
         </form>
       </div>
 
-      <div class="card">
+      <div class="card" id="cardOrdList" style="display: none;">
         <div class="card-header">
           <div class="card-title">
             <span>📋 لیست سفارشات ثبت شده</span>
