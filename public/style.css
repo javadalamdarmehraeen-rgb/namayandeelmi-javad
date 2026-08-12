@@ -319,6 +319,16 @@ body {
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   gap: 1.25rem;
 }
+.form-grid.form-grid-sized {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+}
+.form-grid.form-grid-sized > .form-group.full-width {
+  flex: 1 1 100%;
+  max-width: 100%;
+  width: 100%;
+}
 
 .form-group {
   display: flex;

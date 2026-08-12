@@ -725,6 +725,25 @@
     return ((state.customFields || {})[entity] || []).filter(function (f) { return f.showInList; })
       .slice().sort(function (a, b) { return (Number(a.order) || 999) - (Number(b.order) || 999); });
   }
+  function thVis(entity, id, label) {
+    if (typeof window.isColShownInList === "function" && !window.isColShownInList(entity, id)) return "";
+    return "<th>" + label + "</th>";
+  }
+  function tdVis(entity, id, html) {
+    if (typeof window.isColShownInList === "function" && !window.isColShownInList(entity, id)) return "";
+    return html;
+  }
+  function extraHead(entity) {
+    if (typeof window.extraListColumns !== "function") return "";
+    return window.extraListColumns(entity).map(function (c) { return "<th>" + c.label + "</th>"; }).join("");
+  }
+  function extraCells(entity, rec) {
+    if (typeof window.extraListColumns !== "function") return "";
+    return window.extraListColumns(entity).map(function (c) {
+      var val = (typeof window.builtinFieldValue === "function") ? window.builtinFieldValue(entity, c.id, rec) : "—";
+      return "<td>" + val + "</td>";
+    }).join("");
+  }
   function cfHeaderHtml(entity) {
     return sortedListFields(entity).map(function (f) { return "<th>" + f.label + "</th>"; }).join("");
   }
@@ -739,7 +758,15 @@
     const tbody = $("tablePharmaciesBody");
     const thead = $("tablePharmaciesHeader");
     if (!tbody || !thead) return;
-    thead.innerHTML = "<th>ردیف</th><th>نام نماینده</th><th>تاریخ ثبت</th><th>استان</th><th>شهر</th><th>نام داروخانه</th><th>شماره همراه</th><th>درصدی</th><th>لوکیشن</th><th>مسیریابی</th>" + cfHeaderHtml("pharmacy") + "<th>عملیات</th>";
+    thead.innerHTML = "<th>ردیف</th><th>نام نماینده</th>" +
+      thVis("pharmacy", "pharmacyDate", "تاریخ ثبت") +
+      thVis("pharmacy", "pharmacyProvince", "استان") +
+      thVis("pharmacy", "pharmacyCity", "شهر") +
+      thVis("pharmacy", "pharmacyName", "نام داروخانه") +
+      thVis("pharmacy", "pharmacyPhone", "شماره همراه") +
+      thVis("pharmacy", "pharmacyIsPercentage", "درصدی") +
+      thVis("pharmacy", "phMapSearchInput", "لوکیشن") +
+      "<th>مسیریابی</th>" + extraHead("pharmacy") + cfHeaderHtml("pharmacy") + "<th>عملیات</th>";
     const query = (q != null ? q : val("searchPharmacyInput")).toLowerCase();
     const filtered = visiblePharmacies().filter(function (ph) {
       if (!query) return true;
@@ -754,14 +781,15 @@
       tr.innerHTML =
         "<td>" + abs + "</td>" +
         "<td><strong>" + (ph.repName || "—") + "</strong></td>" +
-        "<td>" + (ph.dateAdded || "—") + "</td>" +
-        "<td>" + (ph.province || "—") + "</td>" +
-        "<td>" + (ph.city || "—") + "</td>" +
-        "<td><strong style='color:#0d9488'>" + ph.name + "</strong></td>" +
-        "<td style='direction:ltr'>" + (ph.phone || "—") + "</td>" +
-        "<td>" + (ph.isPercentage ? "بله" : "خیر") + "</td>" +
-        "<td>" + locCell(ph) + "</td>" +
+        tdVis("pharmacy", "pharmacyDate", "<td>" + (ph.dateAdded || "—") + "</td>") +
+        tdVis("pharmacy", "pharmacyProvince", "<td>" + (ph.province || "—") + "</td>") +
+        tdVis("pharmacy", "pharmacyCity", "<td>" + (ph.city || "—") + "</td>") +
+        tdVis("pharmacy", "pharmacyName", "<td><strong style='color:#0d9488'>" + ph.name + "</strong></td>") +
+        tdVis("pharmacy", "pharmacyPhone", "<td style='direction:ltr'>" + (ph.phone || "—") + "</td>") +
+        tdVis("pharmacy", "pharmacyIsPercentage", "<td>" + (ph.isPercentage ? "بله" : "خیر") + "</td>") +
+        tdVis("pharmacy", "phMapSearchInput", "<td>" + locCell(ph) + "</td>") +
         "<td><button type='button' class='btn btn-outline btn-sm btn-route'>مسیریابی</button></td>" +
+        extraCells("pharmacy", ph) +
         cfCellHtml("pharmacy", ph) +
         "<td><button type='button' class='btn btn-outline btn-sm btn-edit'>ویرایش</button> <button type='button' class='btn btn-danger btn-sm btn-del'>حذف</button></td>";
       tr.addEventListener("click", function () { if (typeof openRowDetailsModal === "function") openRowDetailsModal(ph, "pharmacy"); });
@@ -784,7 +812,14 @@
     const tbody = $("tableDoctorsBody");
     const thead = $("tableDoctorsHeader");
     if (!tbody || !thead) return;
-    thead.innerHTML = "<th>ردیف</th><th>نام نماینده</th><th>تاریخ ثبت</th><th>استان / شهر / منطقه</th><th>نام پزشک / مطب</th><th>تخصص</th><th>درصدی</th><th>لوکیشن</th><th>مسیریابی</th>" + cfHeaderHtml("doctor") + "<th>عملیات</th>";
+    thead.innerHTML = "<th>ردیف</th><th>نام نماینده</th>" +
+      thVis("doctor", "doctorDate", "تاریخ ثبت") +
+      thVis("doctor", "doctorProvince", "استان / شهر / منطقه") +
+      thVis("doctor", "doctorName", "نام پزشک / مطب") +
+      thVis("doctor", "doctorSpecialty", "تخصص") +
+      thVis("doctor", "doctorIsPercentage", "درصدی") +
+      thVis("doctor", "docMapSearchInput", "لوکیشن") +
+      "<th>مسیریابی</th>" + extraHead("doctor") + cfHeaderHtml("doctor") + "<th>عملیات</th>";
     const query = (q != null ? q : val("searchDoctorInput")).toLowerCase();
     const filtered = visibleDoctors().filter(function (d) {
       if (!query) return true;
@@ -823,7 +858,14 @@
     const tbody = $("tableOrdersBody");
     const thead = $("tableOrdersHeader");
     if (!tbody || !thead) return;
-    thead.innerHTML = "<th>ردیف</th><th>نام نماینده</th><th>نام داروخانه</th><th>استان / شهر</th><th>تاریخ</th><th>اقلام / جایزه</th><th>مبلغ کل</th><th>وضعیت</th><th>عملیات</th>";
+    thead.innerHTML = "<th>ردیف</th>" +
+      thVis("order", "orderRepName", "نام نماینده") +
+      thVis("order", "orderPharmacyName", "نام داروخانه") +
+      thVis("order", "orderProvince", "استان / شهر") +
+      thVis("order", "orderDate", "تاریخ") +
+      "<th>اقلام / جایزه</th><th>مبلغ کل</th>" +
+      thVis("order", "orderStatus", "وضعیت") +
+      extraHead("order") + cfHeaderHtml("order") + "<th>عملیات</th>";
     const query = (q != null ? q : val("searchOrderInput")).toLowerCase();
     const filtered = visibleOrders().filter(function (o) {
       if (!query) return true;
@@ -838,13 +880,14 @@
       const abs = ((listPage.order - 1) * PAGE_SIZE) + i + 1;
       tr.innerHTML =
         "<td>" + abs + "</td>" +
-        "<td><strong>" + (ord.repName || "—") + "</strong></td>" +
-        "<td><strong style='color:#0d9488'>" + ord.pharmacyName + "</strong></td>" +
-        "<td>" + [ord.province, ord.city].filter(Boolean).join(" / ") + "</td>" +
-        "<td>" + (ord.orderDate || "—") + "</td>" +
+        tdVis("order", "orderRepName", "<td><strong>" + (ord.repName || "—") + "</strong></td>") +
+        tdVis("order", "orderPharmacyName", "<td><strong style='color:#0d9488'>" + ord.pharmacyName + "</strong></td>") +
+        tdVis("order", "orderProvince", "<td>" + [ord.province, ord.city].filter(Boolean).join(" / ") + "</td>") +
+        tdVis("order", "orderDate", "<td>" + (ord.orderDate || "—") + "</td>") +
         "<td>" + (gifts || "—") + "</td>" +
         "<td>" + Number(ord.totalAmount || 0).toLocaleString("fa-IR") + "</td>" +
-        "<td>" + (ord.status || "—") + "</td>" +
+        tdVis("order", "orderStatus", "<td>" + (ord.status || "—") + "</td>") +
+        extraCells("order", ord) +
         cfCellHtml("order", ord) +
         "<td><button type='button' class='btn btn-outline btn-sm btn-edit'>ویرایش</button> <button type='button' class='btn btn-danger btn-sm btn-del'>حذف</button></td>";
       tr.addEventListener("click", function () { if (typeof openRowDetailsModal === "function") openRowDetailsModal(ord, "order"); });

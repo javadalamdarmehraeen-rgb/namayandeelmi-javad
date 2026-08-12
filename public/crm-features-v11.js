@@ -440,6 +440,10 @@
     return false;
   }
 
+  function slugLabel(s) {
+    return String(s || "").replace(/\s+/g, "-").replace(/[^\w\u0600-\u06FF\-]/g, "").slice(0, 40) || "field";
+  }
+
   function scanBuiltinFields(tabId) {
     var grid = getMainGrid(tabId);
     if (!grid) return [];
@@ -452,14 +456,18 @@
       idx += 1;
       var input = ch.querySelector("input:not([type=hidden]), select, textarea");
       var label = ch.querySelector(".form-label, label, h4");
-      var id = (input && input.id) || ch.id || ("builtin-" + tabId + "-" + idx);
       var labelText = "";
       if (label) labelText = String(label.textContent || "").replace(/\s+/g, " ").trim();
       if (!labelText && ch.querySelector("span")) {
         labelText = String(ch.querySelector("span").textContent || "").replace(/\s+/g, " ").trim();
       }
-      if (!labelText) labelText = id;
       if (labelText.length > 70) labelText = labelText.slice(0, 67) + "…";
+      var id = ch.getAttribute("data-col-fid");
+      if (!id) {
+        id = (input && input.id) || ch.id || ("bf-" + tabId + "-" + slugLabel(labelText || String(idx)));
+        ch.setAttribute("data-col-fid", id);
+      }
+      if (!labelText) labelText = id;
       var type = "block";
       if (input) {
         if (input.tagName === "SELECT") type = "select";
@@ -467,7 +475,7 @@
         else if ((input.id || "").toLowerCase().indexOf("date") !== -1) type = "date";
         else type = "simple";
       }
-      fields.push({ id: id, label: labelText, type: type, scanOrder: idx, el: ch });
+      fields.push({ id: id, label: labelText, type: type, scanOrder: idx, el: ch, full: ch.classList.contains("full-width") });
     });
     return fields;
   }
@@ -476,9 +484,13 @@
     var key = fieldKeyForTab(tabId);
     var meta = ensureMeta(key);
     var list = [];
+    var listDefaults = DEFAULT_LIST_ON[key] || [];
     scanBuiltinFields(tabId).forEach(function (b) {
       if (!meta[b.id]) meta[b.id] = {};
       if (meta[b.id].order == null || meta[b.id].order === "") meta[b.id].order = b.scanOrder;
+      var showForm = meta[b.id].showInForm !== false && meta[b.id].hidden !== true;
+      var showList = meta[b.id].showInList;
+      if (showList !== true && showList !== false) showList = listDefaults.indexOf(b.id) !== -1;
       list.push({
         id: b.id,
         builtin: true,
@@ -486,9 +498,10 @@
         type: b.type,
         order: Number(meta[b.id].order) || b.scanOrder,
         size: meta[b.id].size,
-        hidden: meta[b.id].hidden === true,
-        showInForm: meta[b.id].hidden !== true,
-        showInList: false
+        hidden: !showForm,
+        showInForm: showForm,
+        showInList: showList === true,
+        full: b.full
       });
     });
     sortedFields(key).forEach(function (c) {
@@ -745,7 +758,7 @@
     panel.innerHTML =
       '<div class="col-panel-head">' +
         "<div><strong>" + sec.icon + " " + escHtml(sec.label) + "</strong>" +
-        '<div class="col-panel-sub">همه فیلدهای فرم این تب اینجاست — هم فیلدهای بالای کادر درصد و هم پایین. حذف از اینجا فیلد را از خود فرم تب هم برمی‌دارد.</div></div>' +
+        '<div class="col-panel-sub">شماره ترتیب = شماره ردیف. اگر ۴ بگذارید همان فیلد ردیف ۴ فرم می‌شود. ▲▼ یکی‌یکی جابه‌جا می‌کند. اندازه به پیکسل عرض فیلد را عوض می‌کند. تیک نمایش در فرم/لیست برای همه فیلدهاست.</div></div>' +
         '<div class="col-panel-actions">' +
           '<button type="button" class="btn btn-primary btn-sm" id="btnColOpenTab" style="background:#0d9488">باز کردن فرم این تب</button>' +
           '<button type="button" class="btn btn-outline btn-sm" id="btnColBackToGrid">بازگشت به لیست تب‌ها</button>' +
@@ -813,13 +826,14 @@
       var meta = ensureMeta(key);
       if (!meta[editing.id]) meta[editing.id] = {};
       meta[editing.id].label = label;
-      meta[editing.id].order = order;
       meta[editing.id].size = size;
+      meta[editing.id].showInForm = $("colFieldInForm").checked;
+      meta[editing.id].showInList = $("colFieldInList").checked;
       meta[editing.id].hidden = !$("colFieldInForm").checked;
       saveState();
       logOp("ویرایش فیلد ثابت «" + label + "» در تب " + sec.label);
-      applyFullFormLayout(tabId);
       window._editingColField = null;
+      setAnyFieldOrder(tabId, editing.id, order);
       renderColDesignerPanel();
       renderColTabGrid();
       alert("تغییرات فیلد «" + label + "» روی فرم تب «" + sec.label + "» اعمال شد.");
@@ -837,7 +851,6 @@
         rec.allowAddOption = $("colFieldFly").checked;
         rec.showInForm = $("colFieldInForm").checked;
         rec.showInList = $("colFieldInList").checked;
-        rec.order = order;
         rec.size = size;
         rec.dependsOn = ($("colFieldDep").value || "").trim();
         saveState();
@@ -848,8 +861,8 @@
         });
         if (typeof renderCustomFieldsTable === "function") renderCustomFieldsTable();
         if (typeof renderAllCustomFieldsInFormsAndTables === "function") renderAllCustomFieldsInFormsAndTables();
-        applyFullFormLayout(tabId);
         window._editingColField = null;
+        setAnyFieldOrder(tabId, rec.id, order);
         renderColDesignerPanel();
         renderColTabGrid();
         alert("ویرایش فیلد «" + label + "» ذخیره شد و روی فرم تب اعمال گردید.");
@@ -875,10 +888,10 @@
     logOp("افزودن فیلد «" + label + "» به تب " + sec.label + " با ترتیب " + order);
     if (typeof renderCustomFieldsTable === "function") renderCustomFieldsTable();
     if (typeof renderAllCustomFieldsInFormsAndTables === "function") renderAllCustomFieldsInFormsAndTables();
-    applyFullFormLayout(tabId);
+    setAnyFieldOrder(tabId, neu.id, order);
     renderColDesignerPanel();
     renderColTabGrid();
-    alert("فیلد «" + label + "» در تب «" + sec.label + "» ثبت شد و در جایگاه " + order + " فرم قرار گرفت.");
+    alert("فیلد «" + label + "» در تب «" + sec.label + "» ثبت شد و در ردیف " + order + " فرم نشست.");
   }
 
   function renderColFieldList() {
@@ -890,8 +903,8 @@
     var list = getUnifiedFieldList(tabId);
     if (preview) {
       preview.innerHTML = list.length
-        ? ("<strong>همه فیلدهای فرم این تب (" + list.length + "):</strong> " + list.map(function (f) {
-          return (f.order || "—") + ". " + escHtml(f.label) + (f.hidden ? " (مخفی)" : "");
+        ? ("<strong>ردیف‌های فرم این تب:</strong> " + list.map(function (f, i) {
+          return (i + 1) + ". " + escHtml(f.label) + (f.hidden ? " (مخفی در فرم)" : "") + (f.showInList ? "" : " (بدون لیست)");
         }).join("  ←  "))
         : "فیلدی در این تب پیدا نشد.";
     }
@@ -900,19 +913,21 @@
       box.innerHTML = "<div class='col-empty'>فیلدی در فرم این تب نیست.</div>";
       return;
     }
-    var html = "<table class='data-table'><thead><tr><th>ترتیب</th><th>عنوان</th><th>منبع</th><th>نوع</th><th>جابجایی</th><th>عملیات</th></tr></thead><tbody>";
-    list.forEach(function (f) {
+    var html = "<table class='data-table'><thead><tr><th>ردیف / ترتیب</th><th>عنوان</th><th>منبع</th><th>اندازه (px)</th><th>نمایش در فرم</th><th>نمایش در لیست</th><th>جابجایی</th><th>عملیات</th></tr></thead><tbody>";
+    list.forEach(function (f, i) {
       var kind = f.inputKind || f.type || "simple";
-      var kindFa = kind === "select" ? "کشویی" : kind === "date" ? "تاریخ" : kind === "number" ? "عددی" : kind === "block" ? "کادر" : "ساده";
       var src = f.builtin ? "ثابت فرم" : "اضافه‌شده";
       var hid = f.hidden ? " col-row-hidden" : "";
-      html += "<tr class='" + hid + "'>" +
-        "<td><input type='number' min='1' class='form-input col-order-input' data-fid='" + escHtml(f.id) + "' data-builtin='" + (f.builtin ? "1" : "0") + "' value='" + (f.order || "") + "'></td>" +
+      var rowNo = i + 1;
+      html += "<tr class='" + hid + "' data-fid='" + escHtml(f.id) + "'>" +
+        "<td><input type='number' min='1' class='form-input col-order-input' data-fid='" + escHtml(f.id) + "' value='" + rowNo + "' title='شماره ردیف'></td>" +
         "<td><strong>" + escHtml(f.label) + "</strong>" + (f.hidden ? " <span class='col-hidden-badge'>مخفی</span>" : "") + "</td>" +
         "<td>" + src + "</td>" +
-        "<td>" + kindFa + "</td>" +
-        "<td><button type='button' class='btn btn-outline btn-sm col-move-up' data-fid='" + escHtml(f.id) + "'>▲</button> " +
-        "<button type='button' class='btn btn-outline btn-sm col-move-down' data-fid='" + escHtml(f.id) + "'>▼</button></td>" +
+        "<td><input type='number' min='80' max='900' class='form-input col-size-input' data-fid='" + escHtml(f.id) + "' value='" + (f.size || 260) + "'></td>" +
+        "<td style='text-align:center'><input type='checkbox' class='col-flag-form' data-fid='" + escHtml(f.id) + "'" + (f.showInForm ? " checked" : "") + "></td>" +
+        "<td style='text-align:center'><input type='checkbox' class='col-flag-list' data-fid='" + escHtml(f.id) + "'" + (f.showInList ? " checked" : "") + "></td>" +
+        "<td><button type='button' class='btn btn-outline btn-sm col-move-up' data-fid='" + escHtml(f.id) + "'>▲ بالاتر</button> " +
+        "<button type='button' class='btn btn-outline btn-sm col-move-down' data-fid='" + escHtml(f.id) + "'>▼ پایین‌تر</button></td>" +
         "<td class='col-ops'>";
       html += "<button type='button' class='btn btn-outline btn-sm col-edit-field' data-fid='" + escHtml(f.id) + "'>✏️ ویرایش</button> ";
       if (f.hidden && f.builtin) {
@@ -928,6 +943,29 @@
     Array.prototype.forEach.call(box.querySelectorAll(".col-order-input"), function (inp) {
       inp.addEventListener("change", function () {
         setAnyFieldOrder(tabId, inp.getAttribute("data-fid"), parseInt(inp.value, 10));
+      });
+    });
+    Array.prototype.forEach.call(box.querySelectorAll(".col-size-input"), function (inp) {
+      inp.addEventListener("change", function () {
+        writeFieldSize(tabId, inp.getAttribute("data-fid"), inp.value);
+        saveState();
+        applyFullFormLayout(tabId);
+        logOp("تغییر اندازه فیلد به " + inp.value + "px");
+      });
+    });
+    Array.prototype.forEach.call(box.querySelectorAll(".col-flag-form"), function (inp) {
+      inp.addEventListener("change", function () {
+        writeFieldFlag(tabId, inp.getAttribute("data-fid"), "showInForm", inp.checked);
+        saveState();
+        applyFullFormLayout(tabId);
+        renderColFieldList();
+      });
+    });
+    Array.prototype.forEach.call(box.querySelectorAll(".col-flag-list"), function (inp) {
+      inp.addEventListener("change", function () {
+        writeFieldFlag(tabId, inp.getAttribute("data-fid"), "showInList", inp.checked);
+        saveState();
+        refreshEntityLists(tabId);
       });
     });
     Array.prototype.forEach.call(box.querySelectorAll(".col-move-up"), function (btn) {
@@ -982,38 +1020,87 @@
     meta[fieldId].order = newOrder;
   }
 
+  function writeFieldSize(tabId, fieldId, size) {
+    var key = fieldKeyForTab(tabId);
+    var custom = null;
+    getFieldList(key).forEach(function (f) { if (f.id === fieldId) custom = f; });
+    size = parseInt(size, 10) || 220;
+    if (custom) { custom.size = size; return; }
+    var meta = ensureMeta(key);
+    if (!meta[fieldId]) meta[fieldId] = {};
+    meta[fieldId].size = size;
+  }
+
+  function writeFieldFlag(tabId, fieldId, flag, value) {
+    var key = fieldKeyForTab(tabId);
+    var custom = null;
+    getFieldList(key).forEach(function (f) { if (f.id === fieldId) custom = f; });
+    if (custom) {
+      custom[flag] = value;
+      return;
+    }
+    var meta = ensureMeta(key);
+    if (!meta[fieldId]) meta[fieldId] = {};
+    meta[fieldId][flag] = value;
+    if (flag === "showInForm") meta[fieldId].hidden = !value;
+  }
+
+  function refreshEntityLists(tabId) {
+    var key = fieldKeyForTab(tabId);
+    try {
+      if (key === "pharmacy" && typeof renderPharmaciesList === "function") renderPharmaciesList();
+      if (key === "doctor" && typeof renderDoctorsList === "function") renderDoctorsList();
+      if (key === "order" && typeof renderOrdersList === "function") renderOrdersList();
+    } catch (e) {}
+  }
+
+  function reindexOrders(tabId, orderedIds) {
+    orderedIds.forEach(function (id, i) { writeFieldOrder(tabId, id, i + 1); });
+  }
+
+  function ensureSequentialOrders(tabId) {
+    var list = getUnifiedFieldList(tabId);
+    var ok = true;
+    list.forEach(function (f, i) {
+      if (Number(f.order) !== i + 1) ok = false;
+    });
+    if (ok) return;
+    reindexOrders(tabId, list.map(function (f) { return f.id; }));
+    try { saveState(false); } catch (e) {}
+  }
+
   function setAnyFieldOrder(tabId, fieldId, newOrder) {
-    if (!newOrder || newOrder < 1) newOrder = 1;
-    writeFieldOrder(tabId, fieldId, newOrder);
+    var list = getUnifiedFieldList(tabId);
+    var ids = list.map(function (f) { return f.id; });
+    var from = ids.indexOf(fieldId);
+    if (from < 0) return;
+    var rowNum = parseInt(newOrder, 10);
+    if (!rowNum || rowNum < 1) rowNum = 1;
+    if (rowNum > ids.length) rowNum = ids.length;
+    ids.splice(from, 1);
+    ids.splice(rowNum - 1, 0, fieldId);
+    reindexOrders(tabId, ids);
     saveState();
-    logOp("تغییر ترتیب فیلد به " + newOrder);
-    if (typeof renderAllCustomFieldsInFormsAndTables === "function") renderAllCustomFieldsInFormsAndTables();
+    logOp("انتقال فیلد به ردیف " + rowNum);
     applyFullFormLayout(tabId);
     renderColFieldList();
+    refreshEntityLists(tabId);
   }
 
   function nudgeAnyField(tabId, fieldId, dir) {
     var list = getUnifiedFieldList(tabId);
-    var idx = -1;
-    list.forEach(function (f, i) { if (f.id === fieldId) idx = i; });
-    var swap = idx + dir;
-    if (idx < 0 || swap < 0 || swap >= list.length) return;
-    var a = list[idx];
-    var b = list[swap];
-    var ao = Number(a.order) || (idx + 1);
-    var bo = Number(b.order) || (swap + 1);
-    if (ao === bo) {
-      writeFieldOrder(tabId, a.id, idx + 1 + dir);
-      writeFieldOrder(tabId, b.id, idx + 1);
-    } else {
-      writeFieldOrder(tabId, a.id, bo);
-      writeFieldOrder(tabId, b.id, ao);
-    }
+    var ids = list.map(function (f) { return f.id; });
+    var from = ids.indexOf(fieldId);
+    var to = from + dir;
+    if (from < 0 || to < 0 || to >= ids.length) return;
+    ids.splice(from, 1);
+    ids.splice(to, 0, fieldId);
+    reindexOrders(tabId, ids);
     saveState();
-    logOp("جابجایی فیلد «" + a.label + "»");
-    if (typeof renderAllCustomFieldsInFormsAndTables === "function") renderAllCustomFieldsInFormsAndTables();
+    logOp("جابجایی فیلد به ردیف " + (to + 1));
     applyFullFormLayout(tabId);
     renderColFieldList();
+    refreshEntityLists(tabId);
   }
 
   function deleteAnyField(tabId, fieldId) {
@@ -1052,6 +1139,69 @@
     renderColTabGrid();
     alert("فیلد «" + label + "» از فرم تب اصلی برداشته شد.");
   }
+
+  window.isColShownInList = function (entity, fieldId) {
+    var customs = (state.customFields && state.customFields[entity]) || [];
+    var cf = null;
+    customs.forEach(function (f) { if (f.id === fieldId) cf = f; });
+    if (cf) return cf.showInList !== false;
+    var meta = ((state.formFieldMeta || {})[entity] || {})[fieldId];
+    if (meta && meta.showInList === false) return false;
+    if (meta && meta.showInList === true) return true;
+    return (DEFAULT_LIST_ON[entity] || []).indexOf(fieldId) !== -1;
+  };
+
+  window.builtinFieldValue = function (entity, fieldId, rec) {
+    if (!rec) return "—";
+    var map = {
+      pharmacyDate: rec.dateAdded,
+      pharmacyProvince: rec.province,
+      pharmacyCity: rec.city,
+      pharmacyDistrict: rec.district,
+      pharmacyName: rec.name,
+      pharmacyPhone: rec.phone,
+      pharmacyManager: rec.manager,
+      pharmacyManagerPhone: rec.managerPhone,
+      pharmacyAddress: rec.address,
+      pharmacyIsPercentage: rec.isPercentage ? "بله" : "خیر",
+      phFileInput: rec.fileName,
+      phMapSearchInput: (rec.lat && rec.lng) ? "ثبت شده" : "ثبت نشده",
+      doctorDate: rec.dateAdded,
+      doctorName: rec.name,
+      doctorSpecialty: rec.specialty,
+      doctorPhone: rec.phone,
+      doctorProvince: [rec.province, rec.city, rec.district].filter(Boolean).join(" / "),
+      doctorCity: rec.city,
+      doctorDistrict: rec.district,
+      doctorAddress: rec.address,
+      doctorIsPercentage: rec.isPercentage ? "بله" : "خیر",
+      docFileInput: rec.fileName,
+      docMapSearchInput: (rec.lat && rec.lng) ? "ثبت شده" : "ثبت نشده",
+      orderPharmacyName: rec.pharmacyName,
+      orderProvince: [rec.province, rec.city].filter(Boolean).join(" / "),
+      orderCity: rec.city,
+      orderDistrict: rec.district,
+      orderAddress: rec.address,
+      orderRepName: rec.repName,
+      orderDate: rec.orderDate,
+      orderStatus: rec.status,
+      orderNotes: rec.notes
+    };
+    var v = map[fieldId];
+    return (v == null || v === "") ? "—" : v;
+  };
+
+  window.extraListColumns = function (entity) {
+    var meta = ((state.formFieldMeta || {})[entity]) || {};
+    var defs = DEFAULT_LIST_ON[entity] || [];
+    var out = [];
+    Object.keys(meta).forEach(function (id) {
+      if (!meta[id] || meta[id].showInList !== true) return;
+      if (defs.indexOf(id) !== -1) return;
+      out.push({ id: id, label: meta[id].label || id });
+    });
+    return out;
+  };
 
   function applyFieldPermissions() {
     var role = sessionStorage.getItem("crmUserRole") || "";
@@ -1191,7 +1341,7 @@
     });
 
     logOp("بارگذاری نسخه ۱۱.۲");
-    console.log("v11.2 ready");
+    console.log("v11.3 ready");
   }
 
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot);
