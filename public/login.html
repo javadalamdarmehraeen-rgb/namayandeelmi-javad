@@ -60,6 +60,23 @@
         {username:"nila", password:"789", phone:"09123334455", name:"خانم نیلا محرمی", role:"نماینده علمی", phoneRequired:true},
         {username:"davood", password:"321", phone:"09120852097", name:"آقای داوود عقبایی", role:"سرپرست", phoneRequired:false}
       ];
+      try {
+        var auth = JSON.parse(localStorage.getItem("CRM_USERS_AUTH") || "{}");
+        Object.keys(auth).forEach(function(k){
+          var a = auth[k];
+          var found = USERS.filter(function(x){ return x.username === k; })[0];
+          if (found) { found.password = a.password || found.password; found.phone = a.phone || found.phone; found.name = a.name || found.name; found.role = a.role || found.role; }
+          else USERS.push({ username:k, password:a.password, phone:a.phone, name:a.name, role:a.role, phoneRequired:false });
+        });
+        var stt = JSON.parse(localStorage.getItem("CRM_APP_STATE_V2") || "null");
+        if (stt && stt.users) {
+          stt.users.forEach(function(u){
+            var found = USERS.filter(function(x){ return x.username === u.username; })[0];
+            if (found) { found.password = u.password; found.phone = u.phone || found.phone; found.name = u.fullName || found.name; found.role = u.role || found.role; }
+            else USERS.push({ username:u.username, password:u.password, phone:u.phone, name:u.fullName, role:u.role, phoneRequired:false });
+          });
+        }
+      } catch(e) {}
       var st = document.getElementById("st");
       var err = document.getElementById("err");
       function showErr(m){ err.style.display="block"; err.textContent=m; }

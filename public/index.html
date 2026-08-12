@@ -16,7 +16,7 @@
   <meta name="theme-color" content="#0d9488" />
   
   <!-- Custom Style with Anti-Cache Version 9.1.0 -->
-  <link rel="stylesheet" href="style.css?v=10.0.0" />
+  <link rel="stylesheet" href="style.css?v=11.0.0" />
 </head>
 <body>
 
@@ -761,6 +761,7 @@
           ثبت تردد، ویزیت‌ها و اقدامات لحظه‌ای انجام‌شده توسط تمامی نمایندگان در شبکه درمان.
         </p>
         <div id="activityChartBox" class="activity-chart-box"></div>
+        <div id="map-activity-log" class="map-container" style="height:320px;margin-bottom:1rem;"></div>
         <div class="table-responsive">
           <table class="data-table">
             <thead>
@@ -816,6 +817,7 @@
             </button>
           </div>
         </div>
+        <div id="overviewResultsTableWrap" class="table-responsive" style="margin-bottom:1rem;"></div>
         <div id="map-full-overview" class="map-container" style="height: 520px; margin-bottom: 1rem;"></div>
 
         <!-- Summary Counts Box for Selected Region -->
@@ -966,6 +968,21 @@
             </tbody>
           </table>
         </div>
+      </div>
+    </section>
+
+    <section id="tab-my-visit" class="tab-pane">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title"><span>▶️ شروع و پایان ویزیت نماینده</span></div>
+        </div>
+        <p style="font-size:.88rem;color:#64748b;margin-bottom:1rem;">با شروع ویزیت مسیر از موقعیت فعلی روی نقشه رسم می‌شود. در نقطه کور یا خاموشی موقت GPS آخرین موقعیت معتبر نگه داشته می‌شود تا وقتی خودتان پایان ویزیت را بزنید.</p>
+        <div style="display:flex;gap:.75rem;flex-wrap:wrap;margin-bottom:1rem;">
+          <button type="button" id="btnStartVisit" class="btn btn-primary" style="background:#0d9488;">▶️ شروع ویزیت</button>
+          <button type="button" id="btnEndVisit" class="btn btn-danger">⏹ پایان ویزیت</button>
+        </div>
+        <div id="visitStatusBox" style="padding:0.85rem 1rem;border-radius:10px;border:1px solid #e2e8f0;margin-bottom:1rem;">ویزیتی فعال نیست.</div>
+        <div id="map-my-visit" class="map-container" style="height:380px;"></div>
       </div>
     </section>
 
@@ -1331,7 +1348,16 @@
       <div class="card">
         <div class="card-header">
           <div class="card-title">
-            <span>🧱 مدیریت ستون‌های جدول و کاتالوگ کالاهای دارویی</span>
+            <span>🧱 طراحی فیلد و ستون برای همه تب‌ها</span>
+          </div>
+        </div>
+        <p style="font-size:.88rem;color:#64748b;margin-bottom:1rem;">برای هر تب فیلد ساده/کشویی با ترتیب، اندازه، وابستگی و افزودن لحظه‌ای بسازید. فیلد کشویی خودکار به تب افزودن‌ها هم می‌رود.</p>
+        <div id="columnsDesignerHost"></div>
+      </div>
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">
+            <span>🧱 کاتالوگ کالاهای دارویی</span>
           </div>
           <button id="btnResetProductForm" class="btn btn-outline btn-sm">
             <span>➕ ثبت کالای جدید</span>
@@ -1660,6 +1686,8 @@
           در حال آماده‌سازی گزارش عیب‌یابی...
         </div>
         <div id="diagnosticsVisual" class="diag-visual"></div>
+        <h4 style="margin:1.25rem 0 .6rem;">ریز عملیات سیستم</h4>
+        <div id="diagnosticsOpsLog" class="diag-visual"></div>
       </div>
     </section>
 
@@ -1942,11 +1970,12 @@
   <script src="vendor/leaflet.js"></script>
   
   <!-- Data & Application Logic with Anti-Cache Version 9.1.0 -->
-  <script src="crm-data.js?v=10.0.0"></script>
-  <script src="crm-app.js?v=10.0.0"></script>
-  <script src="crm-features-v9.js?v=10.0.0"></script>
-  <script src="iran-facilities.js?v=10.0.0" defer></script>
-  <script src="crm-features-v10.js?v=10.0.0"></script>
+  <script src="crm-data.js?v=11.0.0"></script>
+  <script src="crm-app.js?v=11.0.0"></script>
+  <script src="crm-features-v9.js?v=11.0.0"></script>
+  <script src="iran-facilities.js?v=11.0.0" defer></script>
+  <script src="crm-features-v10.js?v=11.0.0"></script>
+  <script src="crm-features-v11.js?v=11.0.0"></script>
   <!-- فیلدهای مخفی سازگاری با کد قبلی (نباید در UI دیده شوند) -->
   <input type="hidden" id="pharmacyLocationText" value="" />
   <input type="hidden" id="doctorLocationText" value="" />

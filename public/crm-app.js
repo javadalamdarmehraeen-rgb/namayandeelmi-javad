@@ -35,6 +35,7 @@ const MENU_SECTIONS_LIST = [
   { id: "tab-live-location", label: "موقعیت زنده", icon: "📍" },
   { id: "tab-search-info", label: "جستجوی اطلاعات", icon: "🔍" },
   { id: "tab-rep-routes", label: "رصد تردد", icon: "🛣️" },
+  { id: "tab-my-visit", label: "شروع/پایان ویزیت", icon: "▶️" },
   { id: "tab-rep-homes", label: "منزل نمایندگان", icon: "🏠" },
   { id: "tab-leaves", label: "مرخصی‌ها", icon: "📝", badgeId: "badgeLeavesCount" },
   { id: "tab-notifications", label: "اعلان‌ها", icon: "🔔" },
@@ -1941,10 +1942,13 @@ function renderSalesTargetsTable() {
     const tr = document.createElement("tr");
     tr.innerHTML = `
       <td><strong style="color:#0f172a;">${tgt.repName}</strong></td>
-      <td>${tgt.month}</td>
-      <td>${tgt.targetAmount.toLocaleString("fa-IR")}</td>
-      <td><strong style="color:#0d9488;">${tgt.achievedAmount.toLocaleString("fa-IR")}</strong></td>
-      <td><span class="badge-status-online">${perc}٪</span></td>
+      <td>${tgt.productName || tgt.month || "-"}</td>
+      <td>${tgt.targetCount || "-"}</td>
+      <td>${tgt.achievedCount || 0}</td>
+      <td>${(tgt.targetCount || 0) - (tgt.achievedCount || 0)}</td>
+      <td><strong style="color:#0d9488;">${Number(tgt.targetAmount || 0).toLocaleString("fa-IR")}</strong></td>
+      <td><span class="badge-status-online">${isFinite(perc) ? perc : 0}٪</span></td>
+      <td></td>
     `;
     tbody.appendChild(tr);
   });
@@ -2179,9 +2183,11 @@ function getOrderItemsFromUI() {
     const countEl = rows[i].querySelector(".order-item-count");
     const priceEl = rows[i].querySelector(".order-item-price");
     if (nameEl && nameEl.value.trim()) {
+      const giftEl = rows[i].querySelector(".order-item-gift");
       items.push({
         name: nameEl.value.trim(),
         count: parseInt(countEl.value) || 1,
+        giftCount: giftEl ? (parseInt(giftEl.value) || 0) : 0,
         price: parseInt(priceEl.value) || 0
       });
     }
