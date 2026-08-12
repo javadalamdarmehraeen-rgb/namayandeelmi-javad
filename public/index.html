@@ -12,8 +12,8 @@
   <link rel="manifest" href="manifest.json" />
   <meta name="theme-color" content="#0d9488" />
   
-  <!-- Custom Style with Anti-Cache Version 7.0.0 -->
-  <link rel="stylesheet" href="style.css?v=7.0.0" />
+  <!-- Custom Style with Anti-Cache Version 8.0.0 -->
+  <link rel="stylesheet" href="style.css?v=8.0.0" />
 </head>
 <body>
 
@@ -135,6 +135,50 @@
         </p>
         <div class="launchpad-grid" id="dashboardLaunchpadGrid">
           <!-- Generated dynamically for all 20 sections -->
+        </div>
+      </div>
+
+      <!-- Interactive Chart Analytics Widget (Section 1 Requirement) -->
+      <div class="card" id="dashboardChartsWidget" style="margin-bottom: 1.5rem;">
+        <div class="card-header">
+          <div class="card-title">
+            <span>📈 نمودارهای تحلیلی ویزیت‌ها، فروش و عملکرد نمایندگان (Chart Analytics)</span>
+          </div>
+          <div style="display: flex; gap: 0.5rem;">
+            <button type="button" class="btn btn-outline btn-sm" onclick="alert('🎛️ امکان افزودن، حذف و جابجایی ویجت‌های داشبورد برای مدیر فعال شد.')">
+              <span>🎛️ مدیریت پنل و ویجت‌ها</span>
+            </button>
+          </div>
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.25rem;">
+          <div style="background: #f8fafc; padding: 1rem; border-radius: 10px; border: 1px solid var(--border-color);">
+            <h5 style="margin-bottom: 0.75rem; color: #0d9488;">📊 نمودار میله‌ای فروش نمایندگان (ریال)</h5>
+            <div style="display: flex; align-items: flex-end; gap: 1rem; height: 140px; padding: 0.5rem 0; border-bottom: 2px solid var(--border-color);">
+              <div style="flex: 1; text-align: center;">
+                <div style="background: #0d9488; height: 100px; border-radius: 6px 6px 0 0;" title="380,000,000 ریال"></div>
+                <span style="font-size: 0.75rem; font-weight: 700;">جواد علمدار</span>
+              </div>
+              <div style="flex: 1; text-align: center;">
+                <div style="background: #10b981; height: 120px; border-radius: 6px 6px 0 0;" title="410,000,000 ریال"></div>
+                <span style="font-size: 0.75rem; font-weight: 700;">نیلا محرمی</span>
+              </div>
+              <div style="flex: 1; text-align: center;">
+                <div style="background: #f59e0b; height: 60px; border-radius: 6px 6px 0 0;" title="150,000,000 ریال"></div>
+                <span style="font-size: 0.75rem; font-weight: 700;">داوود عقبایی</span>
+              </div>
+            </div>
+          </div>
+
+          <div style="background: #f8fafc; padding: 1rem; border-radius: 10px; border: 1px solid var(--border-color);">
+            <h5 style="margin-bottom: 0.75rem; color: #0d9488;">🥧 نسبت سهم ویزیت پزشکان به داروخانه‌ها</h5>
+            <div style="display: flex; align-items: center; justify-content: center; gap: 1.5rem; height: 140px;">
+              <div style="width: 100px; height: 100px; border-radius: 50%; background: conic-gradient(#0d9488 0% 65%, #10b981 65% 100%); box-shadow: var(--shadow-sm);"></div>
+              <div style="font-size: 0.82rem; color: #334155;">
+                <div><span style="color: #0d9488;">●</span> پزشکان و مطب‌ها (۶۵٪)</div>
+                <div><span style="color: #10b981;">●</span> داروخانه‌ها (۳۵٪)</div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -1597,9 +1641,108 @@
     </div>
   </div>
 
+    <!-- ======================================================================
+         21. TAB: SEARCH INFORMATION (جستجوی اطلاعات) - Section 6 Requirement
+         ====================================================================== -->
+    <section id="tab-search-info" class="tab-pane">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">
+            <span>🔍 جستجوی اطلاعات پیشرفته داروخانه‌ها، پزشکان و بیمارستان‌ها روی نقشه و لیست</span>
+          </div>
+        </div>
+        <div class="form-grid" style="margin-bottom: 1.25rem;">
+          <div class="form-group">
+            <label class="form-label">نام داروخانه</label>
+            <input type="text" id="searchInfoPhInput" class="form-input" placeholder="جستجوی نام داروخانه..." />
+          </div>
+          <div class="form-group">
+            <label class="form-label">نام پزشک</label>
+            <input type="text" id="searchInfoDocInput" class="form-input" placeholder="جستجوی نام پزشک..." />
+          </div>
+          <div class="form-group">
+            <label class="form-label">نام بیمارستان / مرکز درمانی</label>
+            <input type="text" id="searchInfoHospInput" class="form-input" placeholder="جستجوی نام بیمارستان..." />
+          </div>
+        </div>
+        <div style="display: flex; gap: 0.75rem; margin-bottom: 1.5rem;">
+          <button type="button" id="btnRunSearchInfo" class="btn btn-primary" style="background: #0d9488;">
+            <span>🔍 جستجو و نمایش روی نقشه و لیست</span>
+          </button>
+          <button type="button" id="btnExportSearchInfoCSV" class="btn btn-success" style="background: #0d9488;">
+            <span>⬇️ خروجی اکسل نتایج</span>
+          </button>
+        </div>
+        <div id="map-search-info" class="map-container" style="height: 380px; margin-bottom: 1.5rem;"></div>
+        <div class="table-responsive">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>ردیف</th>
+                <th>نام نماینده</th>
+                <th>نوع مرکز</th>
+                <th>نام مرکز / پزشک</th>
+                <th>شهر / منطقه</th>
+                <th>آدرس</th>
+                <th>عملیات</th>
+              </tr>
+            </thead>
+            <tbody id="tableSearchInfoBody">
+              <!-- Dynamically populated -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
   <!-- ======================================================================
-       MODAL: NAVIGATION APPS SELECTOR (انتخاب مسیریاب: نشان، بلد، گوگل، ویز)
+       MODAL: ROW DETAILS & MESSAGING (نمایش جزئیات ردیف و ارسال به بله، ایتا، تلگرام، سروش، واتساپ)
        ====================================================================== -->
+  <div id="modalRowDetails" class="modal-overlay">
+    <div class="modal-content" style="max-width: 600px;">
+      <div class="card-header">
+        <div class="card-title">
+          <span>📋 جزئیات کامل رکورد و ارسال مستقیم به پیام‌رسان‌ها</span>
+        </div>
+      </div>
+      <div id="rowDetailsContentBox" style="background: #f8fafc; padding: 1rem; border-radius: 10px; border: 1px solid var(--border-color); margin-bottom: 1.25rem; font-size: 0.9rem; line-height: 1.8;">
+        <!-- Dynamic row details text -->
+      </div>
+      <div id="rowDetailsMiniMap" class="map-container" style="height: 200px; margin-bottom: 1.25rem;"></div>
+      
+      <h5 style="margin-bottom: 0.6rem; color: #1e293b;">📤 ارسال اطلاعات آماده به پیام‌رسان‌ها (با کلیک مستقیم):</h5>
+      <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1.25rem;">
+        <button type="button" id="btnShareBale" class="btn btn-outline btn-sm" style="background: #f0fdf4; color: #166534; border-color: #bbf7d0;">
+          <span>🟢 بله (Bale)</span>
+        </button>
+        <button type="button" id="btnShareEitaa" class="btn btn-outline btn-sm" style="background: #fff7ed; color: #9a3412; border-color: #ffedd5;">
+          <span>🟠 ایتا (Eitaa)</span>
+        </button>
+        <button type="button" id="btnShareTelegram" class="btn btn-outline btn-sm" style="background: #eff6ff; color: #1e40af; border-color: #bfdbfe;">
+          <span>🔵 تلگرام (Telegram)</span>
+        </button>
+        <button type="button" id="btnShareSoroush" class="btn btn-outline btn-sm" style="background: #f5f3ff; color: #6d28d9; border-color: #ddd6fe;">
+          <span>🟣 سروش (Soroush)</span>
+        </button>
+        <button type="button" id="btnShareWhatsApp" class="btn btn-outline btn-sm" style="background: #ecfdf5; color: #047857; border-color: #a7f3d0;">
+          <span>🟢 واتساپ (WhatsApp)</span>
+        </button>
+      </div>
+
+      <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.75rem;">
+        <div style="display: flex; gap: 0.5rem;">
+          <button type="button" id="btnRowCopyText" class="btn btn-primary btn-sm" style="background: #0d9488;">
+            <span>📋 کپی کردن متن اطلاعات</span>
+          </button>
+        </div>
+        <div style="display: flex; gap: 0.5rem;">
+          <button type="button" id="btnRowEdit" class="btn btn-outline btn-sm">✏️ ویرایش</button>
+          <button type="button" id="btnRowDelete" class="btn btn-danger btn-sm">🗑️ حذف</button>
+          <button type="button" class="btn btn-outline btn-sm" onclick="closeModalRowDetails()">✕ بستن</button>
+        </div>
+      </div>
+    </div>
+  </div>
   <div id="modalNavigationApps" class="modal-overlay">
     <div class="modal-content" style="max-width: 440px;">
       <div class="card-header">
@@ -1666,6 +1809,14 @@
           <label class="form-label" for="loginUserName">شماره همراه ورود</label>
           <input type="text" id="loginUserName" class="form-input" value="09120000000" style="direction: ltr;" />
         </div>
+        <div class="form-group" style="margin-top: 0.5rem;">
+          <label class="form-label" for="loginSimAuthMode">حالت تایید دو مرحله‌ای سیم‌کارت (تنظیم مدیر)</label>
+          <select id="loginSimAuthMode" class="form-select dropdown-auto-clear">
+            <option value="3">۳. ورود عادی (غیرفعال بودن تایید دو مرحله‌ای)</option>
+            <option value="1">۱. دریافت پیامک رمز یک‌بارمصرف (OTP SMS)</option>
+            <option value="2">۲. ارسال کد تایید به مدیر سیستم</option>
+          </select>
+        </div>
         <div style="display: flex; justify-content: flex-end; gap: 0.75rem; margin-top: 1.5rem;">
           <button type="button" class="btn btn-outline" onclick="closeModalLogin()">انصراف</button>
           <button type="submit" class="btn btn-primary" style="background: #0d9488;">
@@ -1715,8 +1866,8 @@
   <!-- Leaflet JS -->
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   
-  <!-- Data & Application Logic with Anti-Cache Version 7.0.0 -->
-  <script src="crm-data.js?v=7.0.0"></script>
-  <script src="crm-app.js?v=7.0.0"></script>
+  <!-- Data & Application Logic with Anti-Cache Version 8.0.0 -->
+  <script src="crm-data.js?v=8.0.0"></script>
+  <script src="crm-app.js?v=8.0.0"></script>
 </body>
 </html>
