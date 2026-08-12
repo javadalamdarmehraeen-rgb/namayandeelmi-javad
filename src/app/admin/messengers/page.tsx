@@ -1,7 +1,7 @@
-
 "use client";
 import { useCallback, useEffect, useState } from "react";
 import { Alert, Badge, Button, Card, Field, Input, SectionTitle } from "@/components/ui";
+
 import { PLATFORMS } from "@/lib/constants";
 import { tehranDateTime, toPersianDigits } from "@/lib/jalali";
 import { useConfirm } from "@/components/Confirm";
@@ -30,7 +30,6 @@ const WA_PROVIDERS = [
   { key: "cloudapi", label: "WhatsApp Cloud API ()", hint: ": phoneNumberId:accessToken" },
   { key: "custom", label: " ", hint: "  {phone}  {text}  {token}" },
 ];
-
 const emptyForm = (platform: string) => ({
   platform,
   label: "",
@@ -79,6 +78,7 @@ export default function MessengersPage() {
     setForm(emptyForm(tab));
     setChats([]);
   }, [tab]);
+
   /* -----------------------------  ----------------------------- */
   const add = async () => {
     if (!form.target.trim()) return setMsg("    ");
@@ -115,7 +115,6 @@ export default function MessengersPage() {
   };
   const remove = async (m: M) => {
     if (
-
       !(await confirm({
         title: " ",
         message: ` «${m.label || m.target}»  `,
@@ -158,6 +157,7 @@ export default function MessengersPage() {
   const discover = async () => {
     setChatBusy(true);
     setChats([]);
+
     setMsg("    ...");
     const res = await fetch("/api/messengers/updates", {
       method: "POST",
@@ -200,11 +200,11 @@ export default function MessengersPage() {
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-2">
-
         <SectionTitle icon="">    </SectionTitle>
         <div className="flex gap-2">
           <Badge tone={activeCount ? "green" : "amber"}>{toPersianDigits(activeCount)}  </Badge>
           <Button variant="soft" onClick={testAll}>
+              
           </Button>
         </div>
       </div>
@@ -237,6 +237,7 @@ export default function MessengersPage() {
             className={`rounded-xl px-4 py-2 text-xs font-bold ${
               autoSend ? "bg-emerald-600 text-white" : "bg-slate-200 text-slate-700"
             }`}
+
           >
             {autoSend ? "  —     " : "  —   "}
           </button>
@@ -284,7 +285,6 @@ e-200 text-slate-500"}`}>
                       ({sysTokens[tab]}) —     .
           </p>
         ) : null}
-
       </Card>
       {/* ------------------    ------------------ */}
       <Card>
@@ -319,6 +319,7 @@ e-200 text-slate-500"}`}>
                 className="w-full rounded-xl border border-slate-300 px-3 py-2.5 text-sm"
               >
                 <option value="group"></option>
+
                 <option value="channel"></option>
                 <option value="phone"> </option>
               </select>
@@ -369,7 +370,6 @@ r:bg-teal-50"
                   <span className="mr-1 text-[10px] text-slate-400" dir="ltr">
                     {c.id}
                   </span>
-
                 </button>
               ))}
             </div>
@@ -399,6 +399,7 @@ r:bg-teal-50"
                     </span>
                   ) : null}
                   <div className="mr-auto flex flex-wrap gap-1">
+
                     <button
                       onClick={() => test(m.id)}
                       disabled={testing === m.id}
@@ -422,6 +423,7 @@ r:bg-teal-50"
                       onClick={() => remove(m)}
                       className="rounded-lg bg-rose-100 px-2 py-1 text-[11px] font-bold text-rose-700"
                     >
+                      
                     </button>
                   </div>
                 </div>
@@ -431,7 +433,7 @@ r:bg-teal-50"
                       <span className="mb-1 block text-[10px] font-bold text-slate-500"></span>
                       <Input
                         value={m.token}
-                        onChange={(e) => setRows((p) => p.map((x) => (x.id === m.id ? { ...x, token: e.target.value } :
+                        onChange={(e) => setRows((p) => p.map((x) => (x.id === m.id ? { ...x, token: e.target.value } : 
 x)))}
                         onBlur={() => patch({ id: m.id, token: m.token })}
                         className="text-left font-mono text-xs"
@@ -453,11 +455,10 @@ x)))}
                   <div
                     className={`mt-2 rounded-lg px-2 py-1 text-[10px] ${
                       m.lastStatus.startsWith("") ? "bg-emerald-50 text-emerald-700" : "bg-rose-50 text-rose-700"
-
                     }`}
                   >
                     {m.lastStatus}
-                    {m.lastOkAt ? <span className="mr-2 text-slate-400"> : {tehranDateTime(m.lastOkAt)}</span>
+                    {m.lastOkAt ? <span className="mr-2 text-slate-400"> : {tehranDateTime(m.lastOkAt)}</span> 
 : null}
                   </div>
                 ) : null}
@@ -473,7 +474,7 @@ x)))}
           <Badge tone={proxy.enabled ? "green" : "amber"}>{proxy.enabled ? "" : ""}</Badge>
         </div>
         <Alert kind="info">
-           Render  //  .        Cloudflare Worker
+           Render  //  .        Cloudflare Worker 
            .        .
         </Alert>
         <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-3">
@@ -481,6 +482,7 @@ x)))}
             <Field label=" ">
               <Input value={proxy.url} onChange={(e) => setProxy({ ...proxy, url: e.target.value })} className="text-lef
 t" />
+
             </Field>
           </div>
           <Field label=" ">
@@ -499,8 +501,10 @@ abled })}>
             {proxy.enabled ? " " : " "}
           </Button>
           <Button variant="ghost" onClick={testProxy}>
+              
           </Button>
           <Button variant="soft" onClick={copyWorker}>
+               
           </Button>
         </div>
       </Card>
@@ -536,12 +540,12 @@ t" />
         <div className="mt-3 flex flex-wrap items-center gap-2">
           <label className="flex items-center gap-2 text-xs font-bold text-slate-600">
             <input
-
               type="checkbox"
               className="size-4 accent-teal-600"
               checked={sms.enabled}
               onChange={(e) => setSms({ ...sms, enabled: e.target.checked })}
             />
+             
           </label>
           <Button
             onClick={async () => {
@@ -553,6 +557,7 @@ t" />
               setMsg(res.ok ? "    " : " ");
             }}
           >
+             
           </Button>
         </div>
       </Card>
@@ -561,6 +566,7 @@ t" />
         <SectionTitle icon=""> </SectionTitle>
         <div className="max-h-72 space-y-1 overflow-y-auto text-xs">
           {logs.map((l) => (
+
             <div key={l.id} className={`rounded-lg px-3 py-1.5 ${l.ok ? "bg-emerald-50" : "bg-rose-50"}`}>
               <span className={l.ok ? "text-emerald-700" : "text-rose-700"}>{l.ok ? "" : ""}</span>{" "}
               <b>{PLATFORMS.find((p) => p.key === l.platform)?.label ?? l.platform}</b> → <span dir="ltr">{l.target}</sp

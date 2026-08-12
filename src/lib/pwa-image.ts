@@ -1,4 +1,3 @@
-
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 const PUB = path.join(process.cwd(), "public");
@@ -11,12 +10,12 @@ const FALLBACK_LOGO = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 
     </linearGradient>
     <linearGradient id="glossTop" x1="0" y1="0" x2="0" y2="1">
       <stop offset="0%" stop-color="#ffffff" stop-opacity=".45"/>
-
       <stop offset="55%" stop-color="#ffffff" stop-opacity="0"/>
     </linearGradient>
   </defs>
   <g transform="translate(256 256) rotate(-45)">
     <rect x="-168" y="-84" width="336" height="168" rx="84" ry="84" fill="url(#pill)"/>
+
     <line x1="0" y1="-84" x2="0" y2="84" stroke="#ffffff" stroke-opacity=".35" stroke-width="6"/>
     <rect x="-160" y="-76" width="320" height="80" rx="40" ry="40" fill="url(#glossTop)"/>
     <circle cx="104" cy="-30" r="18" fill="#ffffff" fill-opacity=".92"/>
@@ -93,5 +92,5 @@ export function pngResponse(bytes: Uint8Array) {
       "Access-Control-Allow-Origin": "*",
     },
   });
-}
 
+}

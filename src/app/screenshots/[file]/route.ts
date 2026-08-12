@@ -1,4 +1,3 @@
-
 import { pngResponse, renderScreenshot } from "@/lib/pwa-image";
 export const dynamic = "force-static";
 export const revalidate = false;

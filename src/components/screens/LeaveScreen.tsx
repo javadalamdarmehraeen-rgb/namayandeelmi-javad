@@ -1,4 +1,3 @@
-
 "use client";
 import { useCallback, useEffect, useState } from "react";
 import JalaliDateInput from "@/components/JalaliDateInput";
@@ -48,7 +47,6 @@ export default function LeaveScreen() {
   const [reason, setReason] = useState("");
   const [msg, setMsg] = useState<{ kind: "success" | "error"; text: string } | null>(null);
   const [kinds, setKinds] = useState<string[]>(KINDS);
-
   const [period, setPeriod] = useState("");
   const confirm = useConfirm();
   const loadKinds = useCallback(async () => {
@@ -65,12 +63,13 @@ export default function LeaveScreen() {
   useEffect(() => {
     loadKinds();
   }, [loadKinds]);
-  //
+  //    
   useLive(load, 20000);
   const submit = async () => {
     const summary = isHourly
       ? `  ${toPersianDigits(fromDate)}   ${toPersianDigits(fromTime)}  ${toPersianDigits(toTime)} (${
 toPersianDigits(hoursCalc)} )`
+
       : ` ${kind}  ${toPersianDigits(fromDate)}  ${toPersianDigits(toDate)} (${toPersianDigits(days)} )`;
     if (!(await confirm({ title: "  ", message: `${summary}\n `, confirmText: " " })
 ))
@@ -133,7 +132,6 @@ toPersianDigits(hoursCalc)} )`
       m.set(k, cur);
     }
     return [...m.values()].sort((a, b) =>
-
       a.period === b.period ? a.rep.localeCompare(b.rep) : b.period.localeCompare(a.period),
     );
   })();
@@ -151,6 +149,7 @@ toPersianDigits(hoursCalc)} )`
   const isHourly = kind.includes("");
   const hoursCalc = (() => {
     const [h1, m1] = fromTime.split(":").map(Number);
+
     const [h2, m2] = toTime.split(":").map(Number);
     const diff = (h2 * 60 + m2 - (h1 * 60 + m1)) / 60;
     return diff > 0 ? Math.round(diff * 100) / 100 : 0;
@@ -161,8 +160,10 @@ toPersianDigits(hoursCalc)} )`
       {msg ? <Alert kind={msg.kind}>{msg.text}</Alert> : null}
       <div className="flex flex-wrap items-center gap-2">
         <Button variant={showForm ? "primary" : "ghost"} onClick={() => setShowForm(true)}>
+             
         </Button>
         <Button variant={!showForm ? "primary" : "ghost"} onClick={() => setShowForm(false)}>
+            
         </Button>
       </div>
       {showForm ? (
@@ -197,7 +198,7 @@ toPersianDigits(hoursCalc)} )`
                 </Field>
                 <Field label=" ()">
                   <div className="rounded-xl bg-slate-100 px-3 py-2.5 text-sm font-bold text-teal-700">
-                    {toPersianDigits(hoursCalc)}
+                    {toPersianDigits(hoursCalc)} 
                   </div>
                 </Field>
               </>
@@ -216,7 +217,6 @@ toPersianDigits(hoursCalc)} )`
             <Button onClick={submit}>  </Button>
           </div>
         </Card>
-
       ) : null}
       <Card>
         <h3 className="mb-2 text-sm font-bold text-slate-700">       </h3>
@@ -231,6 +231,7 @@ toPersianDigits(hoursCalc)} )`
               <option key={p} value={p}>
                 {monthName(p)}
               </option>
+
             ))}
           </select>
           {["approvedDays", "approvedHours", "pending"].map((k) => {
@@ -272,6 +273,7 @@ toPersianDigits(hoursCalc)} )`
               {summary.length === 0 ? (
                 <tr>
                   <td colSpan={5} className="py-4 text-center text-slate-400">
+                        
                   </td>
                 </tr>
               ) : null}
@@ -287,6 +289,7 @@ toPersianDigits(hoursCalc)} )`
 ls") })}
             className="rounded-lg bg-emerald-600 px-3 py-1.5 text-xs font-bold text-white"
           >
+              
           </button>
         </div>
         <div className="scroll-x">
@@ -299,7 +302,6 @@ ls") })}
                 <th className="px-2 py-2"></th>
                 <th className="px-2 py-2"></th>
                 <th className="px-2 py-2"> / </th>
-
                 <th className="px-2 py-2"></th>
                 <th className="px-2 py-2"> </th>
                 <th className="px-2 py-2"> </th>
@@ -314,10 +316,11 @@ ls") })}
                   <td className="px-2 py-2">{r.kind}</td>
                   <td className="px-2 py-2">{toPersianDigits(r.fromDate)}</td>
                   <td className="px-2 py-2">{toPersianDigits(r.toDate)}</td>
+
                   <td className="px-2 py-2">
                     {r.hours > 0 ? (
                       <span className="font-bold text-sky-700">
-                        {toPersianDigits(r.hours)}
+                        {toPersianDigits(r.hours)} 
                         <div className="text-[10px] text-slate-400">
                           {toPersianDigits(r.fromTime)}  {toPersianDigits(r.toTime)}
                         </div>
@@ -344,11 +347,13 @@ ls") })}
                           onClick={() => decide(r.id, "approved")}
                           className="rounded-lg bg-emerald-100 px-2 py-1 text-[11px] font-bold text-emerald-700"
                         >
+                          
                         </button>
                         <button
                           onClick={() => decide(r.id, "rejected")}
                           className="rounded-lg bg-rose-100 px-2 py-1 text-[11px] font-bold text-rose-700"
                         >
+                          
                         </button>
                       </div>
                     </td>
@@ -358,6 +363,7 @@ ls") })}
               {scoped.length === 0 ? (
                 <tr>
                   <td colSpan={10} className="py-6 text-center text-slate-400">
+                       
                   </td>
                 </tr>
               ) : null}

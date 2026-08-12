@@ -1,4 +1,3 @@
-
 "use client";
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
@@ -16,7 +15,7 @@ export default function DiagnosticsPage() {
   const run = useCallback(async () => {
     setBusy(true);
     setRows([]);
-    // )
+    // )   
     const sim = readSimStatus();
     type Conn = { effectiveType?: string; type?: string; downlink?: number; rtt?: number; saveData?: boolean };
     const conn = (navigator as Navigator & { connection?: Conn }).connection;
@@ -29,7 +28,7 @@ export default function DiagnosticsPage() {
 Mb | : ${conn?.rtt ?? "?"}ms${conn?.saveData ? " |   " : ""}`
         : "  ",
     });
-    // )
+    // ) 
     if ("serviceWorker" in navigator) {
       const reg = await navigator.serviceWorker.getRegistration();
       put({
@@ -43,11 +42,10 @@ Mb | : ${conn?.rtt ?? "?"}ms${conn?.saveData ? " |   " : ""}`
     } else {
       put({ key: "sw", label: "", state: "fail", detail: "  " });
     }
-    // )
+    // )  
     try {
       const names = await caches.keys();
       let total = 0;
-
       for (const n of names) {
         const c = await caches.open(n);
         total += (await c.keys()).length;
@@ -67,6 +65,7 @@ Mb | : ${conn?.rtt ?? "?"}ms${conn?.saveData ? " |   " : ""}`
     }
     // )   ( )
     const t0 = performance.now();
+
     try {
       const ctrl = new AbortController();
       const to = setTimeout(() => ctrl.abort(), 20000);
@@ -86,11 +85,11 @@ Mb | : ${conn?.rtt ?? "?"}ms${conn?.saveData ? " |   " : ""}`
         key: "ping",
         label: "  ",
         state: "fail",
-        detail: "   .
+        detail: "   .                 
   .",
       });
     }
-    // )
+    // ) 
     try {
       const ctrl = new AbortController();
       const to = setTimeout(() => ctrl.abort(), 25000);
@@ -106,7 +105,7 @@ Mb | : ${conn?.rtt ?? "?"}ms${conn?.saveData ? " |   " : ""}`
     } catch {
       put({ key: "db", label: " ", state: "fail", detail: "  (Timeout)" });
     }
-    // )
+    // ) 
     const cached = getCachedUser();
     put({
       key: "session",
@@ -116,7 +115,7 @@ Mb | : ${conn?.rtt ?? "?"}ms${conn?.saveData ? " |   " : ""}`
         ? `${cached.fullName} —     `
         : "         ",
     });
-    // )
+    // )  
     const id = getDeviceId();
     put({
       key: "device",
@@ -124,7 +123,7 @@ Mb | : ${conn?.rtt ?? "?"}ms${conn?.saveData ? " |   " : ""}`
       state: id ? "ok" : "fail",
       detail: id ? `${getDeviceInfo()} | : ${id.slice(0, 10)}…` : "   ",
     });
-    // )
+    // ) 
     put({
       key: "geo",
       label: " (GPS)",
@@ -132,21 +131,21 @@ Mb | : ${conn?.rtt ?? "?"}ms${conn?.saveData ? " |   " : ""}`
       detail:
         "geolocation" in navigator
           ? window.isSecureContext
-
             ? "  "
             : " http     https "
           : "  ",
     });
-    // )
+    // )  
     put({
       key: "sim",
       label: "  / ",
       state: sim.ok ? "ok" : "warn",
       detail: sim.ok ? ` : ${sim.type}` : sim.detail,
     });
-    // )
+    // ) 
     put({
       key: "token",
+
       label: " ",
       state: getToken() ? "ok" : "warn",
       detail: getToken() ? " " : " ",
@@ -179,6 +178,7 @@ Mb | : ${conn?.rtt ?? "?"}ms${conn?.saveData ? " |   " : ""}`
           </Button>
           <Link href="/" className="rounded-xl bg-white px-3 py-2.5 text-xs font-bold text-slate-700 ring-1 ring-slate-3
 00">
+            
           </Link>
         </div>
       </div>
@@ -216,7 +216,6 @@ Mb | : ${conn?.rtt ?? "?"}ms${conn?.saveData ? " |   " : ""}`
             }}
           >
                  {queue ? `(${toPersianDigits(queue)})` : ""}
-
           </Button>
           <Button
             variant="ghost"
@@ -224,10 +223,12 @@ Mb | : ${conn?.rtt ?? "?"}ms${conn?.saveData ? " |   " : ""}`
               const regs = await navigator.serviceWorker.getRegistrations();
               await Promise.all(regs.map((r) => r.unregister()));
               const keys = await caches.keys();
+
               await Promise.all(keys.map((k) => caches.delete(k)));
               location.reload();
             }}
           >
+                 
           </Button>
           <Button
             variant="ghost"
@@ -236,6 +237,7 @@ Mb | : ${conn?.rtt ?? "?"}ms${conn?.saveData ? " |   " : ""}`
               navigator.clipboard?.writeText(` \n${text}\n${navigator.userAgent}`);
             }}
           >
+              
           </Button>
         </div>
         {cacheInfo ? <p className="mt-2 text-[11px] text-slate-400"> : {cacheInfo}</p> : null}
@@ -244,12 +246,12 @@ Mb | : ${conn?.rtt ?? "?"}ms${conn?.saveData ? " |   " : ""}`
         <h3 className="mb-2 text-sm font-bold text-slate-700">   </h3>
         <ul className="space-y-2 text-[11px] leading-6 text-slate-600">
           <li className="rounded-lg bg-slate-50 px-3 py-2">
-            <b> «  »     :</b>
-             . :
+            <b> «  »     :</b>         
+             . :                   
                        .  :      .
           </li>
           <li className="rounded-lg bg-slate-50 px-3 py-2">
-            <b> « »  :</b>
+            <b> « »  :</b>            
             «   »  .
           </li>
           <li className="rounded-lg bg-slate-50 px-3 py-2">

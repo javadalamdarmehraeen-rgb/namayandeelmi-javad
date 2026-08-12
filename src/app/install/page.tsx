@@ -1,4 +1,3 @@
-
 "use client";
 import { useEffect, useState } from "react";
 import { Alert, Button, Card, SectionTitle } from "@/components/ui";
@@ -34,11 +33,12 @@ export default function InstallPage() {
       {msg ? <Alert kind="info">{msg}</Alert> : null}
       <Card>
         <p className="mb-3 text-sm text-slate-600">
-               (PWA)
+               (PWA)              
              <b>   </b>.
 
         </p>
         <Button onClick={install} className="w-full sm:w-auto">
+               
         </Button>
       </Card>
       <Card>
@@ -68,7 +68,7 @@ export default function InstallPage() {
       <Card>
         <h3 className="mb-2 text-sm font-black text-slate-800">   APK </h3>
         <Alert kind="success">
-             PWABuilder  :      (PNG)  maskable
+             PWABuilder  :      (PNG)  maskable 
                 (id)  manifest.
         </Alert>
         <ol className="mt-2 list-inside list-decimal space-y-1 text-xs leading-6 text-slate-600">
@@ -113,13 +113,13 @@ erline">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src="/icons/icon-192.png" alt=" " className="size-20 rounded-2xl ring-1 ring-slate-200" />
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/icons/maskable-512.png" alt=" maskable" className="size-20 rounded-2xl ring-1 ring-slate-200"
+          <img src="/icons/maskable-512.png" alt=" maskable" className="size-20 rounded-2xl ring-1 ring-slate-200" 
 />
           <div className="text-xs leading-6 text-slate-600">
+
                    maskable  apple-touch-icon     .
           </div>
         </div>
-
       </Card>
     </main>
   );

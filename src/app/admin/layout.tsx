@@ -1,4 +1,3 @@
-
 "use client";
 import type { ReactNode } from "react";
 import Shell from "@/components/Shell";
@@ -15,6 +14,7 @@ function Inner({ children }: { children: ReactNode }) {
     { href: "/admin/activity", label: " ", icon: "", perm: "dashboard" },
     { href: "/admin/map", label: " ", icon: "", perm: "monitor" },
     { href: "/admin/live", label: " ", icon: "", perm: "monitor" },
+
     { href: "/admin/trips", label: " ", icon: "", perm: "monitor" },
     { href: "/admin/homes", label: " ", icon: "", perm: "home" },
     { href: "/admin/leaves", label: "", icon: "", perm: "leave" },

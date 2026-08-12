@@ -1,4 +1,3 @@
-
 "use client";
 import { useCallback, useEffect, useState } from "react";
 import { Alert, Badge, Button, Card, Field, Input, SectionTitle } from "@/components/ui";
@@ -9,7 +8,6 @@ import {
   SUPERVISOR_DEFAULT_PERMISSIONS,
 } from "@/lib/defaults";
 import { tehranDateTime, toPersianDigits } from "@/lib/jalali";
-
 import { useConfirm } from "@/components/Confirm";
 import { useLive } from "@/lib/useLive";
 import { downloadFile } from "@/lib/download";
@@ -63,6 +61,7 @@ export default function UsersPage() {
   }, []);
   const loadRoles = useCallback(async () => {
     const res = await fetch("/api/roles", { cache: "no-store" });
+
     if (res.ok) setRoles((await res.json()).rows ?? []);
   }, []);
   useEffect(() => {
@@ -77,7 +76,7 @@ export default function UsersPage() {
     if (
       !(await confirm({
         title: "  ",
-        message: ` «${form.fullName}»   «${roles.find((r) => r.key === form.role)?.label ?? form.role}»
+        message: ` «${form.fullName}»   «${roles.find((r) => r.key === form.role)?.label ?? form.role}»  
 `,
         confirmText: "",
       }))
@@ -94,12 +93,11 @@ export default function UsersPage() {
     if (res.ok) {
       setMsg({ kind: "success", text: "    " });
       setForm({ ...blank });
-
       load();
     } else setMsg({ kind: "error", text: d.error ?? "" });
   };
   const patch = async (body: Record<string, unknown>, silent = false) => {
-    //
+    //       
     if (typeof body.id === "number") {
       setRows((prev) =>
         prev.map((u) => (u.id === body.id ? ({ ...u, ...(body as Partial<User>) } as User) : u)),
@@ -142,6 +140,7 @@ export default function UsersPage() {
       return;
     }
     if (
+
       !(await confirm({
         title: "  ",
         message: `  «${u.fullName}»  «${pw}»  `,
@@ -166,6 +165,7 @@ export default function UsersPage() {
             onClick={async () => setMsg({ kind: "success", text: await downloadFile("/api/export?type=users", "users.xls
 ") })}
           >
+              
           </Button>
         </div>
       </div>
@@ -178,7 +178,6 @@ export default function UsersPage() {
           </Field>
           <Field label=" " required>
             <Input value={form.username} onChange={(e) => setForm({ ...form, username: e.target.value })} className="tex
-
 t-left" />
           </Field>
           <Field label=" " required>
@@ -223,7 +222,9 @@ t-left" />
                 title=" "
                 className="shrink-0 rounded-xl bg-teal-50 px-3 text-sm font-bold text-teal-700 ring-1 ring-teal-200"
               >
+                
               </button>
+
             </div>
           </Field>
         </div>
@@ -234,11 +235,13 @@ t-left" />
               onClick={() => setForm({ ...form, permissions: [...ALL_PERMISSION_KEYS] })}
               className="rounded-lg bg-teal-600 px-2 py-1 text-[11px] font-bold text-white"
             >
+              
             </button>
             <button
               onClick={() => setForm({ ...form, permissions: [] })}
               className="rounded-lg bg-slate-300 px-2 py-1 text-[11px] font-bold text-slate-700"
             >
+              
             </button>
             <Badge tone="slate">{toPersianDigits(form.permissions.length)} </Badge>
           </div>
@@ -260,7 +263,6 @@ t-left" />
                             ? form.permissions.filter((p) => p !== it.key)
                             : [...form.permissions, it.key],
                         })
-
                       }
                       className={`rounded-lg px-2 py-1 text-[11px] font-bold ${
                         on ? "bg-teal-100 text-teal-700 ring-1 ring-teal-300" : "bg-white text-slate-400 ring-1 ring-sla
@@ -284,9 +286,11 @@ te-200"
               checked={form.requirePhone}
               onChange={(e) => setForm({ ...form, requirePhone: e.target.checked })}
             />
+                 
           </label>
           <div className="flex-1" />
           <Button onClick={create} disabled={busy}>
+              
           </Button>
         </div>
       </Card>
@@ -295,6 +299,7 @@ te-200"
           <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
             <h3 className="text-sm font-bold text-slate-700">   </h3>
             <Button variant="ghost" onClick={() => setShowRoles(false)}>
+              
             </Button>
           </div>
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-4">
@@ -302,6 +307,7 @@ te-200"
               <Input
                 value={roleForm.label}
                 onChange={(e) => setRoleForm({ ...roleForm, label: e.target.value })}
+
                 placeholder="  "
               />
             </Field>
@@ -342,7 +348,6 @@ te-200"
                     body: JSON.stringify(roleForm),
                   });
                   const d = await res.json().catch(() => ({}));
-
                   if (res.ok) {
                     setMsg({ kind: "success", text: "    " });
                     setRoleForm({ label: "", key: "", base: "rep" });
@@ -351,6 +356,7 @@ te-200"
                 }}
                 className="w-full"
               >
+                  
               </Button>
             </div>
           </div>
@@ -386,6 +392,7 @@ te-200"
                         headers: { "Content-Type": "application/json" },
                         body: JSON.stringify({ id: r.id, label: r.label, base: r.base }),
                       });
+
                       setMsg(
                         res.ok
                           ? { kind: "success", text: "  " }
@@ -396,6 +403,7 @@ te-200"
                     }}
                     className="rounded-lg bg-emerald-100 px-2 py-1 text-[11px] font-bold text-emerald-700"
                   >
+                    
                   </button>
                   {!r.builtin ? (
                     <button
@@ -418,13 +426,13 @@ te-200"
                       }}
                       className="rounded-lg bg-rose-100 px-2 py-1 text-[11px] font-bold text-rose-700"
                     >
+                      
                     </button>
                   ) : null}
                 </span>
               </li>
             ))}
           </ul>
-
         </Card>
       ) : null}
       {rows.length === 0 ? <Card>  .</Card> : null}
@@ -462,10 +470,12 @@ te-200"
                   onClick={() => remove(u.id, u.fullName)}
                   className="rounded-lg bg-rose-100 px-2 py-1 text-[11px] font-bold text-rose-700"
                 >
+                  
                 </button>
               </div>
             </div>
             <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-4">
+
               <label className="block">
                 <span className="mb-1 block text-[11px] font-bold text-slate-500"> </span>
                 <Input
@@ -504,10 +514,10 @@ g-slate-200"
                     onClick={() => navigator.clipboard?.writeText(u.passwordPlain)}
                     className="mt-1 text-[10px] font-bold text-teal-700"
                   >
+                      
                   </button>
                 ) : null}
               </label>
-
               <label className="block">
                 <span className="mb-1 block text-[11px] font-bold text-slate-500">  </span>
                 <div className="flex gap-1">
@@ -519,6 +529,7 @@ g-slate-200"
                     className="text-left"
                   />
                   <Button variant="soft" onClick={() => setPassword(u)}>
+                    
                   </Button>
                 </div>
               </label>
@@ -546,6 +557,7 @@ g-slate-200"
                 title="   "
               >
                 <option value="off"> </option>
+
                 <option value="phone"> </option>
                 <option value="device">  ()</option>
                 <option value="otp">  ()</option>
@@ -571,7 +583,7 @@ g-slate-200"
                       if (
                         !(await confirm({
                           title: " ",
-                          message: `  «${u.fullName}»
+                          message: `  «${u.fullName}»              
  .`,
                           confirmText: " ",
                           danger: true,
@@ -582,15 +594,15 @@ g-slate-200"
                     }}
                     className="rounded-lg bg-amber-100 px-2 py-1 text-[11px] font-bold text-amber-700"
                   >
+                     
                   </button>
                 </>
               ) : (
                 <span className="rounded-lg bg-slate-200 px-2 py-1 text-[11px] font-bold text-slate-600">
-                   —
+                   —      
                 </span>
               )}
               <span className="mx-1 h-5 w-px bg-slate-200" />
-
               <span className="text-[11px] font-bold text-slate-500">:</span>
               <select
                 value={u.role}
@@ -608,14 +620,18 @@ g-slate-200"
               <div className="fade-in mt-3 space-y-3 rounded-2xl bg-slate-50 p-3 ring-1 ring-slate-200">
                 <div className="flex flex-wrap gap-2">
                   <Button onClick={() => patch({ id: u.id, permissions: ALL_PERMISSION_KEYS }, true)}>
+                      
                   </Button>
                   <Button variant="soft" onClick={() => patch({ id: u.id, permissions: SUPERVISOR_DEFAULT_PERMISSIONS },
  true)}>
+                     
                   </Button>
                   <Button variant="soft" onClick={() => patch({ id: u.id, permissions: REP_DEFAULT_PERMISSIONS }, true)}
 >
+                     
                   </Button>
                   <Button variant="danger" onClick={() => patch({ id: u.id, permissions: [] }, true)}>
+                     
                   </Button>
                 </div>
                 {PERMISSION_GROUPS.map((g) => {
@@ -625,6 +641,7 @@ g-slate-200"
                     <div key={g.key} className="rounded-xl bg-white p-3 ring-1 ring-slate-200">
                       <div className="mb-2 flex items-center justify-between">
                         <span className="text-xs font-black text-slate-700">
+
                           {g.icon} {g.label}
                         </span>
                         <button
@@ -652,7 +669,7 @@ g-slate-200"
                           return (
                             <label
                               key={it.key}
-                              className={`flex cursor-pointer items-center justify-between gap-2 rounded-lg px-2.5 py-2
+                              className={`flex cursor-pointer items-center justify-between gap-2 rounded-lg px-2.5 py-2 
 text-xs ${
                                 on ? "bg-teal-50 ring-1 ring-teal-200" : "bg-slate-50"
                               }`}
@@ -671,7 +688,6 @@ text-xs ${
                     </div>
                   );
                 })}
-
               </div>
             ) : null}
           </Card>

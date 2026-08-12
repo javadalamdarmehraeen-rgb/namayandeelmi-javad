@@ -1,9 +1,8 @@
-
 export type ProductDef = { key: string; label: string; bonusKey: string; bonusLabel: string };
 export const PRODUCTS: ProductDef[] = [
   { key: "omega3", label: " ", bonusKey: "omega3_bonus", bonusLabel: "   " },
-  { key: "omega5", label: " ", bonusKey: "omega5_bonus", bonusLabel: "   " },
 
+  { key: "omega5", label: " ", bonusKey: "omega5_bonus", bonusLabel: "   " },
   { key: "omega35", label: " .", bonusKey: "omega35_bonus", bonusLabel: "   ." },
   { key: "omegaMulti", label: " ", bonusKey: "omegaMulti_bonus", bonusLabel: "   " },
   { key: "omegaWomen", label: " ", bonusKey: "omegaWomen_bonus", bonusLabel: "   " },
@@ -84,11 +83,11 @@ export const PLATFORMS: {
       "  eitaayar.ir  .",
       "     « »  .",
       "    /   .",
+
       "    @     .",
     ],
   },
   {
-
     key: "whatsapp",
     label: "",
     icon: "",

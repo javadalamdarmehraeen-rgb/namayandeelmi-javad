@@ -1,4 +1,3 @@
-
 "use client";
 import type { ReactNode } from "react";
 import Shell, { type NavItem } from "@/components/Shell";
@@ -31,11 +30,11 @@ function Inner({ children }: { children: ReactNode }) {
       showAdminLink={me.role !== "rep"}
     >
       {children}
+
     </Shell>
   );
 }
 export default function PanelLayout({ children }: { children: ReactNode }) {
-
   return (
     <SessionProvider require>
       <Inner>{children}</Inner>

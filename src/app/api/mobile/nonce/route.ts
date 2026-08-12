@@ -1,6 +1,6 @@
-
 import { issueNonce } from "@/lib/mobile-auth";
 import { ensureSeed } from "@/lib/bootstrap";
+
 export const dynamic = "force-dynamic";
 /**
  *  nonce    .

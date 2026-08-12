@@ -1,10 +1,10 @@
-
 import { pngResponse, renderIcon } from "@/lib/pwa-image";
 export const dynamic = "force-static";
 export const revalidate = false;
 /**
- *  :     public/icons
- * (       )    PNG
+
+ *  :     public/icons  
+ * (       )    PNG 
  *            .
  */
 export async function GET(_req: Request, ctx: { params: Promise<{ file: string }> }) {

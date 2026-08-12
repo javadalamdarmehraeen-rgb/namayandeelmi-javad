@@ -1,4 +1,3 @@
-
 import { db } from "@/db";
 import { settings } from "@/db/schema";
 import { DEFAULT_PRODUCTS, type ProductConfig } from "./defaults";

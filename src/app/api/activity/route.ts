@@ -1,4 +1,3 @@
-
 import { db, dbRetry } from "@/db";
 import { activityLogs, doctors, leaves, orders, pharmacies, trips, users } from "@/db/schema";
 import { getSessionUser } from "@/lib/auth";
@@ -25,6 +24,7 @@ export async function GET() {
     db.select({ uid: doctors.userId, c: count() }).from(doctors).groupBy(doctors.userId),
     db.select({ uid: orders.userId, c: count() }).from(orders).groupBy(orders.userId),
     db.select({ uid: trips.userId, c: count() }).from(trips).groupBy(trips.userId),
+
     db
       .select({ uid: trips.userId, c: count() })
       .from(trips)
@@ -73,7 +73,6 @@ export async function GET() {
     activeTrips: sum(mAc),
     users: userRows.length,
     leaves: Number(pendingLeaves[0]?.c ?? 0),
-
   };
   void sql;
   return Response.json({ logs, counts, reps, byRep });

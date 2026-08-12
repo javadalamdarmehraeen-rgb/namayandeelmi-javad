@@ -1,18 +1,17 @@
-
 /**
  * ============================================================
  *       — React Native
  * ------------------------------------------------------------
  *     :
- *   «»
+ *   «»       
  *  (    )  MSISDN    .
  *   iOS    API    .
  *
  *       :
  *   )      (   )
- *   )  «  » (ICCID/IMSI/)
- *
- *   )     →
+ *   )  «  » (ICCID/IMSI/)   
+ *           
+ *   )     →        
  *      (       )
  * ============================================================
  */
@@ -20,7 +19,7 @@ import { NativeModules, PermissionsAndroid, Platform } from "react-native";
 import DeviceInfo from "react-native-device-info";
 import * as Keychain from "react-native-keychain";
 import { HmacSHA256, enc } from "crypto-js";
-//
+//   
 export const API_BASE = "https://namayandeelmi-javad.onrender.com";
 /**    MOBILE_APP_SECRET     */
 const APP_SECRET = "REPLACE_WITH_MOBILE_APP_SECRET";
@@ -28,17 +27,17 @@ const DEVICE_ID_KEY = "sek_device_id";
 /* ------------------------------------------------------------------ */
 /*                                                               */
 /* ------------------------------------------------------------------ */
+
 export async function requestSimPermissions(): Promise<boolean> {
   if (Platform.OS !== "android") return false;
   try {
     const perms = [
       PermissionsAndroid.PERMISSIONS.READ_PHONE_STATE,
-      //   +
+      //   +     
       "android.permission.READ_PHONE_NUMBERS" as never,
     ];
     const result = await PermissionsAndroid.requestMultiple(perms);
     return Object.values(result).some((v) => v === PermissionsAndroid.RESULTS.GRANTED);
-
   } catch {
     return false;
   }
@@ -75,7 +74,7 @@ export async function readSimInfo(): Promise<SimInfo> {
     source: "none",
   };
   if (Platform.OS !== "android") {
-    // iOS:
+    // iOS:          
     const carrier = await DeviceInfo.getCarrier().catch(() => "");
     return { ...empty, carrier, hasSim: !!carrier, fingerprint: carrier ? `ios:${carrier}` : "" };
   }
@@ -85,7 +84,7 @@ export async function readSimInfo(): Promise<SimInfo> {
   let carrier = "";
   let simCount = 0;
   let source: SimInfo["source"] = "none";
-  //  react-native-sim-data (  ) —
+  //  react-native-sim-data (  ) —  
   try {
     const SimData = NativeModules.RNSimData ?? require("react-native-sim-data").default;
     const info = await Promise.resolve(SimData?.getSimInfo?.());
@@ -104,7 +103,8 @@ export async function readSimInfo(): Promise<SimInfo> {
   } catch {
     /*       */
   }
-  //  react-native-device-info
+
+  //  react-native-device-info  
   if (!carrier) carrier = await DeviceInfo.getCarrier().catch(() => "");
   if (!phoneNumber) {
     const p = await DeviceInfo.getPhoneNumber?.().catch(() => "");
@@ -123,7 +123,6 @@ export async function readSimInfo(): Promise<SimInfo> {
     fingerprint,
     carrier,
     simCount: simCount || (carrier ? 1 : 0),
-
     hasSim: !!carrier || !!fingerprint,
     source,
   };
@@ -181,6 +180,7 @@ async function fetchJson(path: string, body: unknown, timeoutMs = 20000) {
 }
 /* ------------------------------------------------------------------ */
 /*                                                   */
+
 /* ------------------------------------------------------------------ */
 export type LoginResult =
   | { status: "success"; token: string; user: Record<string, unknown> }
@@ -200,15 +200,14 @@ export async function loginWithSim(): Promise<LoginResult> {
     return { status: "error", message: "    .     ." };
   }
   const nonce = String(nonceRes.data.nonce);
-  //
+  //           
   const timestamp = Number(nonceRes.data.serverTime ?? Date.now());
-  //
+  //   
   const canonical = [nonce, String(timestamp), deviceId, sim.phoneNumber, sim.fingerprint].join("|");
   const signature = sign(canonical);
-  //
+  //    
   const res = await fetchJson("/api/mobile/login-with-phone", {
     deviceId,
-
     deviceInfo,
     nonce,
     timestamp,
@@ -253,6 +252,7 @@ export async function verifyOtp(username: string, password: string, code: string
   }
   return { ok: false, message: String(res.data.error ?? "  ") };
 }
+
 export async function getSavedToken(): Promise<string | null> {
   try {
     const c = await Keychain.getGenericPassword({ service: "sek_token" });

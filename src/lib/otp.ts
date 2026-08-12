@@ -1,18 +1,18 @@
-
 import { createHash, randomInt } from "crypto";
 import { db } from "@/db";
 import { messengers, otpCodes, settings } from "@/db/schema";
 import { and, desc, eq, gt } from "drizzle-orm";
 import { sendOne } from "./messaging";
 import { fetchWithRetry } from "./retry";
-export const OTP_TTL_MS = 3 * 60 * 1000; //
+export const OTP_TTL_MS = 3 * 60 * 1000; //  
 export const OTP_MAX_ATTEMPTS = 5;
 export function hashCode(code: string, phone: string) {
   const secret = process.env.APP_SECRET || "sabt-etelaat-kol-default-secret-key";
   return createHash("sha256").update(`${code}|${phone}|${secret}`).digest("hex");
 }
+
 export function generateCode() {
-  return String(randomInt(10000, 100000)); //
+  return String(randomInt(10000, 100000)); //  
 }
 type SmsConfig = { provider: string; apiKey: string; sender: string; pattern: string; enabled: boolean };
 export const DEFAULT_SMS: SmsConfig = {
@@ -41,7 +41,7 @@ export async function getSmsConfig(): Promise<SmsConfig> {
 }
 /**          */
 async function post(url: string, init?: RequestInit, ms = 12000) {
-  return fetchWithRetry(url, init ?? {}, { timeoutMs: ms, retries: 3, baseDelayMs: 900, maxDelayMs: 6_000, label: "sms"
+  return fetchWithRetry(url, init ?? {}, { timeoutMs: ms, retries: 3, baseDelayMs: 900, maxDelayMs: 6_000, label: "sms" 
 });
 }
 /**        */
@@ -76,7 +76,6 @@ async function sendSms(phone: string, code: string): Promise<{ ok: boolean; deta
       const r = await post("https://console.melipayamak.com/api/send/simple/" + cfg.apiKey, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-
         body: JSON.stringify({ from: cfg.sender, to: phone, text }),
       });
       const raw = (await r.text()).slice(0, 200);
@@ -90,6 +89,7 @@ async function sendSms(phone: string, code: string): Promise<{ ok: boolean; deta
     }
     return { ok: false, detail: "   " };
   } catch (e) {
+
     return { ok: false, detail: e instanceof Error ? e.message : " " };
   }
 }

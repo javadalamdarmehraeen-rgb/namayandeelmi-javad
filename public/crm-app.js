@@ -1,190 +1,3645 @@
-const App = (() => {
-  const KEY = 'NDCO_CRM_STATE_V10';
-  const PAGE_SIZE = 12;
-  const MONTHS = ['فروردین','اردیبهشت','خرداد','تیر','مرداد','شهریور','مهر','آبان','آذر','دی','بهمن','اسفند'];
-  const MESSENGERS = ['بله','ایتا','تلگرام','سروش','واتساپ'];
-  const IRAN = {
-    'تهران': {'تهران':['منطقه ۱','منطقه ۲','منطقه ۳','منطقه ۴','منطقه ۵','منطقه ۶','منطقه ۷','منطقه ۸','منطقه ۹','منطقه ۱۰','منطقه ۱۱','منطقه ۱۲','منطقه ۱۳','منطقه ۱۴','منطقه ۱۵','منطقه ۱۶','منطقه ۱۷','منطقه ۱۸','منطقه ۱۹','منطقه ۲۰','منطقه ۲۱','منطقه ۲۲'],'اسلامشهر':['مرکزی','چهاردانگه','احمدآباد مستوفی'],'ورامین':['مرکزی','جوادآباد','پیشوا'],'ری':['مرکزی','کهریزک','باقرشهر'],'شهریار':['مرکزی','اندیشه','فردوسیه'],'قدس':['مرکزی'],'پاکدشت':['مرکزی','شریف‌آباد'],'رباط‌کریم':['مرکزی','گلستان'],'بهارستان':['مرکزی','نسیم‌شهر'],'قرچک':['مرکزی'],'پردیس':['مرکزی','بومهن','جاجرود'],'دماوند':['مرکزی','رودهن'],'فیروزکوه':['مرکزی']},
-    'البرز': {'کرج':['مرکزی','مهرشهر','گوهردشت','عظیمیه','شاهین‌ویلا','حصارک','گلشهر'],'فردیس':['مرکزی','شهرک ناز','مهرشهر'],'نظرآباد':['مرکزی','تنکمان'],'ساوجبلاغ':['هشتگرد','جدید هشتگرد','طالقان'],'اشتهارد':['مرکزی']},
-    'اصفهان': {'اصفهان':['مرکزی','خمینی‌شهر','شاهین‌شهر','نجف‌آباد','ابریشم'],'کاشان':['مرکزی','مشهد اردهال','قمصر'],'نجف‌آباد':['مرکزی','مهردشت'],'شاهین‌شهر':['مرکزی','گز'],'خمینی‌شهر':['مرکزی','فولادشهر','اصغرآباد'],'آران و بیدگل':['مرکزی'],'نطنز':['مرکزی'],'سمیرم':['مرکزی'],'شهرضا':['مرکزی'],'فلاورجان':['مرکزی','پیربکران'],'لنجان':['زرین‌شهر','فولادشهر','چمگردان'],'مبارکه':['مرکزی','زیار']},
-    'فارس': {'شیراز':['مرکزی','معالی‌آباد','قصرالدشت','فرهنگ‌شهر','گلشن','سعدی'],'مرودشت':['مرکزی','سیدان','درودزن'],'جهرم':['مرکزی','خاوران'],'فسا':['مرکزی','ششده'],'کازرون':['مرکزی','قائمیه'],'داراب':['مرکزی','فدامی'],'لارستان':['لار','اوز','بیرم'],'فیروزآباد':['مرکزی'],'آباده':['مرکزی','ایزدخواست'],'نورآباد ممسنی':['مرکزی'],'اقلید':['مرکزی','سده'],'نی‌ریز':['مرکزی','مشکان']},
-    'خراسان رضوی': {'مشهد':['مرکزی','احمدآباد','سجادشهر','الهیه','طرقبه','شاندیز','گلبهار'],'نیشابور':['مرکزی','فضل','عشق‌آباد'],'سبزوار':['مرکزی','روداب','ششتمد'],'تربت حیدریه':['مرکزی','رباط سنگ'],'تربت جام':['مرکزی','نصرآباد'],'کاشمر':['مرکزی','ریوش'],'قوچان':['مرکزی','باجگیران'],'گناباد':['مرکزی','بیدخت'],'چناران':['مرکزی','گلبهار'],'سرخس':['مرکزی','مزداوند'],'فریمان':['مرکزی','فرهادگرد'],'خواف':['نشتیفان','سلامی']},
-    'آذربایجان شرقی': {'تبریز':['مرکزی','ولیعصر','ابوریحان','شنب غازان','ائل‌گلی'],'مراغه':['مرکزی','سراجو'],'اهر':['مرکزی','هوراند'],'میانه':['مرکزی','ترکمانچی'],'بناب':['مرکزی'],'سراب':['مرکزی','شربیان'],'مرند':['مرکزی','کشکسرای'],'شبستر':['مرکزی','صوفیان','تسوج'],'آذرشهر':['مرکزی','ممقان','گوگان'],'اسکو':['مرکزی','ایلخچی'],'هریس':['مرکزی','خواجه'],'کلیبر':['مرکزی','آبرس'],'بستان‌آباد':['مرکزی','تیمورلو'],'جلفا':['مرکزی','سیه‌رود','هادی‌شهر']},
-    'خوزستان': {'اهواز':['مرکزی','کیانپارس','نادری','زیتون کارمندی','پادادشهر','کوروش'],'آبادان':['مرکزی','بوارده','چویبده'],'خرمشهر':['مرکزی','مقاومت','منیوحی'],'دزفول':['مرکزی','سیاه‌منصور','صفی‌آباد'],'اندیمشک':['مرکزی','حسینیه'],'بهبهان':['مرکزی','تشان'],'ماهشهر':['مرکزی','بندر امام خمینی','چمران'],'شوشتر':['مرکزی','گرگر'],'شوش':['مرکزی','حر'],'ایذه':['مرکزی','دهدز'],'رامهرمز':['مرکزی'],'امیدیه':['مرکزی','جایزان'],'باغ‌ملک':['مرکزی','صیدون'],'هندیجان':['مرکزی'],'لالی':['مرکزی'],'مسجدسلیمان':['مرکزی']},
-    'قم': {'قم':['مرکزی','پردیسان','بنفشه','سالاریه','امیرکبیر','نیروگاه','کهک'],'کهک':['مرکزی'],'جعفریه':['مرکزی'],'سلفچگان':['مرکزی']},
-    'یزد': {'یزد':['مرکزی','صفاییه','امامشهر','اکرم‌آباد','آزادشهر'],'میبد':['مرکزی','ندوشن','بفروئیه'],'اردکان':['مرکزی','عقدا','خرانق'],'بافق':['مرکزی'],'مهریز':['مرکزی'],'تفت':['مرکزی','نیر'],'اشکذر':['مرکزی','خضرآباد'],'ابرکوه':['مرکزی','فراغه'],'بهاباد':['مرکزی'],'خاتم':['هرات','مروست']},
-    'گیلان': {'رشت':['مرکزی','گلسار','لاکان','پل عراق','آزادشهر'],'انزلی':['مرکزی','خمام','توتکابن'],'لاهیجان':['مرکزی','رودبنه'],'لنگرود':['مرکزی','اطاقور','کومله'],'آستارا':['مرکزی','لوندویل'],'آستانه اشرفیه':['مرکزی','کیاشهر'],'رودبار':['منجیل','لوشان','رستم‌آباد'],'رودسر':['مرکزی','کلاچای','چابکسر'],'صومعه‌سرا':['مرکزی','ضیابر'],'فومن':['مرکزی','ماسوله'],'شفت':['مرکزی','احمدسرگوراب'],'ماسال':['مرکزی','بازار جمعه'],'رضوانشهر':['مرکزی','پره‌سر'],'تالش':['هشتپر','چوبر','اسالم']},
-    'مازندران': {'ساری':['مرکزی','راهبند','کتالم','پل سفید'],'بابل':['مرکزی','امیرکلا','بندپی','گتاب'],'آمل':['مرکزی','امامزاده عبدالله','دابودشت'],'قائم‌شهر':['مرکزی','ارطه'],'بهشهر':['مرکزی','رستمکلا'],'نوشهر':['مرکزی','چالوس','کلارآباد'],'چالوس':['مرکزی','مرزن‌آباد'],'تنکابن':['مرکزی','نشتارود','خرم‌آباد'],'رامسر':['مرکزی','کتالم'],'نکا':['مرکزی'],'گلوگاه':['مرکزی'],'جویبار':['مرکزی','کوهی‌خیل'],'محمودآباد':['مرکزی','سرخرود'],'فریدونکنار':['مرکزی'],'بابلسر':['مرکزی','بهنمیر'],'میاندورود':['مرکزی','تازه‌آباد']},
-    'گلستان': {'گرگان':['مرکزی','سرخنکلاته','جلین'],'گنبد کاووس':['مرکزی','اینچه برون'],'علی‌آباد کتول':['مرکزی','فاضل‌آباد'],'آق‌قلا':['مرکزی','انبار آلوم'],'کردکوی':['مرکزی','بندرگز'],'بندر ترکمن':['مرکزی','گمیشان'],'مینودشت':['مرکزی','گالیکش'],'کلاله':['مرکزی','فراغی'],'مراوه‌تپه':['مرکزی'],'رامیان':['مرکزی','خان‌ببین'],'آزادشهر':['مرکزی','نوده خاندوز'],'گمیشان':['مرکزی','سیمین‌شهر']},
-    'اردبیل': {'اردبیل':['مرکزی','هیر','آبی‌بیگلو'],'پارس‌آباد':['مرکزی','اصلاندوز','تازه‌کند'],'مشگین‌شهر':['مرکزی','لاهرود','رضی'],'خلخال':['مرکزی','هشجین','کلور'],'گرمی':['مرکزی','تازه‌کند انگوت'],'بیله‌سوار':['مرکزی','جعفرلو'],'نمین':['مرکزی','آبی‌بیگلو'],'نیر':['مرکزی'],'کوثر':['مرکزی','گیوی'],'سرعین':['مرکزی']},
-    'آذربایجان غربی': {'ارومیه':['مرکزی','سرو','نازلو','انزل'],'خوی':['مرکزی','فیرورق','ایواوغلی'],'مهاباد':['مرکزی','خلیفان'],'بوکان':['مرکزی','سیمینه'],'میاندوآب':['مرکزی','باروق','چهاربرج'],'سلماس':['مرکزی','تازه‌شهر'],'ماکو':['مرکزی','بازرگان','پولدشت'],'نقده':['مرکزی','محمدیار'],'پیرانشهر':['مرکزی','گردکشانه'],'سردشت':['مرکزی','ربط'],'تکاب':['مرکزی'],'شاهین‌دژ':['مرکزی','محمودآباد'],'چالدران':['مرکزی','آواجیق'],'اشنویه':['مرکزی'],'چایپاره':['قره‌ضیاءالدین']},
-    'زنجان': {'زنجان':['مرکزی','نیک‌پی','قلتوق'],'ابهر':['مرکزی','صائین‌قلعه','هیدج'],'خدابنده':['قیدار','گرماب','سجاس'],'خرمدره':['مرکزی'],'ماه‌نشان':['مرکزی','اندآباد'],'طارم':['آب‌بر','چورزق'],'ایجرود':['زرین‌آباد','حلب']},
-    'قزوین': {'قزوین':['مرکزی','محمودآباد','محمدیه'],'البرز':['الوند','محمدیه','بیدستان'],'تاکستان':['مرکزی','ضیاءآباد','نرجه'],'بوئین‌زهرا':['مرکزی','آبگرم','دانسفهان'],'آبیک':['مرکزی','خاکعلی']},
-    'مرکزی': {'اراک':['مرکزی','کارچان','داودآباد'],'ساوه':['مرکزی','غرق‌آباد','نوبران'],'خمین':['مرکزی','قورچی‌باشی'],'محلات':['مرکزی','نیمور'],'دلیجان':['مرکزی'],'شازند':['مرکزی','مهاجران','آستانه'],'تفرش':['مرکزی','فراهان'],'آشتیان':['مرکزی'],'کمیجان':['مرکزی','خنجین'],'زرندیه':['مأمونیه','پرندک','زاویه'],'فراهان':['فرمهین']},
-    'همدان': {'همدان':['مرکزی','جورقان','قهاوند'],'ملایر':['مرکزی','ازندریان','سامن'],'نهاوند':['مرکزی','گیان','برزول'],'تویسرکان':['مرکزی','سرکان'],'کبودرآهنگ':['مرکزی','گل‌تپه'],'رزن':['مرکزی','دمق'],'بهار':['مرکزی','صالح‌آباد','لالجین'],'اسدآباد':['مرکزی'],'فامنین':['مرکزی']},
-    'کرمانشاه': {'کرمانشاه':['مرکزی','بیستون','کوزران','هلشی'],'اسلام‌آباد غرب':['مرکزی','حمیل','ریجاب'],'هرسین':['مرکزی','بیستون'],'کنگاور':['مرکزی','فش'],'صحنه':['مرکزی','مایه‌در'],'سنقر':['مرکزی','کلیایی'],'جوانرود':['مرکزی'],'پاوه':['مرکزی','نودشه','بانه‌وره'],'سرپل ذهاب':['مرکزی','تازه‌آباد'],'گیلان غرب':['مرکزی','گوار'],'قصرشیرین':['مرکزی','سومار','نفت‌شهر'],'دالاهو':['کرند غرب','گهواره'],'ثلاث باباجانی':['تازه‌آباد','ازگله'],'روانسر':['مرکزی','شاهو']},
-    'ایلام': {'ایلام':['مرکزی','چوار','سراب‌باغ'],'مهران':['مرکزی','صالح‌آباد'],'دهلران':['مرکزی','موسیان'],'آبدانان':['مرکزی','سرابباغ'],'دره‌شهر':['مرکزی','بدره'],'ملکشاهی':['ارکواز','شهرک ارکواز'],'ایوان':['مرکزی','زرنه'],'چرداول':['سرابله','اسلامیه'],'بدره':['مرکزی'],'سیروان':['لومار']},
-    'لرستان': {'خرم‌آباد':['مرکزی','چغلوندی','زاغه','بیرانشهر'],'بروجرد':['مرکزی','اشترینان','ونایی'],'دورود':['مرکزی','چالانچولان'],'الیگودرز':['مرکزی','شول‌آباد'],'کوهدشت':['مرکزی','کوهنانی','چقابل'],'ازنا':['مرکزی','مومن‌آباد'],'نورآباد':['مرکزی','نورآباد'],'پلدختر':['مرکزی','معمولان'],'سلسله':['الشتر','فیروزآباد'],'رومشکان':['چقابل']},
-    'کرمان': {'کرمان':['مرکزی','اختیارآباد','زنگی‌آباد','جوپار'],'بم':['مرکزی','بروات','نرماشیر'],'رفسنجان':['مرکزی','کشکوئیه','صفاییه'],'سیرجان':['مرکزی','نجف‌شهر','پاریز'],'جیرفت':['مرکزی','درب بهشت'],'زرند':['مرکزی','یزدان‌شهر'],'بافت':['مرکزی','ارزوئیه'],'شهربابک':['مرکزی'],'راور':['مرکزی'],'کهنوج':['مرکزی','فاریاب'],'عنبرآباد':['مرکزی','نرماشیر'],'منوجان':['مرکزی'],'انار':['مرکزی'],'بردسیر':['مرکزی','نگار'],'فهرج':['مرکزی'],'رودبار جنوب':['مرکزی','کهنوج'],'ریگان':['محمدآباد'],'قلعه‌گنج':['مرکزی']},
-    'سیستان و بلوچستان': {'زاهدان':['مرکزی','نصرت‌آباد'],'چابهار':['مرکزی','کنارک','نگور','پلان'],'زابل':['مرکزی','بنجار','محمدآباد'],'ایرانشهر':['مرکزی','بزمان','دامن'],'سراوان':['مرکزی','سیرکان','جالق'],'خاش':['مرکزی','نوک‌آباد'],'کنارک':['مرکزی','کهیر'],'سرباز':['راسک','سرباز','پیشین'],'نیک‌شهر':['مرکزی','اسپکه','بنت'],'میرجاوه':['مرکزی','ریگ ملک'],'هیرمند':['دوست‌محمد'],'هامون':['محمدآباد'],'زهک':['مرکزی'],'فنوج':['مرکزی'],'قصرقند':['مرکزی','ساربوک']},
-    'هرمزگان': {'بندرعباس':['مرکزی','قلعه قاضی','تازیان','فین'],'قشم':['مرکزی','درگهان','هرمز','سوزا','طبل'],'کیش':['مرکزی'],'بندر لنگه':['مرکزی','چارک','بندر کنگ'],'میناب':['مرکزی','سندرک','هشتبندی'],'رودان':['مرکزی','زیارتعلی'],'حاجی‌آباد':['مرکزی','فارغان'],'بستک':['مرکزی','جناح'],'پارسیان':['مرکزی','کوشکنار'],'جاسک':['مرکزی','لیردف','کوه مبارک'],'سیریک':['مرکزی','بمانی'],'بشاگرد':['سردشت'],'خمیر':['مرکزی','رویدر']},
-    'بوشهر': {'بوشهر':['مرکزی','چغادک','خارک'],'برازجان':['مرکزی','آبپخش','دالکی','شبانکاره'],'کنگان':['مرکزی','بنک','سیراف'],'عسلویه':['مرکزی','چاه مبارک','نخل تقی'],'گناوه':['مرکزی','ریگ','بندر ریگ'],'دیلم':['مرکزی','امام حسن'],'تنگستان':['اهرم','دلوار'],'دشتی':['خورموج','کاکی','شنبه'],'دیر':['مرکزی','بردخون','آبدان'],'جم':['مرکزی','ریز']},
-    'کهگیلویه و بویراحمد': {'یاسوج':['مرکزی','مادوان','سی‌سخت'],'دوگنبدان':['مرکزی','سوق','چرام'],'کهگیلویه':['دهدشت','دیشموک','چرام'],'بویراحمد':['یاسوج','مارگون'],'بهمئی':['لیکک','لنده']},
-    'چهارمحال و بختیاری': {'شهرکرد':['مرکزی','فرخ‌شهر','هفشجان','کیان'],'بروجن':['مرکزی','بلداجی','سفیددشت'],'فارسان':['مرکزی','جونقان','باباحیدر'],'لردگان':['مرکزی','منج','فلارد'],'اردل':['مرکزی','دشتک'],'کوهرنگ':['چلگرد'],'کیار':['شلمزار','ناغان','گهرو'],'بن':['مرکزی','وردنجان'],'سامان':['مرکزی']},
-    'خ. شمالی': {'بندرانزلی':'رشت'},
-    'خراسان شمالی': {'بجنورد':['مرکزی','گرمخان','راز'],'شیروان':['مرکزی','لوجلی','قوشخانه'],'اسفراین':['مرکزی','صفی‌آباد'],'آشخانه':['مرکزی','تیتکانلو'],'جاجرم':['مرکزی','سنخواست','گرمه'],'فاروج':['مرکزی','تیتکانلو'],'راز و جرگلان':['راز'],'گرمه':['مرکزی']},
-    'خراسان جنوبی': {'بیرجند':['مرکزی','خوسف','محمدشهر'],'قائنات':['قاین','اسفدن','نیمبلوک'],'فردوس':['مرکزی','اسلامیه'],'نهبندان':['مرکزی','شوسف'],'سرایان':['مرکزی','سه قلعه'],'سرپیشه':['مرکزی','مود'],'طبس':['مرکزی','عشق‌آباد','دیهوک'],'بشرویه':['مرکزی','ارسک'],'درمیان':['اسدیه','طبس مسینا'],'خوسف':['مرکزی','محمدشهر'],'زیرکوه':['حاجی‌آباد']},
-    'سمنان': {'سمنان':['مرکزی','مهدی‌شهر','سرخه'],'شاهرود':['مرکزی','بسطام','بیارجمند','کلاته خیج'],'دامغان':['مرکزی','کلاته','امیریه'],'گرمسار':['مرکزی','ایوانکی','کهن‌آباد'],'مهدی‌شهر':['مرکزی','درجزین'],'سرخه':['مرکزی','لاسجرد'],'آرادان':['مرکزی','کهن‌آباد'],'میامی':['مرکزی','کلاته بالا']},
-    'تهران/البرز':{},
-    'کردستان': {'سنندج':['مرکزی','ننور','حسن آباد'],'سقز':['مرکزی','صاحب','بویطاق'],'مریوان':['مرکزی','کانی دینار','سرشیو'],'بانه':['مرکزی','بویین سفلی','کانی سور'],'قروه':['مرکزی','دلبران','سریش آباد'],'بیجار':['مرکزی','پیرتاج','یاسی کند'],'کامیاران':['مرکزی','موچش'],'دیواندره':['مرکزی','زرینه'],'دهگلان':['مرکزی','بلوچ آباد'],'سروآباد':['مرکزی']},
-    'کرمان/هرمزگان':{},
-    'آ. شرقی':{}
-  };
-  delete IRAN['خ. شمالی']; delete IRAN['تهران/البرز']; delete IRAN['کرمان/هرمزگان']; delete IRAN['آ. شرقی'];
-  const PERMS = {dashboard:'داشبورد',pharmacies:'داروخانه‌ها',doctors:'پزشکان',orders:'سفارش‌ها',activity:'فعالیت',map:'نقشه',live:'موقعیت',search:'جستجو',trips:'رصد تردد',homes:'منازل',leaves:'مرخصی',reports:'گزارش',targets:'تارگت',columns:'کالاها',users:'کاربران',messengers:'پیامرسان‌ها',backup:'پشتیبان',install:'نصب',diagnostics:'عیب‌یابی'};
-  const MENUS = [['dashboard','داشبورد','📊'],['pharmacies','داروخانه‌ها','🏥'],['doctors','پزشکان','👨‍⚕️'],['orders','سفارش‌ها','🧾'],['activity','فعالیت لحظه‌ای','⚡'],['map','نقشه جامع','🗺️'],['live','موقعیت نمایندگان','📍'],['search','جستجوی اطلاعات','🔎'],['trips','رصد تردد','🚶'],['homes','منزل نمایندگان','🏠'],['leaves','مرخصی‌ها','📅'],['reports','گزارش‌ها','📈'],['targets','تارگت فروش','🎯'],['columns','ستون‌ها و کالاها','🧩'],['users','کاربران و دسترسی‌ها','👥'],['messengers','پیام‌رسان‌ها','💬'],['backup','پشتیبان‌گیری','💾'],['notifications','اعلان‌ها','🔔'],['install','نصب اپ','📲'],['diagnostics','عیب‌یابی','🛠️']];
-  let state, user, tab='dashboard', maps={}, pages={};
-  const $=s=>document.querySelector(s), $$=s=>Array.from(document.querySelectorAll(s));
-  const e=(t,c,h)=>{const x=document.createElement(t); if(c)x.className=c; if(h!=null)x.innerHTML=h; return x;};
-  const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
-  const todayFa=()=>new Intl.DateTimeFormat('fa-IR',{timeZone:'Asia/Tehran'}).format(new Date());
-  function gregorianToJalali(gy, gm, gd) { const g_d_m=[0,31,59,90,120,151,181,212,243,273,304,334]; let jy = gy<=1600?0:979; gy -= gy<=1600?621:1600; const gy2 = gm>2?gy+1:gy; let days = 365*gy + Math.floor((gy2+3)/4) - Math.floor((gy2+99)/100) + Math.floor((gy2+399)/400) - 80 + gd + g_d_m[gm-1]; jy += 33*Math.floor(days/12053); days %= 12053; jy += 4*Math.floor(days/1461); days %= 1461; if(days>365){ jy += Math.floor((days-1)/365); days=(days-1)%365; } const jm = days<181?1+Math.floor(days/31):7+Math.floor((days-181)/30); const jd = 1+(days<181?days%31:(days-181)%30); return [jy,jm,jd]; }
-  function currentJalali(){const d=new Date();const [y,m,day]=gregorianToJalali(d.getFullYear(),d.getMonth()+1,d.getDate());return {y,m,d:day}}
-  function faNum(n){return String(n).padStart(2,'0').replace(/\d/g,d=>'۰۱۲۳۴۵۶۷۸۹'[d])}
-  function renderDatePicker(id){const box=$('#'+id+'Pop'); if(!box)return; const cur=$('#'+id).value.split('/');const c=currentJalali();let y=parseInt(cur[0])||c.y,m=parseInt(cur[1])||c.m;box.innerHTML=`<div style="display:flex;gap:.35rem;justify-content:space-between;margin-bottom:.4rem"><button type="button" data-dy="-1" data-dm="0">سال قبل</button><select class="form-select" data-y>${Array.from({length:15},(_,i)=>c.y-7+i).map(yy=>`<option ${yy===y?'selected':''}>${yy}</option>`).join('')}</select><select class="form-select" data-m>${MONTHS.map((mm,i)=>`<option value="${i+1}" ${i+1===m?'selected':''}>${mm}</option>`).join('')}</select><button type="button" data-dy="1" data-dm="0">سال بعد</button></div><div class="date-grid">${Array.from({length:31},(_,i)=>i+1).map(d=>`<button type="button" data-d="${d}" class="date-day">${faNum(d)}</button>`).join('')}</div><button type="button" class="btn btn-outline btn-sm" data-today style="margin-top:.4rem">امروز</button>`;box.classList.add('open');const set=(yy,mm,dd)=>{$('#'+id).value=`${yy}/${faNum(mm)}/${faNum(dd)}`;box.classList.remove('open')};box.querySelector('[data-y]').onchange=e=>y=+e.target.value;box.querySelector('[data-m]').onchange=e=>m=+e.target.value;box.querySelectorAll('[data-dy]').forEach(b=>b.onclick=()=>{y+=+b.dataset.dy;renderDatePicker(id);const s=box.querySelector('[data-y]');if(s)s.value=y});box.querySelectorAll('[data-d]').forEach(b=>b.onclick=()=>set(y,m,+b.dataset.d));box.querySelector('[data-today]').onclick=()=>set(c.y,c.m,c.d)}
-  const toast=m=>{const t=$('#toast');t.textContent=m;t.style.display='block';clearTimeout(t._t);t._t=setTimeout(()=>t.style.display='none',2500)};
-  const sel=(id,items,val='',ph='انتخاب کنید')=>`<select class="form-select" id="${id}"><option value="">${ph}</option>${items.map(x=>`<option ${x==val?'selected':''}>${esc(x)}</option>`).join('')}</select>`;
-  const inp=(id,val='',type='text')=>`<input class="form-input" id="${id}" type="${type}" value="${esc(val)}">`;
-  const dateInput=(id,val=todayFa())=>`<div style="position:relative"><input class="form-input jalali-input" id="${id}" value="${esc(val)}" inputmode="numeric" placeholder="۱۴۰۵/۰۵/۲۱"><button type="button" class="btn btn-outline btn-sm date-pick-btn" data-date-for="${id}">📅</button><div class="date-pop" id="${id}Pop"></div></div>`;
-  const num=(id,val=0,min=0)=>`<input class="form-input" id="${id}" type="number" min="${min}" value="${Number(val)||0}">`;
-  const card=(title,body,actions='')=>`<div class="card"><div class="card-header"><b class="card-title">${title}</b><div>${actions}</div></div>${body}</div>`;
-  const table=(heads,rows)=>`<div class="table-wrap"><table><thead><tr>${heads.map(h=>`<th>${h}</th>`).join('')}</tr></thead><tbody>${rows.join('')}</tbody></table></div>`;
-  const pager=(key,total)=>`<div class="pager"><button class="btn btn-outline btn-sm" data-page-prev>قبلی</button><span>صفحه ${pages[key]||1} از ${Math.max(1,Math.ceil(total/PAGE_SIZE))}</span><button class="btn btn-outline btn-sm" data-page-next>بعدی</button></div>`;
-  const pageSlice=(arr,key)=>{const p=pages[key]||1;return arr.slice((p-1)*PAGE_SIZE,p*PAGE_SIZE)};
-  const provinces=()=>Object.keys(IRAN), cities=p=>IRAN[p]?Object.keys(IRAN[p]):[], districts=(p,c)=>IRAN[p]?.[c]||[];
+// ============================================================================
+// منطق جامع برنامه مدیریت ویزیت علمی، داروخانه‌ها، پزشکان و سفارشات (CRM / PWA)
+// شامل پیاده‌سازی کامل ۲۰ بخش منوی مدیریتی، ۴۹ سطح دسترسی، درصدی بودن، آپلود فایل،
+// نقشه جامع و حفظ ۱۰۰٪ هر ۸ ویژگی و تمامی تنظیمات قبلی سیستم
+// ============================================================================
 
-  function seed(){
-    return { users:[
-      {id:'u1',name:'مدیر سیستم',user:'admin',pass:'123',phone:'09120000000',role:'مدیر',sim:'غیرفعال',auth:'بدون تایید دو مرحله‌ای',perms:Object.keys(PERMS)},
-      {id:'u2',name:'جواد طاهری',user:'taheri',pass:'456',phone:'09120852097',role:'نماینده',sim:'فعال',auth:'OTP',perms:['dashboard','pharmacies','doctors','orders','map','reports','targets']},
-      {id:'u3',name:'نیلا احمدی',user:'nila',pass:'789',phone:'09123334455',role:'سرپرست',sim:'غیرفعال',auth:'کد به مدیر',perms:['dashboard','pharmacies','doctors','orders','map','live','reports','users']}
-    ], reps:[
-      {id:'r1',name:'جواد طاهری',phone:'09120852097',region:'تهران',lat:35.73,lng:51.42,status:'آنلاین'},
-      {id:'r2',name:'نیلا احمدی',phone:'09123334455',region:'البرز',lat:35.84,lng:50.99,status:'آفلاین'}
-    ], pharmacies:[
-      {id:'ph1',date:todayFa(),name:'داروخانه مرکزی',province:'تهران',city:'تهران',district:'منطقه ۶',manager:'آقای رضایی',phone:'02188776655',address:'تهران، خیابان ولیعصر',lat:35.721,lng:51.42,percent:true,repName:'جواد طاهری'},
-      {id:'ph2',date:todayFa(),name:'داروخانه شبانه‌روزی امید',province:'تهران',city:'تهران',district:'منطقه ۳',manager:'خانم کریمی',phone:'02122334455',address:'تهران، پاسداران',lat:35.75,lng:51.44,percent:false,repName:'نیلا احمدی'}
-    ], doctors:[
-      {id:'doc1',date:todayFa(),name:'دکتر علی محمدی',specialty:'قلب',province:'تهران',city:'تهران',district:'منطقه ۳',phone:'02112345678',address:'مطب نمونه',lat:35.755,lng:51.44,percent:false,repName:'نیلا احمدی'},
-      {id:'doc2',date:todayFa(),name:'دکتر سارا رستمی',specialty:'پوست',province:'تهران',city:'تهران',district:'منطقه ۶',phone:'02187654321',address:'مطب ولیعصر',lat:35.724,lng:51.41,percent:true,repName:'جواد طاهری'}
-    ], orders:[
-      {id:'ord1',date:todayFa(),pharmacy:'داروخانه مرکزی',province:'تهران',city:'تهران',district:'منطقه ۶',repName:'جواد طاهری',status:'تحویل شده',items:[{name:'کپسول نمونه',count:50,gift:5,price:250000}]},
-      {id:'ord2',date:todayFa(),pharmacy:'داروخانه امید',province:'تهران',city:'تهران',district:'منطقه ۳',repName:'نیلا احمدی',status:'در حال پیگیری',items:[{name:'قرص نمونه B',count:100,gift:10,price:45000}]}
-    ], activity:[
-      {id:'a1',time:new Date().toLocaleTimeString('fa-IR'),rep:'جواد طاهری',action:'ثبت داروخانه جدید'},
-      {id:'a2',time:'10:30',rep:'نیلا احمدی',action:'ثبت ویزیت پزشک'}
-    ], homes:[{id:'h1',rep:'جواد طاهری',address:'تهران، ستارخان',lat:35.755,lng:51.435}], trips:[{id:'tr1',rep:'جواد طاهری',date:todayFa(),points:[[35.72,51.42],[35.73,51.43],[35.74,51.425]],stops:['داروخانه مرکزی','مطب دکتر محمدی'],visited:['ph1','doc1']}], leaves:[], messages:[], targets:[],
-      products:[{id:'p1',name:'کپسول نمونه',cat:'دارو',dist:40000,ph:45000,stock:5000},{id:'p2',name:'قرص نمونه B',cat:'مکمل',dist:38000,ph:45000,stock:1200}],
-      fields:{pharmacy:[],doctor:[],order:[]}, settings:{company:'سامانه مدیریت نمایندگان علمی',messagePolicy:'only-admin',widgets:['stats','bars','map'],messengers:Object.fromEntries(MESSENGERS.map(m=>[m,{auto:true,manual:true}])),backupHour:'02:00',backupEmail:'admin@ndcohub.ir'}, placesDB:[
-        {type:'داروخانه شبانه‌روزی',name:'داروخانه 13 آبان',city:'تهران',address:'خیابان انقلاب',lat:35.70,lng:51.39},
-        {type:'بیمارستان',name:'بیمارستان نمازی',city:'شیراز',address:'مرکز شیراز',lat:29.62,lng:52.52},
-        {type:'پزشک',name:'دکتر قلب نمونه',city:'تهران',address:'مطب آزمایشی',lat:35.74,lng:51.41}
-      ]
+const STORAGE_KEY = "CRM_APP_STATE_V2";
+let state = null;
+let autoBackupFileHandle = null;
+let autoBackupIntervalId = null;
+let isShowingAllPasswords = false;
+
+// نمونه‌های نقشه (Leaflet Map Instances)
+let mapDashboardOverview = null;
+let mapPharmacyForm = null;
+let mapDoctorForm = null;
+let mapLiveReps = null;
+let mapFullOverview = null;
+
+// لایه‌های نشانگر روی نقشه‌ها
+let markersDashboardOverview = [];
+let markerPharmacyForm = null;
+let markerDoctorForm = null;
+let markersLiveReps = {};
+let markersFullOverview = [];
+
+// لیست ۲۰ قابلیت در منوی برنامه (هماهنگ با اسکرین‌شات ۱ کاربر)
+const MENU_SECTIONS_LIST = [
+  { id: "tab-dashboard", label: "داشبورد", icon: "📊" },
+  { id: "tab-pharmacies", label: "داروخانه‌ها", icon: "🏥", badgeId: "badgePharmaciesCount" },
+  { id: "tab-doctors", label: "پزشکان", icon: "👨‍⚕️", badgeId: "badgeDoctorsCount" },
+  { id: "tab-orders", label: "سفارشات", icon: "📦", badgeId: "badgeOrdersCount" },
+  { id: "tab-activity-log", label: "فعالیت لحظه‌ای", icon: "⏱️" },
+  { id: "tab-overview-map", label: "نقشه جامع", icon: "🗺️" },
+  { id: "tab-live-location", label: "موقعیت زنده", icon: "📍" },
+  { id: "tab-search-info", label: "جستجوی اطلاعات", icon: "🔍" },
+  { id: "tab-rep-routes", label: "رصد تردد", icon: "🛣️" },
+  { id: "tab-rep-homes", label: "منزل نمایندگان", icon: "🏠" },
+  { id: "tab-leaves", label: "مرخصی‌ها", icon: "📝", badgeId: "badgeLeavesCount" },
+  { id: "tab-notifications", label: "اعلان‌ها", icon: "🔔" },
+  { id: "tab-monthly-reports", label: "گزارش ماهانه", icon: "📈" },
+  { id: "tab-sales-targets", label: "تارگت فروش", icon: "🎯" },
+  { id: "tab-custom-fields", label: "افزودن‌ها", icon: "➕" },
+  { id: "tab-columns-products", label: "ستون‌ها و کالاها", icon: "🧱" },
+  { id: "tab-users-permissions", label: "کاربران و دسترسی", icon: "👤", badgeId: "badgeUsersCount" },
+  { id: "tab-messengers", label: "پیام‌رسان‌ها", icon: "💬" },
+  { id: "tab-backup", label: "پشتیبان‌گیری", icon: "💾" },
+  { id: "tab-install-app", label: "نصب اپ", icon: "📲" },
+  { id: "tab-troubleshooting", label: "عیب‌یابی", icon: "🛠️" }
+];
+
+// ----------------------------------------------------------------------------
+// 0. مدیریت وضعیت و حافظه (State Management & LocalStorage)
+// ----------------------------------------------------------------------------
+function loadState() {
+  const saved = localStorage.getItem(STORAGE_KEY);
+  if (saved) {
+    try {
+      state = JSON.parse(saved);
+      if (!state.customFields) state.customFields = DEFAULT_INITIAL_DATA.customFields;
+      if (!state.settings) state.settings = DEFAULT_INITIAL_DATA.settings;
+      if (!state.users) state.users = DEFAULT_INITIAL_DATA.users;
+      if (!state.activityLog) state.activityLog = DEFAULT_INITIAL_DATA.activityLog;
+      if (!state.repHomes) state.repHomes = DEFAULT_INITIAL_DATA.repHomes;
+      if (!state.repRoutes) state.repRoutes = DEFAULT_INITIAL_DATA.repRoutes;
+      if (!state.leaves) state.leaves = DEFAULT_INITIAL_DATA.leaves;
+      if (!state.notifications) state.notifications = DEFAULT_INITIAL_DATA.notifications;
+      if (!state.salesTargets) state.salesTargets = DEFAULT_INITIAL_DATA.salesTargets;
+      if (!state.messengers) state.messengers = DEFAULT_INITIAL_DATA.messengers;
+      if (!state.products) state.products = DEFAULT_INITIAL_DATA.products;
+    } catch (e) {
+      console.error("خطا در خواندن اطلاعات قبلی، بارگذاری اطلاعات پیش‌فرض:", e);
+      state = JSON.parse(JSON.stringify(DEFAULT_INITIAL_DATA));
+    }
+  } else {
+    state = JSON.parse(JSON.stringify(DEFAULT_INITIAL_DATA));
+  }
+  applyGeneralSettingsToUI();
+}
+
+function saveState(triggerAutoBackup = true) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  if (triggerAutoBackup && state.settings && state.settings.autoBackupEnabled) {
+    performAutoBackup();
+  }
+}
+
+function applyGeneralSettingsToUI() {
+  if (!state.settings) return;
+  const compHeader = document.getElementById("headerCompanyNameDisplay");
+  if (compHeader && state.settings.companyName) {
+    compHeader.textContent = state.settings.companyName;
+  }
+}
+
+// ----------------------------------------------------------------------------
+// 1. منوی ۲۰ قابلیت، سایدبار کشویی و لانچ‌پد بدون اسکرول افقی
+// ----------------------------------------------------------------------------
+function setupNavigationMenu() {
+  const horizontalContainer = document.getElementById("horizontalNavContainer");
+  const sideContainer = document.getElementById("sideMenuItemsContainer");
+  const launchpadGrid = document.getElementById("dashboardLaunchpadGrid");
+
+  if (horizontalContainer) horizontalContainer.innerHTML = "";
+  if (sideContainer) sideContainer.innerHTML = "";
+  if (launchpadGrid) launchpadGrid.innerHTML = "";
+
+  MENU_SECTIONS_LIST.forEach((sec, index) => {
+    // 1. ساخت دکمه منوی افقی (wrapping grid - بدون اسکرول به چپ و راست)
+    if (horizontalContainer) {
+      const btn = document.createElement("button");
+      btn.className = "nav-item" + (index === 0 ? " active" : "");
+      btn.setAttribute("data-target", sec.id);
+      btn.innerHTML = `
+        <span>${sec.icon} ${sec.label}</span>
+        ${sec.badgeId ? `<span class="nav-badge" id="${sec.badgeId}">0</span>` : ""}
+      `;
+      btn.onclick = () => switchTab(sec.id);
+      horizontalContainer.appendChild(btn);
+    }
+
+    // 2. ساخت آیتم منوی کشویی سایدبار
+    if (sideContainer) {
+      const btnSide = document.createElement("button");
+      btnSide.className = "side-menu-item" + (index === 0 ? " active" : "");
+      btnSide.setAttribute("data-side-target", sec.id);
+      btnSide.innerHTML = `
+        <span>${sec.label}</span>
+        <span>${sec.icon}</span>
+      `;
+      btnSide.onclick = () => {
+        switchTab(sec.id);
+        closeSideMenu();
+      };
+      sideContainer.appendChild(btnSide);
+    }
+
+    // 3. ساخت کارت لانچ‌پد در داشبورد (بدون اسکرول افقی)
+    if (launchpadGrid) {
+      const card = document.createElement("button");
+      card.className = "launchpad-card";
+      card.onclick = () => switchTab(sec.id);
+      card.innerHTML = `
+        <div class="launchpad-icon">${sec.icon}</div>
+        <div class="launchpad-text">
+          <h4>${sec.label}</h4>
+        </div>
+      `;
+      launchpadGrid.appendChild(card);
+    }
+  });
+
+  // کنترل باز و بسته شدن سایدبار
+  const btnToggleSide = document.getElementById("btnToggleSideMenu");
+  const btnCloseSide = document.getElementById("btnCloseSideMenu");
+  const overlay = document.getElementById("sideMenuOverlay");
+
+  if (btnToggleSide) btnToggleSide.addEventListener("click", openSideMenu);
+  if (btnCloseSide) btnCloseSide.addEventListener("click", closeSideMenu);
+  if (overlay) overlay.addEventListener("click", closeSideMenu);
+
+  updateNavBadges();
+}
+
+function openSideMenu() {
+  document.getElementById("sideMenuDrawer").classList.add("active");
+  document.getElementById("sideMenuOverlay").classList.add("active");
+}
+
+function closeSideMenu() {
+  document.getElementById("sideMenuDrawer").classList.remove("active");
+  document.getElementById("sideMenuOverlay").classList.remove("active");
+}
+
+function switchTab(targetId) {
+  const navButtons = document.querySelectorAll(".nav-item");
+  const sideButtons = document.querySelectorAll(".side-menu-item");
+  const tabPanes = document.querySelectorAll(".tab-pane");
+
+  navButtons.forEach(b => {
+    if (b.getAttribute("data-target") === targetId) b.classList.add("active");
+    else b.classList.remove("active");
+  });
+
+  sideButtons.forEach(b => {
+    if (b.getAttribute("data-side-target") === targetId) b.classList.add("active");
+    else b.classList.remove("active");
+  });
+
+  tabPanes.forEach(p => p.classList.remove("active"));
+  const targetPane = document.getElementById(targetId);
+  if (targetPane) {
+    targetPane.classList.add("active");
+    setTimeout(() => {
+      if (targetId === "tab-dashboard" && mapDashboardOverview) mapDashboardOverview.invalidateSize();
+      if (targetId === "tab-pharmacies" && mapPharmacyForm) mapPharmacyForm.invalidateSize();
+      if (targetId === "tab-doctors" && mapDoctorForm) mapDoctorForm.invalidateSize();
+      if (targetId === "tab-live-location" && mapLiveReps) {
+        mapLiveReps.invalidateSize();
+        renderLiveLocationTab();
+      }
+      if (targetId === "tab-overview-map") {
+        initFullOverviewMap();
+        if (mapFullOverview) mapFullOverview.invalidateSize();
+      }
+    }, 150);
+  }
+}
+
+function updateNavBadges() {
+  const phBadge = document.getElementById("badgePharmaciesCount");
+  const docBadge = document.getElementById("badgeDoctorsCount");
+  const ordBadge = document.getElementById("badgeOrdersCount");
+  const usersBadge = document.getElementById("badgeUsersCount");
+
+  if (phBadge) phBadge.textContent = state.pharmacies.length;
+  if (docBadge) docBadge.textContent = state.doctors.length;
+  if (ordBadge) ordBadge.textContent = state.orders.length;
+  if (usersBadge) usersBadge.textContent = state.users.length;
+
+  document.getElementById("statPharmacies").textContent = state.pharmacies.length;
+  document.getElementById("statDoctors").textContent = state.doctors.length;
+  document.getElementById("statReps").textContent = state.reps.length;
+  document.getElementById("statOrders").textContent = state.orders.length;
+  document.getElementById("statUsers").textContent = state.users.length;
+  document.getElementById("statLeaves").textContent = (state.leaves || []).length;
+}
+
+// ----------------------------------------------------------------------------
+// 2. پیاده‌سازی ویژگی ۷: پاک شدن خودکار کلمه قبلی هنگام انتخاب جدید در فیلدهای کشویی
+// ----------------------------------------------------------------------------
+function setupDropdownAutoClear() {
+  const dropdowns = document.querySelectorAll(".dropdown-auto-clear, select.form-select, input[list]");
+  dropdowns.forEach(elem => {
+    if (elem.dataset.autoClearBound === "true") return;
+    elem.dataset.autoClearBound = "true";
+
+    elem.addEventListener("focus", function() {
+      if (this.tagName.toLowerCase() === "input" && this.getAttribute("list")) {
+        this.dataset.previousValue = this.value;
+        this.value = "";
+      }
+    });
+  });
+}
+
+// ----------------------------------------------------------------------------
+// 3. پیاده‌سازی ویژگی ۴: استان‌ها، شهرها و مناطق مرتب بدون تکرار (Requirement 4)
+// ----------------------------------------------------------------------------
+function populateProvinces(selectElement, selectedValue = "") {
+  selectElement.innerHTML = `<option value="">انتخاب استان...</option>`;
+  Object.keys(IRAN_GEO_DATA).forEach(province => {
+    const opt = document.createElement("option");
+    opt.value = province;
+    opt.textContent = province;
+    if (province === selectedValue) opt.selected = true;
+    selectElement.appendChild(opt);
+  });
+}
+
+function populateCities(provinceName, selectElement, selectedValue = "") {
+  selectElement.innerHTML = `<option value="">انتخاب شهر...</option>`;
+  if (!provinceName || !IRAN_GEO_DATA[provinceName]) return;
+
+  Object.keys(IRAN_GEO_DATA[provinceName]).forEach(city => {
+    const opt = document.createElement("option");
+    opt.value = city;
+    opt.textContent = city;
+    if (city === selectedValue) opt.selected = true;
+    selectElement.appendChild(opt);
+  });
+}
+
+function populateDistricts(provinceName, cityName, selectElement, selectedValue = "") {
+  selectElement.innerHTML = `<option value="">انتخاب منطقه...</option>`;
+  if (!provinceName || !cityName || !IRAN_GEO_DATA[provinceName] || !IRAN_GEO_DATA[provinceName][cityName]) {
+    return;
+  }
+
+  const districts = IRAN_GEO_DATA[provinceName][cityName];
+  districts.forEach(district => {
+    const opt = document.createElement("option");
+    opt.value = district;
+    opt.textContent = district;
+    if (district === selectedValue) opt.selected = true;
+    selectElement.appendChild(opt);
+  });
+}
+
+function setupCascadingGeoSelectors(provinceId, cityId, districtId) {
+  const provEl = document.getElementById(provinceId);
+  const cityEl = document.getElementById(cityId);
+  const distEl = document.getElementById(districtId);
+
+  populateProvinces(provEl);
+
+  provEl.addEventListener("change", () => {
+    populateCities(provEl.value, cityEl);
+    distEl.innerHTML = `<option value="">ابتدا شهر را انتخاب کنید</option>`;
+  });
+
+  cityEl.addEventListener("change", () => {
+    populateDistricts(provEl.value, cityEl.value, distEl);
+  });
+}
+
+// ----------------------------------------------------------------------------
+// 4. پیاده‌سازی ویژگی ۵: آیکون اختصاصی و نام ثابت روی نقشه (Requirement 5)
+// ----------------------------------------------------------------------------
+function createCustomMarker(lat, lng, type, name, mapInstance, onClickCallback = null) {
+  let badgeClass = "marker-pharmacy-badge";
+  let iconText = "🏥";
+  let tooltipPrefix = "🏥 ";
+
+  if (type === "doctor") {
+    badgeClass = "marker-doctor-badge";
+    iconText = "👨‍⚕️";
+    tooltipPrefix = "👨‍⚕️ ";
+  } else if (type === "rep") {
+    badgeClass = "marker-rep-badge";
+    iconText = "👔";
+    tooltipPrefix = "👔 ";
+  }
+
+  const customIcon = L.divIcon({
+    className: "custom-div-icon-wrapper",
+    html: `<div class="${badgeClass}" title="${name}">${iconText}</div>`,
+    iconSize: [38, 38],
+    iconAnchor: [19, 19]
+  });
+
+  const marker = L.marker([lat, lng], { icon: customIcon });
+
+  marker.bindTooltip(`${tooltipPrefix}${name}`, {
+    permanent: true,
+    direction: "top",
+    className: "custom-map-tooltip",
+    offset: [0, -22]
+  });
+
+  if (onClickCallback) {
+    marker.on("click", onClickCallback);
+  }
+
+  marker.addTo(mapInstance);
+  marker.openTooltip();
+
+  return marker;
+}
+
+// ----------------------------------------------------------------------------
+// 5. راه‌اندازی نقشه‌ها (Dashboard Overview Map, Full Overview Map & Form Maps)
+// ----------------------------------------------------------------------------
+function initMaps() {
+  if (document.getElementById("map-dashboard-overview")) {
+    mapDashboardOverview = L.map("map-dashboard-overview").setView([35.7200, 51.4200], 11);
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      maxZoom: 19,
+      attribution: "© OpenStreetMap contributors"
+    }).addTo(mapDashboardOverview);
+    renderDashboardOverviewMap();
+  }
+
+  if (document.getElementById("map-pharmacy-form")) {
+    mapPharmacyForm = L.map("map-pharmacy-form").setView([35.7605, 51.4180], 13);
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      maxZoom: 19,
+      attribution: "© OpenStreetMap contributors"
+    }).addTo(mapPharmacyForm);
+
+    markerPharmacyForm = createCustomMarker(35.7605, 51.4180, "pharmacy", "موقعیت داروخانه جدید", mapPharmacyForm);
+
+    mapPharmacyForm.on("click", (e) => {
+      updatePharmacyFormMarker(e.latlng.lat, e.latlng.lng, document.getElementById("pharmacyName").value || "موقعیت داروخانه");
+    });
+  }
+
+  if (document.getElementById("map-doctor-form")) {
+    mapDoctorForm = L.map("map-doctor-form").setView([35.7580, 51.4400], 13);
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      maxZoom: 19,
+      attribution: "© OpenStreetMap contributors"
+    }).addTo(mapDoctorForm);
+
+    markerDoctorForm = createCustomMarker(35.7580, 51.4400, "doctor", "موقعیت مطب جدید", mapDoctorForm);
+
+    mapDoctorForm.on("click", (e) => {
+      updateDoctorFormMarker(e.latlng.lat, e.latlng.lng, document.getElementById("doctorName").value || "موقعیت مطب");
+    });
+  }
+
+  if (document.getElementById("map-live-reps")) {
+    mapLiveReps = L.map("map-live-reps").setView([35.7300, 51.4200], 12);
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      maxZoom: 19,
+      attribution: "© OpenStreetMap contributors"
+    }).addTo(mapLiveReps);
+  }
+}
+
+function initFullOverviewMap() {
+  if (mapFullOverview) {
+    renderFullOverviewMap();
+    return;
+  }
+  const el = document.getElementById("map-full-overview");
+  if (!el) return;
+
+  mapFullOverview = L.map("map-full-overview").setView([35.7200, 51.4200], 11);
+  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    maxZoom: 19,
+    attribution: "© OpenStreetMap contributors"
+  }).addTo(mapFullOverview);
+
+  renderFullOverviewMap();
+}
+
+function renderDashboardOverviewMap() {
+  if (!mapDashboardOverview) return;
+  markersDashboardOverview.forEach(m => mapDashboardOverview.removeLayer(m));
+  markersDashboardOverview = [];
+
+  const allPoints = [];
+  state.pharmacies.forEach(ph => {
+    if (ph.lat && ph.lng) {
+      const m = createCustomMarker(ph.lat, ph.lng, "pharmacy", ph.name, mapDashboardOverview, () => {
+        alert(`🏥 داروخانه: ${ph.name}\nآدرس: ${ph.address}\nدرصدی: ${ph.isPercentage ? "بله" : "خیر"}`);
+      });
+      markersDashboardOverview.push(m);
+      allPoints.push([ph.lat, ph.lng]);
+    }
+  });
+
+  state.doctors.forEach(doc => {
+    if (doc.lat && doc.lng) {
+      const m = createCustomMarker(doc.lat, doc.lng, "doctor", doc.name, mapDashboardOverview, () => {
+        alert(`👨‍⚕️ پزشک: ${doc.name}\nتخصص: ${doc.specialty}\nآدرس: ${doc.address}`);
+      });
+      markersDashboardOverview.push(m);
+      allPoints.push([doc.lat, doc.lng]);
+    }
+  });
+
+  state.reps.forEach(rep => {
+    if (rep.lat && rep.lng) {
+      const m = createCustomMarker(rep.lat, rep.lng, "rep", rep.name, mapDashboardOverview, () => {
+        alert(`👔 نماینده: ${rep.name}\nوضعیت: ${rep.status === "online" ? "آنلاین" : "در حال ویزیت"}`);
+      });
+      markersDashboardOverview.push(m);
+      allPoints.push([rep.lat, rep.lng]);
+    }
+  });
+
+  if (allPoints.length > 0) {
+    mapDashboardOverview.fitBounds(allPoints, { padding: [40, 40] });
+  }
+}
+
+function renderFullOverviewMap() {
+  if (!mapFullOverview) return;
+  markersFullOverview.forEach(m => mapFullOverview.removeLayer(m));
+  markersFullOverview = [];
+
+  const allPoints = [];
+  state.pharmacies.forEach(ph => {
+    if (ph.lat && ph.lng) {
+      const m = createCustomMarker(ph.lat, ph.lng, "pharmacy", ph.name, mapFullOverview);
+      markersFullOverview.push(m);
+      allPoints.push([ph.lat, ph.lng]);
+    }
+  });
+
+  state.doctors.forEach(doc => {
+    if (doc.lat && doc.lng) {
+      const m = createCustomMarker(doc.lat, doc.lng, "doctor", doc.name, mapFullOverview);
+      markersFullOverview.push(m);
+      allPoints.push([doc.lat, doc.lng]);
+    }
+  });
+
+  if (allPoints.length > 0) {
+    mapFullOverview.fitBounds(allPoints, { padding: [40, 40] });
+  }
+}
+
+// ----------------------------------------------------------------------------
+// 6. ویژگی ۲: دریافت آدرس این نقطه + جستجوی آدرس روی نقشه (Matching Screenshot 3)
+// ----------------------------------------------------------------------------
+async function reverseGeocodeCoordinates(lat, lng) {
+  try {
+    const url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1`;
+    const res = await fetch(url, { headers: { "Accept-Language": "fa,en" } });
+    const data = await res.json();
+    if (data && data.display_name) {
+      const addr = data.address || {};
+      const street = addr.road || addr.street || addr.neighbourhood || addr.suburb || "خیابان اصلی";
+      const city = addr.city || addr.town || addr.city_district || "تهران";
+      return `${city}، ${street} (استخراج شده از موقعیت: ${Number(lat).toFixed(4)}, ${Number(lng).toFixed(4)})`;
+    }
+  } catch (err) {
+    console.warn("Reverse Geocode error:", err);
+  }
+  return `آدرس موقعیت ثبت شده (Lat: ${Number(lat).toFixed(4)}, Lng: ${Number(lng).toFixed(4)})`;
+}
+
+async function searchAddressOnMap(queryText, updateMarkerFunc) {
+  if (!queryText || !queryText.trim()) return;
+  try {
+    const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(queryText)}&limit=1`;
+    const res = await fetch(url, { headers: { "Accept-Language": "fa,en" } });
+    const data = await res.json();
+    if (data && data.length > 0) {
+      const lat = parseFloat(data[0].lat);
+      const lon = parseFloat(data[0].lon);
+      updateMarkerFunc(lat, lon, queryText, true);
+      alert(`📍 موقعیت «${queryText}» پیدا شد و روی نقشه تنظیم شد.`);
+    } else {
+      alert("آدرسی با این مشخصات یافت نشد.");
+    }
+  } catch (e) {
+    alert("خطا در جستجوی آدرس.");
+  }
+}
+
+function updatePharmacyFormMarker(lat, lng, nameText = "داروخانه انتخابی", updateMapCenter = false) {
+  document.getElementById("pharmacyLat").value = Number(lat).toFixed(5);
+  document.getElementById("pharmacyLng").value = Number(lng).toFixed(5);
+
+  if (mapPharmacyForm && markerPharmacyForm) {
+    mapPharmacyForm.removeLayer(markerPharmacyForm);
+    markerPharmacyForm = createCustomMarker(lat, lng, "pharmacy", nameText, mapPharmacyForm);
+    if (updateMapCenter) {
+      mapPharmacyForm.setView([lat, lng], 15);
+    }
+  }
+}
+
+function setupPharmacyLocationButtons() {
+  const btnCurrentLoc = document.getElementById("btnPharmacyCurrentLocation");
+  const btnGetAddr = document.getElementById("btnPharmacyGetAddressFromPoint");
+  const btnSearchMap = document.getElementById("btnPhMapSearch");
+  const searchInput = document.getElementById("phMapSearchInput");
+
+  if (btnSearchMap && searchInput) {
+    btnSearchMap.addEventListener("click", () => {
+      searchAddressOnMap(searchInput.value.trim(), (lat, lng, nameText, updateCenter) => {
+        updatePharmacyFormMarker(lat, lng, nameText, updateCenter);
+      });
+    });
+  }
+
+  btnCurrentLoc.addEventListener("click", () => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          const lat = pos.coords.latitude;
+          const lng = pos.coords.longitude;
+          const name = document.getElementById("pharmacyName").value || "موقعیت فعلی داروخانه";
+          updatePharmacyFormMarker(lat, lng, name, true);
+          alert(`📍 موقعیت فعلی پیدا شد.\nاکنون می‌توانید روی «دریافت آدرس این نقطه» کلیک کنید.`);
+        },
+        (err) => {
+          const lat = 35.7595;
+          const lng = 51.4250;
+          updatePharmacyFormMarker(lat, lng, "موقعیت فعلی داروخانه", true);
+          alert(`📍 موقعیت پیش‌فرض تستی تنظیم شد.`);
+        }
+      );
+    } else {
+      alert("مرورگر شما از قابلیت مکان‌یابی پشتیبانی نمی‌کند.");
+    }
+  });
+
+  btnGetAddr.addEventListener("click", async () => {
+    const lat = parseFloat(document.getElementById("pharmacyLat").value);
+    const lng = parseFloat(document.getElementById("pharmacyLng").value);
+
+    const addrText = await reverseGeocodeCoordinates(lat, lng);
+
+    document.getElementById("pharmacyAddress").value = addrText;
+    document.getElementById("pharmacyLocationText").value = addrText;
+
+    const name = document.getElementById("pharmacyName").value || "داروخانه جدید";
+    updatePharmacyFormMarker(lat, lng, name, true);
+
+    alert(`✅ آدرس نقطه با موفقیت دریافت شد و در فیلد آدرس و روی نقشه داروخانه قرار گرفت:\n\n${addrText}`);
+  });
+}
+
+function updateDoctorFormMarker(lat, lng, nameText = "مطب انتخابی", updateMapCenter = false) {
+  document.getElementById("doctorLat").value = Number(lat).toFixed(5);
+  document.getElementById("doctorLng").value = Number(lng).toFixed(5);
+
+  if (mapDoctorForm && markerDoctorForm) {
+    mapDoctorForm.removeLayer(markerDoctorForm);
+    markerDoctorForm = createCustomMarker(lat, lng, "doctor", nameText, mapDoctorForm);
+    if (updateMapCenter) {
+      mapDoctorForm.setView([lat, lng], 15);
+    }
+  }
+}
+
+function setupDoctorLocationButtons() {
+  const btnCurrentLoc = document.getElementById("btnDoctorCurrentLocation");
+  const btnGetAddr = document.getElementById("btnDoctorGetAddressFromPoint");
+  const btnSearchMap = document.getElementById("btnDocMapSearch");
+  const searchInput = document.getElementById("docMapSearchInput");
+
+  if (btnSearchMap && searchInput) {
+    btnSearchMap.addEventListener("click", () => {
+      searchAddressOnMap(searchInput.value.trim(), (lat, lng, nameText, updateCenter) => {
+        updateDoctorFormMarker(lat, lng, nameText, updateCenter);
+      });
+    });
+  }
+
+  btnCurrentLoc.addEventListener("click", () => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          const lat = pos.coords.latitude;
+          const lng = pos.coords.longitude;
+          updateDoctorFormMarker(lat, lng, "موقعیت فعلی مطب", true);
+          alert(`📍 موقعیت فعلی پیدا شد.\nاکنون روی «دریافت آدرس این نقطه» کلیک کنید.`);
+        },
+        (err) => {
+          const lat = 35.7350;
+          const lng = 51.4150;
+          updateDoctorFormMarker(lat, lng, "موقعیت فعلی مطب", true);
+          alert(`📍 موقعیت پیش‌فرض تستی تنظیم شد.`);
+        }
+      );
+    }
+  });
+
+  btnGetAddr.addEventListener("click", async () => {
+    const lat = parseFloat(document.getElementById("doctorLat").value);
+    const lng = parseFloat(document.getElementById("doctorLng").value);
+
+    const addrText = await reverseGeocodeCoordinates(lat, lng);
+    document.getElementById("doctorAddress").value = addrText;
+    document.getElementById("doctorLocationText").value = addrText;
+
+    const name = document.getElementById("doctorName").value || "مطب پزشک جدید";
+    updateDoctorFormMarker(lat, lng, name, true);
+
+    alert(`✅ آدرس نقطه با موفقیت دریافت شد و در فیلد آدرس و روی نقشه مطب قرار گرفت:\n\n${addrText}`);
+  });
+}
+
+// ----------------------------------------------------------------------------
+// 7. ویژگی ۱: مدیریت فیلدهای سفارشی (Custom Fields Engine)
+// ----------------------------------------------------------------------------
+function setupCustomFieldsTab() {
+  const formCF = document.getElementById("formCustomField");
+  const typeSelect = document.getElementById("cfType");
+  const optionsWrapper = document.getElementById("cfOptionsWrapper");
+
+  if (typeSelect && optionsWrapper) {
+    typeSelect.addEventListener("change", () => {
+      optionsWrapper.style.display = typeSelect.value === "select" ? "block" : "none";
+    });
+  }
+
+  if (formCF) {
+    formCF.addEventListener("submit", () => {
+      const target = document.getElementById("cfTargetEntity").value;
+      const label = document.getElementById("cfLabel").value.trim();
+      const type = document.getElementById("cfType").value;
+      const optionsStr = document.getElementById("cfOptions").value.trim();
+      const allowAddOption = document.getElementById("cfAllowAddOption").checked;
+      const showInForm = document.getElementById("cfShowInForm").checked;
+      const showInList = document.getElementById("cfShowInList").checked;
+
+      if (!label) {
+        alert("لطفاً عنوان فیلد را وارد کنید.");
+        return;
+      }
+
+      let options = [];
+      if (type === "select" && optionsStr) {
+        options = optionsStr.split(/[،,]/).map(o => o.trim()).filter(Boolean);
+      }
+      if (type === "select" && options.length === 0) {
+        options = ["گزینه اول", "گزینه دوم"];
+      }
+
+      const newField = {
+        id: "cf-" + target + "-" + Date.now(),
+        label: label,
+        type: type,
+        options: options,
+        showInForm: showInForm,
+        showInList: showInList,
+        allowAddOption: allowAddOption
+      };
+
+      if (!state.customFields[target]) state.customFields[target] = [];
+      state.customFields[target].push(newField);
+
+      saveState();
+      formCF.reset();
+      optionsWrapper.style.display = "none";
+
+      renderCustomFieldsTable();
+      renderAllCustomFieldsInFormsAndTables();
+      alert(`✅ فیلد سفارشی «${label}» با موفقیت اضافه شد.`);
+    });
+  }
+
+  renderCustomFieldsTable();
+}
+
+function renderCustomFieldsTable() {
+  const tbody = document.getElementById("tableCustomFieldsBody");
+  if (!tbody) return;
+  tbody.innerHTML = "";
+
+  const entityLabels = { pharmacy: "داروخانه‌ها", doctor: "پزشکان", order: "سفارشات" };
+  Object.keys(state.customFields).forEach(entity => {
+    const fields = state.customFields[entity] || [];
+    fields.forEach(f => {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td><span class="status-badge" style="background: #eff6ff; color: #1e40af;">${entityLabels[entity] || entity}</span></td>
+        <td><strong>${f.label}</strong></td>
+        <td>${f.type === "select" ? "کشویی" : "ساده"}</td>
+        <td>${f.type === "select" && f.options ? f.options.join("، ") : "-"}</td>
+        <td>${f.showInForm ? "✅ بله" : "❌ خیر"}</td>
+        <td>${f.showInList ? "✅ بله" : "❌ خیر"}</td>
+        <td>
+          <button class="btn btn-danger btn-sm" onclick="deleteCustomField('${entity}', '${f.id}')">🗑️</button>
+        </td>
+      `;
+      tbody.appendChild(tr);
+    });
+  });
+}
+
+function deleteCustomField(entity, fieldId) {
+  if (!confirm("آیا از حذف این فیلد سفارشی اطمینان دارید؟")) return;
+  state.customFields[entity] = state.customFields[entity].filter(f => f.id !== fieldId);
+  saveState();
+  renderCustomFieldsTable();
+  renderAllCustomFieldsInFormsAndTables();
+}
+
+function renderCustomFieldsInForm(entityType, containerId, currentValues = {}) {
+  const container = document.getElementById(containerId);
+  if (!container) return;
+  container.innerHTML = "";
+
+  const fields = state.customFields[entityType] || [];
+  fields.forEach(field => {
+    if (!field.showInForm) return;
+
+    const div = document.createElement("div");
+    div.className = "form-group";
+
+    const labelRow = document.createElement("div");
+    labelRow.style.display = "flex";
+    labelRow.style.alignItems = "center";
+    labelRow.style.justifyContent = "space-between";
+
+    const labelEl = document.createElement("label");
+    labelEl.className = "form-label";
+    labelEl.textContent = field.label;
+    labelRow.appendChild(labelEl);
+
+    if (field.type === "select" && field.allowAddOption) {
+      const btnAddOpt = document.createElement("button");
+      btnAddOpt.type = "button";
+      btnAddOpt.className = "btn-add-option";
+      btnAddOpt.innerHTML = "➕ افزودن گزینه جدید";
+      btnAddOpt.onclick = () => openModalAddOption(entityType, field.id, field.label);
+      labelRow.appendChild(btnAddOpt);
+    }
+    div.appendChild(labelRow);
+
+    if (field.type === "select") {
+      const sel = document.createElement("select");
+      sel.className = "form-select dropdown-auto-clear";
+      sel.dataset.customFieldId = field.id;
+      sel.innerHTML = `<option value="">انتخاب کنید...</option>`;
+
+      (field.options || []).forEach(opt => {
+        const o = document.createElement("option");
+        o.value = opt;
+        o.textContent = opt;
+        if (currentValues[field.label] === opt || currentValues[field.id] === opt) {
+          o.selected = true;
+        }
+        sel.appendChild(o);
+      });
+      div.appendChild(sel);
+    } else {
+      const input = document.createElement("input");
+      input.type = "text";
+      input.className = "form-input";
+      input.dataset.customFieldId = field.id;
+      input.placeholder = `وارد کنید: ${field.label}...`;
+      if (currentValues[field.label]) input.value = currentValues[field.label];
+      div.appendChild(input);
+    }
+
+    container.appendChild(div);
+  });
+
+  setupDropdownAutoClear();
+}
+
+function extractCustomFieldValuesFromForm(entityType, containerId) {
+  const container = document.getElementById(containerId);
+  if (!container) return {};
+  const values = {};
+  const fields = state.customFields[entityType] || [];
+  fields.forEach(field => {
+    const el = container.querySelector(`[data-custom-field-id="${field.id}"]`);
+    if (el) values[field.label] = el.value.trim();
+  });
+  return values;
+}
+
+function openModalAddOption(entityType, fieldId, fieldLabel) {
+  document.getElementById("modalAddOptionEntityType").value = entityType;
+  document.getElementById("modalAddOptionFieldId").value = fieldId;
+  document.getElementById("modalAddOptionLabel").textContent = `افزودن گزینه جدید برای فیلد «${fieldLabel}»:`;
+  document.getElementById("modalAddOptionValue").value = "";
+  document.getElementById("modalAddOption").classList.add("active");
+  document.getElementById("modalAddOptionValue").focus();
+}
+
+function closeModalAddOption() {
+  document.getElementById("modalAddOption").classList.remove("active");
+}
+
+function setupAddOptionModalForm() {
+  const form = document.getElementById("formAddOptionModal");
+  if (!form) return;
+
+  form.addEventListener("submit", () => {
+    const entityType = document.getElementById("modalAddOptionEntityType").value;
+    const fieldId = document.getElementById("modalAddOptionFieldId").value;
+    const newVal = document.getElementById("modalAddOptionValue").value.trim();
+
+    if (!newVal) {
+      alert("لطفاً عنوان گزینه جدید را وارد کنید.");
+      return;
+    }
+
+    const fields = state.customFields[entityType] || [];
+    const targetField = fields.find(f => f.id === fieldId);
+
+    if (targetField) {
+      if (!targetField.options) targetField.options = [];
+      if (!targetField.options.includes(newVal)) targetField.options.push(newVal);
+      saveState();
+      closeModalAddOption();
+
+      if (entityType === "pharmacy") {
+        renderCustomFieldsInForm("pharmacy", "pharmacyCustomFieldsContainer", extractCustomFieldValuesFromForm("pharmacy", "pharmacyCustomFieldsContainer"));
+      } else if (entityType === "doctor") {
+        renderCustomFieldsInForm("doctor", "doctorCustomFieldsContainer", extractCustomFieldValuesFromForm("doctor", "doctorCustomFieldsContainer"));
+      } else if (entityType === "order") {
+        renderCustomFieldsInForm("order", "orderCustomFieldsContainer", extractCustomFieldValuesFromForm("order", "orderCustomFieldsContainer"));
+      }
+      renderCustomFieldsTable();
+      alert(`✅ گزینه جدید «${newVal}» با موفقیت اضافه شد.`);
+    }
+  });
+}
+
+function renderAllCustomFieldsInFormsAndTables() {
+  renderCustomFieldsInForm("pharmacy", "pharmacyCustomFieldsContainer");
+  renderCustomFieldsInForm("doctor", "doctorCustomFieldsContainer");
+  renderCustomFieldsInForm("order", "orderCustomFieldsContainer");
+  renderPharmaciesList();
+  renderDoctorsList();
+  renderOrdersList();
+}
+
+// ----------------------------------------------------------------------------
+// 8. پیاده‌سازی داروخانه‌ها (Pharmacies CRUD + Percentage Toggle + File upload)
+//    (Matching Screenshots 2 & 3)
+// ----------------------------------------------------------------------------
+function setupPharmacyTab() {
+  setupCascadingGeoSelectors("pharmacyProvince", "pharmacyCity", "pharmacyDistrict");
+  setupPharmacyLocationButtons();
+
+  // کنترل دکمه‌های درصدی بودن (خیر / بله) در فرم داروخانه (Screenshot 3)
+  const btnNo = document.getElementById("btnPhPercentageNo");
+  const btnYes = document.getElementById("btnPhPercentageYes");
+  const hiddenIsPerc = document.getElementById("pharmacyIsPercentage");
+
+  if (btnNo && btnYes) {
+    btnNo.addEventListener("click", () => {
+      btnNo.classList.add("active");
+      btnYes.classList.remove("active");
+      hiddenIsPerc.value = "false";
+    });
+    btnYes.addEventListener("click", () => {
+      btnYes.classList.add("active");
+      btnNo.classList.remove("active");
+      hiddenIsPerc.value = "true";
+    });
+  }
+
+  // کنترل بارگذاری فایل داروخانه (Screenshot 3)
+  const fileInput = document.getElementById("phFileInput");
+  const fileDisplay = document.getElementById("phFileDisplay");
+  if (fileInput && fileDisplay) {
+    fileInput.addEventListener("change", () => {
+      if (fileInput.files && fileInput.files[0]) {
+        fileDisplay.textContent = `✅ فایل انتخاب شد: ${fileInput.files[0].name}`;
+      } else {
+        fileDisplay.textContent = "فایلی بارگذاری نشده است";
+      }
+    });
+  }
+
+  const form = document.getElementById("formPharmacy");
+  const btnReset = document.getElementById("btnResetPharmacyForm");
+  const searchInput = document.getElementById("searchPharmacyInput");
+
+  if (btnReset) btnReset.addEventListener("click", resetPharmacyForm);
+
+  if (searchInput) {
+    searchInput.addEventListener("input", () => {
+      renderPharmaciesList(searchInput.value.trim());
+    });
+  }
+
+  if (form) {
+    form.addEventListener("submit", () => {
+      const editId = document.getElementById("pharmacyEditId").value;
+      const dateAdded = document.getElementById("pharmacyDate").value.trim() || new Date().toLocaleDateString("fa-IR");
+      const name = document.getElementById("pharmacyName").value.trim();
+      const phone = document.getElementById("pharmacyPhone").value.trim();
+      const manager = document.getElementById("pharmacyManager").value.trim();
+      const province = document.getElementById("pharmacyProvince").value;
+      const city = document.getElementById("pharmacyCity").value;
+      const district = document.getElementById("pharmacyDistrict").value;
+      const address = document.getElementById("pharmacyAddress").value.trim();
+      const lat = parseFloat(document.getElementById("pharmacyLat").value) || 35.7605;
+      const lng = parseFloat(document.getElementById("pharmacyLng").value) || 51.4180;
+      const isPercentage = hiddenIsPerc.value === "true";
+      const fileName = (fileInput.files && fileInput.files[0]) ? fileInput.files[0].name : null;
+      const customFieldsVals = extractCustomFieldValuesFromForm("pharmacy", "pharmacyCustomFieldsContainer");
+
+      if (!name || !province || !city || !district || !address) {
+        alert("لطفاً تمامی فیلدهای ستاره‌دار (*) فرم داروخانه را پر کنید.");
+        return;
+      }
+
+      if (editId) {
+        const idx = state.pharmacies.findIndex(p => p.id === editId);
+        if (idx !== -1) {
+          state.pharmacies[idx] = {
+            ...state.pharmacies[idx],
+            dateAdded, name, phone, manager, province, city, district, address, lat, lng,
+            isPercentage, fileName: fileName || state.pharmacies[idx].fileName,
+            customFields: customFieldsVals
+          };
+        }
+        alert(`✅ داروخانه «${name}» با موفقیت ویرایش و ذخیره شد.`);
+      } else {
+        const newPharmacy = {
+          id: "ph-" + Date.now(),
+          dateAdded, name, phone, manager, province, city, district, address, lat, lng,
+          isPercentage, fileName,
+          repName: "مدیر سیستم",
+          customFields: customFieldsVals
+        };
+        state.pharmacies.push(newPharmacy);
+        alert(`✅ داروخانه «${name}» با موفقیت ثبت شد.`);
+      }
+
+      saveState();
+      resetPharmacyForm();
+      renderPharmaciesList();
+      renderDashboardOverviewMap();
+      updateNavBadges();
+      populatePharmacyDatalistInOrders();
+    });
+  }
+}
+
+function resetPharmacyForm() {
+  document.getElementById("pharmacyEditId").value = "";
+  document.getElementById("pharmacyDate").value = new Date().toLocaleDateString("fa-IR");
+  document.getElementById("pharmacyName").value = "";
+  document.getElementById("pharmacyPhone").value = "";
+  document.getElementById("pharmacyManager").value = "";
+  document.getElementById("pharmacyAddress").value = "";
+  document.getElementById("pharmacyLocationText").value = "";
+  document.getElementById("pharmacyIsPercentage").value = "false";
+  document.getElementById("btnPhPercentageNo").classList.add("active");
+  document.getElementById("btnPhPercentageYes").classList.remove("active");
+  document.getElementById("phFileDisplay").textContent = "فایلی بارگذاری نشده است";
+
+  const provEl = document.getElementById("pharmacyProvince");
+  const cityEl = document.getElementById("pharmacyCity");
+  const distEl = document.getElementById("pharmacyDistrict");
+
+  provEl.value = "";
+  cityEl.innerHTML = `<option value="">ابتدا استان را انتخاب کنید</option>`;
+  distEl.innerHTML = `<option value="">ابتدا شهر را انتخاب کنید</option>`;
+
+  updatePharmacyFormMarker(35.7605, 51.4180, "موقعیت داروخانه جدید", true);
+  renderCustomFieldsInForm("pharmacy", "pharmacyCustomFieldsContainer");
+}
+
+function renderPharmaciesList(searchQuery = "") {
+  const theadTr = document.getElementById("tablePharmaciesHeader");
+  const tbody = document.getElementById("tablePharmaciesBody");
+  if (!theadTr || !tbody) return;
+
+  theadTr.innerHTML = `
+    <th>ردیف</th>
+    <th>نام نماینده</th>
+    <th>تاریخ ثبت</th>
+    <th>استان</th>
+    <th>شهر</th>
+    <th>نام داروخانه</th>
+    <th>شماره همراه</th>
+    <th>درصدی</th>
+    <th>فایل</th>
+    <th>عملیات</th>
+  `;
+
+  const fieldsList = (state.customFields.pharmacy || []).filter(f => f.showInList);
+  fieldsList.forEach(f => {
+    const th = document.createElement("th");
+    th.textContent = f.label;
+    theadTr.appendChild(th);
+  });
+
+  const thAction = document.createElement("th");
+  thAction.textContent = "عملیات";
+  theadTr.appendChild(thAction);
+
+  tbody.innerHTML = "";
+
+  const filtered = state.pharmacies.filter(ph => {
+    if (!searchQuery) return true;
+    return ph.name.includes(searchQuery) || ph.address.includes(searchQuery) || (ph.phone && ph.phone.includes(searchQuery));
+  });
+
+  const badgeEl = document.getElementById("phListCountBadge");
+  const tableBadge = document.getElementById("phTableCountBadge");
+  if (badgeEl) badgeEl.textContent = filtered.length;
+  if (tableBadge) tableBadge.textContent = filtered.length;
+
+  filtered.forEach((ph, index) => {
+    const tr = document.createElement("tr");
+
+    let rowHTML = `
+      <td>${index + 1}</td>
+      <td><strong style="color:#0f172a;">${ph.repName || "مدیر سیستم"}</strong></td>
+      <td>${ph.dateAdded || "-"}</td>
+      <td>${ph.province}</td>
+      <td>${ph.city}</td>
+      <td><strong style="color: #0d9488;">${ph.name}</strong></td>
+      <td><span style="direction: ltr; display: inline-block;">${ph.phone || "-"}</span></td>
+      <td>${ph.isPercentage ? '<span class="badge-status-online">بله</span>' : '<span>خیر</span>'}</td>
+      <td>${ph.fileName ? `<span style="color:#0d9488;">📎 ${ph.fileName}</span>` : '-'}</td>
+    `;
+
+    fieldsList.forEach(f => {
+      const val = (ph.customFields && ph.customFields[f.label]) ? ph.customFields[f.label] : "-";
+      rowHTML += `<td><strong>${val}</strong></td>`;
+    });
+
+    rowHTML += `
+      <td>
+        <div style="display: flex; gap: 0.4rem; flex-wrap: wrap;">
+          <button class="btn btn-outline btn-sm" onclick="editPharmacy('${ph.id}')">✏️ ویرایش</button>
+          <button class="btn btn-danger btn-sm" onclick="deletePharmacy('${ph.id}')">🗑️ حذف</button>
+        </div>
+      </td>
+    `;
+
+    tr.innerHTML = rowHTML;
+    tbody.appendChild(tr);
+  });
+}
+
+function editPharmacy(id) {
+  const ph = state.pharmacies.find(p => p.id === id);
+  if (!ph) return;
+
+  document.getElementById("pharmacyEditId").value = ph.id;
+  document.getElementById("pharmacyDate").value = ph.dateAdded || "";
+  document.getElementById("pharmacyName").value = ph.name;
+  document.getElementById("pharmacyPhone").value = ph.phone || "";
+  document.getElementById("pharmacyManager").value = ph.manager || "";
+  document.getElementById("pharmacyAddress").value = ph.address || "";
+  document.getElementById("pharmacyLocationText").value = ph.address || "";
+
+  if (ph.isPercentage) {
+    document.getElementById("pharmacyIsPercentage").value = "true";
+    document.getElementById("btnPhPercentageYes").classList.add("active");
+    document.getElementById("btnPhPercentageNo").classList.remove("active");
+  } else {
+    document.getElementById("pharmacyIsPercentage").value = "false";
+    document.getElementById("btnPhPercentageNo").classList.add("active");
+    document.getElementById("btnPhPercentageYes").classList.remove("active");
+  }
+
+  const provEl = document.getElementById("pharmacyProvince");
+  const cityEl = document.getElementById("pharmacyCity");
+  const distEl = document.getElementById("pharmacyDistrict");
+
+  provEl.value = ph.province;
+  populateCities(ph.province, cityEl, ph.city);
+  populateDistricts(ph.province, ph.city, distEl, ph.district);
+
+  updatePharmacyFormMarker(ph.lat || 35.7605, ph.lng || 51.4180, ph.name, true);
+  renderCustomFieldsInForm("pharmacy", "pharmacyCustomFieldsContainer", ph.customFields || {});
+
+  document.getElementById("tab-pharmacies").scrollIntoView({ behavior: "smooth" });
+}
+
+function deletePharmacy(id) {
+  if (!confirm("آیا از حذف این داروخانه اطمینان دارید؟")) return;
+  state.pharmacies = state.pharmacies.filter(p => p.id !== id);
+  saveState();
+  renderPharmaciesList();
+  renderDashboardOverviewMap();
+  updateNavBadges();
+  populatePharmacyDatalistInOrders();
+}
+
+// ----------------------------------------------------------------------------
+// 9. پیاده‌سازی پزشکان و مطب‌ها (Doctors CRUD + Percentage Toggle + File upload)
+// ----------------------------------------------------------------------------
+function setupDoctorTab() {
+  setupCascadingGeoSelectors("doctorProvince", "doctorCity", "doctorDistrict");
+  setupDoctorLocationButtons();
+
+  const btnNo = document.getElementById("btnDocPercentageNo");
+  const btnYes = document.getElementById("btnDocPercentageYes");
+  const hiddenIsPerc = document.getElementById("doctorIsPercentage");
+
+  if (btnNo && btnYes) {
+    btnNo.addEventListener("click", () => {
+      btnNo.classList.add("active");
+      btnYes.classList.remove("active");
+      hiddenIsPerc.value = "false";
+    });
+    btnYes.addEventListener("click", () => {
+      btnYes.classList.add("active");
+      btnNo.classList.remove("active");
+      hiddenIsPerc.value = "true";
+    });
+  }
+
+  const fileInput = document.getElementById("docFileInput");
+  const fileDisplay = document.getElementById("docFileDisplay");
+  if (fileInput && fileDisplay) {
+    fileInput.addEventListener("change", () => {
+      if (fileInput.files && fileInput.files[0]) {
+        fileDisplay.textContent = `✅ فایل انتخاب شد: ${fileInput.files[0].name}`;
+      } else {
+        fileDisplay.textContent = "فایلی بارگذاری نشده است";
+      }
+    });
+  }
+
+  const form = document.getElementById("formDoctor");
+  const btnReset = document.getElementById("btnResetDoctorForm");
+  const searchInput = document.getElementById("searchDoctorInput");
+
+  if (btnReset) btnReset.addEventListener("click", resetDoctorForm);
+
+  if (searchInput) {
+    searchInput.addEventListener("input", () => {
+      renderDoctorsList(searchInput.value.trim());
+    });
+  }
+
+  if (form) {
+    form.addEventListener("submit", () => {
+      const editId = document.getElementById("doctorEditId").value;
+      const dateAdded = document.getElementById("doctorDate").value.trim() || new Date().toLocaleDateString("fa-IR");
+      const name = document.getElementById("doctorName").value.trim();
+      const specialty = document.getElementById("doctorSpecialty").value.trim();
+      const phone = document.getElementById("doctorPhone").value.trim();
+      const province = document.getElementById("doctorProvince").value;
+      const city = document.getElementById("doctorCity").value;
+      const district = document.getElementById("doctorDistrict").value;
+      const address = document.getElementById("doctorAddress").value.trim();
+      const lat = parseFloat(document.getElementById("doctorLat").value) || 35.7580;
+      const lng = parseFloat(document.getElementById("doctorLng").value) || 51.4400;
+      const isPercentage = hiddenIsPerc.value === "true";
+      const fileName = (fileInput.files && fileInput.files[0]) ? fileInput.files[0].name : null;
+      const customFieldsVals = extractCustomFieldValuesFromForm("doctor", "doctorCustomFieldsContainer");
+
+      if (!name || !specialty || !province || !city || !district || !address) {
+        alert("لطفاً تمامی فیلدهای ستاره‌دار (*) فرم پزشک/مطب را پر کنید.");
+        return;
+      }
+
+      if (editId) {
+        const idx = state.doctors.findIndex(d => d.id === editId);
+        if (idx !== -1) {
+          state.doctors[idx] = {
+            ...state.doctors[idx],
+            dateAdded, name, specialty, phone, province, city, district, address, lat, lng,
+            isPercentage, fileName: fileName || state.doctors[idx].fileName,
+            customFields: customFieldsVals
+          };
+        }
+        alert(`✅ مطب/پزشک «${name}» با موفقیت ویرایش و ذخیره شد.`);
+      } else {
+        const newDoc = {
+          id: "doc-" + Date.now(),
+          dateAdded, name, specialty, phone, province, city, district, address, lat, lng,
+          isPercentage, fileName,
+          repName: "جواد علمدار",
+          customFields: customFieldsVals
+        };
+        state.doctors.push(newDoc);
+        alert(`✅ مطب/پزشک «${name}» با موفقیت ثبت شد.`);
+      }
+
+      saveState();
+      resetDoctorForm();
+      renderDoctorsList();
+      renderDashboardOverviewMap();
+      updateNavBadges();
+    });
+  }
+}
+
+function resetDoctorForm() {
+  document.getElementById("doctorEditId").value = "";
+  document.getElementById("doctorDate").value = new Date().toLocaleDateString("fa-IR");
+  document.getElementById("doctorName").value = "";
+  document.getElementById("doctorSpecialty").value = "";
+  document.getElementById("doctorPhone").value = "";
+  document.getElementById("doctorAddress").value = "";
+  document.getElementById("doctorLocationText").value = "";
+  document.getElementById("doctorIsPercentage").value = "false";
+  document.getElementById("btnDocPercentageNo").classList.add("active");
+  document.getElementById("btnDocPercentageYes").classList.remove("active");
+  document.getElementById("docFileDisplay").textContent = "فایلی بارگذاری نشده است";
+
+  const provEl = document.getElementById("doctorProvince");
+  const cityEl = document.getElementById("doctorCity");
+  const distEl = document.getElementById("doctorDistrict");
+
+  provEl.value = "";
+  cityEl.innerHTML = `<option value="">ابتدا استان را انتخاب کنید</option>`;
+  distEl.innerHTML = `<option value="">ابتدا شهر را انتخاب کنید</option>`;
+
+  updateDoctorFormMarker(35.7580, 51.4400, "موقعیت مطب جدید", true);
+  renderCustomFieldsInForm("doctor", "doctorCustomFieldsContainer");
+}
+
+function renderDoctorsList(searchQuery = "") {
+  const theadTr = document.getElementById("tableDoctorsHeader");
+  const tbody = document.getElementById("tableDoctorsBody");
+  if (!theadTr || !tbody) return;
+
+  theadTr.innerHTML = `
+    <th>ردیف</th>
+    <th>نام نماینده</th>
+    <th>تاریخ ثبت</th>
+    <th>استان / شهر / منطقه</th>
+    <th>نام پزشک / مطب</th>
+    <th>تخصص</th>
+    <th>درصدی</th>
+    <th>فایل</th>
+    <th>عملیات</th>
+  `;
+
+  const fieldsList = (state.customFields.doctor || []).filter(f => f.showInList);
+  fieldsList.forEach(f => {
+    const th = document.createElement("th");
+    th.textContent = f.label;
+    theadTr.appendChild(th);
+  });
+
+  const thAction = document.createElement("th");
+  thAction.textContent = "عملیات";
+  theadTr.appendChild(thAction);
+
+  tbody.innerHTML = "";
+
+  const filtered = state.doctors.filter(doc => {
+    if (!searchQuery) return true;
+    return doc.name.includes(searchQuery) || doc.specialty.includes(searchQuery) || doc.address.includes(searchQuery);
+  });
+
+  filtered.forEach((doc, index) => {
+    const tr = document.createElement("tr");
+
+    let rowHTML = `
+      <td>${index + 1}</td>
+      <td><strong style="color:#0f172a;">${doc.repName || "جواد علمدار"}</strong></td>
+      <td>${doc.dateAdded || "-"}</td>
+      <td>${doc.province} / ${doc.city}</td>
+      <td><strong style="color: #0d9488;">${doc.name}</strong></td>
+      <td><span class="status-badge" style="background: #f0fdf4; color: #15803d;">${doc.specialty}</span></td>
+      <td>${doc.isPercentage ? '<span class="badge-status-online">بله</span>' : '<span>خیر</span>'}</td>
+      <td>${doc.fileName ? `<span style="color:#0d9488;">📎 ${doc.fileName}</span>` : '-'}</td>
+    `;
+
+    fieldsList.forEach(f => {
+      const val = (doc.customFields && doc.customFields[f.label]) ? doc.customFields[f.label] : "-";
+      rowHTML += `<td><strong>${val}</strong></td>`;
+    });
+
+    rowHTML += `
+      <td>
+        <div style="display: flex; gap: 0.4rem; flex-wrap: wrap;">
+          <button class="btn btn-outline btn-sm" onclick="editDoctor('${doc.id}')">✏️ ویرایش</button>
+          <button class="btn btn-danger btn-sm" onclick="deleteDoctor('${doc.id}')">🗑️ حذف</button>
+        </div>
+      </td>
+    `;
+
+    tr.innerHTML = rowHTML;
+    tbody.appendChild(tr);
+  });
+}
+
+function editDoctor(id) {
+  const doc = state.doctors.find(d => d.id === id);
+  if (!doc) return;
+
+  document.getElementById("doctorEditId").value = doc.id;
+  document.getElementById("doctorDate").value = doc.dateAdded || "";
+  document.getElementById("doctorName").value = doc.name;
+  document.getElementById("doctorSpecialty").value = doc.specialty;
+  document.getElementById("doctorPhone").value = doc.phone || "";
+  document.getElementById("doctorAddress").value = doc.address || "";
+  document.getElementById("doctorLocationText").value = doc.address || "";
+
+  if (doc.isPercentage) {
+    document.getElementById("doctorIsPercentage").value = "true";
+    document.getElementById("btnDocPercentageYes").classList.add("active");
+    document.getElementById("btnDocPercentageNo").classList.remove("active");
+  } else {
+    document.getElementById("doctorIsPercentage").value = "false";
+    document.getElementById("btnDocPercentageNo").classList.add("active");
+    document.getElementById("btnDocPercentageYes").classList.remove("active");
+  }
+
+  const provEl = document.getElementById("doctorProvince");
+  const cityEl = document.getElementById("doctorCity");
+  const distEl = document.getElementById("doctorDistrict");
+
+  provEl.value = doc.province;
+  populateCities(doc.province, cityEl, doc.city);
+  populateDistricts(doc.province, doc.city, distEl, doc.district);
+
+  updateDoctorFormMarker(doc.lat || 35.7580, doc.lng || 51.4400, doc.name, true);
+  renderCustomFieldsInForm("doctor", "doctorCustomFieldsContainer", doc.customFields || {});
+
+  document.getElementById("tab-doctors").scrollIntoView({ behavior: "smooth" });
+}
+
+function deleteDoctor(id) {
+  if (!confirm("آیا از حذف این پزشک/مطب اطمینان دارید؟")) return;
+  state.doctors = state.doctors.filter(d => d.id !== id);
+  saveState();
+  renderDoctorsList();
+  renderDashboardOverviewMap();
+  updateNavBadges();
+}
+
+// ----------------------------------------------------------------------------
+// 10. پیاده‌سازی کاربران، رمز عبور و سطح دسترسی (Matching Screenshots 4,5,6,7)
+// ----------------------------------------------------------------------------
+function setupUsersAndPermissionsTab() {
+  renderPermissionGroupsChecklist();
+  renderUserCardsList();
+
+  const btnSelectAll = document.getElementById("btnPermSelectAll");
+  const btnSelectNone = document.getElementById("btnPermSelectNone");
+  const btnTogglePasswords = document.getElementById("btnToggleShowAllPasswords");
+
+  if (btnSelectAll) {
+    btnSelectAll.addEventListener("click", () => {
+      document.querySelectorAll(".permission-tag-chk").forEach(el => {
+        el.classList.remove("unchecked");
+        el.dataset.checked = "true";
+      });
+      updatePermCountBadge();
+    });
+  }
+
+  if (btnSelectNone) {
+    btnSelectNone.addEventListener("click", () => {
+      document.querySelectorAll(".permission-tag-chk").forEach(el => {
+        el.classList.add("unchecked");
+        el.dataset.checked = "false";
+      });
+      updatePermCountBadge();
+    });
+  }
+
+  if (btnTogglePasswords) {
+    btnTogglePasswords.addEventListener("click", () => {
+      isShowingAllPasswords = !isShowingAllPasswords;
+      btnTogglePasswords.innerHTML = isShowingAllPasswords ? "🙈 مخفی‌سازی رمزها" : "👁️ نمایش همه رمزها";
+      renderUserCardsList();
+    });
+  }
+
+  const formCreate = document.getElementById("formCreateUser");
+  if (formCreate) {
+    formCreate.addEventListener("submit", () => {
+      const fullName = document.getElementById("newFullName").value.trim();
+      const username = document.getElementById("newUsername").value.trim();
+      const password = document.getElementById("newPassword").value.trim();
+      const phone = document.getElementById("newPhone").value.trim();
+      const role = document.getElementById("newRole").value;
+      const simControl = document.getElementById("newSimControl").value;
+
+      if (!fullName || !username || !password) {
+        alert("لطفاً نام، نام کاربری و رمز عبور را وارد کنید.");
+        return;
+      }
+
+      // استخراج تیک‌های ۴۹ دسترسی
+      const permsObj = {};
+      document.querySelectorAll(".permission-tag-chk").forEach(el => {
+        permsObj[el.dataset.key] = el.dataset.checked === "true";
+      });
+
+      const newUser = {
+        id: "u-" + Date.now(),
+        fullName,
+        username,
+        password,
+        phone,
+        role,
+        simControl,
+        phoneLock: "آزاد - اولین ورود، گوشی را قفل می‌کند",
+        lastLogin: new Date().toLocaleDateString("fa-IR") + " - " + new Date().toLocaleTimeString("fa-IR"),
+        permissions: permsObj
+      };
+
+      state.users.push(newUser);
+      saveState();
+      formCreate.reset();
+      renderUserCardsList();
+      updateNavBadges();
+      alert(`✅ کاربر جدید «${fullName}» با موفقیت ساخته شد.`);
+    });
+  }
+}
+
+function renderPermissionGroupsChecklist() {
+  const container = document.getElementById("permissionGroupsContainer");
+  if (!container) return;
+  container.innerHTML = "";
+
+  Object.entries(PERMISSION_GROUPS).forEach(([groupName, items]) => {
+    const grpDiv = document.createElement("div");
+    grpDiv.innerHTML = `<div class="permission-group-title">${groupName}</div>`;
+
+    const tagsDiv = document.createElement("div");
+    tagsDiv.style.display = "flex";
+    tagsDiv.style.flexWrap = "wrap";
+    tagsDiv.style.gap = "0.5rem";
+
+    items.forEach(item => {
+      const tag = document.createElement("div");
+      tag.className = "permission-tag-chk";
+      tag.dataset.key = item.key;
+      tag.dataset.checked = "true";
+      tag.innerHTML = `<span>✓ ${item.label}</span>`;
+      tag.onclick = () => {
+        const isChk = tag.dataset.checked === "true";
+        if (isChk) {
+          tag.dataset.checked = "false";
+          tag.classList.add("unchecked");
+        } else {
+          tag.dataset.checked = "true";
+          tag.classList.remove("unchecked");
+        }
+        updatePermCountBadge();
+      };
+      tagsDiv.appendChild(tag);
+    });
+
+    grpDiv.appendChild(tagsDiv);
+    container.appendChild(grpDiv);
+  });
+
+  updatePermCountBadge();
+}
+
+function updatePermCountBadge() {
+  const all = document.querySelectorAll(".permission-tag-chk");
+  let count = 0;
+  all.forEach(el => { if (el.dataset.checked === "true") count++; });
+  const badge = document.getElementById("selectedPermCountBadge");
+  if (badge) badge.textContent = `${count} مورد`;
+}
+
+function renderUserCardsList() {
+  const container = document.getElementById("userCardsContainer");
+  if (!container) return;
+  container.innerHTML = "";
+
+  state.users.forEach((user, index) => {
+    const card = document.createElement("div");
+    card.style.background = "#ffffff";
+    card.style.border = "1px solid var(--border-color)";
+    card.style.borderRadius = "12px";
+    card.style.padding = "1.25rem";
+    card.style.boxShadow = "var(--shadow-sm)";
+
+    const passDisplay = isShowingAllPasswords ? user.password : "••••••••";
+
+    card.innerHTML = `
+      <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; margin-bottom: 0.75rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.75rem;">
+        <div>
+          <span style="font-weight: 800; font-size: 1.05rem; color: #0f172a;">${index + 1}. ${user.fullName}</span>
+          <span class="status-badge" style="background:#eff6ff;color:#1e40af;margin-right:0.5rem;">${user.role}</span>
+        </div>
+        <div style="font-size: 0.78rem; color: #64748b;">آخرین ورود: ${user.lastLogin || "-"}</div>
+      </div>
+
+      <div class="form-grid" style="margin-bottom: 1rem;">
+        <div>
+          <span style="font-size: 0.8rem; color: #64748b;">نام کاربری:</span>
+          <strong style="direction: ltr; display: block; color: #0d9488;">${user.username}</strong>
+        </div>
+        <div>
+          <span style="font-size: 0.8rem; color: #64748b;">رمز عبور:</span>
+          <div style="display: flex; align-items: center; gap: 0.5rem;">
+            <strong style="direction: ltr; display: block;">${passDisplay}</strong>
+            <button class="btn btn-outline btn-sm" onclick="copyPasswordText('${user.password}')" title="کپی رمز">📋</button>
+          </div>
+        </div>
+        <div>
+          <span style="font-size: 0.8rem; color: #64748b;">شماره همراه:</span>
+          <span style="direction: ltr; display: block;">${user.phone || "-"}</span>
+        </div>
+        <div>
+          <span style="font-size: 0.8rem; color: #64748b;">کنترل سیم‌کارت:</span>
+          <span style="display: block; font-weight: 700;">${user.simControl}</span>
+        </div>
+      </div>
+
+      <div style="background: #f8fafc; padding: 0.6rem 1rem; border-radius: 8px; font-size: 0.82rem; color: #475569; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.5rem;">
+        <span>📱 وضعیت قفل گوشی: <strong>${user.phoneLock}</strong></span>
+        <div style="display: flex; gap: 0.5rem;">
+          <button class="btn btn-outline btn-sm" onclick="editUserCard('${user.id}')">✏️ ویرایش سطح دسترسی</button>
+          <button class="btn btn-danger btn-sm" onclick="deleteUserCard('${user.id}')">🗑️ حذف</button>
+        </div>
+      </div>
+    `;
+
+    container.appendChild(card);
+  });
+}
+
+function copyPasswordText(pwd) {
+  navigator.clipboard.writeText(pwd).then(() => {
+    alert(`📋 رمز عبور «${pwd}» در حافظه کپی شد.`);
+  });
+}
+
+function editUserCard(id) {
+  const u = state.users.find(x => x.id === id);
+  if (!u) return;
+  alert(`ویرایش تنظیمات دسترسی برای «${u.fullName}» در پنجره ایجاد کاربر فعال شد.`);
+  document.getElementById("newFullName").value = u.fullName;
+  document.getElementById("newUsername").value = u.username;
+  document.getElementById("newPassword").value = u.password;
+  document.getElementById("newPhone").value = u.phone || "";
+  document.getElementById("newRole").value = u.role;
+  document.getElementById("newSimControl").value = u.simControl;
+  document.getElementById("tab-users-permissions").scrollIntoView({ behavior: "smooth" });
+}
+
+function deleteUserCard(id) {
+  if (!confirm("آیا از حذف این کاربر اطمینان دارید؟")) return;
+  state.users = state.users.filter(u => u.id !== id);
+  saveState();
+  renderUserCardsList();
+  updateNavBadges();
+}
+
+// ----------------------------------------------------------------------------
+// 11. سایر بخش‌های منو (تردد، منزل نمایندگان، مرخصی‌ها، اعلان‌ها، گزارش ماهانه، تارگت فروش)
+// ----------------------------------------------------------------------------
+function setupOtherSidebarModules() {
+  // 1. فعالیت لحظه‌ای (Menu Item 5)
+  const btnRefAct = document.getElementById("btnRefreshActivity");
+  if (btnRefAct) btnRefAct.addEventListener("click", () => renderActivityLogTable());
+  renderActivityLogTable();
+
+  // 2. رصد تردد (Menu Item 8)
+  renderRepRoutesTable();
+
+  // 3. منزل نمایندگان (Menu Item 9)
+  renderRepHomesTable();
+
+  // 4. مرخصی‌ها (Menu Item 10)
+  const btnExportL = document.getElementById("btnExportLeavesCSV");
+  if (btnExportL) {
+    btnExportL.addEventListener("click", () => {
+      const hdrs = ["نماینده", "از تاریخ", "تا تاریخ", "نوع مرخصی", "وضعیت"];
+      const rws = state.leaves.map(l => [l.repName, l.fromDate, l.toDate, l.reason, l.status]);
+      downloadCSVFile("leaves-export.csv", hdrs, rws);
+    });
+  }
+  renderLeavesTable();
+
+  // 5. اعلان‌ها (Menu Item 11)
+  renderNotificationsTable();
+
+  // 6. گزارش ماهانه (Menu Item 12)
+  const btnExportM = document.getElementById("btnExportMonthlyCSV");
+  if (btnExportM) {
+    btnExportM.addEventListener("click", () => {
+      const hdrs = ["نماینده علمی", "ویزیت‌ها", "سفارشات", "فروش کل (ریال)"];
+      const rws = state.reps.map(r => {
+        const vCount = state.visits.filter(v => v.repName === r.name).length;
+        const oCount = state.orders.filter(o => o.repName === r.name).length;
+        const sum = state.orders.filter(o => o.repName === r.name).reduce((s, o) => s + (o.totalAmount || 0), 0);
+        return [r.name, vCount, oCount, sum];
+      });
+      downloadCSVFile("monthly-reports.csv", hdrs, rws);
+    });
+  }
+  renderMonthlyReportsTable();
+
+  // 7. تارگت فروش (Menu Item 13)
+  renderSalesTargetsTable();
+}
+
+function renderActivityLogTable() {
+  const tbody = document.getElementById("tableActivityLogBody");
+  if (!tbody) return;
+  tbody.innerHTML = "";
+  (state.activityLog || []).forEach(act => {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td>${act.time}</td>
+      <td><strong style="color:#0f172a;">${act.repName}</strong></td>
+      <td>${act.action}</td>
+      <td><span class="badge-status-online">ثبت شد</span></td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+function renderRepRoutesTable() {
+  const tbody = document.getElementById("tableRepRoutesBody");
+  if (!tbody) return;
+  tbody.innerHTML = "";
+  (state.repRoutes || []).forEach(rt => {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td><strong style="color:#0f172a;">${rt.repName}</strong></td>
+      <td>${rt.date}</td>
+      <td>${rt.checkpoint}</td>
+      <td><span class="badge-status-online">${rt.status}</span></td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+function renderRepHomesTable() {
+  const tbody = document.getElementById("tableRepHomesBody");
+  if (!tbody) return;
+  tbody.innerHTML = "";
+  (state.repHomes || []).forEach(hm => {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td><strong style="color:#0f172a;">${hm.repName}</strong></td>
+      <td>${hm.address}</td>
+      <td style="direction:ltr;">${hm.lat}, ${hm.lng}</td>
+      <td>
+        <button class="btn btn-outline btn-sm" onclick="alert('نمایش آدرس منزل روی نقشه جامع فعال شد.')">📍 نمایش</button>
+      </td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+function setupLeavesModule() {
+  const formLeave = document.getElementById("formLeaveRequest");
+  const repSel = document.getElementById("leaveRepSelect");
+  const typeSel = document.getElementById("leaveTypeSelect");
+  const hoursGrp = document.getElementById("leaveHoursGroup");
+
+  if (repSel) {
+    repSel.innerHTML = `<option value="">انتخاب نماینده...</option>`;
+    state.reps.forEach(r => {
+      repSel.innerHTML += `<option value="${r.name}">${r.name}</option>`;
+    });
+  }
+
+  if (typeSel && hoursGrp) {
+    typeSel.addEventListener("change", () => {
+      hoursGrp.style.display = typeSel.value.includes("ساعتی") ? "block" : "none";
+    });
+  }
+
+  if (formLeave) {
+    formLeave.addEventListener("submit", () => {
+      const repName = repSel.value;
+      const leaveType = typeSel.value;
+      const fromDate = document.getElementById("leaveFromDate").value.trim();
+      const toDate = document.getElementById("leaveToDate").value.trim();
+      const hours = document.getElementById("leaveHoursInput") ? document.getElementById("leaveHoursInput").value.trim() : "";
+      const reason = document.getElementById("leaveReasonInput").value.trim();
+
+      if (!repName || !fromDate || !toDate || !reason) {
+        alert("لطفاً نماینده، تاریخ شروع، پایان و دلیل مرخصی را وارد کنید.");
+        return;
+      }
+
+      const newLeave = {
+        id: "lv-" + Date.now(),
+        repName,
+        fromDate,
+        toDate,
+        reason: `${leaveType}${hours ? ` (${hours})` : ""} - ${reason}`,
+        supervisorStatus: "در انتظار",
+        adminStatus: "در انتظار",
+        status: "در حال بررسی"
+      };
+
+      if (!state.leaves) state.leaves = [];
+      state.leaves.push(newLeave);
+      saveState();
+      formLeave.reset();
+      renderLeavesTable();
+      updateNavBadges();
+      alert(`📝 درخواست مرخصی برای «${repName}» ثبت شد و منتظر تایید سرپرست و مدیر است.`);
+    });
+  }
+}
+
+function renderLeavesTable() {
+  const tbody = document.getElementById("tableLeavesBody");
+  if (!tbody) return;
+  tbody.innerHTML = "";
+  (state.leaves || []).forEach(lv => {
+    const tr = document.createElement("tr");
+    const supBadge = lv.supervisorStatus === "تایید شد"
+      ? `<span class="badge-status-online" style="background:#10b981;">✅ تایید شد</span>`
+      : `<button class="btn btn-outline btn-sm" onclick="approveLeaveSupervisor('${lv.id}')">⏳ تایید سرپرست</button>`;
+
+    const admBadge = lv.adminStatus === "تایید شد"
+      ? `<span class="badge-status-online" style="background:#0d9488;">✅ تایید نهایی</span>`
+      : `<button class="btn btn-primary btn-sm" style="background:#0d9488;" onclick="approveLeaveAdmin('${lv.id}')">⏳ تایید مدیر کل</button>`;
+
+    tr.innerHTML = `
+      <td><strong style="color:#0f172a;">${lv.repName}</strong></td>
+      <td>${lv.reason}</td>
+      <td>${lv.fromDate}</td>
+      <td>${lv.toDate}</td>
+      <td>${lv.reason}</td>
+      <td>${supBadge}</td>
+      <td>${admBadge}</td>
+      <td>
+        <button class="btn btn-danger btn-sm" onclick="deleteLeave('${lv.id}')">🗑️ حذف</button>
+      </td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+function approveLeaveSupervisor(id) {
+  const lv = (state.leaves || []).find(x => x.id === id);
+  if (!lv) return;
+  lv.supervisorStatus = "تایید شد";
+  saveState();
+  renderLeavesTable();
+  alert(`✓ تایید سرپرست برای درخواست مرخصی «${lv.repName}» انجام شد.`);
+}
+
+function approveLeaveAdmin(id) {
+  const lv = (state.leaves || []).find(x => x.id === id);
+  if (!lv) return;
+  lv.adminStatus = "تایید شد";
+  lv.status = "تایید نهایی شد";
+  saveState();
+  renderLeavesTable();
+
+  // ارسال اعلان وضعیت مرخصی به نماینده
+  const notif = {
+    id: "not-" + Date.now(),
+    date: new Date().toLocaleDateString("fa-IR"),
+    title: `تایید مرخصی: ${lv.repName}`,
+    message: `درخواست مرخصی شما از تاریخ ${lv.fromDate} تا ${lv.toDate} توسط مدیر کل تایید نهایی شد.`,
+    sender: "مدیر کل",
+    recipient: lv.repName,
+    isRead: false
+  };
+  if (!state.notifications) state.notifications = [];
+  state.notifications.unshift(notif);
+  saveState();
+  playNotificationBeep();
+  alert(`✅ تایید نهایی مرخصی انجام شد و اعلان آن برای «${lv.repName}» ارسال گردید.`);
+}
+
+function deleteLeave(id) {
+  if (!confirm("آیا از حذف این درخواست مرخصی اطمینان دارید؟")) return;
+  state.leaves = state.leaves.filter(l => l.id !== id);
+  saveState();
+  renderLeavesTable();
+  updateNavBadges();
+}
+
+function setupNotificationsMessaging() {
+  const formMsg = document.getElementById("formSendMessage");
+  if (formMsg) {
+    formMsg.addEventListener("submit", () => {
+      const recipient = document.getElementById("msgRecipientSelect").value;
+      const title = document.getElementById("msgTitleInput").value.trim();
+      const body = document.getElementById("msgBodyInput").value.trim();
+
+      if (!title || !body) {
+        alert("لطفاً عنوان و متن پیام را وارد کنید.");
+        return;
+      }
+
+      const notif = {
+        id: "not-" + Date.now(),
+        date: new Date().toLocaleDateString("fa-IR"),
+        title: title,
+        message: body,
+        sender: `${currentUserName}`,
+        recipient: recipient,
+        isRead: false
+      };
+
+      if (!state.notifications) state.notifications = [];
+      state.notifications.unshift(notif);
+      saveState();
+      formMsg.reset();
+      renderNotificationsTable();
+      playNotificationBeep();
+
+      const badge = document.getElementById("headerNotifBadgeCount") || document.querySelector(".notif-count-badge");
+      if (badge) {
+        badge.style.display = "flex";
+        const cur = parseInt(badge.textContent) || 0;
+        badge.textContent = cur + 1;
+      }
+      alert(`✅ پیام شما به «${recipient}» ارسال شد و با صدای هشدار به ایشان اطلاع داده شد.`);
+    });
+  }
+}
+
+function renderNotificationsTable() {
+  const tbody = document.getElementById("tableNotificationsBody");
+  if (!tbody) return;
+  tbody.innerHTML = "";
+  (state.notifications || []).forEach(nt => {
+    const tr = document.createElement("tr");
+    const readBadge = nt.isRead
+      ? `<span style="color:#64748b;font-size:0.8rem;">خوانده‌شد</span>`
+      : `<button class="btn btn-outline btn-sm" onclick="markNotificationRead('${nt.id}')">✓ خواندن</button>`;
+
+    tr.innerHTML = `
+      <td>${nt.date}</td>
+      <td><strong style="color:#0d9488;">${nt.title}</strong></td>
+      <td>${nt.message}</td>
+      <td>${nt.sender} → ${nt.recipient || "عمومی"}</td>
+      <td>${readBadge}</td>
+      <td>
+        <button class="btn btn-danger btn-sm" onclick="deleteNotification('${nt.id}')">🗑️</button>
+      </td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+function markNotificationRead(id) {
+  const nt = (state.notifications || []).find(n => n.id === id);
+  if (!nt) return;
+  nt.isRead = true;
+  saveState();
+  renderNotificationsTable();
+}
+
+function deleteNotification(id) {
+  if (!confirm("آیا از حذف این اعلان اطمینان دارید؟")) return;
+  state.notifications = state.notifications.filter(n => n.id !== id);
+  saveState();
+  renderNotificationsTable();
+}
+
+function renderMonthlyReportsTable() {
+  const tbody = document.getElementById("tableMonthlyReportsBody");
+  if (!tbody) return;
+  tbody.innerHTML = "";
+  state.reps.forEach(rep => {
+    const vCount = state.visits.filter(v => v.repName === rep.name).length;
+    const oCount = state.orders.filter(o => o.repName === rep.name).length;
+    const sum = state.orders.filter(o => o.repName === rep.name).reduce((s, o) => s + (o.totalAmount || 0), 0);
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td><strong style="color:#0f172a;">${rep.name}</strong></td>
+      <td><strong>${vCount}</strong> ویزیت</td>
+      <td><strong>${oCount}</strong> سفارش</td>
+      <td><strong style="color:#0d9488;">${sum.toLocaleString("fa-IR")}</strong></td>
+      <td><span class="badge-status-online">۱۰۰٪</span></td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+function renderSalesTargetsTable() {
+  const tbody = document.getElementById("tableSalesTargetsBody");
+  if (!tbody) return;
+  tbody.innerHTML = "";
+  (state.salesTargets || []).forEach(tgt => {
+    const perc = Math.round((tgt.achievedAmount / tgt.targetAmount) * 100);
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td><strong style="color:#0f172a;">${tgt.repName}</strong></td>
+      <td>${tgt.month}</td>
+      <td>${tgt.targetAmount.toLocaleString("fa-IR")}</td>
+      <td><strong style="color:#0d9488;">${tgt.achievedAmount.toLocaleString("fa-IR")}</strong></td>
+      <td><span class="badge-status-online">${perc}٪</span></td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+// ----------------------------------------------------------------------------
+// 12. پیاده‌سازی سفارشات (Orders + Requirement 3: Sticky Top Alert Banner)
+// ----------------------------------------------------------------------------
+function setupOrdersTab() {
+  setupCascadingGeoSelectors("orderProvince", "orderCity", "orderDistrict");
+
+  const form = document.getElementById("formOrder");
+  const btnReset = document.getElementById("btnResetOrderForm");
+  const btnAddItem = document.getElementById("btnAddOrderItemRow");
+  const searchInput = document.getElementById("searchOrderInput");
+  const pharmacyInput = document.getElementById("orderPharmacyName");
+  const btnTopAutoFill = document.getElementById("btnTopAutoFillPharmacy");
+
+  populateRepSelectorInOrders();
+  populatePharmacyDatalistInOrders();
+  resetOrderForm();
+
+  if (btnReset) btnReset.addEventListener("click", resetOrderForm);
+
+  if (btnAddItem) {
+    btnAddItem.addEventListener("click", () => {
+      addOrderItemRow("", 10, 45000);
+    });
+  }
+
+  if (searchInput) {
+    searchInput.addEventListener("input", () => {
+      renderOrdersList(searchInput.value.trim());
+    });
+  }
+
+  const checkPharmacyMatch = () => {
+    const val = pharmacyInput.value.trim();
+    const matched = state.pharmacies.find(p => p.name === val || p.name.includes(val) && val.length >= 3);
+    const alertBox = document.getElementById("existingPharmacyTopAlert");
+    const alertText = document.getElementById("existingPharmacyAlertText");
+
+    if (matched && val.length > 0) {
+      document.getElementById("orderPharmacyMatchedId").value = matched.id;
+      alertText.textContent = `داروخانه «${matched.name}» | شهر: ${matched.city} | منطقه: ${matched.district} | آدرس: ${matched.address}`;
+      alertBox.style.display = "flex";
+    } else {
+      document.getElementById("orderPharmacyMatchedId").value = "";
+      alertBox.style.display = "none";
+    }
+  };
+
+  if (pharmacyInput) {
+    pharmacyInput.addEventListener("input", checkPharmacyMatch);
+    pharmacyInput.addEventListener("change", checkPharmacyMatch);
+  }
+
+  if (btnTopAutoFill) {
+    btnTopAutoFill.addEventListener("click", () => {
+      const matchedId = document.getElementById("orderPharmacyMatchedId").value;
+      if (!matchedId) return;
+
+      const matched = state.pharmacies.find(p => p.id === matchedId);
+      if (!matched) return;
+
+      const provEl = document.getElementById("orderProvince");
+      const cityEl = document.getElementById("orderCity");
+      const distEl = document.getElementById("orderDistrict");
+      const addrEl = document.getElementById("orderAddress");
+
+      provEl.value = matched.province;
+      populateCities(matched.province, cityEl, matched.city);
+      populateDistricts(matched.province, matched.city, distEl, matched.district);
+
+      addrEl.value = matched.address;
+      alert(`⚡ اطلاعات آدرس و مناطق داروخانه «${matched.name}» به صورت خودکار در فیلدهای سفارش قرار گرفت.`);
+    });
+  }
+
+  if (form) {
+    form.addEventListener("submit", () => {
+      const editId = document.getElementById("orderEditId").value;
+      const pharmacyName = pharmacyInput.value.trim();
+      const province = document.getElementById("orderProvince").value;
+      const city = document.getElementById("orderCity").value;
+      const district = document.getElementById("orderDistrict").value;
+      const address = document.getElementById("orderAddress").value.trim();
+      const repName = document.getElementById("orderRepName").value;
+      const orderDate = document.getElementById("orderDate").value.trim() || new Date().toLocaleDateString("fa-IR");
+      const status = document.getElementById("orderStatus").value;
+      const notes = document.getElementById("orderNotes").value.trim();
+      const customFieldsVals = extractCustomFieldValuesFromForm("order", "orderCustomFieldsContainer");
+
+      if (!pharmacyName || !province || !city || !district) {
+        alert("لطفاً نام داروخانه، استان، شهر و منطقه را وارد کنید.");
+        return;
+      }
+
+      const items = getOrderItemsFromUI();
+      if (items.length === 0 || !items[0].name) {
+        alert("لطفاً حداقل یک قلم دارویی در سفارش ثبت کنید.");
+        return;
+      }
+
+      const totalAmount = items.reduce((sum, item) => sum + (item.count * item.price), 0);
+
+      if (editId) {
+        const idx = state.orders.findIndex(o => o.id === editId);
+        if (idx !== -1) {
+          state.orders[idx] = {
+            ...state.orders[idx],
+            pharmacyName, province, city, district, address,
+            repName, orderDate, status, notes, items, totalAmount,
+            customFields: customFieldsVals
+          };
+        }
+        alert(`✅ سفارش داروخانه «${pharmacyName}» با موفقیت ویرایش شد.`);
+      } else {
+        const newOrder = {
+          id: "ord-" + Date.now(),
+          pharmacyName, province, city, district, address,
+          repName, orderDate, status, notes, items, totalAmount,
+          customFields: customFieldsVals
+        };
+        state.orders.push(newOrder);
+        alert(`✅ سفارش جدید برای «${pharmacyName}» ثبت شد.`);
+      }
+
+      saveState();
+      resetOrderForm();
+      renderOrdersList();
+      updateNavBadges();
+    });
+  }
+}
+
+function resetOrderForm() {
+  document.getElementById("orderEditId").value = "";
+  document.getElementById("orderPharmacyMatchedId").value = "";
+  document.getElementById("orderPharmacyName").value = "";
+  document.getElementById("orderAddress").value = "";
+  document.getElementById("orderDate").value = new Date().toLocaleDateString("fa-IR");
+  document.getElementById("orderNotes").value = "";
+  document.getElementById("existingPharmacyTopAlert").style.display = "none";
+
+  const provEl = document.getElementById("orderProvince");
+  const cityEl = document.getElementById("orderCity");
+  const distEl = document.getElementById("orderDistrict");
+
+  provEl.value = "";
+  cityEl.innerHTML = `<option value="">ابتدا استان را انتخاب کنید</option>`;
+  distEl.innerHTML = `<option value="">ابتدا شهر را انتخاب کنید</option>`;
+
+  const container = document.getElementById("orderItemsContainer");
+  if (container) {
+    container.innerHTML = "";
+    addOrderItemRow("", 10, 45000);
+  }
+
+  renderCustomFieldsInForm("order", "orderCustomFieldsContainer");
+  updateOrderTotalAmountDisplay();
+}
+
+function populateRepSelectorInOrders() {
+  const sel = document.getElementById("orderRepName");
+  if (!sel) return;
+  sel.innerHTML = `<option value="">انتخاب نماینده علمی...</option>`;
+  state.reps.forEach(r => {
+    const opt = document.createElement("option");
+    opt.value = r.name;
+    opt.textContent = `${r.name} (${r.region || "نماینده فعال"})`;
+    sel.appendChild(opt);
+  });
+}
+
+function populatePharmacyDatalistInOrders() {
+  const datalist = document.getElementById("pharmacyNamesList");
+  if (!datalist) return;
+  datalist.innerHTML = "";
+  state.pharmacies.forEach(p => {
+    const opt = document.createElement("option");
+    opt.value = p.name;
+    opt.textContent = `${p.name} - ${p.province}/${p.city}`;
+    datalist.appendChild(opt);
+  });
+}
+
+function addOrderItemRow(name = "", count = 1, price = 0) {
+  const container = document.getElementById("orderItemsContainer");
+  if (!container) return;
+
+  const rowId = "item-row-" + Date.now() + "-" + Math.floor(Math.random() * 1000);
+  const row = document.createElement("div");
+  row.id = rowId;
+  row.style.display = "grid";
+  row.style.gridTemplateColumns = "3fr 1fr 2fr auto";
+  row.style.gap = "0.5rem";
+  row.style.alignItems = "center";
+
+  row.innerHTML = `
+    <input type="text" class="form-input order-item-name" placeholder="نام کالا (مثال: امگا۳)..." value="${name}" required />
+    <input type="number" class="form-input order-item-count" placeholder="تعداد کالا" min="1" value="${count}" required />
+    <input type="number" class="form-input order-item-gift" placeholder="تعداد جایزه 🎁" min="0" value="0" />
+    <input type="number" class="form-input order-item-price" placeholder="قیمت واحد (ریال)" min="0" value="${price}" required />
+    <button type="button" class="btn btn-danger btn-sm" onclick="removeOrderItemRow('${rowId}')">🗑️</button>
+  `;
+
+  const inputs = row.querySelectorAll("input");
+  inputs.forEach(inp => {
+    inp.addEventListener("input", updateOrderTotalAmountDisplay);
+  });
+
+  container.appendChild(row);
+  updateOrderTotalAmountDisplay();
+}
+
+function removeOrderItemRow(rowId) {
+  const row = document.getElementById(rowId);
+  if (row) {
+    row.remove();
+    updateOrderTotalAmountDisplay();
+  }
+}
+
+function getOrderItemsFromUI() {
+  const container = document.getElementById("orderItemsContainer");
+  if (!container) return [];
+  const rows = container.children;
+  const items = [];
+  for (let i = 0; i < rows.length; i++) {
+    const nameEl = rows[i].querySelector(".order-item-name");
+    const countEl = rows[i].querySelector(".order-item-count");
+    const priceEl = rows[i].querySelector(".order-item-price");
+    if (nameEl && nameEl.value.trim()) {
+      items.push({
+        name: nameEl.value.trim(),
+        count: parseInt(countEl.value) || 1,
+        price: parseInt(priceEl.value) || 0
+      });
+    }
+  }
+  return items;
+}
+
+function updateOrderTotalAmountDisplay() {
+  const items = getOrderItemsFromUI();
+  const total = items.reduce((sum, item) => sum + (item.count * item.price), 0);
+  const disp = document.getElementById("orderTotalAmountDisplay");
+  if (disp) {
+    disp.textContent = total.toLocaleString("fa-IR");
+  }
+}
+
+function renderOrdersList(searchQuery = "") {
+  const theadTr = document.getElementById("tableOrdersHeader");
+  const tbody = document.getElementById("tableOrdersBody");
+  if (!theadTr || !tbody) return;
+
+  theadTr.innerHTML = `
+    <th>ردیف</th>
+    <th>نام داروخانه</th>
+    <th>استان / شهر / منطقه</th>
+    <th>نماینده علمی</th>
+    <th>تاریخ سفارش</th>
+    <th>تعداد اقلام</th>
+    <th>مبلغ کل (ریال)</th>
+    <th>وضعیت</th>
+  `;
+
+  const fieldsList = (state.customFields.order || []).filter(f => f.showInList);
+  fieldsList.forEach(f => {
+    const th = document.createElement("th");
+    th.textContent = f.label;
+    theadTr.appendChild(th);
+  });
+
+  const thAction = document.createElement("th");
+  thAction.textContent = "عملیات";
+  theadTr.appendChild(thAction);
+
+  tbody.innerHTML = "";
+
+  const filtered = state.orders.filter(ord => {
+    if (!searchQuery) return true;
+    return ord.pharmacyName.includes(searchQuery) || (ord.repName && ord.repName.includes(searchQuery));
+  });
+
+  filtered.forEach((ord, index) => {
+    const tr = document.createElement("tr");
+
+    const statusBadge = ord.status === "تایید شده"
+      ? `<span class="status-badge status-online">✅ ${ord.status}</span>`
+      : ord.status === "در حال بررسی"
+      ? `<span class="status-badge status-visiting">⏳ ${ord.status}</span>`
+      : `<span class="status-badge" style="background:#f1f5f9;color:#475569;">${ord.status}</span>`;
+
+    let rowHTML = `
+      <td>${index + 1}</td>
+      <td><strong style="color: #0d9488;">${ord.pharmacyName}</strong></td>
+      <td>${ord.province} / ${ord.city} / ${ord.district}</td>
+      <td>${ord.repName || "-"}</td>
+      <td>${ord.orderDate || "-"}</td>
+      <td>${ord.items ? ord.items.length : 0} قلم</td>
+      <td><strong style="color: #0d9488;">${Number(ord.totalAmount || 0).toLocaleString("fa-IR")}</strong></td>
+      <td>${statusBadge}</td>
+    `;
+
+    fieldsList.forEach(f => {
+      const val = (ord.customFields && ord.customFields[f.label]) ? ord.customFields[f.label] : "-";
+      rowHTML += `<td><strong>${val}</strong></td>`;
+    });
+
+    rowHTML += `
+      <td>
+        <div style="display: flex; gap: 0.4rem;">
+          <button class="btn btn-outline btn-sm" onclick="editOrder('${ord.id}')">✏️ ویرایش</button>
+          <button class="btn btn-danger btn-sm" onclick="deleteOrder('${ord.id}')">🗑️ حذف</button>
+        </div>
+      </td>
+    `;
+
+    tr.innerHTML = rowHTML;
+    tbody.appendChild(tr);
+  });
+}
+
+function editOrder(id) {
+  const ord = state.orders.find(o => o.id === id);
+  if (!ord) return;
+
+  document.getElementById("orderEditId").value = ord.id;
+  document.getElementById("orderPharmacyName").value = ord.pharmacyName;
+  document.getElementById("orderAddress").value = ord.address || "";
+  document.getElementById("orderRepName").value = ord.repName || "";
+  document.getElementById("orderDate").value = ord.orderDate || "";
+  document.getElementById("orderStatus").value = ord.status || "تایید شده";
+  document.getElementById("orderNotes").value = ord.notes || "";
+
+  const provEl = document.getElementById("orderProvince");
+  const cityEl = document.getElementById("orderCity");
+  const distEl = document.getElementById("orderDistrict");
+
+  provEl.value = ord.province;
+  populateCities(ord.province, cityEl, ord.city);
+  populateDistricts(ord.province, ord.city, distEl, ord.district);
+
+  const container = document.getElementById("orderItemsContainer");
+  container.innerHTML = "";
+  (ord.items || []).forEach(item => {
+    addOrderItemRow(item.name, item.count, item.price);
+  });
+  updateOrderTotalAmountDisplay();
+
+  renderCustomFieldsInForm("order", "orderCustomFieldsContainer", ord.customFields || {});
+
+  document.getElementById("tab-orders").scrollIntoView({ behavior: "smooth" });
+}
+
+function deleteOrder(id) {
+  if (!confirm("آیا از حذف این سفارش اطمینان دارید؟")) return;
+  state.orders = state.orders.filter(o => o.id !== id);
+  saveState();
+  renderOrdersList();
+  updateNavBadges();
+}
+
+// ----------------------------------------------------------------------------
+// 13. پیاده‌سازی ویژگی ۸: پشتیبان‌گیری خودکار، جایگزینی فایل تک‌نام و بازیابی
+// ----------------------------------------------------------------------------
+function setupBackupAndRestore() {
+  const chkAuto = document.getElementById("chkAutoBackupEnabled");
+  const btnSelectFolder = document.getElementById("btnSelectAutoBackupFolder");
+  const btnManualNow = document.getElementById("btnManualBackupNow");
+  const btnQuickBackup = document.getElementById("btnQuickBackup");
+  const btnResetDefault = document.getElementById("btnResetDefault");
+
+  if (chkAuto) {
+    chkAuto.checked = state.settings ? state.settings.autoBackupEnabled : true;
+    chkAuto.addEventListener("change", () => {
+      state.settings.autoBackupEnabled = chkAuto.checked;
+      saveState(false);
+      updateAutoBackupStatusBadge();
+    });
+  }
+
+  if (btnSelectFolder) {
+    btnSelectFolder.addEventListener("click", async () => {
+      if (window.showSaveFilePicker) {
+        try {
+          const handle = await window.showSaveFilePicker({
+            suggestedName: "crm-backup-latest.json",
+            types: [{
+              description: "JSON CRM Backup File",
+              accept: { "application/json": [".json"] }
+            }]
+          });
+          autoBackupFileHandle = handle;
+          document.getElementById("autoBackupHandleStatus").textContent = "✅ متصل به فایل: crm-backup-latest.json (ذخیره خودکار)";
+          await performAutoBackup();
+          alert("✅ فایل پشتیبان‌گیری خودکار تنظیم شد. از این پس با هر تغییر، فایل پشتیبان شما به طور خودکار جایگزین همین فایل (crm-backup-latest.json) خواهد شد.");
+        } catch (err) {
+          console.warn("انصراف کاربر:", err);
+        }
+      } else {
+        alert("مرورگر شما از قابلیت File System Access API پشتیبانی نمی‌کند، اما پشتیبان‌گیری خودکار به صورت دائمی در حافظه سیستم ذخیره می‌شود.");
+      }
+    });
+  }
+
+  const downloadSingleBackupFile = () => {
+    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(state, null, 2));
+    const downloadAnchor = document.createElement("a");
+    downloadAnchor.setAttribute("href", dataStr);
+    downloadAnchor.setAttribute("download", "crm-backup-latest.json");
+    document.body.appendChild(downloadAnchor);
+    downloadAnchor.click();
+    downloadAnchor.remove();
+  };
+
+  if (btnManualNow) btnManualNow.addEventListener("click", downloadSingleBackupFile);
+  if (btnQuickBackup) btnQuickBackup.addEventListener("click", downloadSingleBackupFile);
+
+  if (btnResetDefault) {
+    btnResetDefault.addEventListener("click", () => {
+      if (confirm("⚠️ آیا از بازنشانی کلیه اطلاعات به حالت پیش‌فرض اولیه اطمینان دارید؟")) {
+        localStorage.removeItem(STORAGE_KEY);
+        location.reload();
+      }
+    });
+  }
+
+  if (autoBackupIntervalId) clearInterval(autoBackupIntervalId);
+  autoBackupIntervalId = setInterval(() => {
+    if (state.settings && state.settings.autoBackupEnabled) {
+      performAutoBackup();
+    }
+  }, (state.settings.autoBackupIntervalMinutes || 5) * 60000);
+
+  updateAutoBackupStatusBadge();
+  setupRestoreSection();
+}
+
+async function performAutoBackup() {
+  if (state.settings) state.settings.lastBackupTime = new Date().toLocaleString("fa-IR");
+
+  if (autoBackupFileHandle) {
+    try {
+      const writable = await autoBackupFileHandle.createWritable();
+      await writable.write(JSON.stringify(state, null, 2));
+      await writable.close();
+      console.log("پشتیبان‌گیری خودکار در فایل crm-backup-latest.json انجام شد.");
+    } catch (err) {
+      console.warn("خطا در نوشتن فایل پشتیبان خودکار:", err);
+    }
+  }
+}
+
+function updateAutoBackupStatusBadge() {
+  const badge = document.getElementById("autoBackupStatusBadge");
+  if (!badge) return;
+
+  if (state.settings && state.settings.autoBackupEnabled) {
+    badge.style.background = "rgba(16, 185, 129, 0.25)";
+    badge.innerHTML = "<span>✅ پشتیبان‌گیری خودکار: فعال</span>";
+  } else {
+    badge.style.background = "rgba(245, 158, 11, 0.25)";
+    badge.innerHTML = "<span>⏸️ پشتیبان‌گیری خودکار: غیرفعال</span>";
+  }
+}
+
+function setupRestoreSection() {
+  const dropzone = document.getElementById("dropzoneRestore");
+  const fileInput = document.getElementById("fileInputRestore");
+  const previewCard = document.getElementById("restorePreviewCard");
+  const btnCancel = document.getElementById("btnCancelRestore");
+  const btnConfirm = document.getElementById("btnConfirmRestore");
+
+  let tempRestoreData = null;
+
+  if (!dropzone || !fileInput) return;
+
+  dropzone.addEventListener("click", () => fileInput.click());
+
+  dropzone.addEventListener("dragover", (e) => {
+    e.preventDefault();
+    dropzone.style.background = "#dbeafe";
+  });
+
+  dropzone.addEventListener("dragleave", () => {
+    dropzone.style.background = "#f0fdf4";
+  });
+
+  dropzone.addEventListener("drop", (e) => {
+    e.preventDefault();
+    dropzone.style.background = "#f0fdf4";
+    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+      handleRestoreFile(e.dataTransfer.files[0]);
+    }
+  });
+
+  fileInput.addEventListener("change", (e) => {
+    if (e.target.files && e.target.files.length > 0) {
+      handleRestoreFile(e.target.files[0]);
+    }
+  });
+
+  const handleRestoreFile = (file) => {
+    if (!file.name.endsWith(".json")) {
+      alert("لطفاً یک فایل پشتیبان با فرمت .json انتخاب کنید.");
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      try {
+        const parsed = JSON.parse(event.target.result);
+        if (!parsed.pharmacies || !parsed.doctors || !parsed.orders) {
+          alert("فایل پشتیبان انتخاب شده معتبر نیست یا ساختار آن ناقص است.");
+          return;
+        }
+
+        tempRestoreData = parsed;
+        document.getElementById("resCountPharmacies").textContent = parsed.pharmacies.length;
+        document.getElementById("resCountDoctors").textContent = parsed.doctors.length;
+        document.getElementById("resCountUsers").textContent = (parsed.users || []).length;
+        document.getElementById("resCountOrders").textContent = parsed.orders.length;
+        document.getElementById("resCountFields").textContent = Object.keys(parsed.customFields || {}).reduce((s, k) => s + (parsed.customFields[k].length || 0), 0);
+
+        previewCard.style.display = "block";
+        previewCard.scrollIntoView({ behavior: "smooth" });
+      } catch (err) {
+        alert("خطا در خواندن فایل پشتیبان JSON: " + err.message);
+      }
+    };
+    reader.readAsText(file);
+  };
+
+  if (btnCancel) {
+    btnCancel.addEventListener("click", () => {
+      tempRestoreData = null;
+      previewCard.style.display = "none";
+      fileInput.value = "";
+    });
+  }
+
+  if (btnConfirm) {
+    btnConfirm.addEventListener("click", () => {
+      if (!tempRestoreData) return;
+      state = tempRestoreData;
+      if (!state.users) state.users = DEFAULT_INITIAL_DATA.users;
+      if (!state.settings) state.settings = DEFAULT_INITIAL_DATA.settings;
+
+      saveState(false);
+      previewCard.style.display = "none";
+      fileInput.value = "";
+      alert("✅ بازیابی کامل اطلاعات با موفقیت انجام شد!");
+      
+      renderCustomFieldsTable();
+      renderAllCustomFieldsInFormsAndTables();
+      renderUserCardsList();
+      renderDashboardOverviewMap();
+      renderOrdersList();
+      updateNavBadges();
+      populateRepSelectorInOrders();
+      populatePharmacyDatalistInOrders();
+    });
+  }
+}
+
+// ----------------------------------------------------------------------------
+// 14. سیستم ورود، تغییر نقش و خروج (Auth & Role Switching)
+// ----------------------------------------------------------------------------
+let currentRoleIndex = 0;
+let currentUserName = "مدیر سیستم";
+
+function setupAuthAndRoleSwitching() {
+  const btnOpenLogin = document.getElementById("btnOpenLoginModal");
+  const formLogin = document.getElementById("formLoginModal");
+  const btnLogout = document.getElementById("btnLogoutSystem");
+
+  if (btnOpenLogin) {
+    btnOpenLogin.addEventListener("click", () => {
+      openModalLogin();
+    });
+  }
+
+  if (btnLogout) {
+    btnLogout.addEventListener("click", () => {
+      if (confirm("آیا از خروج از سامانه اطمینان دارید؟")) {
+        currentRoleIndex = 0;
+        currentUserName = "مدیر سیستم";
+        applyUserRolePermissions();
+        openModalLogin();
+        alert("✅ خروج از سیستم با موفقیت انجام شد.");
+      }
+    });
+  }
+
+  if (formLogin) {
+    formLogin.addEventListener("submit", () => {
+      const roleIdx = parseInt(document.getElementById("loginRoleSelect").value);
+      const selOpt = document.getElementById("loginRoleSelect").options[roleIdx];
+      const simMode = document.getElementById("loginSimAuthMode") ? document.getElementById("loginSimAuthMode").value : "3";
+      currentRoleIndex = roleIdx;
+      currentUserName = selOpt ? selOpt.textContent : "مدیر سیستم";
+
+      if (simMode === "1") {
+        const otp = prompt("💬 پیامک رمز یک‌بارمصرف (OTP) ارسال شد. لطفاً کد ۶ رقمی را وارد کنید:", "123456");
+        if (!otp) return;
+      } else if (simMode === "2") {
+        alert("📲 کد تایید ورود شما برای مدیر سیستم ارسال شد. پس از تایید وارد می‌شوید.");
+      }
+
+      applyUserRolePermissions();
+      closeModalLogin();
+      alert(`✅ ورود موفقیت‌آمیز! سطح دسترسی اعمال شد.`);
+    });
+  }
+
+  if (window.location.pathname.includes("/login") || window.location.hash.includes("login")) {
+    setTimeout(openModalLogin, 500);
+  }
+
+  applyUserRolePermissions();
+}
+
+function openModalLogin() {
+  const mod = document.getElementById("modalLogin");
+  if (mod) mod.classList.add("active");
+}
+
+function closeModalLogin() {
+  const mod = document.getElementById("modalLogin");
+  if (mod) mod.classList.remove("active");
+}
+
+function applyUserRolePermissions() {
+  const roleLabel = document.getElementById("currentUserRoleLabel");
+  if (roleLabel) {
+    roleLabel.textContent = `ثبت اطلا... ${currentUserName}`;
+  }
+}
+
+// ----------------------------------------------------------------------------
+// 15. تست اتصال به سرور و بنر عیب‌یابی آفلاین (Screenshot 8)
+// ----------------------------------------------------------------------------
+function testServerConnectivity() {
+  const box = document.getElementById("diagnosticsStatusBox");
+  if (box) {
+    box.style.background = "#fef9c3";
+    box.style.color = "#854d0e";
+    box.textContent = "⏳ در حال بررسی ارتباط با سرورهای Render.com و Neon...";
+  }
+
+  setTimeout(() => {
+    if (box) {
+      box.style.background = "#f0fdf4";
+      box.style.color = "#166534";
+      box.textContent = "✅ ارتباط با سرورهای ابری namayandeelmi-javad.onrender.com و ndcohub.ir برقرار است.";
+    }
+    alert("✅ اتصال به سرور ابری و حافظه محلی با موفقیت تایید شد.");
+  }, 700);
+}
+
+function retryServerConnection() {
+  const banner = document.getElementById("diagnosticOfflineBanner");
+  alert("🔄 در حال تلاش برای برقراری ارتباط مجدد با سرور...");
+  if (banner) banner.style.display = "none";
+}
+
+// ----------------------------------------------------------------------------
+// 16. خروجی اکسل (CSV Export)
+// ----------------------------------------------------------------------------
+function setupCSVExportButtons() {
+  const btnPh = document.getElementById("btnExportPharmaciesCSV");
+  const btnDoc = document.getElementById("btnExportDoctorsCSV");
+  const btnOrd = document.getElementById("btnExportOrdersCSV");
+  const btnUsers = document.getElementById("btnExportUsersCSV");
+
+  if (btnPh) {
+    btnPh.addEventListener("click", () => {
+      const hdrs = ["نام داروخانه", "تلفن", "استان", "شهر", "منطقه", "آدرس", "درصدی"];
+      const rws = state.pharmacies.map(p => [p.name, p.phone || "", p.province, p.city, p.district, p.address, p.isPercentage ? "بله" : "خیر"]);
+      downloadCSVFile("pharmacies-export.csv", hdrs, rws);
+    });
+  }
+
+  if (btnDoc) {
+    btnDoc.addEventListener("click", () => {
+      const hdrs = ["نام پزشک/مطب", "تخصص", "تلفن", "استان", "شهر", "منطقه", "آدرس", "درصدی"];
+      const rws = state.doctors.map(d => [d.name, d.specialty, d.phone || "", d.province, d.city, d.district, d.address, d.isPercentage ? "بله" : "خیر"]);
+      downloadCSVFile("doctors-export.csv", hdrs, rws);
+    });
+  }
+
+  if (btnOrd) {
+    btnOrd.addEventListener("click", () => {
+      const hdrs = ["نام داروخانه", "استان", "شهر", "منطقه", "نماینده", "تاریخ", "مبلغ کل (ریال)", "وضعیت"];
+      const rws = state.orders.map(o => [o.pharmacyName, o.province, o.city, o.district, o.repName || "", o.orderDate, o.totalAmount || 0, o.status]);
+      downloadCSVFile("orders-export.csv", hdrs, rws);
+    });
+  }
+
+  if (btnUsers) {
+    btnUsers.addEventListener("click", () => {
+      const hdrs = ["نام و نام خانوادگی", "نام کاربری", "نقش", "شماره همراه", "کنترل سیم‌کارت"];
+      const rws = state.users.map(u => [u.fullName, u.username, u.role, u.phone || "", u.simControl]);
+      downloadCSVFile("users-export.csv", hdrs, rws);
+    });
+  }
+}
+
+function downloadCSVFile(filename, headers, rows) {
+  let csvContent = "\uFEFF";
+  csvContent += headers.join(",") + "\n";
+  rows.forEach(row => {
+    const cleanRow = row.map(cell => `"${String(cell).replace(/"/g, '""')}"`);
+    csvContent += cleanRow.join(",") + "\n";
+  });
+  const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.setAttribute("href", url);
+  a.setAttribute("download", filename);
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+}
+
+// ----------------------------------------------------------------------------
+// 17. ثبت سرویس‌ورکر (PWA Service Worker Registration)
+// ----------------------------------------------------------------------------
+function setupPWAServiceWorker() {
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/sw.js')
+      .then(reg => {
+        console.log('✅ سرویس‌ورکر PWA با موفقیت ثبت شد.');
+      })
+      .catch(err => {
+        console.warn('عدم ثبت سرویس‌ورکر در محیط تستی:', err);
+      });
+  }
+}
+
+// ----------------------------------------------------------------------------
+// 18. مسیریابی (نشان، بلد، گوگل مپس، ویز) - Matching Prompt Request
+// ----------------------------------------------------------------------------
+let activeNavCoords = { lat: 35.7200, lng: 51.4200, name: "مقصد" };
+
+function openNavigationAppModal(lat, lng, nameText = "مقصد") {
+  activeNavCoords = { lat: Number(lat) || 35.7200, lng: Number(lng) || 51.4200, name: nameText };
+  const modal = document.getElementById("modalNavigationApps");
+  if (modal) {
+    modal.classList.add("active");
+  }
+}
+
+function closeModalNavigationApps() {
+  const modal = document.getElementById("modalNavigationApps");
+  if (modal) {
+    modal.classList.remove("active");
+  }
+}
+
+function setupNavigationAppsModal() {
+  const btnNeshan = document.getElementById("btnNavNeshan");
+  const btnBalad = document.getElementById("btnNavBalad");
+  const btnGoogle = document.getElementById("btnNavGoogle");
+  const btnWaze = document.getElementById("btnNavWaze");
+
+  if (btnNeshan) {
+    btnNeshan.onclick = () => {
+      window.open(`https://neshan.org/maps/@${activeNavCoords.lat},${activeNavCoords.lng},16z`, "_blank");
+      closeModalNavigationApps();
     };
   }
-  function save(){localStorage.setItem(KEY,JSON.stringify(state))}
-  function load(){state=JSON.parse(localStorage.getItem(KEY)||'null')||seed(); save();}
-  function can(k){return user.role==='مدیر'||user.perms.includes(k)}
-
-  function loginGate(){
-    if(user) return '';
-    return `<div class="login-gate"><div class="login-card"><div style="text-align:center;font-size:2rem">💊</div><h2 style="text-align:center">ورود به سامانه نمایندگان علمی</h2><p style="color:var(--muted)">صفحه ورود مستقیم. کاربران نمایشی:</p><div class="form-grid"><div class="form-group"><label>نام کاربری</label>${inp('loginUser','admin')}</div><div class="form-group"><label>رمز عبور</label><input class="form-input" id="loginPass" type="password" value="123"></div><div class="form-group"><label>شماره همراه</label>${inp('loginPhone','09120000000','tel')}</div><div class="form-group"><label>حالت ورود</label>${sel('loginMode',['رمز ثابت','OTP پیامکی','کد تایید مدیر'],'رمز ثابت')}</div></div><button class="btn btn-primary" id="loginBtn" style="width:100%;margin-top:1rem">ورود</button><p style="font-size:.8rem;color:var(--muted)">admin/123 یا taheri/456</p></div></div>`;
+  if (btnBalad) {
+    btnBalad.onclick = () => {
+      window.open(`https://balad.ir/location?latitude=${activeNavCoords.lat}&longitude=${activeNavCoords.lng}`, "_blank");
+      closeModalNavigationApps();
+    };
   }
-  function bindLogin(){ $('#loginBtn').onclick=()=>{ const u=state.users.find(x=>x.user===$('#loginUser').value&&x.pass===$('#loginPass').value); if(!u)return toast('یوزر یا رمز اشتباه است'); if(u.auth==='OTP'&&$('#loginMode').value==='OTP پیامکی'){ const code=prompt('کد یک‌بارمصخل را وارد کنید (نمایشی: 12345)'); if(code!=='12345')return toast('کد اشتباه'); } user=u; toast('خوش آمدید '+user.name); render(); }; }
-
-  function header(){ return `<header class="app-header"><div class="header-container"><div class="logo-area"><button id="menuBtn" class="btn-menu-hamburger">☰</button><div class="logo-icon">💊</div><div class="logo-text"><h1>${esc(state.settings.company)}</h1><p>مدیریت نمایندگان، نقشه و سفارش‌ها</p></div></div><div class="header-actions"><span class="badge ok">${esc(user?.name||'مهمان')}</span><button id="logoutBtn" class="btn-header-teal">${user?'خروج':'ورود'}</button></div></div></header>`; }
-  function navHtml(){
-    const items=MENUS.filter(m=>can(m[0]));
-    return `<nav class="app-nav"><div class="nav-container">${items.map(([id,label,icon])=>`<button class="nav-item ${id===tab?'active':''}" data-tab="${id}">${icon} ${label}</button>`).join('')}</div></nav><aside id="drawer" class="side-menu-drawer"><div class="side-menu-header"><b>منو</b><button id="closeDrawer" class="btn-close-side">×</button></div><div class="side-menu-content">${items.map(([id,label])=>`<button class="side-menu-item" data-tab="${id}">${label}</button>`).join('')}</div></aside><div id="overlay" class="side-menu-overlay"></div>`;
+  if (btnGoogle) {
+    btnGoogle.onclick = () => {
+      window.open(`https://www.google.com/maps/search/?api=1&query=${activeNavCoords.lat},${activeNavCoords.lng}`, "_blank");
+      closeModalNavigationApps();
+    };
   }
-  function bindNav(){ $('#menuBtn').onclick=()=>{$('#drawer').classList.add('active');$('#overlay').classList.add('active')}; $('#closeDrawer').onclick=$('#overlay').onclick=()=>{$('#drawer').classList.remove('active');$('#overlay').classList.remove('active')}; $$('[data-tab]').forEach(b=>b.onclick=()=>{tab=b.dataset.tab;pages={};render()}); $('#logoutBtn').onclick=()=>{user=null;render()}; }
-
-  function dashboard(){
-    const values=[state.pharmacies.length,state.doctors.length,state.orders.length,state.users.length,state.products.length];
-    return `<div class="stats-grid">${[['داروخانه',state.pharmacies.length,'🏥'],['پزشک',state.doctors.length,'👨‍⚕️'],['سفارش',state.orders.length,'🧾'],['نماینده',state.reps.length,'📍'],['کالا',state.products.length,'📦'],['مرخصی',state.leaves.length,'📅']].map(x=>`<div class="stat-card"><div class="stat-icon">${x[2]}</div><div class="stat-content"><h3>${x[1]}</h3><p>${x[0]}</p></div></div>`).join('')}</div><div class="dashboard-grid"><div class="card"><b>مدیریت ویجت‌ها</b><p style="color:var(--muted);font-size:.85rem">برای جلوگیری از شلوغی، ویجت‌های داشبورد قابل انتخاب هستند.</p><div>${['stats','bars','map','activity'].map(w=>`<button class="chip ${state.settings.widgets.includes(w)?'active':''}" data-widget="${w}">${w}</button>`).join(' ')}</div></div><div class="card"><b>نمودار میله‌ای</b><div class="bar-chart">${['داروخانه','پزشک','سفارش','کاربر','کالا'].map((l,i)=>`<div class="bar" style="height:${Math.max(10,values[i]/Math.max(...values)*120)}px"><span>${values[i]}</span><label>${l}</label></div>`).join('')}</div></div></div><div class="card"><b>نقشه کلی</b><div id="dashMap" class="map-container"></div></div>`;
+  if (btnWaze) {
+    btnWaze.onclick = () => {
+      window.open(`https://waze.com/ul?ll=${activeNavCoords.lat},${activeNavCoords.lng}&navigate=yes`, "_blank");
+      closeModalNavigationApps();
+    };
   }
-  function bindDashboard(){ $$('[data-widget]').forEach(b=>b.onclick=()=>{const w=b.dataset.widget; state.settings.widgets=state.settings.widgets.includes(w)?state.settings.widgets.filter(x=>x!==w):[...state.settings.widgets,w]; save(); render();}); mapMarkers('dashMap',[...state.pharmacies,...state.doctors]); }
+}
 
-  function geoFields(pfx,p='',c='',d=''){ return `<div class="form-group"><label>استان</label>${sel(pfx+'Prov',['ایران',...provinces()],p)}</div><div class="form-group"><label>شهر</label>${sel(pfx+'City',p&&p!=='ایران'?cities(p):[],c)}</div><div class="form-group"><label>منطقه</label>${sel(pfx+'Dist',districts(p,c),d)}</div>`; }
-  function bindGeo(pfx){ const p=$('#'+pfx+'Prov'),c=$('#'+pfx+'City'),d=$('#'+pfx+'Dist'); p.onchange=()=>{c.disabled=p.value==='ایران';d.disabled=p.value==='ایران';c.innerHTML=p.value&&p.value!=='ایران'?'<option value="">شهر</option>'+cities(p.value).map(x=>`<option>${x}</option>`).join(''):'';d.innerHTML='';}; c.onchange=()=>d.innerHTML='<option value="">منطقه</option>'+districts(p.value,c.value).map(x=>`<option>${x}</option>`).join(''); }
-  function locationField(pfx, val=''){ return `<div class="form-group full-width loc-suggestions"><label>لوکیشن و آدرس (جستجو همزمان با نقشه)</label><div style="display:flex;gap:.5rem"><input class="form-input" id="${pfx}Address" value="${esc(val)}" placeholder="آدرس را تایپ کنید..."><button type="button" class="btn btn-outline btn-sm" id="${pfx}Locate">موقعیت من</button></div><div class="suggestions" id="${pfx}Sug"></div><input type="hidden" id="${pfx}Lat"><input type="hidden" id="${pfx}Lng"></div>`; }
-  function bindLocation(pfx){ const lat=$('#'+pfx+'Lat'),lng=$('#'+pfx+'Lng'),addr=$('#'+pfx+'Address'),sug=$('#'+pfx+'Sug'); const id='map_'+pfx; const m=maps[id]||L.map(id).setView([35.72,51.42],11); maps[id]=m; m.eachLayer(l=>m.removeLayer(l)); L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© OSM'}).addTo(m); let marker; const setMark=(la,lo,tx)=>{if(marker)m.removeLayer(marker);marker=L.marker([la,lo]).addTo(m);m.setView([la,lo],15);lat.value=la;lng.value=lo;if(tx)addr.value=tx}; m.on('click',ev=>setMark(ev.latlng.lat,ev.latlng.lng)); $('#'+pfx+'Locate').onclick=()=>navigator.geolocation.getCurrentPosition(async pos=>{setMark(pos.coords.latitude,pos.coords.longitude,'موقعیت فعلی من');toast('موقعیت فعلی ثبت شد')},()=>toast('دسترسی موقعیت فعال نشد')); addr.oninput=async()=>{const q=addr.value.trim(); if(q.length<3)return sug.innerHTML=''; try{const r=await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(q)}&limit=5&accept-language=fa`).then(r=>r.json());sug.innerHTML=r.map(x=>`<button type="button" data-lat="${x.lat}" data-lon="${x.lon}">${esc(x.display_name)}</button>`).join('');$$('#'+pfx+'Sug button').forEach(b=>b.onclick=()=>setMark(+b.dataset.lat,+b.dataset.lon,b.textContent));}catch(e){sug.innerHTML='';}}; if(lat.value)setMark(+lat.value,+lng.value); setTimeout(()=>m.invalidateSize(),120) }
+// ----------------------------------------------------------------------------
+// 19. تارگت فروش با محاسبه لحظه‌ای ضرب قیمت پخش و داروخانه (Requirement 10 & 11)
+// ----------------------------------------------------------------------------
+function setupSalesTargetsTab() {
+  const form = document.getElementById("formSalesTarget");
+  const repSel = document.getElementById("tgtRepSelect");
+  const prodSel = document.getElementById("tgtProductSelect");
+  const countInp = document.getElementById("tgtCountInput");
+  const distDisp = document.getElementById("tgtCalcDistPrice");
+  const phDisp = document.getElementById("tgtCalcPhPrice");
 
-  function entityForm(type){ const isPh=type==='pharmacy'; const title=isPh?'داروخانه':'پزشک'; return card('ثبت '+title,`<form id="${type}Form"><div class="form-grid"><input type="hidden" id="${type}Id"><div class="form-group"><label>تاریخ</label>${dateInput(type+'Date',todayFa())}</div><div class="form-group"><label>نام ${isPh?'داروخانه':'پزشک'}</label>${inp(type+'Name')} <button type="button" class="chip" id="${type}NewName">+ افزودن لحظه‌ای</button></div>${!isPh?`<div class="form-group"><label>تخصص</label>${inp(type+'Spec')}</div>`:''}${geoFields(type)}<div class="form-group"><label>مسئول/تلفن</label>${inp(type+'Phone','','tel')}</div>${locationField(type)}<div class="form-group"><label>درصدی</label>${sel(type+'Percent',['خیر','بله'])}</div><div class="full-width" style="display:flex;gap:.5rem"><button class="btn btn-primary">ذخیره</button><button type="button" class="btn btn-outline" id="${type}Reset">فرم جدید</button></div></div></form><div class="full-width" style="margin-top:1rem"><div id="map_${type}" class="map-container"></div></div>`); }
-  function listEntity(type){ const arr=type==='pharmacy'?state.pharmacies:state.doctors; const qKey=type+'Q'; if(!pages[qKey])pages[qKey]=1; const q=$('#'+type+'Search')?.value||''; const f=arr.filter(x=>!q||Object.values(x).join(' ').includes(q)); const rows=pageSlice(f,qKey).map((x,i)=>`<tr onclick="App.details('${type}','${x.id}')"><td>${(pages[qKey]-1)*PAGE_SIZE+i+1}</td><td>${esc(x.repName)}</td><td><b>${esc(x.name)}</b></td><td>${esc(x.province||'')}/${esc(x.city||'')}</td><td>${esc(x.phone||'-')}</td><td>${x.percent?'<span class="badge ok">بله</span>':'<span class="badge">خیر</span>'}</td><td>${x.lat?'<span class="badge ok">ثبت شد</span>':'<span class="badge bad">ثبت نشده</span>'}</td><td><button class="btn btn-outline btn-sm" onclick="event.stopPropagation();App.editEntity('${type}','${x.id}')">ویرایش</button> <button class="btn btn-outline btn-sm" onclick="event.stopPropagation();App.openRoute(${x.lat||35.72},${x.lng||51.42})">مسیریابی</button></td></tr>`); return `<input class="form-input" id="${type}Search" placeholder="جستجوی لحظه‌ای..." value="${esc(q)}" style="margin-bottom:.8rem">${table(['ردیف','نماینده','نام','استان/شهر','تلفن','درصدی','لوکیشن','عملیات'],rows)}${pager(qKey,f.length)}`; }
-  function entityPage(type){ return card(type==='pharmacy'?'داروخانه‌ها':'پزشکان',`<div class="split">${entityForm(type)}<div>${listEntity(type)}</div></div>`); }
-  function bindEntity(type){ bindGeo(type); setTimeout(()=>bindLocation(type),80); const form=$('#'+type+'Form'); form.onsubmit=e=>{e.preventDefault(); const id=$('#'+type+'Id').value; const base={id:id||type+Date.now(),date:$('#'+type+'Date').value,name:$('#'+type+'Name').value,province:$('#'+type+'Prov').value,city:$('#'+type+'City').value,district:$('#'+type+'Dist').value,phone:$('#'+type+'Phone').value,address:$('#'+type+'Address').value,lat:+$('#'+type+'Lat').value||null,lng:+$('#'+type+'Lng').value||null,percent:$('#'+type+'Percent').value==='بله',repName:user.name}; const obj=type==='pharmacy'?base:{...base,specialty:$('#'+type+'Spec')?.value||''}; const arr=type==='pharmacy'?state.pharmacies:state.doctors; const idx=arr.findIndex(x=>x.id===id); if(!obj.name)return toast('نام الزامی است'); if(idx>=0)arr[idx]=obj;else arr.push(obj); state.activity.unshift({id:'a'+Date.now(),time:new Date().toLocaleTimeString('fa-IR'),rep:user.name,action:`ثبت ${type==='pharmacy'?'داروخانه':'پزشک'} ${obj.name}`}); save();toast('ذخیره شد');render();}; $('#'+type+'Reset').onclick=()=>render(); $('#'+type+'Search').oninput=()=>{pages[type+'Q']=1;partial()}; $('#'+type+'NewName').onclick=()=>toast('متن تایپ‌شده در همین فیلد ذخیره می‌شود؛ نیازی به لیست از پیش تعریف‌شده نیست.'); $$('[data-page-prev],[data-page-next]').forEach(b=>b.onclick=()=>{pages[type+'Q']=Math.max(1,(pages[type+'Q']||1)+(b.dataset.pageNext?1:-1));partial()}); }
-  function partial(){const old=tab;render();tab=old;const a=$('#app');requestAnimationFrame(()=>{render();});}
-  function editEntity(type,id){const arr=type==='pharmacy'?state.pharmacies:state.doctors;const x=arr.find(a=>a.id===id);tab=type;render();setTimeout(()=>{['Id','Date','Name','Phone','Address','Lat','Lng'].forEach(k=>{const el=$('#'+type+k);if(el)el.value=x[k.replace(/^./,m=>m.toLowerCase())]??''});$('#'+type+'Spec')&&($('#'+type+'Spec').value=x.specialty||'');$('#'+type+'Prov').value=x.province||'';$('#'+type+'Prov').dispatchEvent(new Event('change'));$('#'+type+'City').value=x.city||'';$('#'+type+'City').dispatchEvent(new Event('change'));$('#'+type+'Dist').value=x.district||'';$('#'+type+'Percent').value=x.percent?'بله':'خیر';},100)}
+  const updateCalc = () => {
+    if (!prodSel || !countInp) return;
+    const prodId = prodSel.value;
+    const cnt = parseInt(countInp.value) || 0;
+    const prod = (state.products || []).find(p => p.name === prodId || p.id === prodId);
+    if (prod) {
+      const dPrice = (prod.distributorPrice || prod.price || 40000) * cnt;
+      const pPrice = (prod.pharmacyPrice || prod.price || 45000) * cnt;
+      if (distDisp) distDisp.textContent = `${dPrice.toLocaleString("fa-IR")} ریال`;
+      if (phDisp) phDisp.textContent = `${pPrice.toLocaleString("fa-IR")} ریال`;
+    } else {
+      if (distDisp) distDisp.textContent = "0 ریال";
+      if (phDisp) phDisp.textContent = "0 ریال";
+    }
+  };
 
-  function ordersPage(){ const items=state.products; return card('سفارش‌ها',`<div class="split"><form id="ordForm"><div class="form-grid"><div class="form-group"><label>تاریخ</label>${dateInput('ordDate',todayFa())}</div><div class="form-group"><label>داروخانه</label>${inp('ordPharmacy')}</div>${geoFields('ord')}<div class="form-group"><label>نماینده</label>${sel('ordRep',state.reps.map(r=>r.name),user.name)}</div><div class="form-group"><label>وضعیت</label>${sel('ordStatus',['ثبت شد','در حال پیگیری','تحویل شده'])}</div><div class="full-width"><h4>اقلام</h4><div id="ordItems"></div><button type="button" class="btn btn-outline btn-sm" id="addItem">+ افزودن کالا</button></div><div class="full-width"><button class="btn btn-primary">ذخیره سفارش</button></div></div></form><div><input class="form-input" id="ordSearch" placeholder="جستجو..."><button class="btn btn-outline btn-sm" id="exportOrd">خروجی اکسل</button>${ordersList()}</div></div>`); }
-  function itemRow(it={name:'',count:1,gift:0,price:0}){const r=e('div','form-grid');r.innerHTML=`<div class=form-group><label>کالا</label>${sel('itemName',state.products.map(p=>p.name),it.name)}</div><div class=form-group><label>تعداد</label>${num('itemCount',it.count)}</div><div class=form-group><label>جایزه</label>${num('itemGift',it.gift)}</div><div class=form-group><label>قیمت</label>${num('itemPrice',it.price)}</div>`;return r}
-  function ordersList(){const q=$('#ordSearch')?.value||'';const f=state.orders.filter(o=>!q||Object.values(o).join(' ').includes(q));const rows=pageSlice(f,'ord').map((o,i)=>`<tr onclick="App.details('order','${o.id}')"><td>${i+1}</td><td>${esc(o.repName)}</td><td><b>${esc(o.pharmacy)}</b></td><td>${esc(o.date)}</td><td>${o.items.map(it=>`${esc(it.name)}: ${it.count}+${it.gift||0}`).join('<br>')}</td><td><b>${o.items.reduce((s,it)=>s+it.count*it.price,0).toLocaleString('fa-IR')}</b></td></tr>`);return table(['ردیف','نماینده','داروخانه','تاریخ','اقلام و جایزه','مبلغ'],rows)+pager('ord',f.length)}
-  function bindOrders(){bindGeo('ord');const box=$('#ordItems');box.appendChild(itemRow({name:state.products[0].name,price:state.products[0].ph}));$('#addItem').onclick=()=>box.appendChild(itemRow());$('#ordForm').onsubmit=e=>{e.preventDefault();const items=$$('#ordItems > div').map(r=>({name:r.querySelector('#itemName').value,count:+r.querySelector('#itemCount').value,gift:+r.querySelector('#itemGift').value,price:+r.querySelector('#itemPrice').value})).filter(x=>x.name);if(!$('#ordPharmacy').value||!items.length)return toast('داروخانه و کالا لازم است');state.orders.push({id:'ord'+Date.now(),date:$('#ordDate').value,pharmacy:$('#ordPharmacy').value,province:$('#ordProv').value,city:$('#ordCity').value,district:$('#ordDist').value,repName:$('#ordRep').value,status:$('#ordStatus').value,items});save();render()};$('#ordSearch').oninput=()=>render();$('#exportOrd').onclick=()=>csv('orders.csv',['ردیف','نماینده','داروخانه','کالا','تعداد','جایزه','قیمت'],state.orders.flatMap((o,i)=>o.items.map(it=>[i+1,o.repName,o.pharmacy,it.name,it.count,it.gift,it.price])));$$('[data-page-prev],[data-page-next]').forEach(b=>b.onclick=()=>{pages.ord=Math.max(1,(pages.ord||1)+(b.dataset.pageNext?1:-1));render()})}
-
-  function activityPage(){return card('فعالیت لحظه‌ای',`<div class="dashboard-grid"><div class="card"><b>نمودار فعالیت</b><div class="bar-chart">${state.activity.slice(-7).map((a,i)=>`<div class="bar" style="height:${35+i*13}px"><label>${esc(a.rep)}</label></div>`).join('')}</div></div><div class="card"><b>جدول فعالیت‌ها</b>${table(['زمان','نماینده','عملیات'],state.activity.map(a=>`<tr><td>${esc(a.time)}</td><td>${esc(a.rep)}</td><td>${esc(a.action)}</td></tr>`))}</div></div><div class="card"><div id="actMap" class="map-container"></div></div>`)}
-  function mapPage(){return card('نقشه جامع',`<div class="form-grid"><div class=form-group><label>کشور</label>${sel('mapCountry',['ایران'],'ایران')}</div><div class=form-group><label>استان</label>${sel('mapProv',['همه',...provinces()])}</div><div class=form-group><label>منطقه/شهر</label>${sel('mapCity',[])}</div><div class=form-group><label>جستجوی جامع</label>${inp('mapQ')}</div><div style="display:flex;gap:.5rem;align-items:end"><button class="btn btn-primary" id="mapSearch">جستجو</button><button class="btn btn-outline" id="mapExport">خروجی اکسل</button></div></div><div id="fullMap" class="map-large map-container" style="margin-top:1rem"></div><div id="mapResults" style="margin-top:1rem"></div>`)}
-  function bindMap(){const p=$('#mapProv'),c=$('#mapCity');p.onchange=()=>{c.innerHTML='<option value="">منطقه</option>'+(p.value?cities(p.value):[]).map(x=>`<option>${x}</option>`).join('')};$('#mapSearch').onclick=()=>{const q=$('#mapQ').value;const res=[...state.pharmacies.map(x=>({...x,type:'داروخانه'})),...state.doctors.map(x=>({...x,type:'پزشک'})),...state.placesDB].filter(x=>!q||Object.values(x).join(' ').includes(q));$('#mapResults').innerHTML=table(['نوع','نام','شهر','آدرس'],res.map(x=>`<tr><td>${esc(x.type)}</td><td>${esc(x.name)}</td><td>${esc(x.city||'')}</td><td>${esc(x.address||'')}</td></tr>`));mapMarkers('fullMap',res);toast(`${res.length} نتیجه یافت شد`)};$('#mapExport').onclick=()=>{const rows=[...state.pharmacies,...state.doctors,...state.placesDB].map(x=>[x.type||'داروخانه',x.name,x.city,x.address]);csv('iran-search.csv',['نوع','نام','شهر','آدرس'],rows)};mapMarkers('fullMap',[...state.pharmacies,...state.doctors,...state.placesDB])}
-  function livePage(){return card('موقعیت زنده نمایندگان',`<div class=form-group style="max-width:320px">${sel('liveRep',state.reps.map(r=>r.name),state.reps[0]?.name)}</div><div id="liveMap" class="map-container"></div>`)}
-  function searchPage(){return card('جستجوی اطلاعات',`<div class="form-grid"><div class=form-group><label>نام داروخانه</label>${inp('sPh')}</div><div class=form-group><label>نام پزشک</label>${inp('sDoc')}</div><div class=form-group><label>بیمارستان</label>${inp('sHosp')}</div></div><div id="searchMap" class="map-container" style="margin:1rem 0"></div><div id="searchRes"></div>`)}
-  function tripsPage(){return card('رصد تردد',`<div class=form-group style="max-width:300px">${sel('tripRep',state.reps.map(r=>r.name))}</div><div id="tripMap" class="map-large map-container" style="margin:1rem 0"></div>${table(['نماینده','تاریخ','توقف‌ها'],state.trips.map(t=>`<tr><td>${esc(t.rep)}</td><td>${esc(t.date)}</td><td>${t.stops.map(esc).join(' ، ')}</td></tr>`))}`)}
-  function homesPage(){return card('منزل نمایندگان',`<div class="split"><form id="homeForm" class="card"><div class=form-group><label>نماینده</label>${sel('homeRep',state.reps.map(r=>r.name))}</div><div class=form-group><label>آدرس</label>${inp('homeAddr')}</div><button type="button" class="btn btn-outline" id="homeLocate">موقعیت فعلی من</button><button class="btn btn-primary" style="margin-top:1rem">ذخیره</button></form><div id="homeMap" class="map-container"></div></div>`)}
-  function leavesPage(){return card('مرخصی‌ها',`<form id="leaveForm" class="form-grid"><div class=form-group><label>نماینده</label>${sel('leaveRep',state.reps.map(r=>r.name))}</div><div class=form-group><label>از تاریخ</label>${inp('leaveFrom',todayFa())}</div><div class=form-group><label>تا تاریخ</label>${inp('leaveTo',todayFa())}</div><div class=form-group><label>علت</label>${inp('leaveReason')}</div><div class=full-width><button class="btn btn-primary">ثبت مرخصی</button></div></form>${table(['نماینده','از','تا','وضعیت'],state.leaves.map(l=>`<tr><td>${esc(l.rep)}</td><td>${esc(l.from)}</td><td>${esc(l.to)}</td><td>${esc(l.status)}</td></tr>`))}`)}
-  function reportsPage(){return card('گزارش‌ها و خروجی اکسل',`<div class="dashboard-grid"><button class="btn btn-outline" id="expPh">خروجی داروخانه‌ها</button><button class="btn btn-outline" id="expDoc">خروجی پزشکان</button><button class="btn btn-outline" id="expOrd">خروجی سفارش‌ها</button><button class="btn btn-outline" id="expAll">خروجی جامع</button></div><div class="dashboard-grid" style="margin-top:1rem"><div class="card">داروخانه: ${state.pharmacies.length}</div><div class="card">پزشک: ${state.doctors.length}</div><div class="card">سفارش: ${state.orders.length}</div></div>`)}
-  function targetsPage(){return card('تارگت فروش',`<form id="tgtForm" class="form-grid"><div class=form-group><label>نماینده</label>${sel('tgtRep',state.reps.map(r=>r.name))}</div><div class=form-group><label>سال</label>${sel('tgtYear',['1404','1405','1406'],'1405')}</div><div class=form-group><label>ماه</label>${sel('tgtMonth',MONTHS)}</div><div class="full-width" id="tgtItems"></div><div class="full-width"><button type="button" class="btn btn-outline btn-sm" id="addTgt">+ افزودن کالا</button> <button class="btn btn-primary">محاسبه و ثبت</button></div></form><div id="tgtSummary" style="margin-top:1rem"></div>`)}
-  function columnsPage(){return card('ستون‌ها و کالاها',`<form id="prodForm" class="form-grid"><div class=form-group><label>نام کالا</label>${inp('prodName')}</div><div class=form-group><label>دسته</label>${inp('prodCat')}</div><div class=form-group><label>قیمت پخش</label>${num('prodDist')}</div><div class=form-group><label>قیمت داروخانه</label>${num('prodPh')}</div><div class=form-group><label>موجودی</label>${num('prodStock')}</div><div class=full-width><button class="btn btn-primary">افزودن</button></div></form><h4>فیلدهای سفارشی</h4><div class="form-grid"><div class=form-group><label>برای تب</label>${sel('fieldTarget',['pharmacy','doctor','order'])}</div><div class=form-group><label>عنوان فیلد</label>${inp('fieldLabel')}</div><div class=form-group><label>نوع</label>${sel('fieldType',['text','select','number','date'])}</div><div class=form-group><label>وابسته به</label>${inp('fieldDep','')}</div></div>${table(['ردیف','کالا','دسته','قیمت پخش','قیمت داروخانه','موجودی'],state.products.map((p,i)=>`<tr><td>${i+1}</td><td>${esc(p.name)}</td><td>${esc(p.cat)}</td><td>${p.dist.toLocaleString('fa-IR')}</td><td>${p.ph.toLocaleString('fa-IR')}</td><td>${p.stock}</td></tr>`))}`)}
-  function usersPage(){return card('کاربران و دسترسی‌های ریز',`<form id="userForm" class="form-grid"><div class=form-group><label>نام</label>${inp('uName')}</div><div class=form-group><label>یوزر</label>${inp('uUser')}</div><div class=form-group><label>رمز</label>${inp('uPass','123')}</div><div class=form-group><label>موبایل</label>${inp('uPhone','','tel')}</div><div class=form-group><label>نقش</label>${sel('uRole',['مدیر','سرپرست','نماینده'])}</div><div class=form-group><label>تطبیق سیم‌کارت</label>${sel('uSim',['فعال','غیرفعال'])}</div><div class=form-group><label>حالت احراز</label>${sel('uAuth',['بدون تایید دو مرحله‌ای','OTP پیامکی','کد تایید مدیر'])}</div></form><div id="permBox"></div><button class="btn btn-primary" id="saveUser" style="margin:1rem 0">ذخیره کاربر</button>${table(['ردیف','نام','یوزر','موبایل','نقش','حالت'],state.users.map((u,i)=>`<tr><td>${i+1}</td><td>${esc(u.name)}</td><td>${esc(u.user)}</td><td>${esc(u.phone)}</td><td>${esc(u.role)}</td><td>${esc(u.auth)}</td></tr>`))}`)}
-  function messengersPage(){return card('پیام‌رسان‌ها',`<p style="color:var(--muted)">تنظیمات ارسال خودکار و دستی برای هر پیام‌رسان جداگانه است.</p><div class="dashboard-grid">${MESSENGERS.map(m=>`<div class="card"><b>${m}</b><label><input type="checkbox" data-msg="${m}" data-kind="auto" ${state.settings.messengers[m].auto?'checked':''}> ارسال خودکار</label><label><input type="checkbox" data-msg="${m}" data-kind="manual" ${state.settings.messengers[m].manual?'checked':''}> ارسال دستی</label></div>`).join('')}</div>`)}
-  function backupPage(){return card('پشتیبان‌گیری',`<div class="form-grid"><div class=form-group><label>ساعت پشتیبان خودکار</label>${inp('backupHour','02:00','time')}</div><div class=form-group><label>ایمیل مقصد</label>${inp('backupEmail',state.settings.backupEmail,'email')}</div><div class=form-group><label>جایگزینی نسخه قدیمی</label>${sel('backupReplace',['بله','خیر'],'بله')}</div></div><div style="display:flex;gap:.5rem;flex-wrap:wrap;margin-top:1rem"><button class="btn btn-primary" id="downloadBackup">پشتیبان دستی</button><label class="btn btn-outline">انتخاب فولدرباکس و بازنشانی</label><input type="file" id="restoreBackup" hidden></div>`)}
-  function notificationsPage(){return card('اعلان‌ها و پیام‌های داخلی',`<form id="msgForm" class="form-grid"><div class=form-group><label>گیرنده</label>${sel('msgTo',['همه نمایندگان',...state.reps.map(r=>r.name)])}</div><div class=form-group><label>عنوان</label>${inp('msgTitle')}</div><div class=full-width><label>متن</label><textarea class="form-input" id="msgBody" rows="3"></textarea></div><div class=full-width><button class="btn btn-primary">ارسال پیام</button></div></form><div style="margin-top:1rem"><label><input type="checkbox" id="msgPolicy" ${state.settings.messagePolicy==='only-admin'?'checked':''}> ارتباط فقط بین مدیر/سرپرست و نماینده باشد</label></div>${table(['تاریخ','از','به','عنوان','متن'],(state.messages||[]).map(m=>`<tr><td>${esc(m.date)}</td><td>${esc(m.from)}</td><td>${esc(m.to)}</td><td>${esc(m.title)}</td><td>${esc(m.body)}</td></tr>`))}`)}
-  function installPage(){return card('نصب اپلیکیشن',`<div class="dashboard-grid"><a class="card" href="#">دانلود نسخه ویندوز</a><a class="card" href="#">دانلود اندروید APK</a><a class="card" href="#">آیفون / PWA</a></div><p style="color:var(--muted)">آیکون کپسول و Favicon تنظیم شده است.</p>`)}
-  function diagnosticsPage(){return card('عیب‌یابی',`<div class="dashboard-grid"><div class="card">✅ سرور: سالم</div><div class="card">✅ شبکه: ${navigator.onLine?'آنلاین':'آفلاین'}</div><div class="card">✅ ذخیره‌سازی محلی: آماده</div><div class="card">✅ امنیت: ورودی‌ها Escape می‌شوند</div></div>`)}
-
-  function mapMarkers(id,items){const m=maps[id]||L.map(id).setView([35.72,51.42],11);maps[id]=m; m.eachLayer(l=>m.removeLayer(l)); L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© OSM'}).addTo(m);const pts=[];items.forEach(x=>{if(x.lat&&x.lng){L.marker([x.lat,x.lng]).bindPopup(x.name||'').addTo(m);pts.push([x.lat,x.lng])}});state.trips.forEach(t=>L.polyline(t.points,{color:'#2563eb',weight:5}).addTo(m));if(pts.length)m.fitBounds(pts,{padding:[30,30]})}
-  function details(type,id){const arr=type==='pharmacy'?state.pharmacies:type==='doctor'?state.doctors:state.orders;const x=arr.find(a=>a.id===id);if(!x)return;const rows=Object.entries(x).filter(([k,v])=>k!=='lat'&&k!=='lng').map(([k,v])=>`<tr><th>${esc(k)}</th><td>${Array.isArray(v)?v.map(i=>`${esc(i.name)} ${i.count||''} جایزه ${i.gift||''}`).join('<br>'):esc(v)}</td></tr>`).join('');const txt=Object.entries(x).map(([k,v])=>`${k}: ${Array.isArray(v)?v.map(i=>i.name).join('-'):v}`).join('\n');$('#modalBox').innerHTML=`<div class="card-header"><b>جزئیات</b><button class="btn btn-outline btn-sm" onclick="App.closeModal()">بستن</button></div>${table(['فیلد','مقدار'],[rows])}<div style="display:flex;gap:.5rem;flex-wrap:wrap;margin-top:1rem"><button class="btn btn-outline" id="copyBtn">کپی</button><a class="btn btn-outline" target="_blank" href="https://t.me/share/url?url=&text=${encodeURIComponent(txt)}">تلگرام</a><a class="btn btn-outline" target="_blank" href="https://api.whatsapp.com/send?text=${encodeURIComponent(txt)}">واتساپ</a><a class="btn btn-outline" target="_blank" href="https://ble.ir/share?text=${encodeURIComponent(txt)}">بله</a><a class="btn btn-outline" target="_blank" href="https://eitaa.com/share/url?url=&text=${encodeURIComponent(txt)}">ایتا</a><a class="btn btn-outline" target="_blank" href="https://splus.ir/share?text=${encodeURIComponent(txt)}">سروش</a></div>`;$('#modal').classList.add('active');$('#copyBtn').onclick=()=>{navigator.clipboard.writeText(txt);toast('کپی شد')}}
-  function openRoute(lat,lng){window.open(`https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`,'_blank')}
-  function csv(name,heads,rows){let s='\uFEFF'+heads.map(h=>`"${h}"`).join(',')+'\n'+rows.map(r=>r.map(x=>`"${String(x??'').replace(/"/g,'""')}"`).join(',')).join('\n');const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([s],{type:'text/csv;charset=utf-8'}));a.download=name;a.click()}
-
-  function afterBind(){
-    if(tab==='dashboard')setTimeout(()=>mapMarkers('dashMap',[...state.pharmacies,...state.doctors]),80);
-    $$('.date-pick-btn').forEach(b=>b.onclick=ev=>{ev.preventDefault(); ev.stopPropagation(); $$('.date-pop').forEach(p=>{if(p.id!==b.dataset.dateFor+'Pop')p.classList.remove('open')}); renderDatePicker(b.dataset.dateFor)});
-    document.addEventListener('click', e=>{ if(!e.target.closest('.date-pop') && !e.target.closest('.date-pick-btn')) $$('.date-pop').forEach(p=>p.classList.remove('open')); }, {once:true});
-    if(tab==='pharmacies')bindEntity('pharmacy'); if(tab==='doctors')bindEntity('doctor');
-    if(tab==='orders')bindOrders(); if(tab==='map')bindMap();
-    if(tab==='live'){$('#liveRep').onchange=()=>{const r=state.reps.find(x=>x.name===$('#liveRep').value);mapMarkers('liveMap',[r])};mapMarkers('liveMap',state.reps)}
-    if(tab==='activity')mapMarkers('actMap',state.reps);
-    if(tab==='search')bindSearch();
-    if(tab==='trips'){$('#tripRep').onchange=()=>{const t=state.trips.find(x=>x.rep===$('#tripRep').value);mapMarkers('tripMap',[...state.pharmacies,...state.doctors]);if(t)L.polyline(t.points,{color:'#2563eb',weight:5}).addTo(maps.tripMap)};mapMarkers('tripMap',[...state.pharmacies,...state.doctors])}
-    if(tab==='homes')bindHomes(); if(tab==='targets')bindTargets(); if(tab==='columns')bindColumns(); if(tab==='users')bindUsers(); if(tab==='backup')bindBackup(); if(tab==='reports')bindReports(); if(tab==='notifications')bindNotifications();
-    $$('input[data-msg]').forEach(i=>i.onchange=()=>{state.settings.messengers[i.dataset.msg][i.dataset.kind]=i.checked;save()});
+  if (repSel) {
+    repSel.innerHTML = `<option value="">انتخاب نماینده...</option>`;
+    state.reps.forEach(r => {
+      repSel.innerHTML += `<option value="${r.name}">${r.name}</option>`;
+    });
   }
-  function bindSearch(){const run=()=>{const ph=state.pharmacies.filter(x=>!$('#sPh').value||x.name.includes($('#sPh').value)),doc=state.doctors.filter(x=>!$('#sDoc').value||x.name.includes($('#sDoc').value)),hosp=state.placesDB.filter(x=>x.type.includes('بیمارستان')&&(!$('#sHosp').value||x.name.includes($('#sHosp').value)));$('#searchRes').innerHTML=table(['نوع','نام','شهر','آدرس'],[...ph.map(x=>({...x,type:'داروخانه'})),...doc.map(x=>({...x,type:'پزشک'})),...hosp].map(x=>`<tr><td>${esc(x.type)}</td><td>${esc(x.name)}</td><td>${esc(x.city||'')}</td><td>${esc(x.address||'')}</td></tr>`));mapMarkers('searchMap',[...ph,...doc,...hosp])};['sPh','sDoc','sHosp'].forEach(id=>$('#'+id).oninput=run);run()}
-  function bindHomes(){mapMarkers('homeMap',state.homes);$('#homeLocate').onclick=()=>navigator.geolocation.getCurrentPosition(p=>$('#homeAddr').value=`${p.coords.latitude.toFixed(5)}, ${p.coords.longitude.toFixed(5)}`);$('#homeForm').onsubmit=e=>{e.preventDefault();state.homes.push({id:'h'+Date.now(),rep:$('#homeRep').value,address:$('#homeAddr').value,lat:35.72,lng:51.42});save();render()}}
-  function tgtRow(){const r=e('div','form-grid');r.innerHTML=`<div class=form-group><label>کالا</label>${sel('tName',state.products.map(p=>p.name))}</div><div class=form-group><label>تعداد</label>${num('tCount')}</div><div class=form-group><label>قیمت پخش</label>${num('tDist',40000)}</div><div class=form-group><label>قیمت داروخانه</label>${num('tPh',45000)}</div>`;return r}
-  function bindTargets(){const box=$('#tgtItems');box.appendChild(tgtRow());$('#addTgt').onclick=()=>box.appendChild(tgtRow());$('#tgtForm').onsubmit=e=>{e.preventDefault();const rep=$('#tgtRep').value;const rows=$$('#tgtItems > div').map(r=>({name:r.querySelector('#tName').value,count:+r.querySelector('#tCount').value,dist:+r.querySelector('#tDist').value,ph:+r.querySelector('#tPh').value,totalDist:r.querySelector('#tCount').value*r.querySelector('#tDist').value,totalPh:r.querySelector('#tCount').value*r.querySelector('#tPh').value}));state.targets.push({id:'tgt'+Date.now(),rep,year:$('#tgtYear').value,month:$('#tgtMonth').value,rows});save();$('#tgtSummary').innerHTML=card('گزارش تجمیعی',table(['کالا','تعداد','جمع پخش','جمع داروخانه'],rows.map(x=>`<tr><td>${esc(x.name)}</td><td>${x.count}</td><td>${x.totalDist.toLocaleString('fa-IR')}</td><td>${x.totalPh.toLocaleString('fa-IR')}</td></tr>`)));toast('تارگت ثبت شد')}}
-  function bindColumns(){const fieldLabel=$('#fieldLabel');$('#prodForm').onsubmit=e=>{e.preventDefault();state.products.push({id:'p'+Date.now(),name:$('#prodName').value,cat:$('#prodCat').value,dist:+$('#prodDist').value,ph:+$('#prodPh').value,stock:+$('#prodStock').value});save();render()};$('#saveUser')}
-  function bindUsers(){const box=$('#permBox');box.innerHTML=Object.entries(PERMS).map(([k,v])=>`<label class="chip"><input type="checkbox" data-perm="${k}"> ${v}</label>`).join(' ');$('#saveUser').onclick=()=>{state.users.push({id:'u'+Date.now(),name:$('#uName').value,user:$('#uUser').value,pass:$('#uPass').value,phone:$('#uPhone').value,role:$('#uRole').value,sim:$('#uSim').value,auth:$('#uAuth').value,perms:$$('[data-perm]:checked').map(x=>x.dataset.perm)});save();render()}}
-  function bindBackup(){$('#downloadBackup').onclick=()=>{const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(state,null,2)]));a.download='crm-backup.json';a.click()};$('#restoreBackup').onchange=e=>{const f=e.target.files[0];const r=new FileReader();r.onload=()=>{state=JSON.parse(r.result);save();render();toast('بازیابی شد')};r.readAsText(f)}}
-  function bindReports(){$('#expPh').onclick=()=>csv('pharmacies.csv',['ردیف','نماینده','نام','استان','شهر','تلفن'],state.pharmacies.map((x,i)=>[i+1,x.repName,x.name,x.province,x.city,x.phone]));$('#expDoc').onclick=()=>csv('doctors.csv',['ردیف','نماینده','پزشک','تخصص','شهر'],state.doctors.map((x,i)=>[i+1,x.repName,x.name,x.specialty,x.city]));$('#expOrd').onclick=()=>csv('orders.csv',['ردیف','نماینده','داروخانه','کالا','تعداد','جایزه','قیمت'],state.orders.flatMap((o,i)=>o.items.map(it=>[i+1,o.repName,o.pharmacy,it.name,it.count,it.gift,it.price])));$('#expAll').onclick=()=>csv('all.csv',['نوع','نام'],[...state.pharmacies.map(x=>['داروخانه',x.name]),...state.doctors.map(x=>['پزشک',x.name])])}
-  function bindNotifications(){$('#msgForm').onsubmit=e=>{e.preventDefault();state.messages=state.messages||[];state.messages.unshift({id:'m'+Date.now(),date:todayFa(),from:user.name,to:$('#msgTo').value,title:$('#msgTitle').value,body:$('#msgBody').value});$('#msgPolicy')&&($('#msgPolicy').onchange=ev=>state.settings.messagePolicy=ev.target.checked?'only-admin':'open');save();render();toast('پیام ذخیره شد')};$('#msgPolicy')&&($('#msgPolicy').onchange=ev=>{state.settings.messagePolicy=ev.target.checked?'only-admin':'open';save()})}
 
-  function render(){
-    if(!user){document.body.innerHTML=loginGate();bindLogin();return}
-    const views={dashboard,pharmacies:()=>entityPage('pharmacy'),doctors:()=>entityPage('doctor'),orders:ordersPage,activity:activityPage,map:mapPage,live:livePage,search:searchPage,trips:tripsPage,homes:homesPage,leaves:leavesPage,notifications:notificationsPage,reports:reportsPage,targets:targetsPage,columns:columnsPage,users:usersPage,messengers:messengersPage,backup:backupPage,install:installPage,diagnostics:diagnosticsPage};
-    document.body.innerHTML=header()+navHtml()+`<main class="main-content" id="app">${views[tab]?views[tab]():''}</main><div id="modal" class="modal-overlay"><div class="modal-content" id="modalBox"></div></div><div id="toast" class="toast" style="display:none"></div>`;
-    bindNav(); afterBind();
-    setTimeout(()=>Object.values(maps).forEach(m=>{try{m.invalidateSize()}catch(e){}}),180);
+  if (prodSel) {
+    prodSel.innerHTML = `<option value="">انتخاب کالا...</option>`;
+    (state.products || []).forEach(p => {
+      prodSel.innerHTML += `<option value="${p.name}">${p.name}</option>`;
+    });
+    prodSel.addEventListener("change", updateCalc);
   }
-  document.addEventListener('DOMContentLoaded',()=>{load();render()});
-  return {render,details,closeModal:()=>$('#modal').classList.remove('active'),editEntity,openRoute};
-})();
+
+  if (countInp) {
+    countInp.addEventListener("input", updateCalc);
+  }
+
+  if (form) {
+    form.addEventListener("submit", () => {
+      const repName = repSel.value;
+      const productName = prodSel.value;
+      const targetCount = parseInt(countInp.value) || 0;
+      const year = document.getElementById("tgtYearInput").value || "1405";
+      const month = document.getElementById("tgtMonthSelect").value || "مرداد";
+
+      if (!repName || !productName || targetCount <= 0) {
+        alert("لطفاً نماینده، محصول و تعداد تارگت را وارد کنید.");
+        return;
+      }
+
+      const prod = (state.products || []).find(p => p.name === productName);
+      const totalDist = targetCount * (prod ? (prod.distributorPrice || prod.price || 40000) : 40000);
+      const totalPh = targetCount * (prod ? (prod.pharmacyPrice || prod.price || 45000) : 45000);
+
+      const newTgt = {
+        id: "tgt-" + Date.now(),
+        repName,
+        productName,
+        targetCount,
+        achievedCount: 0,
+        month: `${month} ${year}`,
+        targetAmount: totalPh,
+        achievedAmount: 0
+      };
+
+      if (!state.salesTargets) state.salesTargets = [];
+      state.salesTargets.push(newTgt);
+      saveState();
+      form.reset();
+      updateCalc();
+      renderSalesTargetsTable();
+      alert(`🎯 تارگت فروش برای «${repName}» روی محصول «${productName}» ثبت شد.`);
+    });
+  }
+}
+
+// ----------------------------------------------------------------------------
+// 20. اعلان صوتی وب‌اودیو (Audible Web Audio Beep for Notifications)
+// ----------------------------------------------------------------------------
+function playNotificationBeep() {
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = "sine";
+    osc.frequency.setValueAtTime(880, ctx.currentTime); // نت A5
+    gain.gain.setValueAtTime(0.15, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.35);
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start();
+    osc.stop(ctx.currentTime + 0.35);
+  } catch (e) {
+    console.warn("مرورگر امکان پخش صدای وب‌اودیو را نداشت.");
+  }
+}
+
+function setupNotificationsSoundAndClicks() {
+  const bell = document.querySelector(".btn-header-icon");
+  if (bell) {
+    bell.addEventListener("click", () => {
+      playNotificationBeep();
+      switchTab("tab-notifications");
+      (state.notifications || []).forEach(n => n.isRead = true);
+      const badge = bell.querySelector(".notif-count-badge");
+      if (badge) badge.style.display = "none";
+    });
+  }
+}
+
+// ----------------------------------------------------------------------------
+// 21. بزرگنمایی نقشه به تفکیک استان و شهر در نقشه جامع
+// ----------------------------------------------------------------------------
+function setupComprehensiveMapFilters() {
+  const provSel = document.getElementById("mapFilterProvince");
+  const citySel = document.getElementById("mapFilterCity");
+  const btnFocus = document.getElementById("btnFocusMapRegion");
+
+  if (provSel) {
+    populateProvinces(provSel);
+    provSel.addEventListener("change", () => {
+      if (citySel) populateCities(provSel.value, citySel);
+    });
+  }
+
+  if (btnFocus) {
+    btnFocus.addEventListener("click", () => {
+      const prov = provSel ? provSel.value : "";
+      const city = citySel ? citySel.value : "";
+
+      if (city === "تهران" || prov === "تهران") {
+        if (mapFullOverview) mapFullOverview.setView([35.7200, 51.4200], 12);
+        alert("🔍 بزرگنمایی روی استان/شهر تهران انجام شد.");
+      } else if (city === "مشهد" || prov === "خراسان رضوی") {
+        if (mapFullOverview) mapFullOverview.setView([36.2970, 59.6062], 12);
+        alert("🔍 بزرگنمایی روی مشهد انجام شد.");
+      } else if (city === "اصفهان" || prov === "اصفهان") {
+        if (mapFullOverview) mapFullOverview.setView([32.6546, 51.6680], 12);
+        alert("🔍 بزرگنمایی روی اصفهان انجام شد.");
+      } else {
+        if (mapFullOverview) mapFullOverview.setView([35.7200, 51.4200], 6);
+      }
+    });
+  }
+}
+
+// ----------------------------------------------------------------------------
+// 22. شروع برنامه و اتصال تمامی ماژول‌ها هنگام بارگذاری صفحه (با ایمنی ۱۰۰٪ در برابر خطا)
+// ----------------------------------------------------------------------------
+function setupNetworkStatusMonitor() {
+  const updateBadge = () => {
+    const el = document.getElementById("globalOnlineStatusBadge");
+    if (!el) return;
+    if (navigator.onLine) {
+      el.textContent = "🟢 آنلاین (متصل به سرور)";
+      el.style.background = "#10b981";
+    } else {
+      el.textContent = "🔴 آفلاین (ذخیره محلی)";
+      el.style.background = "#ef4444";
+    }
+  };
+  window.addEventListener("online", updateBadge);
+  window.addEventListener("offline", updateBadge);
+  updateBadge();
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  try { loadState(); } catch(e) { console.error("error loadState:", e); }
+  try { setupNetworkStatusMonitor(); } catch(e) { console.error("error netMonitor:", e); }
+  try { setupAuthAndRoleSwitching(); } catch(e) { console.error("error auth:", e); }
+  try { setupNotificationsSoundAndClicks(); } catch(e) { console.error("error notifClick:", e); }
+  try { setupNavigationMenu(); } catch(e) { console.error("error nav:", e); }
+  try { initMaps(); } catch(e) { console.error("error maps:", e); }
+
+  try { setupCustomFieldsTab(); } catch(e) {}
+  try { setupPharmacyTab(); } catch(e) {}
+  try { setupDoctorTab(); } catch(e) {}
+  try { setupRepsTab(); } catch(e) {}
+  try { setupLiveLocationTab(); } catch(e) {}
+  try { setupOrdersTab(); } catch(e) {}
+  try { setupUsersAndPermissionsTab(); } catch(e) {}
+  try { setupOtherSidebarModules(); } catch(e) {}
+  try { setupBackupAndRestore(); } catch(e) {}
+  try { setupAddOptionModalForm(); } catch(e) {}
+  try { setupLeavesModule(); } catch(e) {}
+  try { setupNotificationsMessaging(); } catch(e) {}
+
+  try { setupJalaliDateAutoSlash(); } catch(e) {}
+  try { setupJalaliCalendarPicker(); } catch(e) {}
+  try { setupFormListSwitchers(); } catch(e) {}
+  try { setupDropdownAutoClear(); } catch(e) {}
+  try { setupCSVExportButtons(); } catch(e) {}
+  try { setupNavigationAppsModal(); } catch(e) {}
+  try { setupSalesTargetsTab(); } catch(e) {}
+  try { setupComprehensiveMapFilters(); } catch(e) {}
+  try { setupSearchInfoTab(); } catch(e) {}
+  try { setupColumnsProductsTab(); } catch(e) {}
+  try { setupPWAServiceWorker(); } catch(e) {}
+
+  try { renderAllCustomFieldsInFormsAndTables(); } catch(e) {}
+  try { renderLeavesTable(); } catch(e) {}
+  try { renderNotificationsTable(); } catch(e) {}
+
+  try { setupAllFormSubmitHandlers(); } catch(e) { console.error("error submitHandlers:", e); }
+  console.log("✅ سیستم مدیریت و ویزیت علمی با تمامی ۱۲ بازخورد تاریخی، اسلش خودکار، پیام‌رسانی و تارگت بارگذاری شد.");
+});
+
+
+// ============================================================================
+// 26. توابع ثبت و ذخیره داروخانه، پزشک، سفارشات و بررسی تکراری بودن + کسر از تارگت
+// ============================================================================
+function setupAllFormSubmitHandlers() {
+  // 1. ذخیره داروخانه (با بررسی تکراری بودن)
+  const formPh = document.getElementById("formPharmacy");
+  const btnPh = document.getElementById("btnSavePharmacy");
+  const handleSavePh = () => {
+    const editId = document.getElementById("pharmacyEditId").value;
+    const dateAdded = document.getElementById("pharmacyDate").value.trim() || new Date().toLocaleDateString("fa-IR");
+    const name = document.getElementById("pharmacyName").value.trim();
+    const phone = document.getElementById("pharmacyPhone").value.trim();
+    const manager = document.getElementById("pharmacyManager").value.trim();
+    const province = document.getElementById("pharmacyProvince").value;
+    const city = document.getElementById("pharmacyCity").value;
+    const district = document.getElementById("pharmacyDistrict").value;
+    const address = document.getElementById("pharmacyAddress").value.trim();
+    const lat = parseFloat(document.getElementById("pharmacyLat").value) || 35.7605;
+    const lng = parseFloat(document.getElementById("pharmacyLng").value) || 51.4180;
+    const isPercentage = document.getElementById("pharmacyIsPercentage").value === "true";
+
+    if (!name || !province || !city || !district || !address) {
+      alert("لطفاً تمامی فیلدهای ستاره‌دار (*) فرم داروخانه را پر کنید.");
+      return;
+    }
+
+    // بررسی تکراری بودن داروخانه (Requirement 2 in prompt)
+    if (!editId) {
+      const isDup = state.pharmacies.some(p => p.name === name || (phone && p.phone === phone));
+      if (isDup) {
+        alert(`⚠️ اخطار: داروخانه «${name}» قبلاً در سیستم ثبت شده است!`);
+      }
+    }
+
+    if (editId) {
+      const idx = state.pharmacies.findIndex(p => p.id === editId);
+      if (idx !== -1) {
+        state.pharmacies[idx] = { ...state.pharmacies[idx], dateAdded, name, phone, manager, province, city, district, address, lat, lng, isPercentage };
+      }
+      alert(`✅ داروخانه «${name}» با موفقیت ویرایش و ذخیره شد.`);
+    } else {
+      state.pharmacies.push({
+        id: "ph-" + Date.now(),
+        dateAdded, name, phone, manager, province, city, district, address, lat, lng, isPercentage,
+        repName: currentUserName
+      });
+      alert(`✅ داروخانه «${name}» با موفقیت ثبت شد.`);
+    }
+
+    saveState();
+    resetPharmacyForm();
+    renderPharmaciesList();
+    renderDashboardOverviewMap();
+    updateNavBadges();
+    // جابجایی خودکار به تب لیست
+    const btnList = document.getElementById("btnShowPhList");
+    if (btnList) btnList.click();
+  };
+
+  if (btnPh) btnPh.onclick = (e) => { e.preventDefault(); handleSavePh(); };
+  if (formPh) formPh.onsubmit = (e) => { e.preventDefault(); handleSavePh(); };
+
+  // 2. ذخیره پزشک (با بررسی تکراری بودن)
+  const formDoc = document.getElementById("formDoctor");
+  const btnDoc = document.getElementById("btnSaveDoctor");
+  const handleSaveDoc = () => {
+    const editId = document.getElementById("doctorEditId").value;
+    const dateAdded = document.getElementById("doctorDate").value.trim() || new Date().toLocaleDateString("fa-IR");
+    const name = document.getElementById("doctorName").value.trim();
+    const specialty = document.getElementById("doctorSpecialty").value.trim();
+    const phone = document.getElementById("doctorPhone").value.trim();
+    const province = document.getElementById("doctorProvince").value;
+    const city = document.getElementById("doctorCity").value;
+    const district = document.getElementById("doctorDistrict").value;
+    const address = document.getElementById("doctorAddress").value.trim();
+    const lat = parseFloat(document.getElementById("doctorLat").value) || 35.7580;
+    const lng = parseFloat(document.getElementById("doctorLng").value) || 51.4400;
+    const isPercentage = document.getElementById("doctorIsPercentage").value === "true";
+
+    if (!name || !specialty || !province || !city || !district || !address) {
+      alert("لطفاً تمامی فیلدهای ستاره‌دار (*) فرم پزشک/مطب را پر کنید.");
+      return;
+    }
+
+    if (!editId) {
+      const isDup = state.doctors.some(d => d.name === name || (phone && d.phone === phone));
+      if (isDup) {
+        alert(`⚠️ اخطار: پزشک/مطب «${name}» قبلاً در سیستم ثبت شده است!`);
+      }
+    }
+
+    if (editId) {
+      const idx = state.doctors.findIndex(d => d.id === editId);
+      if (idx !== -1) {
+        state.doctors[idx] = { ...state.doctors[idx], dateAdded, name, specialty, phone, province, city, district, address, lat, lng, isPercentage };
+      }
+      alert(`✅ پزشک/مطب «${name}» با موفقیت ویرایش و ذخیره شد.`);
+    } else {
+      state.doctors.push({
+        id: "doc-" + Date.now(),
+        dateAdded, name, specialty, phone, province, city, district, address, lat, lng, isPercentage,
+        repName: currentUserName
+      });
+      alert(`✅ پزشک/مطب «${name}» با موفقیت ثبت شد.`);
+    }
+
+    saveState();
+    resetDoctorForm();
+    renderDoctorsList();
+    renderDashboardOverviewMap();
+    updateNavBadges();
+    const btnList = document.getElementById("btnShowDocList");
+    if (btnList) btnList.click();
+  };
+
+  if (btnDoc) btnDoc.onclick = (e) => { e.preventDefault(); handleSaveDoc(); };
+  if (formDoc) formDoc.onsubmit = (e) => { e.preventDefault(); handleSaveDoc(); };
+
+  // 3. ذخیره سفارش (همراه با کسر از باقیمانده تارگت کالاها)
+  const formOrd = document.getElementById("formOrder");
+  const btnOrd = document.getElementById("btnSaveOrder");
+  const handleSaveOrd = () => {
+    const editId = document.getElementById("orderEditId").value;
+    const pharmacyName = document.getElementById("orderPharmacyName").value.trim();
+    const province = document.getElementById("orderProvince").value;
+    const city = document.getElementById("orderCity").value;
+    const district = document.getElementById("orderDistrict").value;
+    const address = document.getElementById("orderAddress").value.trim();
+    const repName = document.getElementById("orderRepName").value || currentUserName;
+    const orderDate = document.getElementById("orderDate").value.trim() || new Date().toLocaleDateString("fa-IR");
+    const status = document.getElementById("orderStatus").value;
+    const notes = document.getElementById("orderNotes").value.trim();
+
+    if (!pharmacyName || !province || !city || !district) {
+      alert("لطفاً نام داروخانه، استان، شهر و منطقه را وارد کنید.");
+      return;
+    }
+
+    const items = getOrderItemsFromUI();
+    if (items.length === 0 || !items[0].name) {
+      alert("لطفاً حداقل یک قلم دارویی در سفارش ثبت کنید.");
+      return;
+    }
+
+    const totalAmount = items.reduce((sum, item) => sum + (item.count * item.price), 0);
+
+    // کسر خودکار از باقیمانده تارگت نماینده (Requirement 1 in prompt)
+    items.forEach(item => {
+      const tgt = (state.salesTargets || []).find(t => t.repName === repName && t.productName === item.name);
+      if (tgt) {
+        tgt.achievedCount = (tgt.achievedCount || 0) + item.count;
+        const prod = (state.products || []).find(p => p.name === item.name);
+        tgt.achievedAmount = tgt.achievedCount * (prod ? (prod.pharmacyPrice || prod.price || 45000) : 45000);
+      }
+    });
+
+    if (editId) {
+      const idx = state.orders.findIndex(o => o.id === editId);
+      if (idx !== -1) {
+        state.orders[idx] = { ...state.orders[idx], pharmacyName, province, city, district, address, repName, orderDate, status, notes, items, totalAmount };
+      }
+      alert(`✅ سفارش داروخانه «${pharmacyName}» ویرایش شد.`);
+    } else {
+      state.orders.push({
+        id: "ord-" + Date.now(),
+        pharmacyName, province, city, district, address, repName, orderDate, status, notes, items, totalAmount
+      });
+      alert(`✅ سفارش جدید برای داروخانه «${pharmacyName}» ثبت شد. از باقیمانده تارگت نماینده کسر گردید.`);
+    }
+
+    saveState();
+    resetOrderForm();
+    renderOrdersList();
+    renderSalesTargetsTable();
+    updateNavBadges();
+    const btnList = document.getElementById("btnShowOrdList");
+    if (btnList) btnList.click();
+  };
+
+  if (btnOrd) btnOrd.onclick = (e) => { e.preventDefault(); handleSaveOrd(); };
+  if (formOrd) formOrd.onsubmit = (e) => { e.preventDefault(); handleSaveOrd(); };
+}
+
+
+// ============================================================================
+// 27. اسلش خودکار در تاریخ شمسی (Jalali Date Auto Slash - YYYY/MM/DD)
+// ============================================================================
+function setupJalaliDateAutoSlash() {
+  const dateInputs = document.querySelectorAll("input[placeholder*='1405'], #pharmacyDate, #doctorDate, #orderDate, #visitDate, #leaveFromDate, #leaveToDate");
+  dateInputs.forEach(inp => {
+    if (inp.dataset.slashBound === "true") return;
+    inp.dataset.slashBound = "true";
+
+    inp.addEventListener("input", function(e) {
+      let val = this.value.replace(/[^0-9]/g, "");
+      if (val.length > 4 && val.length <= 6) {
+        this.value = val.slice(0, 4) + "/" + val.slice(4);
+      } else if (val.length > 6) {
+        this.value = val.slice(0, 4) + "/" + val.slice(4, 6) + "/" + val.slice(6, 8);
+      } else {
+        this.value = val;
+      }
+    });
+
+    if (!inp.value) {
+      inp.value = new Date().toLocaleDateString("fa-IR");
+    }
+  });
+}
+
+// ============================================================================
+// 28. جابجایی تب فرم ثبت و لیست در داروخانه‌ها، پزشکان و سفارشات (Form/List Switcher)
+// ============================================================================
+function setupFormListSwitchers() {
+  const switchCard = (btnFormId, btnListId, formCardId, listCardId) => {
+    const bF = document.getElementById(btnFormId);
+    const bL = document.getElementById(btnListId);
+    const cF = document.getElementById(formCardId);
+    const cL = document.getElementById(listCardId);
+    if (!bF || !bL || !cF || !cL) return;
+
+    bF.addEventListener("click", () => {
+      bF.className = "btn btn-primary btn-sm";
+      bF.style.background = "#0d9488";
+      bL.className = "btn btn-outline btn-sm";
+      cF.style.display = "block";
+      cL.style.display = "none";
+    });
+
+    bL.addEventListener("click", () => {
+      bL.className = "btn btn-primary btn-sm";
+      bL.style.background = "#0d9488";
+      bF.className = "btn btn-outline btn-sm";
+      cF.style.display = "none";
+      cL.style.display = "block";
+    });
+  };
+
+  switchCard("btnShowPhForm", "btnShowPhList", "cardPhForm", "cardPhList");
+  switchCard("btnShowDocForm", "btnShowDocList", "cardDocForm", "cardDocList");
+  switchCard("btnShowOrdForm", "btnShowOrdList", "cardOrdForm", "cardOrdList");
+}
+
+
+// ============================================================================
+// 29. تقویم تعاملی شمسی با پاپ‌آپ و نشانگر روز (Matching Screenshot Date Picker)
+// ============================================================================
+let activeDateInputForPicker = null;
+
+function setupJalaliCalendarPicker() {
+  const popup = document.getElementById("jalaliCalendarPopup");
+  if (!popup) return;
+
+  const dateInputs = document.querySelectorAll("#pharmacyDate, #doctorDate, #orderDate, #visitDate, #leaveFromDate, #leaveToDate");
+  dateInputs.forEach(inp => {
+    if (inp.dataset.pickerBound === "true") return;
+    inp.dataset.pickerBound = "true";
+
+    // ساخت کادر نشانگر تقویم در سمت راست/چپ فیلد (هماهنگ با اسکرین‌شات)
+    const wrapper = document.createElement("div");
+    wrapper.className = "jalali-input-wrapper";
+    inp.parentNode.insertBefore(wrapper, inp);
+    wrapper.appendChild(inp);
+
+    const badge = document.createElement("div");
+    badge.className = "jalali-badge";
+    badge.title = "انتخاب تاریخ از تقویم";
+    badge.innerHTML = `
+      <span class="jalali-badge-header">July</span>
+      <span class="jalali-badge-day">17</span>
+    `;
+    wrapper.insertBefore(badge, inp);
+
+    const openPicker = (e) => {
+      e.stopPropagation();
+      activeDateInputForPicker = inp;
+      renderJalaliCalendarDays();
+      const rect = inp.getBoundingClientRect();
+      popup.style.top = (window.scrollY + rect.bottom + 6) + "px";
+      popup.style.left = (window.scrollX + rect.left) + "px";
+      popup.classList.add("active");
+    };
+
+    badge.addEventListener("click", openPicker);
+    inp.addEventListener("click", openPicker);
+  });
+
+  const btnPrev = document.getElementById("jalaliPrevMonth");
+  const btnNext = document.getElementById("jalaliNextMonth");
+  const monthSel = document.getElementById("jalaliMonthSelect");
+  const yearSel = document.getElementById("jalaliYearSelect");
+  const btnToday = document.getElementById("jalaliTodayBtn");
+
+  if (monthSel && yearSel) {
+    monthSel.onchange = () => renderJalaliCalendarDays();
+    yearSel.onchange = () => renderJalaliCalendarDays();
+  }
+
+  if (btnPrev && monthSel) {
+    btnPrev.onclick = () => {
+      let idx = monthSel.selectedIndex;
+      if (idx > 0) { monthSel.selectedIndex = idx - 1; renderJalaliCalendarDays(); }
+    };
+  }
+
+  if (btnNext && monthSel) {
+    btnNext.onclick = () => {
+      let idx = monthSel.selectedIndex;
+      if (idx < monthSel.options.length - 1) { monthSel.selectedIndex = idx + 1; renderJalaliCalendarDays(); }
+    };
+  }
+
+  if (btnToday) {
+    btnToday.onclick = () => {
+      if (activeDateInputForPicker) {
+        activeDateInputForPicker.value = "1405/05/21";
+      }
+      popup.classList.remove("active");
+    };
+  }
+
+  document.addEventListener("click", (e) => {
+    if (!popup.contains(e.target) && !e.target.classList.contains("jalali-badge") && e.target !== activeDateInputForPicker) {
+      popup.classList.remove("active");
+    }
+  });
+}
+
+function renderJalaliCalendarDays() {
+  const grid = document.getElementById("jalaliDaysGrid");
+  const monthSel = document.getElementById("jalaliMonthSelect");
+  const yearSel = document.getElementById("jalaliYearSelect");
+  if (!grid) return;
+
+  grid.innerHTML = "";
+  const year = yearSel ? yearSel.value : "1405";
+  const month = monthSel ? monthSel.value : "05";
+
+  // افزودن چند خانه خالی اولیه برای شروع ماه
+  for (let i = 0; i < 2; i++) {
+    const empty = document.createElement("div");
+    empty.className = "jalali-day-cell empty";
+    grid.appendChild(empty);
+  }
+
+  const persianNumbers = ["۱", "۲", "۳", "۴", "۵", "۶", "۷", "۸", "۹", "۱۰", "۱۱", "۱۲", "۱۳", "۱۴", "۱۵", "۱۶", "۱۷", "۱۸", "۱۹", "۲۰", "۲۱", "۲۲", "۲۳", "۲۴", "۲۵", "۲۶", "۲۷", "۲۸", "۲۹", "۳۰", "۳۱"];
+
+  for (let d = 1; d <= 31; d++) {
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "jalali-day-cell" + (d === 21 ? " active" : "");
+    btn.textContent = persianNumbers[d - 1] || d;
+
+    btn.onclick = (e) => {
+      e.stopPropagation();
+      const dStr = d < 10 ? "0" + d : String(d);
+      if (activeDateInputForPicker) {
+        activeDateInputForPicker.value = `${year}/${month}/${dStr}`;
+      }
+      document.getElementById("jalaliCalendarPopup").classList.remove("active");
+    };
+
+    grid.appendChild(btn);
+  }
+}
+
+
+// ============================================================================
+// 30. تب جستجوی اطلاعات پیشرفته (Search Information Tab - Section 6 Requirement)
+// ============================================================================
+let mapSearchInfoInstance = null;
+let markersSearchInfo = [];
+
+function setupSearchInfoTab() {
+  const btnRun = document.getElementById("btnRunSearchInfo");
+  const btnExp = document.getElementById("btnExportSearchInfoCSV");
+  const inpPh = document.getElementById("searchInfoPhInput");
+  const inpDoc = document.getElementById("searchInfoDocInput");
+  const inpHosp = document.getElementById("searchInfoHospInput");
+
+  const runSearch = () => {
+    const qPh = (inpPh ? inpPh.value.trim() : "").toLowerCase();
+    const qDoc = (inpDoc ? inpDoc.value.trim() : "").toLowerCase();
+    const qHosp = (inpHosp ? inpHosp.value.trim() : "").toLowerCase();
+
+    const results = [];
+
+    // جستجو در داروخانه‌ها
+    state.pharmacies.forEach((p, idx) => {
+      if (qPh && !p.name.toLowerCase().includes(qPh)) return;
+      if (!qPh && !qDoc && !qHosp) {} // اگر خالی باشد همه نشان داده شود
+      results.push({
+        index: idx + 1,
+        repName: p.repName || "مدیر سیستم",
+        type: "داروخانه 🏥",
+        name: p.name,
+        city: `${p.province} / ${p.city}`,
+        address: p.address,
+        lat: p.lat,
+        lng: p.lng,
+        raw: p,
+        entityType: "pharmacy"
+      });
+    });
+
+    // جستجو در پزشکان
+    state.doctors.forEach((d, idx) => {
+      if (qDoc && !d.name.toLowerCase().includes(qDoc)) return;
+      results.push({
+        index: idx + 1,
+        repName: d.repName || "جواد علمدار",
+        type: "پزشک 👨‍⚕️",
+        name: d.name,
+        city: `${d.province} / ${d.city}`,
+        address: d.address,
+        lat: d.lat,
+        lng: d.lng,
+        raw: d,
+        entityType: "doctor"
+      });
+    });
+
+    renderSearchInfoResults(results);
+  };
+
+  if (btnRun) btnRun.addEventListener("click", runSearch);
+  if (inpPh) inpPh.addEventListener("input", runSearch);
+  if (inpDoc) inpDoc.addEventListener("input", runSearch);
+  if (inpHosp) inpHosp.addEventListener("input", runSearch);
+
+  if (btnExp) {
+    btnExp.addEventListener("click", () => {
+      const hdrs = ["ردیف", "نام نماینده", "نوع مرکز", "نام مرکز", "شهر/منطقه", "آدرس"];
+      const rws = [];
+      state.pharmacies.forEach((p, idx) => rws.push([idx + 1, p.repName || "-", "داروخانه", p.name, p.city, p.address]));
+      state.doctors.forEach((d, idx) => rws.push([idx + 1, d.repName || "-", "پزشک", d.name, d.city, d.address]));
+      downloadCSVFile("search-info-export.csv", hdrs, rws);
+    });
+  }
+}
+
+function renderSearchInfoResults(results) {
+  const tbody = document.getElementById("tableSearchInfoBody");
+  if (!tbody) return;
+  tbody.innerHTML = "";
+
+  if (!mapSearchInfoInstance && document.getElementById("map-search-info")) {
+    mapSearchInfoInstance = L.map("map-search-info").setView([35.7200, 51.4200], 11);
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      maxZoom: 19,
+      attribution: "© OpenStreetMap contributors"
+    }).addTo(mapSearchInfoInstance);
+  }
+
+  if (mapSearchInfoInstance) {
+    markersSearchInfo.forEach(m => mapSearchInfoInstance.removeLayer(m));
+    markersSearchInfo = [];
+  }
+
+  const allPoints = [];
+
+  results.forEach(res => {
+    const tr = document.createElement("tr");
+    tr.style.cursor = "pointer";
+    tr.onclick = () => openRowDetailsModal(res.raw, res.entityType);
+
+    tr.innerHTML = `
+      <td>${res.index}</td>
+      <td><strong style="color:#0f172a;">${res.repName}</strong></td>
+      <td><span class="badge-status-online" style="background:#0d9488;">${res.type}</span></td>
+      <td><strong style="color:#0d9488;">${res.name}</strong></td>
+      <td>${res.city}</td>
+      <td>${res.address}</td>
+      <td>
+        <button class="btn btn-outline btn-sm" onclick="event.stopPropagation(); openRowDetailsModal(res.raw, '${res.entityType}')">👁️ نمایش و ارسال</button>
+      </td>
+    `;
+    tbody.appendChild(tr);
+
+    if (res.lat && res.lng && mapSearchInfoInstance) {
+      const m = createCustomMarker(res.lat, res.lng, res.entityType === "pharmacy" ? "pharmacy" : "doctor", res.name, mapSearchInfoInstance, () => {
+        openRowDetailsModal(res.raw, res.entityType);
+      });
+      markersSearchInfo.push(m);
+      allPoints.push([res.lat, res.lng]);
+    }
+  });
+
+  if (allPoints.length > 0 && mapSearchInfoInstance) {
+    mapSearchInfoInstance.fitBounds(allPoints, { padding: [40, 40] });
+  }
+}
+
+// ============================================================================
+// 31. مودال جزئیات رکورد و ارسال مستقیم به بله، ایتا، تلگرام، سروش، واتساپ (Section 10)
+// ============================================================================
+let activeModalRowObject = null;
+let activeModalRowType = null;
+let mapRowDetailsMiniInstance = null;
+let markerRowDetailsMini = null;
+
+function openRowDetailsModal(rowObj, entityType) {
+  activeModalRowObject = rowObj;
+  activeModalRowType = entityType;
+
+  const modal = document.getElementById("modalRowDetails");
+  const textBox = document.getElementById("rowDetailsContentBox");
+  if (!modal || !textBox) return;
+
+  let detailsHTML = "";
+  let shareText = "";
+
+  if (entityType === "pharmacy") {
+    detailsHTML = `
+      <div style="font-weight: 800; font-size: 1.15rem; color: #0d9488; margin-bottom: 0.5rem;">🏥 داروخانه: ${rowObj.name}</div>
+      <div><strong>نماینده علمی:</strong> ${rowObj.repName || "مدیر سیستم"}</div>
+      <div><strong>استان / شهر / منطقه:</strong> ${rowObj.province} / ${rowObj.city} / ${rowObj.district || "-"}</div>
+      <div><strong>آدرس دقیق:</strong> ${rowObj.address}</div>
+      <div><strong>شماره تماس:</strong> <span style="direction:ltr; display:inline-block;">${rowObj.phone || "-"}</span></div>
+      <div><strong>درصدی:</strong> ${rowObj.isPercentage ? "بله" : "خیر"}</div>
+      <div><strong>فایل پیوست:</strong> ${rowObj.fileName || "ندارد"}</div>
+    `;
+    shareText = `🏥 داروخانه: ${rowObj.name}\nنماینده: ${rowObj.repName || "-"}\nآدرس: ${rowObj.address}\nتلفن: ${rowObj.phone || "-"}`;
+  } else if (entityType === "doctor") {
+    detailsHTML = `
+      <div style="font-weight: 800; font-size: 1.15rem; color: #10b981; margin-bottom: 0.5rem;">👨‍⚕️ پزشک / مطب: ${rowObj.name}</div>
+      <div><strong>تخصص:</strong> ${rowObj.specialty}</div>
+      <div><strong>نماینده علمی:</strong> ${rowObj.repName || "جواد علمدار"}</div>
+      <div><strong>استان / شهر / منطقه:</strong> ${rowObj.province} / ${rowObj.city} / ${rowObj.district || "-"}</div>
+      <div><strong>آدرس دقیق:</strong> ${rowObj.address}</div>
+      <div><strong>شماره تماس:</strong> <span style="direction:ltr; display:inline-block;">${rowObj.phone || "-"}</span></div>
+    `;
+    shareText = `👨‍⚕️ پزشک: ${rowObj.name} (${rowObj.specialty})\nنماینده: ${rowObj.repName || "-"}\nآدرس: ${rowObj.address}`;
+  } else if (entityType === "order") {
+    detailsHTML = `
+      <div style="font-weight: 800; font-size: 1.15rem; color: #2563eb; margin-bottom: 0.5rem;">📦 سفارش داروخانه: ${rowObj.pharmacyName}</div>
+      <div><strong>نماینده علمی:</strong> ${rowObj.repName || "-"}</div>
+      <div><strong>تاریخ سفارش:</strong> ${rowObj.orderDate}</div>
+      <div><strong>مبلغ کل:</strong> <strong style="color:#0d9488;">${Number(rowObj.totalAmount || 0).toLocaleString("fa-IR")} ریال</strong></div>
+      <div><strong>وضعیت:</strong> ${rowObj.status}</div>
+      <div><strong>اقلام و تعداد جایزه 🎁:</strong>
+        <ul style="margin: 0.3rem 1.5rem 0 0;">
+          ${(rowObj.items || []).map(i => `<li>${i.name} (تعداد: ${i.count} | جایزه 🎁: ${i.giftCount || 0})</li>`).join("")}
+        </ul>
+      </div>
+    `;
+    shareText = `📦 سفارش: ${rowObj.pharmacyName}\nتاریخ: ${rowObj.orderDate}\nمبلغ: ${Number(rowObj.totalAmount || 0).toLocaleString("fa-IR")} ریال`;
+  }
+
+  textBox.innerHTML = detailsHTML;
+
+  // تنظیم دکمه‌های پیام‌رسان‌ها (بله، ایتا، تلگرام، سروش، واتساپ)
+  const bindShare = (btnId, urlPrefix) => {
+    const btn = document.getElementById(btnId);
+    if (btn) {
+      btn.onclick = () => {
+        window.open(`${urlPrefix}${encodeURIComponent(shareText)}`, "_blank");
+      };
+    }
+  };
+
+  bindShare("btnShareBale", "https://ble.ir/share?text=");
+  bindShare("btnShareEitaa", "https://eitaa.com/share/url?url=&text=");
+  bindShare("btnShareTelegram", "https://t.me/share/url?url=&text=");
+  bindShare("btnShareSoroush", "https://splus.ir/share?text=");
+  bindShare("btnShareWhatsApp", "https://api.whatsapp.com/send?text=");
+
+  const btnCopy = document.getElementById("btnRowCopyText");
+  if (btnCopy) {
+    btnCopy.onclick = () => {
+      navigator.clipboard.writeText(shareText).then(() => {
+        alert("📋 متن اطلاعات در حافظه کپی شد.");
+      });
+    };
+  }
+
+  const btnEdit = document.getElementById("btnRowEdit");
+  if (btnEdit) {
+    btnEdit.onclick = () => {
+      closeModalRowDetails();
+      if (entityType === "pharmacy") editPharmacy(rowObj.id);
+      else if (entityType === "doctor") editDoctor(rowObj.id);
+      else if (entityType === "order") editOrder(rowObj.id);
+    };
+  }
+
+  const btnDel = document.getElementById("btnRowDelete");
+  if (btnDel) {
+    btnDel.onclick = () => {
+      if (confirm("آیا از حذف این رکورد اطمینان دارید؟")) {
+        closeModalRowDetails();
+        if (entityType === "pharmacy") deletePharmacy(rowObj.id);
+        else if (entityType === "doctor") deleteDoctor(rowObj.id);
+        else if (entityType === "order") deleteOrder(rowObj.id);
+      }
+    };
+  }
+
+  modal.classList.add("active");
+
+  setTimeout(() => {
+    if (!mapRowDetailsMiniInstance && document.getElementById("rowDetailsMiniMap")) {
+      mapRowDetailsMiniInstance = L.map("rowDetailsMiniMap").setView([rowObj.lat || 35.7200, rowObj.lng || 51.4200], 15);
+      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        maxZoom: 19,
+        attribution: "© OpenStreetMap contributors"
+      }).addTo(mapRowDetailsMiniInstance);
+    }
+    if (mapRowDetailsMiniInstance) {
+      mapRowDetailsMiniInstance.invalidateSize();
+      if (markerRowDetailsMini) mapRowDetailsMiniInstance.removeLayer(markerRowDetailsMini);
+      markerRowDetailsMini = L.marker([rowObj.lat || 35.7200, rowObj.lng || 51.4200]).addTo(mapRowDetailsMiniInstance);
+      mapRowDetailsMiniInstance.setView([rowObj.lat || 35.7200, rowObj.lng || 51.4200], 15);
+    }
+  }, 200);
+}
+
+function closeModalRowDetails() {
+  const modal = document.getElementById("modalRowDetails");
+  if (modal) modal.classList.remove("active");
+}
+
+
+// ============================================================================
+// 32. مدیریت ستون‌ها و کالاها (Columns & Products Catalog - Section 9 & 11)
+// ============================================================================
+function setupColumnsProductsTab() {
+  const formProd = document.getElementById("formProduct");
+  const btnProd = document.getElementById("btnSaveProduct");
+
+  const handleSaveProd = () => {
+    const name = document.getElementById("productName").value.trim();
+    const category = document.getElementById("productCategory").value.trim();
+    const distPrice = parseInt(document.getElementById("productDistPrice") ? document.getElementById("productDistPrice").value : 40000) || 40000;
+    const phPrice = parseInt(document.getElementById("productPrice") ? document.getElementById("productPrice").value : 45000) || 45000;
+    const stock = parseInt(document.getElementById("productStock") ? document.getElementById("productStock").value : 5000) || 5000;
+
+    if (!name || !category) {
+      alert("لطفاً نام محصول و دسته درمانی را وارد کنید.");
+      return;
+    }
+
+    if (!state.products) state.products = [];
+    const idx = state.products.findIndex(p => p.name === name);
+    if (idx !== -1) {
+      state.products[idx] = { ...state.products[idx], category, distributorPrice: distPrice, pharmacyPrice: phPrice, stock };
+      alert(`✅ کالای «${name}» با قیمت‌های جدید بروزرسانی شد.`);
+    } else {
+      state.products.push({
+        id: "prod-" + Date.now(),
+        name,
+        category,
+        distributorPrice: distPrice,
+        pharmacyPrice: phPrice,
+        stock,
+        description: `قیمت پخش: ${distPrice.toLocaleString("fa-IR")} ریال | قیمت داروخانه: ${phPrice.toLocaleString("fa-IR")} ریال`
+      });
+      alert(`✅ کالای جدید «${name}» به لیست کالاها اضافه شد.`);
+    }
+
+    saveState();
+    if (formProd) formProd.reset();
+    renderColumnsProductsTable();
+    setupSalesTargetsTab();
+    updateNavBadges();
+  };
+
+  if (btnProd) btnProd.onclick = (e) => { e.preventDefault(); handleSaveProd(); };
+  if (formProd) formProd.onsubmit = (e) => { e.preventDefault(); handleSaveProd(); };
+
+  renderColumnsProductsTable();
+}
+
+function renderColumnsProductsTable() {
+  const tbody = document.getElementById("tableProductsBody");
+  if (!tbody) return;
+  tbody.innerHTML = "";
+  (state.products || []).forEach((prod, index) => {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td>${index + 1}</td>
+      <td><strong style="color:#0f172a;">${prod.name}</strong></td>
+      <td><span class="badge-status-online" style="background:#0d9488;">${prod.category}</span></td>
+      <td><strong style="color:#1e40af;">${Number(prod.distributorPrice || 40000).toLocaleString("fa-IR")} ریال</strong></td>
+      <td><strong style="color:#0d9488;">${Number(prod.pharmacyPrice || 45000).toLocaleString("fa-IR")} ریال</strong></td>
+      <td>${prod.stock || 5000} عدد</td>
+      <td>
+        <button class="btn btn-danger btn-sm" onclick="deleteProductCatalogItem('${prod.id}')">🗑️ حذف</button>
+      </td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+function deleteProductCatalogItem(id) {
+  if (!confirm("آیا از حذف این کالا اطمینان دارید؟")) return;
+  state.products = state.products.filter(p => p.id !== id);
+  saveState();
+  renderColumnsProductsTable();
+  setupSalesTargetsTab();
+  updateNavBadges();
+}

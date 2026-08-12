@@ -1,12 +1,11 @@
-
 #!/usr/bin/env node
 /**
  * Self-healing production starter.
  *
- *   ( Render  Build Command  )  `npm start`
- *       `.next`
+ *   ( Render  Build Command  )  `npm start` 
+ *       `.next`    
  * "Could not find a production build in the '.next' directory" .
- *         `next build`
+ *         `next build`    
  *           .
  */
 import { spawn } from "node:child_process";

@@ -1,4 +1,3 @@
-
 import { applyChanges, verifySync, type ChangeSet } from "@/lib/sync";
 import { ensureSeed } from "@/lib/bootstrap";
 import { nodeName } from "@/lib/sync-config";

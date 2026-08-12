@@ -1,18 +1,18 @@
-
 /* ============================================================
  *   «  » —   ( )
  *
  *   :    HTML *    CSS*
- *     .
+ *     .       
  *      JS      .
  *     scripts/build-sw.mjs    build  .
  * ============================================================ */
 const BUILD = "__BUILD_ID__";
 const SHELL = `sek-shell-${BUILD}`;
+
 const DATA = `sek-data-${BUILD}`;
 const API_TIMEOUT = 6000;
 const ASSET_TIMEOUT = 20000;
-const NAV_TIMEOUT = 5000; //    HTML
+const NAV_TIMEOUT = 5000; //    HTML       
 /**              */
 function offlineFlagged(res) {
   const h = new Headers(res.headers);
@@ -30,7 +30,7 @@ self.addEventListener("install", (e) => {
   e.waitUntil(
     (async () => {
       const cache = await caches.open(SHELL);
-      //   (JS/CSS)  —
+      //   (JS/CSS)  —     
       await addAll(cache, ASSETS, 6);
       await addAll(cache, PAGES, 4);
       await addAll(cache, EXTRAS, 3);
@@ -66,7 +66,6 @@ self.addEventListener("activate", (e) => {
       const keys = await caches.keys();
       await Promise.all(keys.filter((k) => !k.endsWith(BUILD)).map((k) => caches.delete(k)));
       await self.clients.claim();
-
     })()
   );
 });
@@ -87,6 +86,7 @@ function timeoutFetch(req, ms) {
 }
 /* ----------------   ---------------- */
 const DB_NAME = "sek-queue";
+
 function idb() {
   return new Promise((res, rej) => {
     const r = indexedDB.open(DB_NAME, 1);
@@ -151,7 +151,6 @@ self.addEventListener("message", (e) => {
         cs.forEach((c) => c.postMessage({ type: "queue-status", pending: q.length, sent: 0 }));
       })
     );
-
   if (e.data === "cache-status")
     e.waitUntil(
       caches.open(SHELL).then(async (c) => {
@@ -171,10 +170,11 @@ self.addEventListener("sync", (e) => {
 self.addEventListener("notificationclick", (event) => {
   const data = event.notification.data || {};
   event.notification.close();
+
   event.waitUntil(
     (async () => {
       const all = await self.clients.matchAll({ type: "window", includeUncontrolled: true });
-      //
+      //         
       for (const c of all) {
         c.postMessage({ type: "notification-click", id: data.id });
         if ("focus" in c) {
@@ -236,7 +236,6 @@ self.addEventListener("fetch", (event) => {
           if (self.registration.sync) {
             try {
               await self.registration.sync.register("sek-sync");
-
             } catch {}
           }
           const cs = await self.clients.matchAll();
@@ -254,8 +253,9 @@ self.addEventListener("fetch", (event) => {
       })()
     );
     return;
+
   }
-  /*  RSC (  Next) →
+  /*  RSC (  Next) →     
    *           . */
   const isRsc = url.searchParams.has("_rsc") || req.headers.get("RSC") === "1";
   if (isRsc) {
@@ -321,7 +321,6 @@ self.addEventListener("fetch", (event) => {
           const cached = await caches.match(req);
           if (cached) {
             const h = new Headers(cached.headers);
-
             h.set("x-from-cache", "1");
             return new Response(await cached.blob(), { status: 200, headers: h });
           }
@@ -336,6 +335,7 @@ self.addEventListener("fetch", (event) => {
             { status: 200, headers: { "Content-Type": "application/json; charset=utf-8", "x-sek-offline": "1" } }
           );
         }
+
       })()
     );
     return;
@@ -343,24 +343,24 @@ self.addEventListener("fetch", (event) => {
   /* ============================================================
    *    → «-» (Network First)
    *
-   *    HTML
-   *     .
-   *
+   *    HTML        
+   *     .      
+   *             
    *        (  ).
    * ============================================================ */
   if (req.mode === "navigate") {
     event.respondWith(
       (async () => {
-        //
+        //       
         try {
           const preload = await event.preloadResponse;
           const res = preload || (await timeoutFetch(new Request(req, { cache: "no-store" }), NAV_TIMEOUT));
           if (res && res.ok) {
             const c = await caches.open(SHELL);
-            c.put(url.pathname, res.clone()); //
+            c.put(url.pathname, res.clone()); //    
             return res;
           }
-          if (res) return res; //    (/)
+          if (res) return res; //    (/)    
         } catch {
           /*     →    */
         }
@@ -369,17 +369,17 @@ self.addEventListener("fetch", (event) => {
           (await caches.match(url.pathname, { ignoreSearch: true })) ||
           (await caches.match(req, { ignoreSearch: true }));
         if (cachedPage) return offlineFlagged(cachedPage);
-        //
+        //                
         const shell =
           (await caches.match("/panel")) || (await caches.match("/")) || (await caches.match("/login"));
         if (shell) return offlineFlagged(shell);
-        //   :
+        //   :   
         return (
           (await caches.match("/offline")) ||
           new Response(
             "<html dir=rtl><meta charset=utf-8><body style='font-family:Tahoma;text-align:center;padding:40px'>" +
               "<h2>    </h2><p>      .</p>" +
-              "<button onclick='location.reload()' style='padding:10px 24px;border-radius:10px;background:#0f766e;color:#fff;border:0'>تلاش مجدد</button>" +
+              "<button onclick='location.reload()' style='padding:10px 24px;border-radius:10px;background:#0f766e;color:#fff;border:0'> </button>" +
               "</body></html>",
             { status: 200, headers: { "Content-Type": "text/html; charset=utf-8" } }
           )
@@ -405,5 +405,4 @@ self.addEventListener("fetch", (event) => {
       }
     })()
   );
-
 });

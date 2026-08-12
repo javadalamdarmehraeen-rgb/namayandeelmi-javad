@@ -1,4 +1,3 @@
-
 "use client";
 import { useState } from "react";
 import { Alert, Button } from "./ui";
@@ -41,6 +40,7 @@ const TARGETS: Target[] = [
     key: "telegram",
     label: "",
     icon: "",
+
     color: "bg-sky-50 text-sky-800 ring-sky-200 hover:bg-sky-100",
     app: (t) => `tg://msg?text=${t}`,
     web: (t) => `https://t.me/share/url?url=&text=${t}`,
@@ -68,28 +68,27 @@ async function copyText(text: string) {
       document.execCommand("copy");
       ta.remove();
       return true;
-
     } catch {
       return false;
     }
   }
 }
 /**
- *   :
+ *   :           
  *         .
  */
 export default function ShareBox({ text, title = "   " }: { text: string; title?: string }) {
   const [note, setNote] = useState("");
   const enc = encodeURIComponent(text);
   const share = async (t: Target) => {
-    //
+    //              
     await copyText(text);
-    //        ()
+    //        ()     
     if (t.app) {
       setNote(`    ${t.label}...          .`);
       const started = Date.now();
       const fallback = setTimeout(() => {
-        //      (   )
+        //      (   )     
         if (!document.hidden && Date.now() - started < 3000) {
           window.open(t.web(enc), "_blank", "noopener");
         }
@@ -121,6 +120,7 @@ export default function ShareBox({ text, title = "   " }: { text: string; title?
       <div className="flex flex-wrap gap-2">
         {TARGETS.map((t) => (
           <button
+
             key={t.key}
             type="button"
             onClick={() => share(t)}
@@ -130,7 +130,7 @@ export default function ShareBox({ text, title = "   " }: { text: string; title?
           </button>
         ))}
         <Button variant="soft" onClick={nativeShare}>
-            /
+            / 
         </Button>
       </div>
       {note ? (

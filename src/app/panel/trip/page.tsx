@@ -1,4 +1,3 @@
-
 "use client";
 import { useCallback, useEffect, useRef, useState } from "react";
 import dynamic from "next/dynamic";
@@ -8,6 +7,7 @@ import { tehranTime, toPersianDigits, todayJalali } from "@/lib/jalali";
 import {
   bufferedCount,
   createTracker,
+
   flushPoints,
   formatDistance,
   formatDuration,
@@ -46,13 +46,12 @@ export default function TripPage() {
       get("/api/records/pharmacies?limit=300"),
       get("/api/records/doctors?limit=300"),
       get("/api/homes"),
-
     ]);
     for (const p of ph) if (p.lat && p.lng) out.push({ lat: p.lat, lng: p.lng, label: ` ${p.name}`, color: "#0f766e" }
 );
     for (const d of dr) if (d.lat && d.lng) out.push({ lat: d.lat, lng: d.lng, label: ` ${d.name}`, color: "#0369a1" }
 );
-    for (const h of hm) if (h.lat && h.lng) out.push({ lat: h.lat, lng: h.lng, label: ` ${h.title}`, color: "#7c3aed"
+    for (const h of hm) if (h.lat && h.lng) out.push({ lat: h.lat, lng: h.lng, label: ` ${h.title}`, color: "#7c3aed" 
 });
     setPlaces(out);
   }, []);
@@ -71,7 +70,7 @@ export default function TripPage() {
       }
     }
     bufferedCount().then((n) => setSt((s) => ({ ...s, pending: n })));
-    //
+    //      
     const onOnline = () => void flushPoints();
     window.addEventListener("online", onOnline);
     return () => window.removeEventListener("online", onOnline);
@@ -86,6 +85,7 @@ export default function TripPage() {
     return () => {
       void tracker.stop(" ");
       trackerRef.current = null;
+
     };
   }, [active, tripId]);
   const currentPosition = () =>
@@ -106,7 +106,7 @@ export default function TripPage() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(pos ?? {}),
     }).catch(() => null);
-    //
+    //             
     let id: number | null = null;
     if (res?.ok) {
       const d = await res.json();
@@ -117,7 +117,7 @@ export default function TripPage() {
         kind: "info",
         text: "                .",
       });
-      id = -Date.now(); //
+      id = -Date.now(); //   
     } else {
       setMsg({ kind: "success", text: "    —     (  )" });
     }
@@ -131,14 +131,13 @@ export default function TripPage() {
   const markPause = async () => {
     if (!(await confirm({ title: " ", message: "     ", confirmText: "" }))) return;
     await trackerRef.current?.markPause(`  — ${tehranTime(new Date())}`);
-
     setMsg({ kind: "info", text: `   ${tehranTime(new Date())}  ` });
   };
   const endTrip = async () => {
     if (
       !(await confirm({
         title: " ",
-        message: ` : ${formatDistance(st.distanceM)}\n: ${formatDuration(st.stopSeconds)}\n\n
+        message: ` : ${formatDistance(st.distanceM)}\n: ${formatDuration(st.stopSeconds)}\n\n  
 `,
         confirmText: " ",
         danger: true,
@@ -163,6 +162,7 @@ export default function TripPage() {
   };
   const pauses = st.points.filter((p: TrackPoint) => p.kind === "pause");
   const path = st.points.map((p) => ({ lat: p.lat, lng: p.lng }));
+
   return (
     <div className="space-y-4">
       <SectionTitle icon="">    — {toPersianDigits(todayJalali())}</SectionTitle>
@@ -171,12 +171,15 @@ export default function TripPage() {
         <div className="flex flex-wrap items-center gap-2">
           {!active ? (
             <Button onClick={startTrip} className="flex-1 sm:flex-none">
+                
             </Button>
           ) : (
             <>
               <Button variant="soft" onClick={markPause}>
+                  
               </Button>
               <Button variant="danger" onClick={endTrip}>
+                  
               </Button>
             </>
           )}
@@ -212,8 +215,7 @@ export default function TripPage() {
             {active ? "  " : "     "}
           </h3>
           <span className="text-[11px] text-slate-500">
-              ·   ·   ·
-
+              ·   ·   ·  
           </span>
         </div>
         <MapBox
@@ -241,10 +243,11 @@ export default function TripPage() {
             ))}
           </ul>
         ) : null}
+
       </Card>
       {!active ? (
         <Alert kind="info">
-            « »    .      GPS
+            « »    .      GPS      
                   —   .
         </Alert>
       ) : null}

@@ -1,13 +1,12 @@
-
 /**
  * ============================================================
- *
+ *    
  *  Render (namayandeelmi-javad.onrender.com)  NdcoHub.ir
  * ------------------------------------------------------------
  *       :
- *    uid        →    (UUID)
+ *    uid        →    (UUID)       
  *    updated_at →    (    )
- *    origin     →
+ *    origin     →        
  *
  *  : Last-Write-Wins   updated_at
  * ============================================================
@@ -28,6 +27,7 @@ export const SYNC_TABLES: SyncTable[] = [
   { name: "users", label: "", defaultOn: true, batch: 500 },
   { name: "roles", label: "", defaultOn: true, batch: 200 },
   { name: "options", label: " ", defaultOn: true, batch: 2000 },
+
   { name: "settings", label: "", defaultOn: true, batch: 200 },
   { name: "pharmacies", label: "", defaultOn: true, batch: 1000 },
   { name: "doctors", label: "", defaultOn: true, batch: 1000 },
@@ -54,7 +54,6 @@ export function nodeName(): string {
     "primary"
   );
 }
-
 /**     */
 export function selfUrl(): string {
   return (

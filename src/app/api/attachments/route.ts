@@ -1,4 +1,3 @@
-
 import { db } from "@/db";
 import { attachments } from "@/db/schema";
 import { getSessionUser } from "@/lib/auth";
@@ -19,6 +18,7 @@ export async function GET(req: Request) {
     .select({
       id: attachments.id,
       ownerId: attachments.ownerId,
+
       fileName: attachments.fileName,
       mimeType: attachments.mimeType,
       size: attachments.size,
@@ -77,7 +77,6 @@ export async function PATCH(req: Request) {
     .update(attachments)
     .set({ ownerId })
     .where(and(inArray(attachments.id, ids), eq(attachments.userId, user.id)));
-
   return Response.json({ ok: true });
 }
 export async function DELETE(req: Request) {

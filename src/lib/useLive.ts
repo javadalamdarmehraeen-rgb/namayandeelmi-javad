@@ -1,4 +1,3 @@
-
 "use client";
 import { useCallback, useEffect, useRef, useState } from "react";
 /**
@@ -21,10 +20,10 @@ export async function fetchRows<T = Record<string, unknown>>(url: string): Promi
 }
 /**
  *   :
- *  -     `interval`
+ *  -     `interval`     
  *  -        (    )
- *  -
- *  -    (2G / save-data)
+ *  -             
+ *  -    (2G / save-data)     
  */
 export function useLive(fn: () => void | Promise<void>, interval = 15000, enabled = true) {
   const saved = useRef(fn);
@@ -33,6 +32,7 @@ export function useLive(fn: () => void | Promise<void>, interval = 15000, enable
   const run = useCallback(() => {
     void saved.current();
   }, []);
+
   useEffect(() => {
     if (!enabled || paused) return;
     type Conn = { effectiveType?: string; saveData?: boolean };
@@ -57,7 +57,6 @@ export function useLive(fn: () => void | Promise<void>, interval = 15000, enable
       }
     };
     start();
-
     document.addEventListener("visibilitychange", onVisible);
     window.addEventListener("online", run);
     window.addEventListener("focus", run);

@@ -1,11 +1,10 @@
-
 "use client";
 import { useCallback, useEffect, useState } from "react";
 import { getCachedUser } from "@/lib/offline-session";
 /**
  *  «  » —  :
- *  -
- *  -  «   »
+ *  -              
+ *  -  «   »          
  */
 export default function OfflinePage() {
   const [checking, setChecking] = useState(false);
@@ -38,9 +37,9 @@ export default function OfflinePage() {
     [target],
   );
   useEffect(() => {
-
     const iv = setInterval(() => check(true), 8000);
     const onOnline = () => check(true);
+
     window.addEventListener("online", onOnline);
     return () => {
       clearInterval(iv);
@@ -52,7 +51,7 @@ export default function OfflinePage() {
       <div className="text-5xl"></div>
       <h1 className="text-lg font-black text-slate-800">    </h1>
       <p className="max-w-sm text-sm leading-7 text-slate-600">
-              .   —
+              .   —         
                   .
       </p>
       <div className="flex flex-wrap items-center justify-center gap-2">
@@ -65,9 +64,11 @@ export default function OfflinePage() {
         </button>
         <a href={target} className="rounded-xl bg-white px-5 py-2.5 text-sm font-bold text-teal-700 ring-1 ring-teal-300
 ">
+              
         </a>
         <a href="/diagnostics" className="rounded-xl bg-white px-5 py-2.5 text-sm font-bold text-slate-700 ring-1 ring-s
 late-300">
+           
         </a>
       </div>
       <p className="text-[11px] text-slate-400">
@@ -75,8 +76,8 @@ late-300">
       </p>
       <div className="mt-2 max-w-sm rounded-xl bg-white p-3 text-right text-[11px] leading-6 text-slate-500 ring-1 ring-
 slate-200">
-        <b className="text-slate-700">         :</b>
-            .
+        <b className="text-slate-700">         :</b>    
+            .                
           .
       </div>
     </main>

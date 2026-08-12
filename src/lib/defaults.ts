@@ -1,4 +1,3 @@
-
 import { PRODUCTS } from "./constants";
 export type ProductConfig = { key: string; label: string; bonusLabel: string; enabled: boolean };
 export type ColumnConfig = { key: string; label: string; visible: boolean };
@@ -24,6 +23,7 @@ export const DEFAULT_FORM_FIELDS: Record<string, FormFieldConfig[]> = {
     { key: "address", label: " ", visible: true },
     { key: "isPercent", label: " ", visible: true },
     { key: "files", label: "  ", visible: true },
+
     { key: "location", label: "   ", visible: true },
   ],
   doctors: [
@@ -33,7 +33,6 @@ export const DEFAULT_FORM_FIELDS: Record<string, FormFieldConfig[]> = {
     { key: "region", label: "", visible: true },
     { key: "name", label: " ", visible: true },
     { key: "specialty", label: "", visible: true },
-
     { key: "phone", label: "  ", visible: true },
     { key: "secretaryName", label: " ", visible: true },
     { key: "secretaryPhone", label: "  ", visible: true },
@@ -108,6 +107,7 @@ export const DEFAULT_COLUMNS: Record<string, ColumnConfig[]> = {
     { key: "pharmacyName", label: " ", visible: true },
     { key: "managerName", label: " ", visible: true },
     { key: "managerPhone", label: " ", visible: true },
+
     { key: "address", label: "", visible: false },
     { key: "products", label: " ", visible: true },
     { key: "distributor", label: " ", visible: true },
@@ -118,7 +118,6 @@ export const DEFAULT_COLUMNS: Record<string, ColumnConfig[]> = {
     { key: "sent", label: " ", visible: true },
     { key: "actions", label: "", visible: true },
   ],
-
 };
 export const PERMISSION_GROUPS: {
   key: string;
@@ -193,6 +192,7 @@ export const PERMISSION_GROUPS: {
   },
   {
     key: "field",
+
     label: " ",
     icon: "",
     items: [
@@ -203,7 +203,6 @@ export const PERMISSION_GROUPS: {
       { key: "home", label: "  " },
       { key: "home.viewAll", label: "   " },
     ],
-
   },
   {
     key: "hr",
@@ -277,6 +276,7 @@ export const REP_DEFAULT_PERMISSIONS = [
   "reports.products",
   "options",
 ];
+
 export const SUPERVISOR_DEFAULT_PERMISSIONS = [
   ...REP_DEFAULT_PERMISSIONS,
   "dashboard",
@@ -288,7 +288,6 @@ export const SUPERVISOR_DEFAULT_PERMISSIONS = [
   "pharmacy.export",
   "doctor.viewAll",
   "doctor.export",
-
   "order.viewAll",
   "order.export",
   "leave.viewAll",
@@ -361,6 +360,7 @@ export const AVAILABLE_COLUMNS: Record<string, { key: string; label: string }[]>
     { key: "notes", label: "" },
     { key: "location", label: "" },
     { key: "nav", label: "" },
+
     { key: "sendStatus", label: " " },
     { key: "sent", label: " " },
     { key: "createdAt", label: " " },

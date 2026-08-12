@@ -1,18 +1,18 @@
-
 /* ============================================================
  *   «  » —   ( )
  *
  *   :    HTML *    CSS*
- *     .
+ *     .       
  *      JS      .
  *     scripts/build-sw.mjs    build  .
+
  * ============================================================ */
 const BUILD = "msmdifhz-48";
 const SHELL = `sek-shell-${BUILD}`;
 const DATA = `sek-data-${BUILD}`;
 const API_TIMEOUT = 6000;
 const ASSET_TIMEOUT = 20000;
-const NAV_TIMEOUT = 5000; //    HTML
+const NAV_TIMEOUT = 5000; //    HTML       
 /**              */
 function offlineFlagged(res) {
   const h = new Headers(res.headers);
@@ -80,7 +80,6 @@ const ASSETS = [
   "/_next/static/chunks/0hoxp6v6.ghn5.js",
   "/_next/static/chunks/0n.0ufr5-u.u3.js",
   "/_next/static/chunks/0n1bpogj.il~n.js",
-
   "/_next/static/chunks/0o9kx41n71_k~.js",
   "/_next/static/chunks/0oudi9rq3kf0y.js",
   "/_next/static/chunks/0rjm_co8bzrp0.js",
@@ -88,6 +87,7 @@ const ASSETS = [
   "/_next/static/chunks/0t48hzs_6fshe.css",
   "/_next/static/chunks/0u~69.dj98a1y.js",
   "/_next/static/chunks/0v4dehhyglgch.js",
+
   "/_next/static/chunks/0v7ff1k50ig4a.js",
   "/_next/static/chunks/0vy~5p61tj63m.js",
   "/_next/static/chunks/0we42v7.l-4bo.js",
@@ -155,7 +155,7 @@ self.addEventListener("install", (e) => {
   e.waitUntil(
     (async () => {
       const cache = await caches.open(SHELL);
-      //   (JS/CSS)  —
+      //   (JS/CSS)  —     
       await addAll(cache, ASSETS, 6);
       await addAll(cache, PAGES, 4);
       await addAll(cache, EXTRAS, 3);
@@ -165,13 +165,13 @@ self.addEventListener("install", (e) => {
   );
 });
 async function addAll(cache, urls, concurrency) {
-
   let i = 0;
   const workers = Array.from({ length: concurrency }, async () => {
     while (i < urls.length) {
       const url = urls[i++];
       try {
         const res = await fetch(new Request(url, { cache: "reload", credentials: "same-origin" }));
+
         if (res && (res.ok || res.type === "opaque")) await cache.put(url, res.clone());
       } catch {
         /*      */
@@ -250,11 +250,11 @@ async function queueDel(id) {
 async function flushQueue() {
   const items = await queueAll();
   let sent = 0;
-
   for (const it of items) {
     try {
       const r = await fetch(it.url, { method: it.method, headers: it.headers, body: it.body, credentials: "include" });
       if (r.ok || (r.status >= 400 && r.status < 500)) {
+
         await queueDel(it.id);
         if (r.ok) sent++;
       }
@@ -299,7 +299,7 @@ self.addEventListener("notificationclick", (event) => {
   event.waitUntil(
     (async () => {
       const all = await self.clients.matchAll({ type: "window", includeUncontrolled: true });
-      //
+      //         
       for (const c of all) {
         c.postMessage({ type: "notification-click", id: data.id });
         if ("focus" in c) {
@@ -335,8 +335,8 @@ self.addEventListener("push", (event) => {
   );
 });
 /* ----------------   ---------------- */
-
 self.addEventListener("fetch", (event) => {
+
   const req = event.request;
   const url = new URL(req.url);
   if (url.origin !== self.location.origin) return;
@@ -380,7 +380,7 @@ self.addEventListener("fetch", (event) => {
     );
     return;
   }
-  /*  RSC (  Next) →
+  /*  RSC (  Next) →     
    *           . */
   const isRsc = url.searchParams.has("_rsc") || req.headers.get("RSC") === "1";
   if (isRsc) {
@@ -468,24 +468,24 @@ self.addEventListener("fetch", (event) => {
   /* ============================================================
    *    → «-» (Network First)
    *
-   *    HTML
-   *     .
-   *
+   *    HTML        
+   *     .      
+   *             
    *        (  ).
    * ============================================================ */
   if (req.mode === "navigate") {
     event.respondWith(
       (async () => {
-        //
+        //       
         try {
           const preload = await event.preloadResponse;
           const res = preload || (await timeoutFetch(new Request(req, { cache: "no-store" }), NAV_TIMEOUT));
           if (res && res.ok) {
             const c = await caches.open(SHELL);
-            c.put(url.pathname, res.clone()); //
+            c.put(url.pathname, res.clone()); //    
             return res;
           }
-          if (res) return res; //    (/)
+          if (res) return res; //    (/)    
         } catch {
           /*     →    */
         }
@@ -494,18 +494,18 @@ self.addEventListener("fetch", (event) => {
           (await caches.match(url.pathname, { ignoreSearch: true })) ||
           (await caches.match(req, { ignoreSearch: true }));
         if (cachedPage) return offlineFlagged(cachedPage);
-        //
+        //                
         const shell =
           (await caches.match("/panel")) || (await caches.match("/")) || (await caches.match("/login"));
         if (shell) return offlineFlagged(shell);
-        //   :
+        //   :   
+
         return (
           (await caches.match("/offline")) ||
           new Response(
             "<html dir=rtl><meta charset=utf-8><body style='font-family:Tahoma;text-align:center;padding:40px'>" +
               "<h2>    </h2><p>      .</p>" +
-
-              "<button onclick='location.reload()' style='padding:10px 24px;border-radius:10px;background:#0f766e;color:#fff;border:0'>تلاش مجدد</button>" +
+              "<button onclick='location.reload()' style='padding:10px 24px;border-radius:10px;background:#0f766e;color:#fff;border:0'> </button>" +
               "</body></html>",
             { status: 200, headers: { "Content-Type": "text/html; charset=utf-8" } }
           )
@@ -532,6 +532,7 @@ self.addEventListener("fetch", (event) => {
     })()
   );
 });
+
 // Network-First strategy for navigate requests (Prevent offline cache locking on mobile)
 self.addEventListener('fetch', (event) => {
   if (event.request.mode === 'navigate') {

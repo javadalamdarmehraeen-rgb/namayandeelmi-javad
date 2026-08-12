@@ -1,4 +1,3 @@
-
 "use client";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Button, Card, Field, SectionTitle } from "@/components/ui";
@@ -11,6 +10,7 @@ type Row = {
   period: string;
   repName: string;
   pharmacies: number;
+
   doctors: number;
   orders: number;
   units: number;
@@ -27,14 +27,13 @@ export default function ChartsPanel({ scope = "rep" }: { scope?: "rep" | "admin"
   const [rep, setRep] = useState("");
   const [from, setFrom] = useState("");
   const [to, setTo] = useState("");
-  //       « »
+  //       « »  
   const [applied, setApplied] = useState<{ from: string; to: string; rep: string }>({ from: "", to: "", rep: "" });
   const [msg, setMsg] = useState("");
   const load = useCallback(async () => {
     const [r1, r2] = await Promise.all([
       fetch("/api/reports", { cache: "no-store" }),
       fetch("/api/settings?key=products", { cache: "no-store" }),
-
     ]);
     if (r1.ok) {
       const d = await r1.json();
@@ -87,6 +86,7 @@ export default function ChartsPanel({ scope = "rep" }: { scope?: "rep" | "admin"
   };
   const quick = (months: number) => {
     const t = todayJalali();
+
     const [jy, jm] = t.split("/").map(Number);
     let y = jy;
     let m = jm - months + 1;
@@ -107,7 +107,7 @@ export default function ChartsPanel({ scope = "rep" }: { scope?: "rep" | "admin"
     doctors: " ",
     trips: " ",
   };
-  //    :
+  //    :       
   const yearSeries = useMemo(
     () =>
       years.map((y) => ({
@@ -119,7 +119,6 @@ export default function ChartsPanel({ scope = "rep" }: { scope?: "rep" | "admin"
       })),
     [years, scoped, metric],
   );
-
   //    ( )
   const monthly = useMemo(() => {
     const m = new Map<string, number>();
@@ -128,7 +127,7 @@ export default function ChartsPanel({ scope = "rep" }: { scope?: "rep" | "admin"
       .sort((a, b) => a[0].localeCompare(b[0]))
       .map(([label, value]) => ({ label: toPersianDigits(label), value }));
   }, [scoped, metric]);
-  //
+  //   
   const productShare = useMemo(() => {
     const filtered = byRep.filter((r) => (!applied.rep || r.repName === applied.rep) && inRange(r.period));
     return products
@@ -165,6 +164,7 @@ export default function ChartsPanel({ scope = "rep" }: { scope?: "rep" | "admin"
               value={metric}
               onChange={(e) => setMetric(e.target.value as typeof metric)}
               className="w-full rounded-xl border border-slate-300 px-3 py-2.5 text-sm"
+
             >
               {Object.entries(metricLabel).map(([k, v]) => (
                 <option key={k} value={k}>
@@ -199,16 +199,20 @@ export default function ChartsPanel({ scope = "rep" }: { scope?: "rep" | "admin"
         <div className="mt-3 flex flex-wrap items-center gap-2">
           <Button onClick={apply}>    </Button>
           <Button variant="ghost" onClick={reset}>
+              
           </Button>
           <span className="mx-1 h-6 w-px bg-slate-200" />
           <Button variant="soft" onClick={() => quick(1)}>
-
+             
           </Button>
           <Button variant="soft" onClick={() => quick(3)}>
+              
           </Button>
           <Button variant="soft" onClick={() => quick(6)}>
+              
           </Button>
           <Button variant="soft" onClick={() => quick(12)}>
+              
           </Button>
         </div>
         {msg ? (
@@ -242,6 +246,7 @@ export default function ChartsPanel({ scope = "rep" }: { scope?: "rep" | "admin"
         <Card>
           <h3 className="mb-2 text-sm font-bold text-slate-700">    </h3>
           <BarChart data={monthly} />
+
         </Card>
         <Card>
           <h3 className="mb-2 text-sm font-bold text-slate-700">     </h3>

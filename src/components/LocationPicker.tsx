@@ -1,4 +1,3 @@
-
 "use client";
 import { useCallback, useEffect, useRef, useState } from "react";
 import dynamic from "next/dynamic";
@@ -18,7 +17,7 @@ type Hit = { label: string; lat: number; lng: number; type: string };
  *     :
  *   )     ( +  )
  *   )    GPS (  )
- *   )       /
+ *   )       /   
  */
 export default function LocationPicker({
   value,
@@ -26,6 +25,7 @@ export default function LocationPicker({
   label,
   height = 260,
   /**     (   + ) */
+
   suggestQuery = "",
 }: {
   value: LatLng;
@@ -81,7 +81,6 @@ export default function LocationPicker({
       setHits([]);
       return;
     }
-
     autoRef.current = setTimeout(() => void runSearch(term, true), 800);
     return () => {
       if (autoRef.current) clearTimeout(autoRef.current);
@@ -104,6 +103,7 @@ export default function LocationPicker({
     setSearchMsg("      —       ");
   };
   /**      */
+
   const reverseLookup = useCallback(async (lat: number, lng: number) => {
     try {
       const res = await fetch(`/api/geocode?lat=${lat}&lng=${lng}`, { cache: "no-store" });
@@ -166,7 +166,6 @@ export default function LocationPicker({
         setStatus("          ");
       } else {
         setStatus(`  : ${Math.round(bestRef.current)} `);
-
         if (value.lat && value.lng) void reverseLookup(value.lat, value.lng);
       }
     }, 15000);
@@ -184,6 +183,7 @@ export default function LocationPicker({
             onFocus={() => hits.length && setOpenList(true)}
             onKeyDown={(e) => {
               if (e.key === "Enter") {
+
                 e.preventDefault();
                 void runSearch(query);
               }
@@ -202,12 +202,13 @@ export default function LocationPicker({
               }}
               title="    "
             >
+              
             </Button>
           ) : null}
         </div>
         {searchMsg ? <p className="mt-1 text-[11px] text-slate-500">{searchMsg}</p> : null}
         {openList && hits.length > 0 ? (
-          <div className="fade-in absolute z-30 mt-1 max-h-56 w-full overflow-y-auto rounded-xl bg-white py-1 shadow-xl
+          <div className="fade-in absolute z-30 mt-1 max-h-56 w-full overflow-y-auto rounded-xl bg-white py-1 shadow-xl 
 ring-1 ring-slate-200">
             {hits.map((h, i) => (
               <button
@@ -236,6 +237,7 @@ ring-1 ring-slate-200">
               setStatus("  ");
             }}
           >
+            
           </Button>
         ) : null}
         {value.lat && value.lng ? (
@@ -244,11 +246,11 @@ ring-1 ring-slate-200">
               {acc ? ` ≈ ${toPersianDigits(Math.round(acc))} ` : " "}
             </Badge>
             <Button variant="ghost" onClick={() => void reverseLookup(value.lat!, value.lng!)}>
+                  
             </Button>
           </>
         ) : (
           <Badge tone="amber">  </Badge>
-
         )}
       </div>
       {status ? <p className="text-[11px] text-slate-500">{status}</p> : null}
@@ -262,6 +264,7 @@ ring-1 ring-slate-200">
       </p>
       <MapBox
         height={height}
+
         draggable
         accuracy={acc}
         points={value.lat && value.lng ? [{ lat: value.lat, lng: value.lng, label: label || "" }] : []}

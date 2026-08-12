@@ -1,4 +1,3 @@
-
 import { db, dbRetry } from "@/db";
 import { options, roles, users } from "@/db/schema";
 import { eq, sql } from "drizzle-orm";
@@ -29,7 +28,6 @@ async function migrate() {
       role varchar(20) NOT NULL DEFAULT 'rep',
       active boolean NOT NULL DEFAULT true,
       require_phone boolean NOT NULL DEFAULT true,
-
       device_id varchar(80) NOT NULL DEFAULT '',
       device_info varchar(200) NOT NULL DEFAULT '',
       device_bound_at timestamptz,
@@ -37,6 +35,7 @@ async function migrate() {
       permissions jsonb NOT NULL DEFAULT '["dashboard","pharmacy","doctor","order","trip","home","leave","options","repo
 rts"]'::jsonb,
       last_seen_at timestamptz,
+
       created_at timestamptz NOT NULL DEFAULT now()
     );
   `);
@@ -114,7 +113,6 @@ rts"]'::jsonb,
       id serial PRIMARY KEY,
       category varchar(40) NOT NULL,
       value varchar(200) NOT NULL,
-
       parent varchar(200) NOT NULL DEFAULT '',
       created_by varchar(160) NOT NULL DEFAULT '',
       created_at timestamptz NOT NULL DEFAULT now()
@@ -123,6 +121,7 @@ rts"]'::jsonb,
   await db.execute(sql`
     CREATE TABLE IF NOT EXISTS homes (
       id serial PRIMARY KEY,
+
       user_id integer NOT NULL,
       rep_name varchar(160) NOT NULL,
       title varchar(160) NOT NULL DEFAULT '',
@@ -199,7 +198,6 @@ rts"]'::jsonb,
   await db.execute(sql`
     CREATE TABLE IF NOT EXISTS messengers (
       id serial PRIMARY KEY,
-
       platform varchar(20) NOT NULL,
       label varchar(160) NOT NULL DEFAULT '',
       target_type varchar(20) NOT NULL DEFAULT 'phone',
@@ -209,6 +207,7 @@ rts"]'::jsonb,
       api_url text NOT NULL DEFAULT '',
       enabled boolean NOT NULL DEFAULT true,
       last_status text NOT NULL DEFAULT '',
+
       last_ok_at timestamptz,
       last_error_at timestamptz,
       sort_order integer NOT NULL DEFAULT 0,
@@ -284,7 +283,6 @@ rts"]'::jsonb,
   `);
   await db.execute(sql`
     CREATE TABLE IF NOT EXISTS mobile_nonces (
-
       id serial PRIMARY KEY,
       nonce varchar(64) NOT NULL UNIQUE,
       device_id varchar(80) NOT NULL DEFAULT '',
@@ -294,6 +292,7 @@ rts"]'::jsonb,
     );
   `);
   await db.execute(sql`
+
     CREATE TABLE IF NOT EXISTS otp_codes (
       id serial PRIMARY KEY,
       user_id integer NOT NULL,
@@ -369,7 +368,6 @@ rts"]'::jsonb,
     `ALTER TABLE leaves ADD COLUMN IF NOT EXISTS hours double precision NOT NULL DEFAULT 0`,
     `ALTER TABLE pharmacies ALTER COLUMN percent_value TYPE text`,
     `ALTER TABLE doctors ALTER COLUMN percent_value TYPE text`,
-
     `ALTER TABLE pharmacies ALTER COLUMN location_label TYPE text`,
     `ALTER TABLE doctors ALTER COLUMN location_label TYPE text`,
     `ALTER TABLE orders ALTER COLUMN location_label TYPE text`,
@@ -379,6 +377,7 @@ rts"]'::jsonb,
     `ALTER TABLE leaves ALTER COLUMN supervisor_note TYPE text`,
     `ALTER TABLE leaves ALTER COLUMN manager_note TYPE text`,
   ];
+
   for (const a of alters) {
     try {
       await db.execute(sql.raw(a));
@@ -426,13 +425,13 @@ rts"]'::jsonb,
   await db.execute(sql`CREATE INDEX IF NOT EXISTS attach_owner_idx ON attachments (owner_type, owner_id)`);
 }
 /**
- *    (uid / updated_at / origin)
+ *    (uid / updated_at / origin)    
  *      updated_at   UPDATE.
  */
 async function addSyncColumns() {
   const node = nodeName();
-  //    —   UPDATE
-  //
+  //    —   UPDATE    
+  //         
   // (   « »        )
   await db.execute(sql`
     CREATE OR REPLACE FUNCTION sek_touch_updated_at() RETURNS trigger AS $$
@@ -454,11 +453,11 @@ async function addSyncColumns() {
         sql.raw(`ALTER TABLE ${t.name} ADD COLUMN IF NOT EXISTS updated_at timestamptz NOT NULL DEFAULT now()`),
       );
       await db.execute(
-
         sql.raw(`ALTER TABLE ${t.name} ADD COLUMN IF NOT EXISTS origin varchar(20) NOT NULL DEFAULT '${node}'`),
       );
-      //   uid
+      //   uid  
       await db.execute(
+
         sql.raw(`UPDATE ${t.name} SET uid = gen_random_uuid()::text WHERE uid IS NULL OR uid = ''`),
       );
       await db.execute(
@@ -539,10 +538,10 @@ ue },
       },
       {
         key: "messengerTokens",
-
         value: {
           bale: process.env.BALE_BOT_TOKEN || "1199464939:uhHpJVtcy__qdtFfN7iuzr4AH7bZBKPG85A",
           telegram: process.env.TELEGRAM_BOT_TOKEN || "",
+
           eitaa: process.env.EITAA_TOKEN || "",
           whatsapp: process.env.WHATSAPP_TOKEN || "",
         },
@@ -592,7 +591,7 @@ ions);
     }
     console.log(` ${missing.length}   (///)    `);
   }
-  //
+  //            
   //     (   )  .
   try {
     await db.execute(sql`DELETE FROM options WHERE category IN ('city','region') AND (parent IS NULL OR parent = '')`);
@@ -605,7 +604,7 @@ export async function ensureSeed() {
   if (running) return running;
   running = (async () => {
     try {
-      //        —  Neon
+      //        —  Neon       
       await dbRetry(() => migrate(), "bootstrap:migrate");
       await dbRetry(() => seed(), "bootstrap:seed");
       done = true;

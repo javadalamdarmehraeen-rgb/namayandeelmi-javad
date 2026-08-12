@@ -1,4 +1,3 @@
-
 import { checkDatabase, dbInfo, hasDatabaseUrl } from "@/db";
 import { ensureSeed } from "@/lib/bootstrap";
 export const dynamic = "force-dynamic";
@@ -21,7 +20,7 @@ export async function GET() {
       { status: 503, headers: { "Cache-Control": "no-store" } },
     );
   }
-  //   /      health
+  //   /      health   
   void ensureSeed();
   return Response.json(
     {

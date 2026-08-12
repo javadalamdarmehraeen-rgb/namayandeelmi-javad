@@ -1,4 +1,3 @@
-
 import { db } from "@/db";
 import { activityLogs, homes } from "@/db/schema";
 import { getSessionUser } from "@/lib/auth";
@@ -8,11 +7,11 @@ export async function GET() {
   const user = await getSessionUser();
   if (!user) return Response.json({ error: " " }, { status: 401 });
   const isAdmin = user.role === "admin" || user.role === "supervisor";
+
   const rows = isAdmin
     ? await db.select().from(homes).orderBy(desc(homes.id))
     : await db.select().from(homes).where(eq(homes.userId, user.id)).orderBy(desc(homes.id));
   return Response.json({ rows });
-
 }
 export async function POST(req: Request) {
   const user = await getSessionUser();

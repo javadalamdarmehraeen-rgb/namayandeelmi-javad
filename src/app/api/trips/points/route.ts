@@ -1,4 +1,3 @@
-
 import { db } from "@/db";
 import { liveLocations, tripPoints, trips } from "@/db/schema";
 import { getSessionUser } from "@/lib/auth";
@@ -12,13 +11,14 @@ function haversine(a: { lat: number; lng: number }, b: { lat: number; lng: numbe
     Math.sin(dLat / 2) ** 2 +
     Math.cos((a.lat * Math.PI) / 180) * Math.cos((b.lat * Math.PI) / 180) * Math.sin(dLng / 2) ** 2;
   const d = 2 * R * Math.asin(Math.sqrt(s));
-  //  GPS:
+  //  GPS:        
   return d < 5 || d > 5000 ? 0 : d;
 }
 export const dynamic = "force-dynamic";
 export async function GET(req: Request) {
   const user = await getSessionUser();
   if (!user) return Response.json({ error: " " }, { status: 401 });
+
   const tripId = Number(new URL(req.url).searchParams.get("tripId"));
   if (!Number.isFinite(tripId)) return Response.json({ error: " " }, { status: 400 });
   const t = (await db.select().from(trips).where(eq(trips.id, tripId)).limit(1))[0];
@@ -31,7 +31,6 @@ export async function GET(req: Request) {
     .where(eq(tripPoints.tripId, tripId))
     .orderBy(asc(tripPoints.recordedAt))
     .limit(5000);
-
   return Response.json({ trip: t, points });
 }
 export async function POST(req: Request) {
@@ -60,7 +59,7 @@ export async function POST(req: Request) {
     .filter((p: { lat: number; lng: number }) => Number.isFinite(p.lat) && Number.isFinite(p.lng))
     .slice(0, 500);
   if (values.length) await db.insert(tripPoints).values(values);
-  //
+  //      
   try {
     const all = await db
       .select({ lat: tripPoints.lat, lng: tripPoints.lng, stopSeconds: tripPoints.stopSeconds })
@@ -71,7 +70,7 @@ export async function POST(req: Request) {
     for (let i = 1; i < all.length; i++) dist += haversine(all[i - 1], all[i]);
     const stops = all.reduce((a, x) => a + (x.stopSeconds ?? 0), 0);
     await db.update(trips).set({ distanceM: Math.round(dist), stopSeconds: stops }).where(eq(trips.id, tripId));
-    //
+    //     
     const last = values[values.length - 1];
     if (last) {
       const lv = {

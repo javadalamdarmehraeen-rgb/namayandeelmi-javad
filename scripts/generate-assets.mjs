@@ -1,15 +1,13 @@
-
 #!/usr/bin/env node
 /**
  *      PWA    SVG.
  *
- *     PNG      /
+ *     PNG      /  
  *    PWABuilder  «Fix the links to your icons» .
- *      build
+ *      build         
  *      .
  */
 import { existsSync, mkdirSync, writeFileSync } from "node:fs";
-
 import path from "node:path";
 const ROOT = process.cwd();
 const PUB = path.join(ROOT, "public");
@@ -33,6 +31,7 @@ const LOGO_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" 
   </defs>
   <g transform="translate(256 256) rotate(-45)" filter="url(#soft)">
     <rect x="-168" y="-84" width="336" height="168" rx="84" ry="84" fill="url(#pill)"/>
+
     <line x1="0" y1="-84" x2="0" y2="84" stroke="#ffffff" stroke-opacity=".35" stroke-width="6"/>
     <rect x="-160" y="-76" width="320" height="80" rx="40" ry="40" fill="url(#glossTop)"/>
     <circle cx="104" cy="-30" r="18" fill="#ffffff" fill-opacity=".92"/>
@@ -61,7 +60,7 @@ ty="${0.55 + (i / vals.length) * 0.45}"/>`;
 };
 const header = (w, title) =>
   `<rect width="${w}" height="72" fill="#0f766e"/>` +
-  `<text x="${w - 24}" y="34" font-size="19" font-weight="bold" fill="#ffffff" text-anchor="end" font-family="${F}">
+  `<text x="${w - 24}" y="34" font-size="19" font-weight="bold" fill="#ffffff" text-anchor="end" font-family="${F}"> 
  </text>` +
   `<text x="${w - 24}" y="56" font-size="13" fill="#c7f0ea" text-anchor="end" font-family="${F}">${title}</text>` +
   `<circle cx="42" cy="36" r="15" fill="#ffffff" opacity=".18"/>`;
@@ -75,11 +74,11 @@ ${tile(664, 100, 190, "\u{1F4CD}", "", " ", "#059669")}
 ${tile(872, 100, 190, "\u{1F4DD}", "", "", "#b45309")}
 ${tile(1080, 100, 160, "\u{1F464}", "", "", "#334155")}
 ${card(40, 220, 760, 300)}
-<text x="770" y="252" font-size="16" font-weight="bold" fill="#0f172a" text-anchor="end" font-family="${F}">
+<text x="770" y="252" font-size="16" font-weight="bold" fill="#0f172a" text-anchor="end" font-family="${F}">  
   </text>
 ${bars(80, 280, 660, 200, [40, 62, 55, 88, 72, 96, 110, 85, 120, 100, 135, 148], "#0d9488")}
 ${card(820, 220, 420, 300)}
-<text x="1210" y="252" font-size="16" font-weight="bold" fill="#0f172a" text-anchor="end" font-family="${F}">
+<text x="1210" y="252" font-size="16" font-weight="bold" fill="#0f172a" text-anchor="end" font-family="${F}"> 
 </text>
 <g transform="translate(1030,390)">
   <circle r="78" fill="none" stroke="#0d9488" stroke-width="26" stroke-dasharray="180 490"/>
@@ -89,15 +88,13 @@ ${card(820, 220, 420, 300)}
   <text y="8" font-size="22" font-weight="bold" fill="#0f766e" text-anchor="middle" font-family="${F}"></text>
 </g>
 ${card(40, 540, 1200, 150)}
-<text x="1210" y="572" font-size="16" font-weight="bold" fill="#0f172a" text-anchor="end" font-family="${F}">
+<text x="1210" y="572" font-size="16" font-weight="bold" fill="#0f172a" text-anchor="end" font-family="${F}"> 
  </text>
 ${[0, 1, 2]
   .map(
     (i) =>
-
       `<rect x="60" y="${590 + i * 32}" width="1160" height="26" rx="8" fill="#f8fafc"/>` +
-      `<text x="1200" y="${608 + i * 32}" font-size="13" fill="#334155" text-anchor="end" font-family="${F}">${[" — ", "
- — ", " — "][i]}</text>`,
+      `<text x="1200" y="${608 + i * 32}" font-size="13" fill="#334155" text-anchor="end" font-family="${F}">${[" — ", " — ", " — "][i]}</text>`,
   )
   .join("")}
 </svg>`;
@@ -105,20 +102,21 @@ const NARROW = `<svg xmlns="http://www.w3.org/2000/svg" width="720" height="1280
 <rect width="720" height="1280" fill="#f1f5f9"/>
 ${header(720, "  ")}
 ${card(24, 92, 672, 96)}
-<text x="672" y="130" font-size="20" font-weight="bold" fill="#0f172a" text-anchor="end" font-family="${F}">
+<text x="672" y="130" font-size="20" font-weight="bold" fill="#0f172a" text-anchor="end" font-family="${F}"> 
  </text>
-<text x="672" y="162" font-size="14" fill="#64748b" text-anchor="end" font-family="${F}"> // —
+<text x="672" y="162" font-size="14" fill="#64748b" text-anchor="end" font-family="${F}"> // —  
  </text>
 <rect x="24" y="208" width="672" height="92" rx="18" fill="#0f766e"/>
-<text x="668" y="248" font-size="19" font-weight="bold" fill="#ffffff" text-anchor="end" font-family="${F}">
+<text x="668" y="248" font-size="19" font-weight="bold" fill="#ffffff" text-anchor="end" font-family="${F}">  
 </text>
 <text x="668" y="276" font-size="13" fill="#c7f0ea" text-anchor="end" font-family="${F}">  </text>
 <rect x="24" y="312" width="672" height="92" rx="18" fill="#0369a1"/>
-<text x="668" y="352" font-size="19" font-weight="bold" fill="#ffffff" text-anchor="end" font-family="${F}">
+<text x="668" y="352" font-size="19" font-weight="bold" fill="#ffffff" text-anchor="end" font-family="${F}">  
 </text>
+
 <text x="668" y="380" font-size="13" fill="#cfe9fb" text-anchor="end" font-family="${F}">  </text>
 <rect x="24" y="416" width="672" height="92" rx="18" fill="#4f46e5"/>
-<text x="668" y="456" font-size="19" font-weight="bold" fill="#ffffff" text-anchor="end" font-family="${F}">
+<text x="668" y="456" font-size="19" font-weight="bold" fill="#ffffff" text-anchor="end" font-family="${F}">  
 </text>
 <text x="668" y="484" font-size="13" fill="#d8d6fb" text-anchor="end" font-family="${F}">  </text>
 ${["", "", "", "", "", ""]
@@ -130,25 +128,25 @@ ext-anchor="middle" font-family="${F}">${t}</text>`;
   })
   .join("")}
 ${card(24, 772, 672, 300)}
-<text x="668" y="806" font-size="16" font-weight="bold" fill="#0f172a" text-anchor="end" font-family="${F}">
+<text x="668" y="806" font-size="16" font-weight="bold" fill="#0f172a" text-anchor="end" font-family="${F}">  
   </text>
 ${bars(56, 830, 610, 210, [30, 48, 42, 70, 62, 88, 96, 78, 110, 96, 124, 140], "#0ea5e9")}
 ${card(24, 1092, 672, 92)}
-<text x="668" y="1128" font-size="15" font-weight="bold" fill="#0f766e" text-anchor="end" font-family="${F}">
+<text x="668" y="1128" font-size="15" font-weight="bold" fill="#0f766e" text-anchor="end" font-family="${F}"> 
      </text>
 <text x="668" y="1156" font-size="13" fill="#64748b" text-anchor="end" font-family="${F}">  +    G
 PS</text>
 <rect x="0" y="1208" width="720" height="72" fill="#0f766e"/>
-<text x="360" y="1252" font-size="15" font-weight="bold" fill="#ffffff" text-anchor="middle" font-family="${F}">
+<text x="360" y="1252" font-size="15" font-weight="bold" fill="#ffffff" text-anchor="middle" font-family="${F}"> 
   —     </text>
 </svg>`;
 const BRAND = `<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720">
   <defs><linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
     <stop offset="0%" stop-color="#0f766e"/><stop offset="100%" stop-color="#134e4a"/></linearGradient></defs>
   <rect width="1280" height="720" fill="url(#bg)"/>
-  <text x="640" y="560" font-size="46" font-weight="bold" fill="#ffffff" text-anchor="middle" font-family="${F}">
+  <text x="640" y="560" font-size="46" font-weight="bold" fill="#ffffff" text-anchor="middle" font-family="${F}"> 
  </text>
-  <text x="640" y="612" font-size="22" fill="#a7f3d0" text-anchor="middle" font-family="${F}">   —
+  <text x="640" y="612" font-size="22" fill="#a7f3d0" text-anchor="middle" font-family="${F}">   — 
     </text>
 </svg>`;
 export const ICON_SIZES = [96, 128, 144, 152, 180, 192, 256, 384, 512, 1024];
@@ -179,7 +177,6 @@ export async function makeMaskable(sharp, size) {
 export async function makeScreenshot(sharp, key) {
   if (key === "mobile-720x1280") return sharp(Buffer.from(NARROW)).png().toBuffer();
   if (key === "brand-1280x720") {
-
     const logo = await sharp(Buffer.from(LOGO_SVG), { density: 500 }).resize(300, 300).png().toBuffer();
     return sharp(Buffer.from(BRAND)).composite([{ input: logo, top: 140, left: 490 }]).png().toBuffer();
   }
@@ -194,6 +191,7 @@ async function main() {
     console.warn("  sharp          .");
     return;
   }
+
   mkdirSync(ICONS, { recursive: true });
   mkdirSync(SHOTS, { recursive: true });
   writeFileSync(path.join(PUB, "logo.svg"), LOGO_SVG);
@@ -223,6 +221,6 @@ async function main() {
 if (import.meta.url === `file://${process.argv[1]}`) {
   main().catch((e) => {
     console.error("   :", e?.message ?? e);
-    process.exit(0); // build
+    process.exit(0); // build       
   });
 }

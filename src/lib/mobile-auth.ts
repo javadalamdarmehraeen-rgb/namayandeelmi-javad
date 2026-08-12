@@ -1,21 +1,19 @@
-
 import { createHash, createHmac, randomBytes, timingSafeEqual } from "crypto";
 import { db, dbRetrySafe } from "@/db";
 import { mobileNonces } from "@/db/schema";
 import { and, eq, gt, lt } from "drizzle-orm";
-
 /* ============================================================
- *
+ *       
  *
  *    :
- *   )  HMAC-SHA256
+ *   )  HMAC-SHA256       
  *   ) nonce     ( Replay Attack)
- *   )
+ *   )      
  * ============================================================ */
 /**     —  Render  MOBILE_APP_SECRET   */
 const APP_SECRET = process.env.MOBILE_APP_SECRET || process.env.APP_SECRET || "sek-mobile-shared-secret";
-export const NONCE_TTL_MS = 3 * 60 * 1000; //
-export const MAX_CLOCK_SKEW_MS = 5 * 60 * 1000; //
+export const NONCE_TTL_MS = 3 * 60 * 1000; //  
+export const MAX_CLOCK_SKEW_MS = 5 * 60 * 1000; //    
 /**  nonce       */
 export async function issueNonce(deviceId: string) {
   const nonce = randomBytes(24).toString("base64url");
@@ -49,6 +47,7 @@ export async function consumeNonce(nonce: string): Promise<boolean> {
   if (rows.length === 0) return false;
   await dbRetrySafe(
     () => db.update(mobileNonces).set({ used: true }).where(eq(mobileNonces.id, rows[0].id)),
+
     undefined,
     "nonce:mark",
   );
@@ -88,7 +87,6 @@ export function hashSim(value: string) {
 }
 export function normalizePhone(p: string) {
   return String(p ?? "")
-
     .replace(/[\u06F0-\u06F9]/g, (c) => String(c.charCodeAt(0) - 0x06f0))
     .replace(/\D/g, "")
     .replace(/^0098/, "0")
@@ -123,6 +121,7 @@ export async function verifyAttestation(body: {
   }
   if (allowUnsigned) return { ok: true };
   if (!Number.isFinite(timestamp) || Math.abs(Date.now() - timestamp) > MAX_CLOCK_SKEW_MS) {
+
     return {
       ok: false,
       status: 401,

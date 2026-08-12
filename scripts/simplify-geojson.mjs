@@ -1,4 +1,3 @@
-
 #!/usr/bin/env node
 /**      Ramer–Douglas–Peucker */
 import { readFileSync, writeFileSync, statSync } from "node:fs";
@@ -16,7 +15,7 @@ function simplify(points, eps) {
   if (points.length <= 4) return points;
   const wasClosed = points[0][0] === points.at(-1)[0] && points[0][1] === points.at(-1)[1];
   const line = wasClosed ? points.slice(0, -1) : points;
-  //
+  //                
   let split = 0;
   if (wasClosed) {
     let max = -1;
@@ -35,12 +34,12 @@ function rdp(points, eps) {
   if (points.length <= 2) return points;
   let max = 0;
   let idx = 0;
-
   const first = points[0];
   const last = points.at(-1);
   for (let i = 1; i < points.length - 1; i++) {
     const d = distanceToSegment(points[i], first, last);
     if (d > max) { max = d; idx = i; }
+
   }
   if (max > eps) {
     const left = rdp(points.slice(0, idx + 1), eps);

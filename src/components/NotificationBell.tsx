@@ -1,7 +1,5 @@
-
 "use client";
 import Link from "next/link";
-
 import { useCallback, useEffect, useRef, useState } from "react";
 import { tehranDateTime, toPersianDigits } from "@/lib/jalali";
 import { playNotificationSound, vibrate } from "@/lib/sound";
@@ -24,7 +22,7 @@ export default function NotificationBell({ basePath }: { basePath: string }) {
   const lastId = useRef<number>(0);
   const initialized = useRef(false);
   const load = useCallback(async () => {
-    //
+    //        
     const res = await fetch("/api/notifications?unread=1", { cache: "no-store" }).catch(() => null);
     if (!res?.ok) return;
     const d = await res.json();
@@ -58,9 +56,10 @@ export default function NotificationBell({ basePath }: { basePath: string }) {
     };
     window.addEventListener("click", ask, { once: true });
     window.addEventListener("touchstart", ask, { once: true });
-    //
+    //       
     const onMsg = (e: MessageEvent) => {
       if (e.data?.type === "notification-click") {
+
         if (e.data.id) markOne(Number(e.data.id));
         load();
       }
@@ -86,11 +85,10 @@ export default function NotificationBell({ basePath }: { basePath: string }) {
       lang: "fa",
       requireInteraction: true,
       data: { id: n.id, link: n.link || `${basePath}/notifications` },
-
       vibrate: [200, 100, 200],
     };
     try {
-      //
+      //           
       const reg = await navigator.serviceWorker?.getRegistration();
       if (reg) {
         await reg.showNotification(` ${n.title}`, payload as NotificationOptions);
@@ -140,11 +138,13 @@ export default function NotificationBell({ basePath }: { basePath: string }) {
         <button
           onClick={() => {
             setOpen((v) => !v);
+
             askPermission();
           }}
           className="relative rounded-lg bg-white/15 px-2 py-1.5 text-sm hover:bg-white/25"
           title=""
         >
+          
           {unread > 0 ? (
             <span className="absolute -top-1 -left-1 rounded-full bg-rose-500 px-1.5 text-[10px] font-black text-white">
               {toPersianDigits(unread > 99 ? "99+" : unread)}
@@ -163,12 +163,13 @@ t-slate-800 shadow-2xl ring-1 ring-slate-200">
                     {muted ? "  " : "  "}
                   </button>
                   <button onClick={markAll} className="text-[11px] font-bold text-teal-700">
+                     
                   </button>
                 </div>
               </div>
               {rows.length === 0 ? (
                 <p className="px-2 py-6 text-center text-xs text-slate-400">
-
+                     
                 </p>
               ) : (
                 rows.slice(0, 12).map((n) => (
@@ -196,6 +197,7 @@ t-slate-800 shadow-2xl ring-1 ring-slate-200">
                 onClick={() => setOpen(false)}
                 className="block rounded-xl bg-slate-100 py-2 text-center text-xs font-bold text-slate-700"
               >
+                  
               </Link>
             </div>
           </>
@@ -215,9 +217,12 @@ t-slate-800 shadow-2xl ring-1 ring-slate-200">
               }}
               className="text-[11px] font-bold text-emerald-300"
             >
+               
             </button>
             <button onClick={() => setToast(null)} className="text-[11px] font-bold text-teal-300">
+              
             </button>
+
           </div>
         </div>
       ) : null}

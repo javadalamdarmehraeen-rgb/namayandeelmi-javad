@@ -1,4 +1,3 @@
-
 "use client";
 import { useEffect, useState } from "react";
 /**   +    +     */
@@ -27,7 +26,7 @@ export default function ServiceWorker() {
           setTimeout(() => setFlash(""), 6000);
         }
       });
-      //
+      //            
       const ping = () => {
         if (navigator.onLine && !document.hidden) fetch("/api/ping", { cache: "no-store" }).catch(() => undefined);
       };

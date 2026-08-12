@@ -1,8 +1,6 @@
-
 "use client";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-
 import { useEffect, useState, type ReactNode } from "react";
 import NotificationBell from "./NotificationBell";
 import BackButton from "./BackButton";
@@ -49,9 +47,11 @@ export default function Shell({
         <div className="mx-auto flex max-w-6xl items-center gap-2 px-3 py-2.5 sm:px-5">
           <button
             className="rounded-lg bg-white/15 px-2 py-1 text-lg lg:hidden"
+
             onClick={() => setOpen((v) => !v)}
             aria-label=""
           >
+            
           </button>
           <div className="flex min-w-0 flex-1 items-center gap-2">
             <span className="text-xl"></span>
@@ -77,15 +77,17 @@ export default function Shell({
           <NotificationBell basePath={showPanelLink ? "/admin" : "/panel"} />
           {showAdminLink ? (
             <Link href="/admin" className="rounded-lg bg-white/15 px-2 py-1.5 text-[11px] font-bold hover:bg-white/25">
+               
             </Link>
           ) : null}
           {showPanelLink ? (
             <Link href="/panel" className="rounded-lg bg-white/15 px-2 py-1.5 text-[11px] font-bold hover:bg-white/25">
+               
             </Link>
           ) : null}
           <button onClick={logout} className="rounded-lg bg-white/15 px-2 py-1.5 text-[11px] font-bold hover:bg-white/25
-
 ">
+            
           </button>
         </div>
         <nav className={`${open ? "block" : "hidden"} border-t border-white/10 lg:block`}>
@@ -114,7 +116,7 @@ p-1.5 lg:px-5">
         {children}
       </main>
       <footer className="pb-6 text-center text-[11px] text-slate-400">
-           —
+           —      
       </footer>
     </div>
   );

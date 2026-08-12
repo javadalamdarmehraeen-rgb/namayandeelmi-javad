@@ -1,7 +1,7 @@
-
 import { db } from "@/db";
 import { roles, users } from "@/db/schema";
 import { ensureSeed } from "@/lib/bootstrap";
+
 import { eq } from "drizzle-orm";
 export const dynamic = "force-dynamic";
 /**                 */
@@ -28,7 +28,7 @@ export async function POST(req: Request) {
     base = r?.base ?? "rep";
   }
   const digits = String(u.phone ?? "").replace(/\D/g, "");
-  //
+  //                
   const phoneMask = digits.length >= 8 ? `${digits.slice(0, 4)}***${digits.slice(-4)}` : "";
   return Response.json({
     exists: true,

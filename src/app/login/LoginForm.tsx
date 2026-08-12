@@ -1,4 +1,3 @@
-
 "use client";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -61,7 +60,7 @@ export default function LoginForm() {
     });
     return stop;
   }, []);
-  //
+  //    
   useEffect(() => {
     if (mode !== "rep" || !needPhone) {
       setSimMismatch("");
@@ -71,17 +70,17 @@ export default function LoginForm() {
     if (entered.length < 11) {
       setSimMismatch("");
       return;
+
     }
-    // )
+    // )          
     if (regMask && maskPhone(entered) !== regMask) {
       setSimMismatch(
-        `  :        «${regMask}»    «${maskPhone(entered)}»
+        `  :        «${regMask}»    «${maskPhone(entered)}» 
  .       .`,
-
       );
       return;
     }
-    // )
+    // )          
     const deviceSim = getDeviceSim();
     if (deviceSim && entered !== deviceSim) {
       setSimMismatch(
@@ -91,7 +90,7 @@ export default function LoginForm() {
     }
     setSimMismatch("");
   }, [phone, mode, needPhone, regMask]);
-  //
+  //              
   useEffect(() => {
     const u = username.trim();
     if (u.length < 2) {
@@ -154,6 +153,7 @@ export default function LoginForm() {
     if (otpCode.trim().length < 4) {
       setOtpMsg("     ");
       return;
+
     }
     setOtpBusy(true);
     const res = await fetch("/api/auth/otp", {
@@ -162,7 +162,6 @@ export default function LoginForm() {
       body: JSON.stringify({
         action: "verify",
         username,
-
         password,
         code: otpCode.trim(),
         deviceId: getDeviceId(),
@@ -199,7 +198,7 @@ export default function LoginForm() {
       setError("            (: )");
       return;
     }
-    //  :
+    //  :          
     if (!navigator.onLine) {
       const cached = getCachedUser();
       if (cached && cached.username === username.trim().toLowerCase()) {
@@ -239,15 +238,15 @@ export default function LoginForm() {
       }
       setError(data.error ?? "  ");
       if (data.simError) setSimMismatch(data.error ?? "");
+
       return;
     }
     if (data.token) setTabToken(data.token, true);
     if (data.user) cacheUser(data.user);
     if (phone) {
       localStorage.setItem("sek_phone", phone);
-      //
+      //         
       if (data.user?.role === "rep") setDeviceSim(normalizePhone(phone));
-
     }
     router.replace(data.user?.role === "rep" ? "/panel" : "/admin");
   };
@@ -260,7 +259,7 @@ export default function LoginForm() {
             <div className="fade-in w-full max-w-sm rounded-2xl bg-white p-4">
               <h3 className="mb-1 text-sm font-black text-slate-800">  </h3>
               <p className="mb-3 text-[11px] leading-6 text-slate-600">
-                        <b>   </b>
+                        <b>   </b>     
                 .            .
               </p>
               {otpMsg ? (
@@ -293,6 +292,7 @@ export default function LoginForm() {
                     setOtpMsg("");
                   }}
                 >
+                  
                 </Button>
               </div>
             </div>
@@ -309,7 +309,7 @@ export default function LoginForm() {
             >
               <h3 className="mb-2 text-sm font-black text-slate-800">   </h3>
               <p className="mb-3 text-[11px] text-slate-500">
-                        .
+                        .           
                   .
               </p>
               {info ? (
@@ -322,6 +322,7 @@ export default function LoginForm() {
                   <Input value={username} onChange={(e) => setUsername(e.target.value)} className="text-left" />
                 </Field>
                 <Field label=" ">
+
                   <Input
                     inputMode="numeric"
                     value={phone}
@@ -331,7 +332,6 @@ export default function LoginForm() {
               </div>
               <div className="mt-3 flex gap-2">
                 <Button
-
                   onClick={async () => {
                     const res = await fetch("/api/auth/forgot", {
                       method: "POST",
@@ -342,8 +342,10 @@ export default function LoginForm() {
                     setInfo(d.message ?? d.error ?? " ");
                   }}
                 >
+                   
                 </Button>
                 <Button variant="ghost" onClick={() => setForgot(false)}>
+                  
                 </Button>
               </div>
             </div>
@@ -366,6 +368,7 @@ export default function LoginForm() {
             </div>
             <span className="absolute -bottom-1 -left-1 flex size-7 items-center justify-center rounded-full bg-emerald-
 400 text-xs shadow-lg ring-2 ring-teal-700">
+              
             </span>
           </div>
           <h1 className="text-2xl font-black drop-shadow-sm">  </h1>
@@ -388,6 +391,7 @@ export default function LoginForm() {
               }}
               className={`flex-1 rounded-lg py-2 ${mode === "rep" ? "bg-teal-600 text-white" : "text-slate-600"}`}
             >
+                 
             </button>
             <button
               type="button"
@@ -399,9 +403,10 @@ export default function LoginForm() {
               }}
               className={`flex-1 rounded-lg py-2 ${mode === "admin" ? "bg-slate-800 text-white" : "text-slate-600"}`}
             >
-                 /
+                 / 
             </button>
           </div>
+
           {mode === "rep" && simWarn ? <Alert kind="error">{simWarn}</Alert> : null}
           {mode === "rep" && simMismatch ? <Alert kind="error">{simMismatch}</Alert> : null}
           {hint ? <Alert kind="info">{hint}</Alert> : null}
@@ -412,7 +417,6 @@ export default function LoginForm() {
               onChange={(e) => setUsername(e.target.value)}
               placeholder={mode === "admin" ? "  " : "  "}
               autoComplete="off"
-
             />
           </Field>
           <Field label=" " required>
@@ -459,7 +463,7 @@ export default function LoginForm() {
             </div>
           ) : null}
           {needPhone ? (
-            <Field label="     " required hint="
+            <Field label="     " required hint="        
 ">
               <Input
                 inputMode="numeric"
@@ -480,7 +484,9 @@ export default function LoginForm() {
               }}
               className="text-[11px] font-bold text-teal-700 underline"
             >
+                   
             </button>
+
           </div>
           <label className="flex items-center gap-2 text-xs font-bold text-slate-600">
             <input
@@ -496,7 +502,7 @@ export default function LoginForm() {
           </Button>
           <div className="pt-1 text-center">
             <a href="/diagnostics" className="text-[11px] font-bold text-teal-700 underline">
-
+                     
             </a>
           </div>
           <p className="pt-1 text-center text-[11px] leading-5 text-slate-400">

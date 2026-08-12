@@ -1,4 +1,3 @@
-
 "use client";
 import { useEffect, useRef, useState } from "react";
 import "leaflet/dist/leaflet.css";
@@ -17,7 +16,7 @@ function esc(s: string) {
 /**
  *     .
  *
- *  :       OpenStreetMap
+ *  :       OpenStreetMap  
  *  `/api/map/tiles`         403  .
  */
 export default function MapBox({
@@ -46,7 +45,6 @@ export default function MapBox({
   draggable?: boolean;
   area?: MapArea | null;
   /**         */
-
   showIranProvinces?: boolean;
   selectedProvince?: string;
   onProvinceSelect?: (province: string) => void;
@@ -55,6 +53,7 @@ export default function MapBox({
   const mapRef = useRef<LeafletMap | null>(null);
   const layersRef = useRef<Layer[]>([]);
   const provinceLayerRef = useRef<Layer | null>(null);
+
   const tileLayerRef = useRef<Layer | null>(null);
   const pickRef = useRef(onPick);
   const provinceCbRef = useRef(onProvinceSelect);
@@ -182,7 +181,7 @@ oFixed(5)}` : ""}`;
     for (const p of points) {
       const icon = L.divIcon({
         className: "sek-map-marker",
-        html: `<div style="background:${p.color ?? "#0f766e"};width:18px;height:18px;border-radius:50%;border:3px solid
+        html: `<div style="background:${p.color ?? "#0f766e"};width:18px;height:18px;border-radius:50%;border:3px solid 
 #fff;box-shadow:0 2px 8px rgba(15,23,42,.45)"></div>`,
         iconSize: [18, 18],
         iconAnchor: [9, 9],
@@ -209,13 +208,13 @@ oFixed(5)}` : ""}`;
   }
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   async function drawProvinces(L: any, map: LeafletMap, selected: string) {
+
     provinceLayerRef.current?.remove();
     try {
       const res = await fetch("/data/iran-provinces.geojson", { cache: "force-cache" });
       if (!res.ok) throw new Error(`GeoJSON ${res.status}`);
       const geo = await res.json();
       const layer = L.geoJSON(geo, {
-
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         style: (feature: any) => {
           const en = String(feature?.properties?.shapeName ?? "");
@@ -255,7 +254,7 @@ oFixed(5)}` : ""}`;
         },
       }).addTo(map);
       provinceLayerRef.current = layer;
-      //
+      //     
       layer.bringToBack?.();
       if (!selected && points.length === 0 && path.length === 0) {
         map.fitBounds(layer.getBounds(), { padding: [8, 8] });
@@ -276,6 +275,7 @@ ont-bold text-slate-500 shadow">
       {tileState === "fallback" ? (
         <div className="pointer-events-none absolute left-3 top-3 z-[500] rounded-lg bg-amber-50/95 px-2 py-1 text-[10px
 ] font-bold text-amber-700 shadow ring-1 ring-amber-200">
+                  
         </div>
       ) : null}
       {mapError ? (

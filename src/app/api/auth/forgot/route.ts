@@ -1,4 +1,3 @@
-
 import { db } from "@/db";
 import { users } from "@/db/schema";
 import { ensureSeed } from "@/lib/bootstrap";
@@ -14,11 +13,11 @@ export async function POST(req: Request) {
   if (!username) return Response.json({ error: "    " }, { status: 400 });
   const rows = await db.select().from(users).where(eq(users.username, username)).limit(1);
   const u = rows[0];
-  //
+  //        
   const done = Response.json({
     ok: true,
     message:
-      "     .             .
+      "     .             .     
   .",
   });
   if (!u) return done;
@@ -28,7 +27,6 @@ export async function POST(req: Request) {
       fromName: u.fullName,
       kind: "password",
       title: `     — ${u.fullName}`,
-
       body: ` : ${u.username}\n : ${phone || "—"}\n : ${u.phone || "—"}\n  «
   »    .`,
       link: "/admin/users",

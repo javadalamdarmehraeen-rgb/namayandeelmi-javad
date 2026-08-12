@@ -1,5 +1,5 @@
-
 import { db } from "@/db";
+
 import { activityLogs, doctors, orders, pharmacies } from "@/db/schema";
 import { getSessionUser } from "@/lib/auth";
 import { dispatchOrder } from "@/lib/messaging";
@@ -19,7 +19,6 @@ export async function POST(req: Request, ctx: Ctx) {
   let sendStatusText = "";
   try {
     if (type === "pharmacies") {
-
       await db
         .update(pharmacies)
         .set({ sent: true })
@@ -82,6 +81,7 @@ export async function POST(req: Request, ctx: Ctx) {
     });
     return Response.json({ ok: true, count: ids.length, status: sendStatusText });
   } catch {
+
     return Response.json({ error: "   " }, { status: 500 });
   }
 }

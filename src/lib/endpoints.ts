@@ -1,5 +1,3 @@
-
-
 "use client";
 /**
  * ============================================================
@@ -10,7 +8,7 @@
  *    • https://namayandeelmi-javad.onrender.com (  )
  *
  *           .
- *
+ *            
  *   .       .
  * ============================================================
  */
@@ -26,7 +24,7 @@ export function endpointList(): string[] {
     .map((s) => s.trim().replace(/\/$/, ""))
     .filter((s) => s.startsWith("http"));
   if (list.length) return list;
-  // :
+  // :    
   return ["https://ndcohub.ir", "https://namayandeelmi-javad.onrender.com"];
 }
 /**         —     */
@@ -51,6 +49,7 @@ export function setActiveEndpoint(url: string) {
   }
 }
 /**  :    →   →  */
+
 export function orderedEndpoints(): string[] {
   const origin = currentOrigin();
   const active = getActiveEndpoint();
@@ -84,7 +83,6 @@ async function probe(base: string): Promise<number | null> {
   }
 }
 /**       */
-
 export async function pickFastestEndpoint(force = false): Promise<{ url: string; ms: number | null }[]> {
   const checkedAt = Number(localStorage.getItem(KEY_CHECKED) ?? 0);
   const list = orderedEndpoints();
@@ -111,11 +109,11 @@ export async function multiFetch(path: string, init: RequestInit = {}, original?
     try {
       const res = await doFetch(url, {
         ...init,
-        //     /CORS
+        //     /CORS  
         credentials: isSelf ? (init.credentials ?? "same-origin") : "include",
         mode: isSelf ? undefined : "cors",
       });
-      //
+      //            
       if (res.status < 500) {
         if (!isSelf) setActiveEndpoint(base);
         return res;

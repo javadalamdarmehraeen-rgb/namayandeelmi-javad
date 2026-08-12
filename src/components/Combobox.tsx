@@ -1,4 +1,3 @@
-
 "use client";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useConfirm } from "./Confirm";
@@ -12,10 +11,10 @@ export type Opt = { value: string; parent?: string };
  *  -              .
  *  -    (  )       .
  */
+
 export default function Combobox({
   value,
   onChange,
-
   options,
   category,
   onAdded,
@@ -74,7 +73,7 @@ export default function Combobox({
   }, [query, options]);
   const trimmed = query.trim();
   const exact = options.some((o) => o.trim() === trimmed);
-  //
+  //                
   const showAdd = !selectOnly && canAdd && !!category && !blocked && trimmed.length >= 2 && !exact && !typing;
   const markTyping = () => {
     setTyping(true);
@@ -85,11 +84,12 @@ export default function Combobox({
     if (!trimmed || !category || saving) return;
     const ok = await confirm({
       title: "  ",
-      message: `«${trimmed}»${parent ? `  «${parent}»` : ""}    \n
+      message: `«${trimmed}»${parent ? `  «${parent}»` : ""}    \n      
   .`,
       confirmText: "  ",
     });
     if (!ok) return;
+
     setSaving(true);
     const res = await fetch("/api/options", {
       method: "POST",
@@ -100,7 +100,6 @@ export default function Combobox({
     const data = await res?.json().catch(() => ({}));
     if (res?.ok) {
       onChange(trimmed);
-
       onAdded?.(trimmed);
       setOpen(false);
       setNote(data?.duplicate ? "     " : "    ");
@@ -122,15 +121,15 @@ export default function Combobox({
             setQuery(e.target.value);
             setOpen(true);
             markTyping();
-            //   « »
+            //   « »          
             if (!selectOnly) onChange(e.target.value);
           }}
           onBlur={() => {
-            //
+            //              
             if (selectOnly) setTimeout(() => setQuery(value), 150);
           }}
           onKeyDown={(e) => {
-            // Enter
+            // Enter         
             if (e.key === "Enter") e.preventDefault();
             if (e.key === "Escape") setOpen(false);
           }}
@@ -171,6 +170,7 @@ ng-1 ring-slate-200">
             <button
               key={o}
               type="button"
+
               onMouseDown={(e) => e.preventDefault()}
               onClick={() => {
                 onChange(o);
@@ -185,7 +185,6 @@ ng-1 ring-slate-200">
             </button>
           ))}
         </div>
-
       ) : null}
     </div>
   );

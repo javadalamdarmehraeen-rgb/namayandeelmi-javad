@@ -1,4 +1,3 @@
-
 import {
   pgTable,
   serial,
@@ -18,7 +17,6 @@ export const users = pgTable("users", {
   passwordPlain: varchar("password_plain", { length: 120 }).notNull().default(""),
   fullName: varchar("full_name", { length: 160 }).notNull(),
   phone: varchar("phone", { length: 20 }).notNull().default(""),
-
   role: varchar("role", { length: 20 }).notNull().default("rep"), // admin | supervisor | rep
   active: boolean("active").notNull().default(true),
   requirePhone: boolean("require_phone").notNull().default(true),
@@ -55,6 +53,7 @@ export const pharmacies = pgTable(
     address: text("address").notNull().default(""),
     isPercent: boolean("is_percent").notNull().default(false),
     percentValue: text("percent_value").notNull().default(""),
+
     lat: doublePrecision("lat"),
     lng: doublePrecision("lng"),
     accuracy: doublePrecision("accuracy"),
@@ -103,7 +102,6 @@ export const orders = pgTable(
     managerName: varchar("manager_name", { length: 160 }).notNull().default(""),
     managerPhone: varchar("manager_phone", { length: 20 }).notNull().default(""),
     address: text("address").notNull().default(""),
-
     lat: doublePrecision("lat"),
     lng: doublePrecision("lng"),
     accuracy: doublePrecision("accuracy"),
@@ -137,6 +135,7 @@ export const homes = pgTable("homes", {
   lat: doublePrecision("lat").notNull(),
   lng: doublePrecision("lng").notNull(),
   accuracy: doublePrecision("accuracy"),
+
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 });
 export const leaves = pgTable("leaves", {
@@ -188,7 +187,6 @@ export const trips = pgTable("trips", {
   endedAt: timestamp("ended_at", { withTimezone: true }),
 });
 export const tripPoints = pgTable(
-
   "trip_points",
   {
     id: serial("id").primaryKey(),
@@ -218,6 +216,7 @@ export const messengers = pgTable("messengers", {
   target: text("target").notNull().default(""),
   /**     API   */
   token: text("token").notNull().default(""),
+
   /**   : whatsiplus | cloudapi | ultramsg | custom */
   provider: varchar("provider", { length: 30 }).notNull().default(""),
   /**      () */
@@ -251,7 +250,7 @@ export const notifications = pgTable(
   "notifications",
   {
     id: serial("id").primaryKey(),
-    toUserId: integer("to_user_id"), // null =
+    toUserId: integer("to_user_id"), // null =  
     toRole: varchar("to_role", { length: 20 }).notNull().default(""),
     fromName: varchar("from_name", { length: 160 }).notNull().default(""),
     kind: varchar("kind", { length: 40 }).notNull().default("info"),
@@ -273,7 +272,6 @@ export const attachments = pgTable(
   {
     id: serial("id").primaryKey(),
     ownerType: varchar("owner_type", { length: 30 }).notNull().default("doctor"),
-
     ownerId: integer("owner_id"),
     userId: integer("user_id").notNull(),
     repName: varchar("rep_name", { length: 160 }).notNull().default(""),
@@ -297,6 +295,7 @@ export const roles = pgTable("roles", {
 });
 /**     */
 export const otpCodes = pgTable(
+
   "otp_codes",
   {
     id: serial("id").primaryKey(),
@@ -358,7 +357,6 @@ export const syncState = pgTable("sync_state", {
   peerUrl: text("peer_url").notNull().default(""),
   enabled: boolean("enabled").notNull().default(true),
   /**          */
-
   pullCursor: timestamp("pull_cursor", { withTimezone: true }),
   /**          */
   pushCursor: timestamp("push_cursor", { withTimezone: true }),
@@ -379,6 +377,7 @@ export const syncLogs = pgTable("sync_logs", {
   applied: integer("applied").notNull().default(0),
   skipped: integer("skipped").notNull().default(0),
   ok: boolean("ok").notNull().default(true),
+
   detail: text("detail").notNull().default(""),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });

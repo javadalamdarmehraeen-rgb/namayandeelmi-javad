@@ -1,10 +1,10 @@
-
 "use client";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import dynamic from "next/dynamic";
 import { Alert, Badge, Button, Card, Input, SectionTitle } from "@/components/ui";
 import { useLive } from "@/lib/useLive";
 import { downloadFile } from "@/lib/download";
+
 import { formatDistance, formatDuration } from "@/lib/tracker";
 import { tehranDateTime, tehranTime, toPersianDigits } from "@/lib/jalali";
 const MapBox = dynamic(() => import("@/components/MapBox"), { ssr: false });
@@ -14,7 +14,6 @@ type Trip = {
   repName: string;
   dateShamsi: string;
   status: string;
-
   startedAt: string;
   endedAt: string | null;
   points: number;
@@ -82,6 +81,7 @@ export default function AdminTrips() {
   }, [sel, loadPoints]);
   /* ----------     ---------- */
   const reps = useMemo(() => [...new Set(trips.map((t) => t.repName))].sort(), [trips]);
+
   const filtered = useMemo(
     () =>
       trips.filter(
@@ -99,7 +99,6 @@ export default function AdminTrips() {
     return [...m.entries()].sort((a, b) => a[0].localeCompare(b[0]));
   }, [filtered]);
   const selected = trips.find((t) => t.id === sel);
-
   const stops = points.filter((p) => p.kind === "pause");
   const totalStop = points.reduce((a, p) => a + (p.stopSeconds ?? 0), 0);
   /**      (     ) */
@@ -130,6 +129,7 @@ export default function AdminTrips() {
           </Button>
           <Button variant="success" onClick={async () => setDl(await downloadFile("/api/export?type=trips", "trips.xls")
 )}>
+              
           </Button>
         </div>
       </div>
@@ -160,6 +160,7 @@ export default function AdminTrips() {
         <Card className="lg:col-span-1">
           <div className="max-h-[520px] space-y-3 overflow-y-auto">
             {grouped.map(([repName, list]) => {
+
               const totalDist = list.reduce((a, t) => a + (t.distanceM ?? 0), 0);
               return (
                 <div key={repName}>
@@ -183,7 +184,6 @@ export default function AdminTrips() {
                           <Badge tone={t.status === "active" ? "green" : "slate"}>
                             {t.status === "active" ? "  " : " "}
                           </Badge>
-
                         </div>
                         <div className="mt-1 flex flex-wrap gap-2 text-[10px] text-slate-500">
                           <span> {tehranTime(t.startedAt)}</span>
@@ -243,10 +243,11 @@ export default function AdminTrips() {
                 {points.length === 0 ? <p className="py-4 text-center text-slate-400">   </p> : null}
               </div>
             </>
+
           ) : (
             <>
               <p className="mb-2 text-center text-sm text-slate-400">
-                       —
+                       —          
               </p>
               <MapBox height={400} points={places} />
             </>

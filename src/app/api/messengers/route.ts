@@ -1,10 +1,8 @@
-
 import { db } from "@/db";
 import { messageLogs, messengers, settings } from "@/db/schema";
 import { getSessionUser } from "@/lib/auth";
 import { getProxy } from "@/lib/messaging";
 import { getSmsConfig } from "@/lib/otp";
-
 import { desc, eq } from "drizzle-orm";
 export const dynamic = "force-dynamic";
 async function adminGuard() {
@@ -63,6 +61,7 @@ export async function PATCH(req: Request) {
   if (typeof b.label === "string") patch.label = b.label.trim();
   if (typeof b.target === "string") patch.target = b.target.trim();
   if (typeof b.targetType === "string" && ["group", "channel", "phone"].includes(b.targetType)) {
+
     patch.targetType = b.targetType;
   }
   if (typeof b.token === "string") patch.token = b.token.trim();

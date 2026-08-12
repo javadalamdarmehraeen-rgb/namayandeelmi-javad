@@ -1,4 +1,3 @@
-
 "use client";
 import { useCallback, useMemo, useState } from "react";
 import dynamic from "next/dynamic";
@@ -14,6 +13,7 @@ type Live = {
   lat: number;
   lng: number;
   accuracy: number | null;
+
   speed: number | null;
   battery: number | null;
   gpsOn: boolean;
@@ -27,7 +27,6 @@ type Live = {
 };
 const ageLabel = (ms: number) => {
   const m = Math.floor(ms / 60000);
-
   if (m < 1) return " ";
   if (m < 60) return `${toPersianDigits(m)}  `;
   const h = Math.floor(m / 60);
@@ -67,11 +66,12 @@ export default function LivePage() {
             {autoRefresh ? "  (  )" : " "}
           </Button>
           <Button variant="ghost" onClick={refresh}>
+             
           </Button>
         </div>
       </div>
       <Alert kind="info">
-             GPS
+             GPS             
            .
       </Alert>
       <div className="grid grid-cols-1 gap-3 lg:grid-cols-3">
@@ -80,6 +80,7 @@ export default function LivePage() {
             <h3 className="text-sm font-bold text-slate-700"></h3>
             {focused ? (
               <button onClick={() => setSelected(null)} className="text-[11px] font-bold text-teal-700">
+                 
               </button>
             ) : null}
           </div>
@@ -88,6 +89,7 @@ export default function LivePage() {
               <button
                 key={r.userId}
                 onClick={() => setSelected(selected === r.userId ? null : r.userId)}
+
                 className={`w-full rounded-xl px-3 py-2 text-right ring-1 transition ${
                   selected === r.userId ? "bg-teal-50 ring-teal-300" : "bg-slate-50 ring-slate-200 hover:bg-slate-100"
                 }`}
@@ -110,7 +112,6 @@ export default function LivePage() {
                 <div className="mt-1 text-[10px] text-slate-400">{tehranDateTime(r.updatedAt)}</div>
               </button>
             ))}
-
             {rows.length === 0 ? (
               <p className="py-6 text-center text-xs text-slate-400">    </p>
             ) : null}

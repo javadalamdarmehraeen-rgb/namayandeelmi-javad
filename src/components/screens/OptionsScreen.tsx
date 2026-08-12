@@ -1,4 +1,3 @@
-
 "use client";
 import { useCallback, useEffect, useState } from "react";
 import { Alert, Button, Card, Input, SectionTitle } from "@/components/ui";
@@ -17,6 +16,7 @@ export default function OptionsScreen({ canDelete = false }: { canDelete?: boole
   const [parentSel, setParentSel] = useState<Record<string, string>>({});
   const confirm = useConfirm();
   const load = useCallback(async () => {
+
     const res = await fetch("/api/options", { cache: "no-store" });
     if (res.ok) setRows((await res.json()).rows ?? []);
   }, []);
@@ -29,12 +29,11 @@ export default function OptionsScreen({ canDelete = false }: { canDelete?: boole
       return;
     }
     const label = OPTION_CATEGORIES.find((c) => c.key === category)?.label ?? category;
-    if (!(await confirm({ title: "  ", message: `«${value}»   «${label}»  `, confirmText:
+    if (!(await confirm({ title: "  ", message: `«${value}»   «${label}»  `, confirmText: 
 "" })))
       return;
     const res = await fetch("/api/options", {
       method: "POST",
-
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ category, value, parent: parentSel[category] ?? "" }),
     });
@@ -97,6 +96,7 @@ export default function OptionsScreen({ canDelete = false }: { canDelete?: boole
               (!q || r.value.toLowerCase().includes(q.toLowerCase())) &&
               (!par || r.parent === par),
           );
+
           return (
             <Card key={cat.key}>
               <h3 className="mb-2 text-sm font-bold text-slate-800">
@@ -111,7 +111,7 @@ export default function OptionsScreen({ canDelete = false }: { canDelete?: boole
                   <option value="">
                     {cat.key === "city" ? "—      —" : "—      —"}
                   </option>
-                  {[...new Set(rows.filter((r) => r.category === (cat.key === "city" ? "province" : "city")).map((r) =>
+                  {[...new Set(rows.filter((r) => r.category === (cat.key === "city" ? "province" : "city")).map((r) => 
 r.value))]
                     .sort()
                     .map((p) => (
@@ -119,7 +119,6 @@ r.value))]
                         {p}
                       </option>
                     ))}
-
                 </select>
               ) : null}
               <div className="mb-3 flex gap-2">
@@ -145,11 +144,13 @@ r.value))]
                       />
                       <button onClick={saveEdit} className="rounded-lg bg-emerald-600 px-2 py-1 text-[11px] font-bold te
 xt-white">
+                        
                       </button>
                       <button
                         onClick={() => setEditing(null)}
                         className="rounded-lg bg-slate-200 px-2 py-1 text-[11px] font-bold text-slate-700"
                       >
+                        
                       </button>
                     </li>
                   ) : (
@@ -168,17 +169,20 @@ xt-white">
                               onClick={() => setEditing({ id: it.id, value: it.value })}
                               className="rounded-lg bg-sky-100 px-2 py-0.5 text-[11px] font-bold text-sky-700"
                             >
+                               
                             </button>
                             <button
                               onClick={() => remove(it.id, it.value)}
                               className="rounded-lg bg-rose-100 px-2 py-0.5 text-[11px] font-bold text-rose-700"
                             >
+                              
                             </button>
                           </>
                         ) : null}
                       </span>
                     </li>
                   ),
+
                 )}
                 {items.length === 0 ? <li className="text-xs text-slate-400"> </li> : null}
               </ul>

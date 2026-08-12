@@ -1,4 +1,3 @@
-
 "use client";
 import { toPersianDigits } from "@/lib/jalali";
 export type Series = { label: string; value: number; color?: string };

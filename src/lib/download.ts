@@ -1,10 +1,9 @@
-
 "use client";
 /**
  *     API.
  *
- *      <a href>  `x-auth-token`
- *       « » .
+ *      <a href>  `x-auth-token`     
+ *       « » .     
  * fetch (    )       .
  */
 export async function downloadFile(path: string, fallbackName = "export.xls"): Promise<string> {
@@ -13,6 +12,7 @@ export async function downloadFile(path: string, fallbackName = "export.xls"): P
     if (!res.ok) {
       const msg = await res
         .json()
+
         .then((d) => d?.error)
         .catch(() => null);
       return ` ${msg ?? ` ${res.status}   `}`;

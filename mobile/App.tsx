@@ -1,7 +1,6 @@
-
 /**
  *     «  »
- * React Native —
+ * React Native —         
  */
 import React, { useEffect, useState } from "react";
 import {
@@ -47,6 +46,7 @@ export default function App() {
         setToken(saved);
         setScreen("app");
         return;
+
       }
       const info = await readSimInfo();
       setSim(info);
@@ -56,7 +56,7 @@ export default function App() {
         return;
       }
       if (!info.phoneNumber) {
-        //       →
+        //       →   
         setMsg(
           ` ${info.carrier || ""}           .\n` +
             "            .",
@@ -73,7 +73,6 @@ export default function App() {
       } else if (res.status === "need-otp") {
         setMsg(res.message);
         setMasked(res.masked ?? "");
-
         setScreen("credentials");
       } else {
         setMsg(res.message);
@@ -125,6 +124,7 @@ export default function App() {
     return (
       <SafeAreaView style={[styles.flex, styles.center]}>
         <ActivityIndicator size="large" color="#0f766e" />
+
         <Text style={styles.hint}>   ...</Text>
       </SafeAreaView>
     );
@@ -158,7 +158,6 @@ export default function App() {
               value={password}
               onChangeText={setPassword}
               secureTextEntry
-
             />
             <TouchableOpacity style={styles.btn} onPress={doRequestOtp}>
               <Text style={styles.btnText}>    </Text>
@@ -205,9 +204,10 @@ const styles = StyleSheet.create({
   container: { padding: 24, gap: 12 },
   title: { fontSize: 24, fontWeight: "bold", color: "#0f766e", textAlign: "center", marginTop: 40 },
   sub: { fontSize: 14, color: "#64748b", textAlign: "center", marginBottom: 12 },
+
   simBox: { backgroundColor: "#fff", borderRadius: 14, padding: 12, borderWidth: 1, borderColor: "#e2e8f0" },
   simText: { fontSize: 12, color: "#334155", textAlign: "right" },
-  msg: { fontSize: 12, color: "#b45309", backgroundColor: "#fffbeb", padding: 12, borderRadius: 12, textAlign: "right",
+  msg: { fontSize: 12, color: "#b45309", backgroundColor: "#fffbeb", padding: 12, borderRadius: 12, textAlign: "right", 
 lineHeight: 22 },
   input: { backgroundColor: "#fff", borderRadius: 14, borderWidth: 1, borderColor: "#cbd5e1", padding: 14, fontSize: 14,
  textAlign: "right" },

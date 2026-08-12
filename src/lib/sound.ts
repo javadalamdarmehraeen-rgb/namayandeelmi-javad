@@ -1,4 +1,3 @@
-
 /**      (WebAudio) —     */
 export function playNotificationSound() {
   try {
@@ -6,7 +5,6 @@ export function playNotificationSound() {
       window.AudioContext ||
       (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
     if (!Ctx) return;
-
     const ctx = new Ctx();
     const now = ctx.currentTime;
     const notes = [880, 1174.7];

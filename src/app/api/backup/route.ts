@@ -1,4 +1,3 @@
-
 import { db } from "@/db";
 import {
   activityLogs,
@@ -10,6 +9,7 @@ import {
   notifications,
   options,
   orders,
+
   roles,
   pharmacies,
   settings,
@@ -70,7 +70,6 @@ export async function GET(req: Request) {
   const payload = {
     app: "sabt-etelaat-kol",
     version: 1,
-
     createdAt: new Date().toISOString(),
     dateShamsi: todayJalali(),
     includesFiles: withFiles,
@@ -91,6 +90,7 @@ export async function GET(req: Request) {
       options: optionsRows,
       homes: homesRows,
       leaves: leavesRows,
+
       trips: tripsRows,
       tripPoints: tripPointsRows,
       messengers: messengersRows,

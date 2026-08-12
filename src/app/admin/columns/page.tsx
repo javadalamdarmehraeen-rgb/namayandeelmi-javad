@@ -1,4 +1,3 @@
-
 "use client";
 import { useCallback, useEffect, useState } from "react";
 import { Alert, Badge, Button, Card, Input, SectionTitle } from "@/components/ui";
@@ -57,10 +56,10 @@ export default function ColumnsPage() {
     };
     setFormFields({
       pharmacies: mergeFields("fields.pharmacies", DEFAULT_FORM_FIELDS.pharmacies),
-
       doctors: mergeFields("fields.doctors", DEFAULT_FORM_FIELDS.doctors),
       orders: mergeFields("fields.orders", DEFAULT_FORM_FIELDS.orders),
     });
+
   }, []);
   useEffect(() => {
     load();
@@ -136,12 +135,12 @@ xt: "" })))
                   next[i] = { ...c, label: e.target.value };
                   setCols({ ...cols, [tab]: next });
                 }}
+
                 className="max-w-[180px] px-2 py-1 text-xs"
               />
               <span className="text-[10px] text-slate-400">{c.key}</span>
               <div className="mr-auto flex gap-1">
                 <button
-
                   onClick={() => setCols({ ...cols, [tab]: move(current, i, -1) })}
                   className="rounded-lg bg-white px-2 py-1 text-xs ring-1 ring-slate-200"
                 >
@@ -168,6 +167,7 @@ xt: "" })))
                   }}
                   className="rounded-lg bg-rose-100 px-2 py-1 text-xs font-bold text-rose-700"
                 >
+                  
                 </button>
               </div>
             </li>
@@ -203,10 +203,12 @@ xt: "" })))
               await persist(`columns.${tab}`, next, `  «${found.label}»    `);
             }}
           >
+             
           </Button>
           <span className="text-[10px] text-slate-400">
             {toPersianDigits((AVAILABLE_COLUMNS[tab] ?? []).filter((a) => !current.some((c) => c.key === a.key)).length)
 }{" "}
+              
           </span>
         </div>
         <div className="mt-3 flex gap-2">
@@ -217,12 +219,13 @@ xt: "" })))
               if (!(await confirm({ title: " ", message: "      ", confi
 rmText: "" })))
                 return;
+
               setCols({ ...cols, [tab]: DEFAULT_COLUMNS[tab] });
             }}
           >
+             
           </Button>
         </div>
-
       </Card>
       {/*     —     */}
       <Card>
@@ -230,7 +233,7 @@ rmText: "" })))
           <div>
             <h3 className="text-sm font-black text-slate-800">   </h3>
             <p className="mt-1 text-[11px] text-slate-500">
-                      « »   .
+                      « »   .        
  .
             </p>
           </div>
@@ -288,6 +291,7 @@ g-indigo-100">
                   }}
                   className="rounded-lg bg-rose-100 px-2 py-1 text-xs font-bold text-rose-700"
                 >
+                  
                 </button>
               </div>
             </li>
@@ -298,6 +302,7 @@ g-indigo-100">
           <select
             value={addField}
             onChange={(e) => setAddField(e.target.value)}
+
             className="rounded-xl border border-indigo-200 bg-white px-2 py-2 text-xs"
           >
             <option value=""> ...</option>
@@ -306,7 +311,6 @@ g-indigo-100">
               .map((a) => (
                 <option key={a.key} value={a.key}>{a.label}</option>
               ))}
-
           </select>
           <Button
             variant="soft"
@@ -322,6 +326,7 @@ g-indigo-100">
               await persist(`fields.${tab}`, next, `  «${found.label}»     `);
             }}
           >
+               
           </Button>
         </div>
         <div className="mt-3 flex flex-wrap gap-2">
@@ -336,6 +341,7 @@ xt: "" }))) return;
               await persist(`fields.${tab}`, next, "      ");
             }}
           >
+              
           </Button>
         </div>
       </Card>
@@ -380,6 +386,7 @@ xt: "" }))) return;
                 </button>
                 <button onClick={() => moveP(i, 1)} className="rounded-lg bg-white px-2 py-1 text-xs ring-1 ring-slate-2
 00">
+
                   ↓
                 </button>
                 <button
@@ -389,7 +396,6 @@ xt: "" }))) return;
                         title: " ",
                         message: ` «${p.label}»  `,
                         confirmText: "",
-
                         danger: true,
                       }))
                     )
@@ -398,6 +404,7 @@ xt: "" }))) return;
                   }}
                   className="rounded-lg bg-rose-100 px-2 py-1 text-xs font-bold text-rose-700"
                 >
+                  
                 </button>
               </div>
             </li>
@@ -420,9 +427,11 @@ xt: "" }))) return;
               setNewProduct("");
             }}
           >
+              
           </Button>
           <Button onClick={() => save("products", products)}>  </Button>
           <Button variant="ghost" onClick={() => setProducts(DEFAULT_PRODUCTS)}>
+             
           </Button>
         </div>
       </Card>

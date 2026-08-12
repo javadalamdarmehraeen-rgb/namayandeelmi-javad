@@ -1,4 +1,3 @@
-
 import { db } from "@/db";
 import { activityLogs, leaves } from "@/db/schema";
 import { getSessionUser } from "@/lib/auth";
@@ -41,6 +40,7 @@ export async function POST(req: Request) {
     .returning();
   await db
     .insert(activityLogs)
+
     .values({
       userId: user.id,
       userName: user.fullName,
@@ -48,7 +48,6 @@ export async function POST(req: Request) {
       detail: `${fromDate}  ${toDate}`,
     })
     .catch(() => undefined);
-
   for (const role of ["admin", "supervisor"] as const) {
     await notify({
       toRole: role,

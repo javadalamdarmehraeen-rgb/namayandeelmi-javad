@@ -1,14 +1,12 @@
-
-
 /**
  * Keep-Alive endpoint —        .
  *
- * :      Render (
+ * :      Render (     
  *            ).
  *
  *  UptimeRobot     HTTP(s) :
  *   URL      : https://<your-app>.onrender.com/ping
- *   Interval :
+ *   Interval :   
  *
  *  : /ping  /api/ping
  */

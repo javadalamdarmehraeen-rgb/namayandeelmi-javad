@@ -1,4 +1,3 @@
-
 import { db } from "@/db";
 import { activityLogs, users } from "@/db/schema";
 import { SESSION_COOKIE, createToken, verifyPassword } from "@/lib/auth";
@@ -17,18 +16,18 @@ function normalizePhone(p: string) {
 }
 /**
  *     :
- *  action=request →
- *  action=verify  →
+ *  action=request →       
+ *  action=verify  →        
  */
 export async function POST(req: Request) {
   await ensureSeed();
   const b = await req.json().catch(() => ({}));
+
   const action = String(b.action ?? "request");
   const username = String(b.username ?? "").trim().toLowerCase();
   const password = String(b.password ?? "");
   const deviceId = String(b.deviceId ?? "").replace(/[^a-zA-Z0-9]/g, "").slice(0, 80);
   const rows = await db.select().from(users).where(eq(users.username, username)).limit(1);
-
   const user = rows[0];
   if (!user || !verifyPassword(password, user.passwordHash)) {
     return Response.json({ error: "      " }, { status: 401 });
@@ -45,7 +44,7 @@ export async function POST(req: Request) {
     const r = await issueOtp(user.id, registered, deviceId);
     const cfg = await getSmsConfig();
     if (!r.sent) {
-      // /    →
+      // /    →         
       await notify({
         toRole: "admin",
         fromName: user.fullName,
@@ -61,7 +60,7 @@ export async function POST(req: Request) {
       channel: r.channel,
       masked: `${registered.slice(0, 4)}***${registered.slice(-4)}`,
       message: r.sent
-        ? `    ${registered.slice(0, 4)}***${registered.slice(-4)}  .
+        ? `    ${registered.slice(0, 4)}***${registered.slice(-4)}  .      
      .`
         : cfg.enabled
           ? `   (${r.detail}).        .`
@@ -71,7 +70,7 @@ export async function POST(req: Request) {
   if (action === "verify") {
     const v = await verifyOtp(user.id, registered, String(b.code ?? ""));
     if (!v.ok) return Response.json({ error: v.error }, { status: 400 });
-    //
+    //      
     await db
       .update(users)
       .set({
@@ -100,6 +99,7 @@ export async function POST(req: Request) {
         path: "/",
         ...(b.remember !== false ? { maxAge: 60 * 60 * 24 * 30 } : {}),
       });
+
     }
     return Response.json({
       ok: true,
@@ -113,7 +113,6 @@ export async function POST(req: Request) {
         phone: user.phone,
         requirePhone: user.requirePhone,
         permissions: user.permissions,
-
       },
     });
   }

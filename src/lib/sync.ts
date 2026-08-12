@@ -1,4 +1,3 @@
-
 import { createHmac, timingSafeEqual } from "crypto";
 import { db, dbRetrySafe, pool } from "@/db";
 import { syncLogs, syncState } from "@/db/schema";
@@ -6,15 +5,16 @@ import { fetchWithRetry } from "./retry";
 import { LOCAL_ONLY_COLUMNS, SYNC_TABLES, configuredPeers, nodeName, selfUrl, syncSecret } from "./sync-config";
 import { eq } from "drizzle-orm";
 /* ============================================================
- *
+ *      
  *
  *      :
- *    ) PULL  →     pullCursor
- *    ) PUSH  →     pushCursor
+ *    ) PULL  →     pullCursor    
+ *    ) PUSH  →     pushCursor    
  *
  *   : Last-Write-Wins   updated_at
- *   :   origin
+ *   :   origin      
  * ============================================================ */
+
 export type ChangeSet = Record<string, Record<string, unknown>[]>;
 export type SyncReport = {
   peer: string;
@@ -48,7 +48,6 @@ export function verifySync(body: string, timestamp: number, signature: string) {
 async function tableColumns(table: string): Promise<string[]> {
   const res = await pool.query(
     `select column_name from information_schema.columns where table_schema='public' and table_name=$1`,
-
     [table],
   );
   return res.rows.map((r) => String(r.column_name));
@@ -56,10 +55,10 @@ async function tableColumns(table: string): Promise<string[]> {
 /**
  *       .
  *
- * :   origin
+ * :   origin         
  *     .        :
  *   )        (sek.sync = on)
- *   )  `updated_at < excluded.updated_at`
+ *   )  `updated_at < excluded.updated_at`     
  */
 export async function collectChanges(since: Date | null, excludeOrigin?: string): Promise<ChangeSet> {
   void excludeOrigin;
@@ -88,7 +87,8 @@ export async function collectChanges(since: Date | null, excludeOrigin?: string)
 export async function applyChanges(changes: ChangeSet, fromPeer: string) {
   let applied = 0;
   let skipped = 0;
-  //     set_config
+  //     set_config      
+
   const client = await pool.connect();
   try {
     await client.query(`select set_config('sek.sync','on',false)`);
@@ -115,7 +115,7 @@ export async function applyChanges(changes: ChangeSet, fromPeer: string) {
         perTable[table].skipped++;
         continue;
       }
-      //
+      //        
       for (const k of Object.keys(row)) {
         if (!cols.includes(k) || LOCAL_ONLY_COLUMNS.has(k)) delete row[k];
       }
@@ -133,7 +133,6 @@ export async function applyChanges(changes: ChangeSet, fromPeer: string) {
         const q = `
           insert into ${table} (${keys.join(", ")}) values (${placeholders})
           on conflict (uid) do update set ${updates}
-
           where ${table}.updated_at < excluded.updated_at
         `;
         const res = await client.query(q, keys.map((k) => row[k]));
@@ -151,7 +150,7 @@ export async function applyChanges(changes: ChangeSet, fromPeer: string) {
       }
     }
   }
-  //
+  //             
   //        .
   try {
     await client.query(`select set_config('sek.sync','off',false)`);
@@ -165,6 +164,7 @@ export async function applyChanges(changes: ChangeSet, fromPeer: string) {
         db.insert(syncLogs).values({
           peer: fromPeer,
           direction: "pull",
+
           tableName: table,
           applied: st.applied,
           skipped: st.skipped,
@@ -218,7 +218,6 @@ export async function ensurePeers() {
       "sync:peer",
     );
     if (existing.length === 0) {
-
       await dbRetrySafe(
         () => db.insert(syncState).values({ peer: p.peer, peerUrl: p.url }),
         undefined,
@@ -244,6 +243,7 @@ export async function syncWithPeer(peerRow: typeof syncState.$inferSelect): Prom
   let pushed = 0;
   let conflicts = 0;
   const notes: string[] = [];
+
   try {
     if (!syncSecret()) throw new Error("SYNC_SECRET   ");
     if (!peerRow.peerUrl) throw new Error("    ");
@@ -251,7 +251,7 @@ export async function syncWithPeer(peerRow: typeof syncState.$inferSelect): Prom
     const pullRes = await callPeer(peerRow.peerUrl, "/api/sync/pull", {
       node: me,
       since: peerRow.pullCursor ? new Date(peerRow.pullCursor).toISOString() : null,
-      excludeOrigin: me, //
+      excludeOrigin: me, //     
     });
     const changes = (pullRes.changes ?? {}) as ChangeSet;
     const applyRes = await applyChanges(changes, peerRow.peer);
@@ -262,7 +262,7 @@ export async function syncWithPeer(peerRow: typeof syncState.$inferSelect): Prom
     /* ---------- ) PUSH:    ---------- */
     const localChanges = await collectChanges(
       peerRow.pushCursor ? new Date(peerRow.pushCursor) : null,
-      peerRow.peer, //
+      peerRow.peer, //       
     );
     const rowCount = Object.values(localChanges).reduce((a, r) => a + r.length, 0);
     let newPushCursor = peerRow.pushCursor ? new Date(peerRow.pushCursor) : new Date(0);
@@ -270,7 +270,7 @@ export async function syncWithPeer(peerRow: typeof syncState.$inferSelect): Prom
       const pushRes = await callPeer(peerRow.peerUrl, "/api/sync/push", { node: me, changes: localChanges });
       pushed = Number(pushRes.applied ?? 0);
       conflicts += Number(pushRes.skipped ?? 0);
-      //  updated_at
+      //  updated_at   
       for (const rows of Object.values(localChanges)) {
         for (const r of rows) {
           const u = new Date(String(r.updated_at));
@@ -303,7 +303,6 @@ export async function syncWithPeer(peerRow: typeof syncState.$inferSelect): Prom
     return {
       peer: peerRow.peer,
       ok: true,
-
       pulled,
       pushed,
       conflicts,
@@ -322,7 +321,8 @@ export async function syncWithPeer(peerRow: typeof syncState.$inferSelect): Prom
       "sync:fail",
     );
     await dbRetrySafe(
-      () => db.insert(syncLogs).values({ peer: peerRow.peer, direction: "both", ok: false, detail: detail.slice(0, 400)
+
+      () => db.insert(syncLogs).values({ peer: peerRow.peer, direction: "both", ok: false, detail: detail.slice(0, 400) 
 }),
       undefined,
       "sync:logFail",

@@ -1,14 +1,13 @@
-
 /**
  * ============================================================
  *  Retry  Exponential Backoff + Jitter
  * ------------------------------------------------------------
- *
+ *           
  *  Neon (cold start)     .
  *
  *  :
  *   -   «»   (  5xx 429).
- *   -   (unique violation 4xx syntax)
+ *   -   (unique violation 4xx syntax)   
  *          .
  *   -    Jitter    « »  .
  * ============================================================
@@ -54,14 +53,14 @@ export const TRANSIENT_NETWORK_CODES = new Set([
   "UND_ERR_SOCKET",
 ]);
 /**
- *   PostgreSQL ( 08 =  53 =
+ *   PostgreSQL ( 08 =  53 =  
  * 57P = /  40001/40P01 =  )
  */
 export const TRANSIENT_PG_CODES = new Set([
   "08000", "08001", "08003", "08004", "08006", "08007", "08P01",
   "53300", "53400", "57P01", "57P02", "57P03",
   "40001", "40P01",
-  "XX000", // internal error —  Neon
+  "XX000", // internal error —  Neon     
 ]);
 const TRANSIENT_MESSAGE_HINTS = [
   "timeout",
@@ -76,13 +75,13 @@ const TRANSIENT_MESSAGE_HINTS = [
   "fetch failed",
   "network",
   "temporarily unavailable",
-  "endpoint is disabled", //  Neon
+
+  "endpoint is disabled", //  Neon    
   "compute time exceeded",
   "could not connect",
 ];
 function errCode(error: unknown): string {
   if (!error || typeof error !== "object") return "";
-
   const e = error as { code?: unknown; errno?: unknown; cause?: unknown };
   if (typeof e.code === "string") return e.code;
   if (typeof e.errno === "string") return e.errno;
@@ -98,7 +97,7 @@ function errMessage(error: unknown): string {
 /**          */
 export function isTransientError(error: unknown): boolean {
   if (!error) return false;
-  //
+  //     
   if (error instanceof Error && error.name === "AbortError") return false;
   const code = errCode(error).toUpperCase();
   if (TRANSIENT_NETWORK_CODES.has(code)) return true;
@@ -116,7 +115,7 @@ export function isTransientError(error: unknown): boolean {
 /**    Jitter  (Full Jitter) */
 export function backoffDelay(attempt: number, baseDelayMs: number, maxDelayMs: number): number {
   const exponential = Math.min(maxDelayMs, baseDelayMs * 2 ** (attempt - 1));
-  // Full Jitter:
+  // Full Jitter:         
   const half = exponential / 2;
   return Math.round(half + Math.random() * half);
 }
@@ -151,6 +150,7 @@ export async function withRetry<T>(
 ): Promise<T> {
   const cfg = { ...DEFAULTS, ...options };
   const retryable = options.isRetryable ?? isTransientError;
+
   let lastError: unknown;
   for (let attempt = 1; attempt <= cfg.retries; attempt++) {
     try {
@@ -158,7 +158,7 @@ export async function withRetry<T>(
     } catch (error) {
       lastError = error;
       const isLast = attempt >= cfg.retries;
-      // TimeoutError
+      // TimeoutError     
       const timedOut = error instanceof Error && error.name === "TimeoutError";
       if (isLast || !(timedOut || retryable(error))) throw error;
       const delayMs = backoffDelay(attempt, cfg.baseDelayMs, cfg.maxDelayMs);
@@ -167,7 +167,6 @@ export async function withRetry<T>(
         `[retry${options.label ? `:${options.label}` : ""}]  ${attempt}/${cfg.retries}  ` +
           `(${errCode(error) || errMessage(error).slice(0, 80)}) —    ${delayMs}ms `,
       );
-
       await sleep(delayMs, options.signal);
     }
   }
@@ -195,7 +194,7 @@ export async function fetchWithRetry(
   return withRetry(
     async (_attempt, signal) => {
       const res = await fetch(input, { ...init, signal: init.signal ?? signal, cache: init.cache ?? "no-store" });
-      // 5xx / 429 / 408        Retry
+      // 5xx / 429 / 408        Retry  
       if (res.status >= 500 || res.status === 429 || res.status === 408) {
         const err = new Error(`HTTP ${res.status}  ${typeof input === "string" ? input : input.toString()}`);
         (err as Error & { status: number }).status = res.status;

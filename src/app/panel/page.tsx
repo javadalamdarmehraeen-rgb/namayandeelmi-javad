@@ -1,4 +1,3 @@
-
 "use client";
 import Link from "next/link";
 import { useEffect, useState } from "react";
@@ -32,7 +31,7 @@ export default function PanelHome() {
   const main = [
     { href: "/panel/pharmacies", title: "  ", icon: "", n: counts.ph, perm: "pharmacy", color: "from
 -teal-600 to-teal-500" },
-    { href: "/panel/doctors", title: "  ", icon: "", n: counts.dr, perm: "doctor", color: "from-sky-600
+    { href: "/panel/doctors", title: "  ", icon: "", n: counts.dr, perm: "doctor", color: "from-sky-600 
 to-sky-500" },
     { href: "/panel/orders", title: "  ", icon: "", n: counts.or, perm: "order", color: "from-indigo
 -600 to-indigo-500" },
@@ -61,6 +60,7 @@ scale-[0.99]`}
           >
             <span className="flex size-12 shrink-0 items-center justify-center rounded-2xl bg-white/20 text-2xl">
               {c.icon}
+
             </span>
             <span className="min-w-0">
               <span className="block text-sm font-black">{c.title}</span>
@@ -75,7 +75,6 @@ scale-[0.99]`}
             key={c.href}
             href={c.href}
             className="flex flex-col items-center gap-2 rounded-2xl bg-white p-4 text-center shadow-sm ring-1 ring-slate
-
 -200 hover:ring-teal-300"
           >
             <span className="text-2xl">{c.icon}</span>

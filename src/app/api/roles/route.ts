@@ -1,4 +1,3 @@
-
 import { db } from "@/db";
 import { roles, users } from "@/db/schema";
 import { getSessionUser } from "@/lib/auth";
@@ -18,7 +17,6 @@ export async function GET() {
   if (!user) return Response.json({ error: " " }, { status: 401 });
   const rows = await db.select().from(roles).orderBy(asc(roles.id));
   return Response.json({ rows });
-
 }
 export async function POST(req: Request) {
   const user = await guard(true);
@@ -41,6 +39,7 @@ export async function POST(req: Request) {
   return Response.json({ row });
 }
 export async function PATCH(req: Request) {
+
   const user = await guard(true);
   if (!user) return Response.json({ error: " " }, { status: 401 });
   const b = await req.json().catch(() => ({}));

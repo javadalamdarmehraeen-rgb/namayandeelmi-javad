@@ -1,4 +1,3 @@
-
 import { db } from "@/db";
 import { users } from "@/db/schema";
 import { getSessionUser, hashPassword } from "@/lib/auth";
@@ -31,6 +30,7 @@ export async function GET() {
       simMode: users.simMode,
       lastSeenAt: users.lastSeenAt,
       createdAt: users.createdAt,
+
     })
     .from(users)
     .orderBy(asc(users.id));
@@ -59,7 +59,6 @@ export async function POST(req: Request) {
       role: String(b.role ?? "rep").slice(0, 40),
       active: b.active !== false,
       requirePhone: b.requirePhone !== false,
-
       simMode: ["off", "phone", "device", "otp"].includes(b.simMode) ? b.simMode : "device",
       permissions: Array.isArray(b.permissions) && b.permissions.length ? b.permissions : ALL_PERMISSION_KEYS,
     })

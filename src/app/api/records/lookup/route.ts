@@ -1,4 +1,3 @@
-
 import { db, dbRetrySafe } from "@/db";
 import { doctors, orders, pharmacies } from "@/db/schema";
 import { getSessionUser } from "@/lib/auth";
@@ -6,7 +5,6 @@ import { bonusKeyOf } from "@/lib/defaults";
 import { getProducts } from "@/lib/settings-server";
 import { desc } from "drizzle-orm";
 export const dynamic = "force-dynamic";
-
 /**    :    «» «»    */
 export function normalizeName(input: string) {
   return String(input ?? "")
@@ -27,8 +25,9 @@ function normPhone(p: string) {
  * GET /api/records/lookup?type=pharmacies|doctors|orders&name=...&phone=...
  *
  *  :
- *  )      /
- *  )
+
+ *  )      / 
+ *  )         
  */
 export async function GET(req: Request) {
   const user = await getSessionUser();
@@ -91,7 +90,6 @@ export async function GET(req: Request) {
     repName: r.repName,
     dateShamsi: r.dateShamsi,
     mine: r.userId === user.id,
-
   }));
   if (type !== "orders") return Response.json({ duplicates, count: dup.length });
   /* --------     -------- */
@@ -105,6 +103,7 @@ export async function GET(req: Request) {
   const itemTotals: Record<string, { label: string; qty: number; bonus: number }> = {};
   for (const o of history) {
     for (const p of products) {
+
       const q = Number(o.items?.[p.key] ?? 0);
       const bn = Number(o.items?.[bonusKeyOf(p.key)] ?? 0);
       if (!q && !bn) continue;

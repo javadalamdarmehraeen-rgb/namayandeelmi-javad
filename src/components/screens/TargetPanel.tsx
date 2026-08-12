@@ -1,4 +1,3 @@
-
 "use client";
 import { useCallback, useEffect, useState } from "react";
 import { Badge, Card, SectionTitle } from "@/components/ui";
@@ -35,6 +34,7 @@ export default function TargetPanel({ userId, compact = false }: { userId?: numb
   const [totals, setTotals] = useState<Totals | null>(null);
   const [percent, setPercent] = useState(0);
   const [period, setPeriod] = useState(currentPeriod());
+
   const load = useCallback(async () => {
     const q = new URLSearchParams({ period });
     if (userId) q.set("userId", String(userId));
@@ -76,7 +76,6 @@ export default function TargetPanel({ userId, compact = false }: { userId?: numb
       </Card>
     );
   }
-
   if (active.length === 0) return null;
   return (
     <Card>
@@ -114,6 +113,7 @@ export default function TargetPanel({ userId, compact = false }: { userId?: numb
           ))}
         </div>
       ) : null}
+
       <div className="space-y-1.5">
         {active.map((r) => (
           <div key={r.productKey} className="rounded-xl bg-slate-50 p-2 ring-1 ring-slate-200">
@@ -143,15 +143,15 @@ export default function TargetPanel({ userId, compact = false }: { userId?: numb
       {totals && (totals.soldValueDistributor > 0 || totals.valueDistributor > 0) ? (
         <div className="mt-3 grid grid-cols-1 gap-2 text-[11px] sm:grid-cols-2">
           <div className="rounded-xl bg-slate-50 p-2.5 ring-1 ring-slate-200">
-              (): <b className="text-slate-800">{money(totals.valueDistributor)}</b>
+              (): <b className="text-slate-800">{money(totals.valueDistributor)}</b> 
             <div className="text-teal-700">
-              : <b>{money(totals.soldValueDistributor)}</b>
+              : <b>{money(totals.soldValueDistributor)}</b> 
             </div>
           </div>
           <div className="rounded-xl bg-slate-50 p-2.5 ring-1 ring-slate-200">
-              (): <b className="text-slate-800">{money(totals.valuePharmacy)}</b>
+              (): <b className="text-slate-800">{money(totals.valuePharmacy)}</b> 
             <div className="text-teal-700">
-              : <b>{money(totals.soldValuePharmacy)}</b>
+              : <b>{money(totals.soldValuePharmacy)}</b> 
             </div>
           </div>
         </div>

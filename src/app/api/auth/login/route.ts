@@ -1,6 +1,6 @@
-
 import { db, dbRetry } from "@/db";
 import { activityLogs, roles, users } from "@/db/schema";
+
 import { SESSION_COOKIE, createToken, verifyPassword } from "@/lib/auth";
 import { ensureSeed } from "@/lib/bootstrap";
 import { eq } from "drizzle-orm";
@@ -19,7 +19,7 @@ export async function POST(req: Request) {
   const username = String(body.username ?? "").trim().toLowerCase();
   const password = String(body.password ?? "");
   const phone = normalizePhone(body.phone ?? "");
-  const mode = body.mode === "admin" ? "admin" : "rep"; //
+  const mode = body.mode === "admin" ? "admin" : "rep"; //     
   const remember = body.remember === true;
   const deviceOnline = body.simActive !== false;
   if (!username || !password) {
@@ -40,7 +40,7 @@ export async function POST(req: Request) {
     return Response.json({ error: "      " }, { status: 401 });
   }
   if (!user.active) return Response.json({ error: "   " }, { status: 403 });
-  //
+  //       
   let baseRole: string = user.role;
   if (!["admin", "supervisor", "rep"].includes(user.role)) {
     try {
@@ -66,18 +66,18 @@ export async function POST(req: Request) {
   }
   /* ============================================================
    *    —         :
-   *    off    →
-   *    phone  →
+   *    off    →   
+   *    phone  →         
    *    device →          ()
-   *    otp    → :
+   *    otp    → :      
    * ============================================================ */
   const simMode = isManagerAccount ? "off" : (user.simMode ?? "device");
   const deviceId = String(body.deviceId ?? "").replace(/[^a-zA-Z0-9]/g, "").slice(0, 80);
   if (simMode !== "off" && user.requirePhone) {
-
     if (!deviceOnline) {
       return Response.json(
         { error: "     .      .", simError: true },
+
         { status: 403 },
       );
     }
@@ -117,7 +117,7 @@ export async function POST(req: Request) {
       return Response.json(
         {
           error:
-            "        .         « »
+            "        .         « »   
           .",
           needOtp: true,
           simError: true,
@@ -137,7 +137,7 @@ export async function POST(req: Request) {
           { status: 403 },
         );
       }
-      //  device:
+      //  device:      
       await db
         .update(users)
         .set({
@@ -159,9 +159,9 @@ export async function POST(req: Request) {
   }
   const token = createToken(user.id);
   //        (   )    .
-
   //  «   »          .
   {
+
     const store = await cookies();
     store.set(SESSION_COOKIE, token, {
       httpOnly: true,

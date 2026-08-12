@@ -1,4 +1,3 @@
-
 "use client";
 import { usePathname, useRouter } from "next/navigation";
 /**   —            */
@@ -18,7 +17,7 @@ export default function BackButton() {
 sm ring-1 ring-slate-200 hover:bg-slate-50"
         title="   "
       >
-        <span className="text-base">→</span>
+        <span className="text-base">→</span> 
       </button>
       {!isRoot ? (
         <button
@@ -27,8 +26,8 @@ sm ring-1 ring-slate-200 hover:bg-slate-50"
 -sm ring-1 ring-slate-200 hover:bg-teal-50"
           title=" "
         >
+            
         </button>
-
       ) : null}
     </div>
   );
