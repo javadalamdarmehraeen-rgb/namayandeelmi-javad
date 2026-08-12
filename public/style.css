@@ -2,7 +2,7 @@
    استایل‌های سیستم مدیریت نمایندگان علمی، داروخانه‌ها، پزشکان و سفارشات (RTL)
    ============================================================================ */
 
-@import url('https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700;800&display=swap');
+/* فونت گوگل حذف شد تا در اینترنت ایران/VPN لود سنگین و مسدود نشود */
 
 :root {
   --primary: #2563eb;
@@ -1410,4 +1410,28 @@ body {
   .header-user-pill { display: none; }
   .map-container { height: 280px; }
   .login-gate-card { padding: 1.1rem; }
+}
+
+.widget-picker { display:flex; flex-wrap:wrap; gap:.5rem; }
+.widget-chip { background:#f8fafc; border:1px solid #e2e8f0; border-radius:999px; padding:.35rem .7rem; font-size:.8rem; font-weight:700; }
+.mini-bars { display:flex; align-items:flex-end; gap:1rem; height:140px; padding:.5rem 0; }
+.mini-bar { flex:1; text-align:center; font-size:.72rem; font-weight:700; }
+.mini-bar-fill { background:#0d9488; border-radius:6px 6px 0 0; margin:0 auto .35rem; width:70%; }
+.pie-row { display:flex; align-items:center; gap:1rem; }
+.pie { width:84px; height:84px; border-radius:50%; }
+.plain-list { margin:0; padding:0 1.2rem 0 0; }
+.plain-list li { margin:.35rem 0; }
+.tgt-summary { background:#f0fdf4; border:1px solid #bbf7d0; border-radius:10px; padding:1rem; margin-bottom:1rem; }
+.diag-visual { display:flex; flex-direction:column; gap:.45rem; }
+.diag-row { display:flex; align-items:center; gap:.6rem; background:#fff; border:1px solid #e2e8f0; border-radius:8px; padding:.55rem .75rem; }
+.diag-dot { width:12px; height:12px; border-radius:50%; background:#94a3b8; }
+.diag-dot.ok { background:#10b981; }
+.diag-dot.bad { background:#ef4444; }
+#cardPhForm,#cardPhList,#cardDocForm,#cardDocList,#cardOrdForm,#cardOrdList { display:block !important; }
+@media (max-width:720px) {
+  .form-grid { grid-template-columns:1fr; }
+  .stats-grid { grid-template-columns:1fr 1fr; }
+  .nav-item { font-size:.75rem; padding:.35rem .55rem; }
+  .card { padding:1rem; }
+  .header-actions .btn-header-teal { display:none; }
 }

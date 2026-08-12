@@ -9,40 +9,22 @@
   <meta name="application-name" content="طنین طب طاها" />
   
   <!-- Leaflet CSS -->
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link rel="stylesheet" href="vendor/leaflet.css" />
   
   <!-- PWA Manifest -->
   <link rel="manifest" href="manifest.json" />
   <meta name="theme-color" content="#0d9488" />
   
   <!-- Custom Style with Anti-Cache Version 9.1.0 -->
-  <link rel="stylesheet" href="style.css?v=9.1.0" />
+  <link rel="stylesheet" href="style.css?v=10.0.0" />
 </head>
 <body>
 
-  <div id="loginGateOverlay" class="login-gate">
-    <div class="login-gate-card">
-      <img src="logo.png" alt="Tanin Teb Taha" class="login-logo-img" />
-      <h2>ورود به سامانه طنین طب طاها</h2>
-      <p>نام کاربری، رمز عبور و شماره همراه خود را وارد کنید.</p>
-      <div class="form-group">
-        <label class="form-label" for="gateUsername">نام کاربری</label>
-        <input type="text" id="gateUsername" class="form-input" placeholder="admin" style="direction:ltr;" />
-      </div>
-      <div class="form-group">
-        <label class="form-label" for="gatePassword">رمز عبور</label>
-        <input type="password" id="gatePassword" class="form-input" placeholder="123" style="direction:ltr;" />
-      </div>
-      <div class="form-group">
-        <label class="form-label" for="gatePhone">شماره همراه</label>
-        <input type="text" id="gatePhone" class="form-input" placeholder="09120000000" style="direction:ltr;" />
-      </div>
-      <button type="button" id="btnGateLogin" class="btn btn-primary" style="width:100%; background:#0d9488; margin-top:0.75rem;">
-        ورود به برنامه
-      </button>
-      <p class="login-gate-hint">نمونه ورود مدیر: admin / 123</p>
-    </div>
-  </div>
+  <script>
+    if (sessionStorage.getItem("crmLoggedIn") !== "1") {
+      location.replace("/login");
+    }
+  </script>
 
   <!-- Top App Header matching Screenshot 1 -->
   <header class="app-header">
@@ -155,6 +137,15 @@
       <!-- لانچ‌پد پایین داشبورد حذف شد (منوی بالا و سایدبار کافی است) -->
       <div id="dashboardLaunchpadGrid" style="display:none;"></div>
 
+      <div class="card" id="dashboardWidgetManager" style="margin-bottom:1rem;">
+        <div class="card-header">
+          <div class="card-title"><span>🎛️ مدیریت گزارش‌های داشبورد</span></div>
+          <button type="button" id="btnAddDashWidget" class="btn btn-primary btn-sm" style="background:#0d9488;">افزودن گزارش</button>
+        </div>
+        <p style="font-size:.85rem;color:#64748b;margin:0 0 .75rem;">مدیر می‌تواند هر گزارش را اضافه یا حذف کند. نمودارها از داده‌های واقعی برنامه ساخته می‌شوند.</p>
+        <div id="dashboardWidgetPicker" class="widget-picker"></div>
+      </div>
+      <div id="dashboardWidgetsHost"></div>
       <!-- Interactive Chart Analytics Widget (Section 1 Requirement) -->
       <div class="card" id="dashboardChartsWidget" style="margin-bottom: 1.5rem;">
         <div class="card-header">
@@ -1220,6 +1211,7 @@
           </div>
         </form>
 
+        <div id="tgtSummaryBox" class="tgt-summary"></div>
         <div class="table-responsive">
           <table class="data-table">
             <thead>
@@ -1664,9 +1656,10 @@
         <p style="font-size: 0.88rem; color: #64748b; margin-bottom: 1rem;">
           وضعیت سرویس‌دهی سرورهای ابری (`namayandeelmi-javad.onrender.com` و `ndcohub.ir`) و هماهنگی حافظه محلی سیستم.
         </p>
-        <div id="diagnosticsStatusBox" style="background: #f0fdf4; border: 1px solid #bbf7d0; padding: 1.25rem; border-radius: 10px; color: #166534; font-weight: 700;">
-          ✅ سیستم در وضعیت سالم قرار دارد. تمامی امکانات محلی و ابری در دسترس است.
+        <div id="diagnosticsStatusBox" style="background: #f0fdf4; border: 1px solid #bbf7d0; padding: 1.25rem; border-radius: 10px; color: #166534; font-weight: 700; margin-bottom:1rem;">
+          در حال آماده‌سازی گزارش عیب‌یابی...
         </div>
+        <div id="diagnosticsVisual" class="diag-visual"></div>
       </div>
     </section>
 
@@ -1946,12 +1939,14 @@
   </div>
 
   <!-- Leaflet JS -->
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="vendor/leaflet.js"></script>
   
   <!-- Data & Application Logic with Anti-Cache Version 9.1.0 -->
-  <script src="crm-data.js?v=9.1.0"></script>
-  <script src="crm-app.js?v=9.1.0"></script>
-  <script src="crm-features-v9.js?v=9.1.0"></script>
+  <script src="crm-data.js?v=10.0.0"></script>
+  <script src="crm-app.js?v=10.0.0"></script>
+  <script src="crm-features-v9.js?v=10.0.0"></script>
+  <script src="iran-facilities.js?v=10.0.0" defer></script>
+  <script src="crm-features-v10.js?v=10.0.0"></script>
   <!-- فیلدهای مخفی سازگاری با کد قبلی (نباید در UI دیده شوند) -->
   <input type="hidden" id="pharmacyLocationText" value="" />
   <input type="hidden" id="doctorLocationText" value="" />

@@ -137,19 +137,7 @@ function setupNavigationMenu() {
       sideContainer.appendChild(btnSide);
     }
 
-    // 3. ساخت کارت لانچ‌پد در داشبورد (بدون اسکرول افقی)
-    if (launchpadGrid) {
-      const card = document.createElement("button");
-      card.className = "launchpad-card";
-      card.onclick = () => switchTab(sec.id);
-      card.innerHTML = `
-        <div class="launchpad-icon">${sec.icon}</div>
-        <div class="launchpad-text">
-          <h4>${sec.label}</h4>
-        </div>
-      `;
-      launchpadGrid.appendChild(card);
-    }
+    // لانچ‌پد داشبورد حذف شده؛ اگر عنصر مخفی بود چیزی ساخته نمی‌شود.
   });
 
   // کنترل باز و بسته شدن سایدبار
@@ -195,11 +183,21 @@ function switchTab(targetId) {
     targetPane.classList.add("active");
     setTimeout(() => {
       if (targetId === "tab-dashboard" && mapDashboardOverview) mapDashboardOverview.invalidateSize();
-      if (targetId === "tab-pharmacies" && mapPharmacyForm) mapPharmacyForm.invalidateSize();
-      if (targetId === "tab-doctors" && mapDoctorForm) mapDoctorForm.invalidateSize();
-      if (targetId === "tab-live-location" && mapLiveReps) {
-        mapLiveReps.invalidateSize();
-        renderLiveLocationTab();
+      if (targetId === "tab-pharmacies") {
+        if (typeof initPharmacyDoctorMapsIfNeeded === "function") initPharmacyDoctorMapsIfNeeded();
+        if (mapPharmacyForm) mapPharmacyForm.invalidateSize();
+      }
+      if (targetId === "tab-doctors") {
+        if (typeof initPharmacyDoctorMapsIfNeeded === "function") initPharmacyDoctorMapsIfNeeded();
+        if (mapDoctorForm) mapDoctorForm.invalidateSize();
+      }
+      if (targetId === "tab-live-location") {
+        if (!mapLiveReps && document.getElementById("map-live-reps") && typeof L !== "undefined") {
+          mapLiveReps = L.map("map-live-reps").setView([35.7300, 51.4200], 12);
+          addFallbackTiles(mapLiveReps);
+        }
+        if (mapLiveReps) mapLiveReps.invalidateSize();
+        if (typeof renderLiveLocationTab === "function") renderLiveLocationTab();
       }
       if (targetId === "tab-overview-map") {
         initFullOverviewMap();
@@ -353,50 +351,68 @@ function createCustomMarker(lat, lng, type, name, mapInstance, onClickCallback =
 // ----------------------------------------------------------------------------
 // 5. راه‌اندازی نقشه‌ها (Dashboard Overview Map, Full Overview Map & Form Maps)
 // ----------------------------------------------------------------------------
+function addFallbackTiles(map) {
+  if (!map || typeof L === "undefined") return;
+  const layers = [
+    "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+    "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png",
+    "https://tile.openstreetmap.de/{z}/{x}/{y}.png"
+  ];
+  L.tileLayer(layers[0], { maxZoom: 19, attribution: "© OSM" }).addTo(map);
+}
+
+function ensureMap(id, holderSetter, center, zoom, after) {
+  if (typeof L === "undefined") return null;
+  const el = document.getElementById(id);
+  if (!el) return null;
+  if (el._leaflet_id) {
+    try { if (after) after(); } catch (e) {}
+    return null;
+  }
+  const map = L.map(id).setView(center, zoom);
+  addFallbackTiles(map);
+  if (holderSetter) holderSetter(map);
+  if (after) after(map);
+  return map;
+}
+
 function initMaps() {
-  if (document.getElementById("map-dashboard-overview")) {
+  // فقط نقشه داشبورد در شروع؛ بقیه هنگام باز شدن تب ساخته می‌شوند تا لود سبک بماند
+  if (typeof L === "undefined") return;
+  if (!mapDashboardOverview && document.getElementById("map-dashboard-overview")) {
     mapDashboardOverview = L.map("map-dashboard-overview").setView([35.7200, 51.4200], 11);
-    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-      maxZoom: 19,
-      attribution: "© OpenStreetMap contributors"
-    }).addTo(mapDashboardOverview);
+    addFallbackTiles(mapDashboardOverview);
     renderDashboardOverviewMap();
   }
+}
 
-  if (document.getElementById("map-pharmacy-form")) {
+function initPharmacyDoctorMapsIfNeeded() {
+  if (typeof L === "undefined") return;
+  if (!mapPharmacyForm && document.getElementById("map-pharmacy-form")) {
     mapPharmacyForm = L.map("map-pharmacy-form").setView([35.7605, 51.4180], 13);
-    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-      maxZoom: 19,
-      attribution: "© OpenStreetMap contributors"
-    }).addTo(mapPharmacyForm);
-
+    addFallbackTiles(mapPharmacyForm);
     markerPharmacyForm = createCustomMarker(35.7605, 51.4180, "pharmacy", "موقعیت داروخانه جدید", mapPharmacyForm);
-
-    mapPharmacyForm.on("click", (e) => {
-      updatePharmacyFormMarker(e.latlng.lat, e.latlng.lng, document.getElementById("pharmacyName").value || "موقعیت داروخانه");
+    mapPharmacyForm.on("click", async (e) => {
+      updatePharmacyFormMarker(e.latlng.lat, e.latlng.lng, document.getElementById("pharmacyName").value || "موقعیت داروخانه", true);
+      const addr = await reverseGeocodeCoordinates(e.latlng.lat, e.latlng.lng);
+      const s = document.getElementById("phMapSearchInput");
+      const a = document.getElementById("pharmacyAddress");
+      if (s) s.value = addr;
+      if (a) a.value = addr;
     });
   }
-
-  if (document.getElementById("map-doctor-form")) {
+  if (!mapDoctorForm && document.getElementById("map-doctor-form")) {
     mapDoctorForm = L.map("map-doctor-form").setView([35.7580, 51.4400], 13);
-    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-      maxZoom: 19,
-      attribution: "© OpenStreetMap contributors"
-    }).addTo(mapDoctorForm);
-
+    addFallbackTiles(mapDoctorForm);
     markerDoctorForm = createCustomMarker(35.7580, 51.4400, "doctor", "موقعیت مطب جدید", mapDoctorForm);
-
-    mapDoctorForm.on("click", (e) => {
-      updateDoctorFormMarker(e.latlng.lat, e.latlng.lng, document.getElementById("doctorName").value || "موقعیت مطب");
+    mapDoctorForm.on("click", async (e) => {
+      updateDoctorFormMarker(e.latlng.lat, e.latlng.lng, document.getElementById("doctorName").value || "موقعیت مطب", true);
+      const addr = await reverseGeocodeCoordinates(e.latlng.lat, e.latlng.lng);
+      const s = document.getElementById("docMapSearchInput");
+      const a = document.getElementById("doctorAddress");
+      if (s) s.value = addr;
+      if (a) a.value = addr;
     });
-  }
-
-  if (document.getElementById("map-live-reps")) {
-    mapLiveReps = L.map("map-live-reps").setView([35.7300, 51.4200], 12);
-    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-      maxZoom: 19,
-      attribution: "© OpenStreetMap contributors"
-    }).addTo(mapLiveReps);
   }
 }
 
@@ -490,26 +506,23 @@ function renderFullOverviewMap() {
 // ----------------------------------------------------------------------------
 async function reverseGeocodeCoordinates(lat, lng) {
   try {
-    const url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1`;
-    const res = await fetch(url, { headers: { "Accept-Language": "fa,en" } });
+    const res = await fetch("/api/reverse?lat=" + encodeURIComponent(lat) + "&lng=" + encodeURIComponent(lng));
     const data = await res.json();
     if (data && data.display_name) {
       const addr = data.address || {};
-      const street = addr.road || addr.street || addr.neighbourhood || addr.suburb || "خیابان اصلی";
-      const city = addr.city || addr.town || addr.city_district || "تهران";
-      return `${city}، ${street} (استخراج شده از موقعیت: ${Number(lat).toFixed(4)}, ${Number(lng).toFixed(4)})`;
+      const parts = [addr.state, addr.city || addr.town || addr.village, addr.suburb || addr.neighbourhood, addr.road || addr.pedestrian, addr.house_number].filter(Boolean);
+      return parts.length ? parts.join("، ") : data.display_name;
     }
   } catch (err) {
     console.warn("Reverse Geocode error:", err);
   }
-  return `آدرس موقعیت ثبت شده (Lat: ${Number(lat).toFixed(4)}, Lng: ${Number(lng).toFixed(4)})`;
+  return "موقعیت " + Number(lat).toFixed(5) + ", " + Number(lng).toFixed(5);
 }
 
 async function searchAddressOnMap(queryText, updateMarkerFunc) {
   if (!queryText || !queryText.trim()) return;
   try {
-    const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(queryText)}&limit=1`;
-    const res = await fetch(url, { headers: { "Accept-Language": "fa,en" } });
+    const res = await fetch("/api/geocode?q=" + encodeURIComponent(queryText) + "&limit=1");
     const data = await res.json();
     if (data && data.length > 0) {
       const lat = parseFloat(data[0].lat);
@@ -551,26 +564,26 @@ function setupPharmacyLocationButtons() {
     });
   }
 
-  btnCurrentLoc.addEventListener("click", () => {
+  if (btnCurrentLoc) btnCurrentLoc.addEventListener("click", () => {
+    const apply = async (lat, lng) => {
+      const name = (document.getElementById("pharmacyName") || {}).value || "موقعیت فعلی داروخانه";
+      updatePharmacyFormMarker(lat, lng, name, true);
+      const addr = await reverseGeocodeCoordinates(lat, lng);
+      const s = document.getElementById("phMapSearchInput");
+      const a = document.getElementById("pharmacyAddress");
+      const h = document.getElementById("pharmacyLocationText");
+      if (s) s.value = addr;
+      if (a) a.value = addr;
+      if (h) h.value = addr;
+      alert("موقعیت روی نقشه آمد و آدرس در فیلد لوکیشن نشست:\n" + addr);
+    };
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
-        (pos) => {
-          const lat = pos.coords.latitude;
-          const lng = pos.coords.longitude;
-          const name = document.getElementById("pharmacyName").value || "موقعیت فعلی داروخانه";
-          updatePharmacyFormMarker(lat, lng, name, true);
-          alert(`📍 موقعیت فعلی پیدا شد.\nاکنون می‌توانید روی «دریافت آدرس این نقطه» کلیک کنید.`);
-        },
-        (err) => {
-          const lat = 35.7595;
-          const lng = 51.4250;
-          updatePharmacyFormMarker(lat, lng, "موقعیت فعلی داروخانه", true);
-          alert(`📍 موقعیت پیش‌فرض تستی تنظیم شد.`);
-        }
+        (pos) => apply(pos.coords.latitude, pos.coords.longitude),
+        () => apply(35.7595, 51.4250),
+        { enableHighAccuracy: true, timeout: 8000 }
       );
-    } else {
-      alert("مرورگر شما از قابلیت مکان‌یابی پشتیبانی نمی‌کند.");
-    }
+    } else apply(35.7595, 51.4250);
   });
 
   btnGetAddr.addEventListener("click", async () => {
@@ -616,23 +629,25 @@ function setupDoctorLocationButtons() {
     });
   }
 
-  btnCurrentLoc.addEventListener("click", () => {
+  if (btnCurrentLoc) btnCurrentLoc.addEventListener("click", () => {
+    const apply = async (lat, lng) => {
+      updateDoctorFormMarker(lat, lng, "موقعیت فعلی مطب", true);
+      const addr = await reverseGeocodeCoordinates(lat, lng);
+      const s = document.getElementById("docMapSearchInput");
+      const a = document.getElementById("doctorAddress");
+      const h = document.getElementById("doctorLocationText");
+      if (s) s.value = addr;
+      if (a) a.value = addr;
+      if (h) h.value = addr;
+      alert("موقعیت مطب روی نقشه آمد و آدرس در فیلد لوکیشن نشست:\n" + addr);
+    };
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
-        (pos) => {
-          const lat = pos.coords.latitude;
-          const lng = pos.coords.longitude;
-          updateDoctorFormMarker(lat, lng, "موقعیت فعلی مطب", true);
-          alert(`📍 موقعیت فعلی پیدا شد.\nاکنون روی «دریافت آدرس این نقطه» کلیک کنید.`);
-        },
-        (err) => {
-          const lat = 35.7350;
-          const lng = 51.4150;
-          updateDoctorFormMarker(lat, lng, "موقعیت فعلی مطب", true);
-          alert(`📍 موقعیت پیش‌فرض تستی تنظیم شد.`);
-        }
+        (pos) => apply(pos.coords.latitude, pos.coords.longitude),
+        () => apply(35.7350, 51.4150),
+        { enableHighAccuracy: true, timeout: 8000 }
       );
-    }
+    } else apply(35.7350, 51.4150);
   });
 
   btnGetAddr.addEventListener("click", async () => {
@@ -2521,9 +2536,9 @@ function setupAuthAndRoleSwitching() {
       if (confirm("آیا از خروج از سامانه اطمینان دارید؟")) {
         currentRoleIndex = 0;
         currentUserName = "مدیر سیستم";
-        applyUserRolePermissions();
-        openModalLogin();
-        alert("✅ خروج از سیستم با موفقیت انجام شد.");
+        try { sessionStorage.removeItem("crmLoggedIn"); } catch(e) {}
+        location.href = "/login";
+        return;
       }
     });
   }
@@ -2997,9 +3012,6 @@ function setupAllFormSubmitHandlers() {
     renderPharmaciesList();
     renderDashboardOverviewMap();
     updateNavBadges();
-    // جابجایی خودکار به تب لیست
-    const btnList = document.getElementById("btnShowPhList");
-    if (btnList) btnList.click();
   };
 
   if (btnPh) btnPh.onclick = (e) => { e.preventDefault(); handleSavePh(); };
@@ -3054,8 +3066,6 @@ function setupAllFormSubmitHandlers() {
     renderDoctorsList();
     renderDashboardOverviewMap();
     updateNavBadges();
-    const btnList = document.getElementById("btnShowDocList");
-    if (btnList) btnList.click();
   };
 
   if (btnDoc) btnDoc.onclick = (e) => { e.preventDefault(); handleSaveDoc(); };
@@ -3118,8 +3128,6 @@ function setupAllFormSubmitHandlers() {
     renderOrdersList();
     renderSalesTargetsTable();
     updateNavBadges();
-    const btnList = document.getElementById("btnShowOrdList");
-    if (btnList) btnList.click();
   };
 
   if (btnOrd) btnOrd.onclick = (e) => { e.preventDefault(); handleSaveOrd(); };
@@ -3164,20 +3172,24 @@ function setupFormListSwitchers() {
     const cL = document.getElementById(listCardId);
     if (!bF || !bL || !cF || !cL) return;
 
+    cF.style.display = "block";
+    cL.style.display = "block";
     bF.addEventListener("click", () => {
       bF.className = "btn btn-primary btn-sm";
       bF.style.background = "#0d9488";
       bL.className = "btn btn-outline btn-sm";
       cF.style.display = "block";
-      cL.style.display = "none";
+      cL.style.display = "block";
+      cF.scrollIntoView({ behavior: "smooth", block: "start" });
     });
 
     bL.addEventListener("click", () => {
       bL.className = "btn btn-primary btn-sm";
       bL.style.background = "#0d9488";
       bF.className = "btn btn-outline btn-sm";
-      cF.style.display = "none";
+      cF.style.display = "block";
       cL.style.display = "block";
+      cL.scrollIntoView({ behavior: "smooth", block: "start" });
     });
   };
 
@@ -3210,9 +3222,12 @@ function setupJalaliCalendarPicker() {
     const badge = document.createElement("div");
     badge.className = "jalali-badge";
     badge.title = "انتخاب تاریخ از تقویم";
+    const g = new Intl.DateTimeFormat("en-US", { timeZone: "Asia/Tehran", month: "short", day: "numeric" }).formatToParts(new Date());
+    const gm = (g.find(p => p.type === "month") || {}).value || "Aug";
+    const gd = (g.find(p => p.type === "day") || {}).value || "13";
     badge.innerHTML = `
-      <span class="jalali-badge-header">July</span>
-      <span class="jalali-badge-day">17</span>
+      <span class="jalali-badge-header">${gm.toUpperCase()}</span>
+      <span class="jalali-badge-day">${gd}</span>
     `;
     wrapper.insertBefore(badge, inp);
 

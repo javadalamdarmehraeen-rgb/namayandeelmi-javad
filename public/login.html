@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ورود | طنین طب طاها</title>
+  <link rel="icon" type="image/png" href="favicon.png">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#0d9488">
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{min-height:100vh;font-family:Tahoma,Arial,sans-serif;background:linear-gradient(160deg,#0f766e 0%,#134e4a 55%,#0f172a 100%);display:flex;align-items:center;justify-content:center;padding:16px;color:#0f172a}
+    .card{width:100%;max-width:400px;background:#fff;border-radius:18px;padding:22px 18px 18px;box-shadow:0 20px 50px rgba(0,0,0,.28);text-align:center}
+    img.logo{width:96px;height:auto;margin-bottom:8px}
+    h1{font-size:1.1rem;margin:4px 0 6px}
+    p.sub{font-size:.84rem;color:#64748b;margin-bottom:14px}
+    label{display:block;text-align:right;font-size:.82rem;font-weight:700;margin:8px 0 4px}
+    input,select{width:100%;padding:10px 12px;border:1.5px solid #e2e8f0;border-radius:10px;font-family:inherit;font-size:.95rem}
+    button{width:100%;margin-top:14px;background:#0d9488;color:#fff;border:0;border-radius:10px;padding:12px;font-family:inherit;font-weight:800;font-size:1rem;cursor:pointer}
+    button:disabled{opacity:.6}
+    .hint{font-size:.75rem;color:#94a3b8;margin-top:10px}
+    .err{display:none;background:#fef2f2;color:#b91c1c;border:1px solid #fecaca;border-radius:8px;padding:8px;font-size:.82rem;margin-top:10px}
+    .ok{font-size:.78rem;color:#0f766e;margin-top:8px;min-height:1.2em}
+  </style>
+</head>
+<body>
+  <div class="card">
+    <img class="logo" src="logo.png" alt="Tanin Teb Taha">
+    <h1>ورود به سامانه طنین طب طاها</h1>
+    <p class="sub">نام کاربری، رمز عبور و شماره همراه ثبت‌شده را وارد کنید.</p>
+    <form id="f" onsubmit="return false;">
+      <label for="u">نام کاربری</label>
+      <input id="u" autocomplete="username" dir="ltr" placeholder="admin">
+      <label for="p">رمز عبور</label>
+      <input id="p" type="password" autocomplete="current-password" dir="ltr" placeholder="رمز">
+      <label for="ph">شماره همراه</label>
+      <input id="ph" dir="ltr" placeholder="09120000000">
+      <label for="mode">روش تایید شماره همراه</label>
+      <select id="mode">
+        <option value="off">غیرفعال (ورود عادی)</option>
+        <option value="otp">پیامک رمز یک‌بارمصرف (شبیه‌سازی)</option>
+        <option value="admin">ارسال کد تایید به مدیر</option>
+      </select>
+      <div class="err" id="err"></div>
+      <button id="btn" type="submit">ورود به برنامه</button>
+    </form>
+    <div class="ok" id="st"></div>
+    <p class="hint">نمونه مدیر: admin / 123 — شماره 09120000000</p>
+  </div>
+  <script>
+    (function(){
+      if (sessionStorage.getItem("crmLoggedIn") === "1") {
+        location.replace("/panel");
+        return;
+      }
+      var USERS = [
+        {username:"admin", password:"123", phone:"09120000000", name:"مدیر سیستم", role:"مدیر سیستم", phoneRequired:false},
+        {username:"Taheri", password:"456", phone:"09120852097", name:"جواد علمدار", role:"نماینده علمی", phoneRequired:true},
+        {username:"nila", password:"789", phone:"09123334455", name:"خانم نیلا محرمی", role:"نماینده علمی", phoneRequired:true},
+        {username:"davood", password:"321", phone:"09120852097", name:"آقای داوود عقبایی", role:"سرپرست", phoneRequired:false}
+      ];
+      var st = document.getElementById("st");
+      var err = document.getElementById("err");
+      function showErr(m){ err.style.display="block"; err.textContent=m; }
+      function hideErr(){ err.style.display="none"; }
+      fetch("/api/health").then(function(){ st.textContent="سرور آماده است"; }).catch(function(){ st.textContent="در حال بیدار کردن سرور..."; });
+      document.getElementById("f").addEventListener("submit", function(){
+        hideErr();
+        var u=document.getElementById("u").value.trim();
+        var p=document.getElementById("p").value;
+        var ph=document.getElementById("ph").value.trim();
+        var mode=document.getElementById("mode").value;
+        var user=USERS.filter(function(x){return x.username===u && x.password===p;})[0];
+        if(!user){ showErr("نام کاربری یا رمز عبور نادرست است."); return; }
+        if(user.phoneRequired && ph && user.phone && ph!==user.phone){
+          showErr("شماره همراه با شماره ثبت‌شده برای این کاربر یکی نیست. مرورگر وب نمی‌تواند سیم‌کارت واقعی گوشی را بخواند؛ تطابق با شماره ثبت‌شده مدیر انجام شد.");
+          return;
+        }
+        if(mode==="otp"){
+          var code=prompt("رمز یک‌بارمصرف آزمایشی ارسال شد. کد را وارد کنید:", "123456");
+          if(code!=="123456"){ showErr("کد تایید نادرست است."); return; }
+        } else if(mode==="admin"){
+          alert("کد تایید برای مدیر سیستم ثبت شد. ورود پس از تایید مدیر انجام می‌شود (حالت آزمایشی: تایید شد).");
+        }
+        sessionStorage.setItem("crmLoggedIn","1");
+        sessionStorage.setItem("crmUserName", user.name);
+        sessionStorage.setItem("crmUserRole", user.role);
+        sessionStorage.setItem("crmUsername", user.username);
+        location.replace("/panel");
+      });
+    })();
+  </script>
+</body>
+</html>

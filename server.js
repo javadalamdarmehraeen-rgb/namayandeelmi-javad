@@ -1,189 +1,189 @@
-// ============================================================================
-// سرور بومی Node.js آماده برای استقرار فوری روی Render.com و اتصال به Neon / GitHub
-// بدون هیچ خطای Deprecation (استفاده از WHATWG URL API)
-// پشتیبانی ۱۰۰٪ از Health Check رندر (/api/health)، مسیر /login و وب‌سرویس‌های ابری
-// ============================================================================
-
-const http = require('http');
-const fs = require('fs');
-const path = require('path');
+// سرور سبک Node.js برای Render — ورود جدا، gzip، health، ژئوکد، محدودیت نرخ
+const http = require("http");
+const fs = require("fs");
+const path = require("path");
+const zlib = require("zlib");
+const crypto = require("crypto");
 
 const PORT = process.env.PORT || 10000;
-const SERVER_DATA_PATH = path.join(__dirname, 'server-db.json');
+const SERVER_DATA_PATH = path.join(__dirname, "server-db.json");
+const PUBLIC_DIR = path.join(__dirname, "public");
 
-const MIME_TYPES = {
-  '.html': 'text/html; charset=utf-8',
-  '.css': 'text/css; charset=utf-8',
-  '.js': 'application/javascript; charset=utf-8',
-  '.mjs': 'application/javascript; charset=utf-8',
-  '.json': 'application/json; charset=utf-8',
-  '.png': 'image/png',
-  '.jpg': 'image/jpeg',
-  '.svg': 'image/svg+xml',
-  '.ico': 'image/x-icon',
-  '.csv': 'text/csv; charset=utf-8',
-  '.geojson': 'application/json; charset=utf-8',
-  '.webmanifest': 'application/manifest+json; charset=utf-8'
+const MIME = {
+  ".html": "text/html; charset=utf-8",
+  ".css": "text/css; charset=utf-8",
+  ".js": "application/javascript; charset=utf-8",
+  ".mjs": "application/javascript; charset=utf-8",
+  ".json": "application/json; charset=utf-8",
+  ".png": "image/png",
+  ".jpg": "image/jpeg",
+  ".jpeg": "image/jpeg",
+  ".svg": "image/svg+xml",
+  ".ico": "image/x-icon",
+  ".csv": "text/csv; charset=utf-8",
+  ".geojson": "application/json; charset=utf-8",
+  ".webmanifest": "application/manifest+json; charset=utf-8",
+  ".woff2": "font/woff2"
 };
 
+const loginHits = new Map();
+function rateLimited(ip) {
+  const now = Date.now();
+  const rec = loginHits.get(ip) || { n: 0, t: now };
+  if (now - rec.t > 10 * 60 * 1000) { rec.n = 0; rec.t = now; }
+  rec.n += 1;
+  loginHits.set(ip, rec);
+  return rec.n > 30;
+}
+
+function send(req, res, status, content, contentType, extra) {
+  const headers = Object.assign({
+    "Content-Type": contentType || "text/plain; charset=utf-8",
+    "X-Content-Type-Options": "nosniff",
+    "Referrer-Policy": "same-origin",
+    "X-Frame-Options": "SAMEORIGIN",
+    "Access-Control-Allow-Origin": "*",
+    "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+    "Access-Control-Allow-Headers": "Content-Type, Authorization"
+  }, extra || {});
+  const accept = String(req.headers["accept-encoding"] || "");
+  const compressible = /text|javascript|json|svg|csv/.test(contentType || "");
+  if (compressible && accept.includes("gzip") && Buffer.byteLength(content) > 512) {
+    const gz = zlib.gzipSync(content);
+    headers["Content-Encoding"] = "gzip";
+    headers["Vary"] = "Accept-Encoding";
+    res.writeHead(status, headers);
+    return res.end(gz);
+  }
+  res.writeHead(status, headers);
+  res.end(content);
+}
+
+function sendFile(req, res, filePath, maxAge) {
+  fs.readFile(filePath, (err, buf) => {
+    if (err) {
+      res.writeHead(404, { "Content-Type": "text/plain; charset=utf-8" });
+      return res.end("Not found");
+    }
+    const ext = path.extname(filePath).toLowerCase();
+    const type = MIME[ext] || "application/octet-stream";
+    const extra = {
+      "Cache-Control": maxAge
+        ? ("public, max-age=" + maxAge)
+        : "no-cache, no-store, must-revalidate"
+    };
+    send(req, res, 200, buf, type, extra);
+  });
+}
+
 const server = http.createServer((req, res) => {
-  // استفاده از استاندارد WHATWG URL API جهت رفع اخطار Deprecation Node.js 26
-  const host = req.headers.host || `localhost:${PORT}`;
-  const parsedUrl = new URL(req.url, `http://${host}`);
-  const pathname = parsedUrl.pathname;
+  const host = req.headers.host || ("localhost:" + PORT);
+  const parsed = new URL(req.url, "http://" + host);
+  const pathname = parsed.pathname;
+  const ip = (req.headers["x-forwarded-for"] || req.socket.remoteAddress || "0").toString().split(",")[0].trim();
 
-  // هدرهای CORS
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, DELETE');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-
-  if (req.method === 'OPTIONS') {
-    res.writeHead(204);
+  if (req.method === "OPTIONS") {
+    res.writeHead(204, { "Access-Control-Allow-Origin": "*", "Access-Control-Allow-Methods": "GET, POST, OPTIONS", "Access-Control-Allow-Headers": "Content-Type" });
     return res.end();
   }
 
-  // 1. پشتیبانی ۱۰۰٪ از Health Check سرور Render.com و Keep-Alive (/ping، /api/health، /api/ping)
-  if (pathname === '/ping' || pathname === '/api/health' || pathname === '/api/ping' || pathname === '/healthz') {
-    res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
-    return res.end(JSON.stringify({
-      ok: true,
-      status: 'healthy',
-      message: 'OK',
-      service: 'namayandeelmi-javad-crm',
+  if (pathname === "/ping" || pathname === "/api/health" || pathname === "/api/ping" || pathname === "/healthz") {
+    return send(req, res, 200, JSON.stringify({
+      ok: true, status: "healthy", message: "OK",
+      service: "namayandeelmi-javad-crm",
+      version: "10.0.0",
       timestamp: new Date().toISOString()
-    }));
+    }), "application/json; charset=utf-8");
   }
 
-  // 1b. پروکسی ژئوکد (برای جستجوی لحظه‌ای آدرس حتی وقتی Nominatim از مرورگر محدود است)
-  if ((pathname === '/api/geocode' || pathname === '/api/reverse') && req.method === 'GET') {
-    const q = parsedUrl.searchParams.get('q') || '';
-    const lat = parsedUrl.searchParams.get('lat') || '';
-    const lng = parsedUrl.searchParams.get('lng') || parsedUrl.searchParams.get('lon') || '';
-    const limit = parsedUrl.searchParams.get('limit') || '5';
-    const target = pathname === '/api/reverse'
-      ? `https://nominatim.openstreetmap.org/reverse?format=json&lat=${encodeURIComponent(lat)}&lon=${encodeURIComponent(lng)}&zoom=18&addressdetails=1`
-      : `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(q)}&limit=${encodeURIComponent(limit)}&addressdetails=1&countrycodes=ir`;
-
+  if ((pathname === "/api/geocode" || pathname === "/api/reverse") && req.method === "GET") {
+    if (rateLimited(ip + ":geo")) {
+      return send(req, res, 429, JSON.stringify({ status: "error", message: "too many requests" }), "application/json; charset=utf-8");
+    }
+    const q = parsed.searchParams.get("q") || "";
+    const lat = parsed.searchParams.get("lat") || "";
+    const lng = parsed.searchParams.get("lng") || parsed.searchParams.get("lon") || "";
+    const limit = parsed.searchParams.get("limit") || "5";
+    const target = pathname === "/api/reverse"
+      ? "https://nominatim.openstreetmap.org/reverse?format=json&lat=" + encodeURIComponent(lat) + "&lon=" + encodeURIComponent(lng) + "&zoom=18&addressdetails=1"
+      : "https://nominatim.openstreetmap.org/search?format=json&q=" + encodeURIComponent(q) + "&limit=" + encodeURIComponent(limit) + "&addressdetails=1&countrycodes=ir";
     fetch(target, {
-      headers: {
-        'Accept-Language': 'fa,en',
-        'User-Agent': 'namayandeelmi-javad-crm/9.1 (scientific-rep-app)'
-      }
+      headers: { "Accept-Language": "fa,en", "User-Agent": "namayandeelmi-javad-crm/10.0" }
     }).then(async (up) => {
       const text = await up.text();
-      res.writeHead(up.ok ? 200 : up.status, { 'Content-Type': 'application/json; charset=utf-8' });
-      res.end(text);
+      send(req, res, up.ok ? 200 : up.status, text, "application/json; charset=utf-8", { "Cache-Control": "public, max-age=120" });
     }).catch((err) => {
-      res.writeHead(502, { 'Content-Type': 'application/json; charset=utf-8' });
-      res.end(JSON.stringify({ status: 'error', message: String(err.message || err) }));
+      send(req, res, 502, JSON.stringify({ status: "error", message: String(err.message || err) }), "application/json; charset=utf-8");
     });
     return;
   }
 
-  // 2. وب‌سرویس دریافت اطلاعات (GET /api/state)
-  if (pathname === '/api/state' && req.method === 'GET') {
-    res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
+  if (pathname === "/api/state" && req.method === "GET") {
     if (fs.existsSync(SERVER_DATA_PATH)) {
-      const data = fs.readFileSync(SERVER_DATA_PATH, 'utf8');
-      return res.end(JSON.stringify({ status: 'success', data: JSON.parse(data) }));
-    } else {
-      return res.end(JSON.stringify({ status: 'empty', message: 'اطلاعاتی در سرور ثبت نشده است، کلاینت از داده پیش‌فرض استفاده کند.' }));
+      return send(req, res, 200, JSON.stringify({ status: "success", data: JSON.parse(fs.readFileSync(SERVER_DATA_PATH, "utf8")) }), "application/json; charset=utf-8");
     }
+    return send(req, res, 200, JSON.stringify({ status: "empty" }), "application/json; charset=utf-8");
   }
 
-  // 3. وب‌سرویس ذخیره اطلاعات (POST /api/state)
-  if (pathname === '/api/state' && req.method === 'POST') {
-    let body = '';
-    req.on('data', chunk => { body += chunk; });
-    req.on('end', () => {
+  if (pathname === "/api/state" && req.method === "POST") {
+    if (rateLimited(ip + ":state")) {
+      return send(req, res, 429, JSON.stringify({ status: "error", message: "too many requests" }), "application/json; charset=utf-8");
+    }
+    let body = "";
+    req.on("data", (c) => { body += c; if (body.length > 8 * 1024 * 1024) req.destroy(); });
+    req.on("end", () => {
       try {
         const data = JSON.parse(body);
-        fs.writeFileSync(SERVER_DATA_PATH, JSON.stringify(data, null, 2), 'utf8');
-        res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
-        res.end(JSON.stringify({ status: 'success', message: 'اطلاعات با موفقیت در سرور ذخیره شد.' }));
+        fs.writeFileSync(SERVER_DATA_PATH, JSON.stringify(data), "utf8");
+        send(req, res, 200, JSON.stringify({ status: "success" }), "application/json; charset=utf-8");
       } catch (err) {
-        res.writeHead(400, { 'Content-Type': 'application/json; charset=utf-8' });
-        res.end(JSON.stringify({ status: 'error', message: err.message }));
+        send(req, res, 400, JSON.stringify({ status: "error", message: err.message }), "application/json; charset=utf-8");
       }
     });
     return;
   }
 
-  // 4. وب‌سرویس دانلود بکاپ تک‌نام (GET /api/backup)
-  if (pathname === '/api/backup' && req.method === 'GET') {
-    if (fs.existsSync(SERVER_DATA_PATH)) {
-      res.writeHead(200, {
-        'Content-Disposition': 'attachment; filename="crm-backup-latest.json"',
-        'Content-Type': 'application/json; charset=utf-8'
-      });
-      const readStream = fs.createReadStream(SERVER_DATA_PATH);
-      return readStream.pipe(res);
-    } else {
-      res.writeHead(404, { 'Content-Type': 'application/json; charset=utf-8' });
-      return res.end(JSON.stringify({ status: 'error', message: 'فایل پشتیبان سرور یافت نشد.' }));
+  if (pathname === "/api/backup" && req.method === "GET") {
+    if (!fs.existsSync(SERVER_DATA_PATH)) {
+      return send(req, res, 404, JSON.stringify({ status: "error" }), "application/json; charset=utf-8");
     }
-  }
-
-  // 5. پشتیبانی از مسیرهای /login، /panel، /admin و / (برای namayandeelmi-javad.onrender.com/login)
-  if (pathname === '/login' || pathname === '/login/' || pathname === '/panel' || pathname === '/admin' || pathname === '/') {
-    const indexPath = path.join(__dirname, 'public', 'index.html');
-    const rootIndexPath = path.join(__dirname, 'index.html');
-    const targetPath = fs.existsSync(indexPath) ? indexPath : rootIndexPath;
-
-    fs.readFile(targetPath, 'utf8', (err, content) => {
-      if (err) {
-        res.writeHead(500);
-        return res.end('Error loading index.html');
-      }
-      res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
-      res.setHeader('Pragma', 'no-cache');
-      res.setHeader('Expires', '0');
-      res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
-      res.end(content);
+    res.writeHead(200, {
+      "Content-Disposition": "attachment; filename=\"crm-backup-latest.json\"",
+      "Content-Type": "application/json; charset=utf-8"
     });
-    return;
+    return fs.createReadStream(SERVER_DATA_PATH).pipe(res);
   }
 
-  // 6. سرویس‌دهی فایل‌های استاتیک پوشه public و مسیر جاری
-  let relPath = pathname.startsWith('/') ? pathname.slice(1) : pathname;
-  if (!relPath) relPath = 'index.html';
+  // ورود سبک — اولین صفحه برنامه
+  if (pathname === "/login" || pathname === "/login/") {
+    return sendFile(req, res, path.join(PUBLIC_DIR, "login.html"), 0);
+  }
 
-  const publicPath = path.join(__dirname, 'public', relPath);
-  const rootPath = path.join(__dirname, relPath);
-  const filePath = fs.existsSync(publicPath) ? publicPath : rootPath;
+  // پنل اصلی بعد از ورود
+  if (pathname === "/" || pathname === "/panel" || pathname === "/panel/" || pathname === "/admin") {
+    return sendFile(req, res, path.join(PUBLIC_DIR, "index.html"), 0);
+  }
 
+  let rel = pathname.replace(/^\/+/, "");
+  if (!rel || rel.indexOf("..") !== -1) {
+    return sendFile(req, res, path.join(PUBLIC_DIR, "login.html"), 0);
+  }
+  const filePath = path.join(PUBLIC_DIR, rel);
+  if (!filePath.startsWith(PUBLIC_DIR)) {
+    res.writeHead(403);
+    return res.end("Forbidden");
+  }
   const ext = path.extname(filePath).toLowerCase();
-  const contentType = MIME_TYPES[ext] || 'application/octet-stream';
-
-  fs.readFile(filePath, (err, content) => {
-    if (err) {
-      // حالت SPA Fallback (برگشت به index.html)
-      const fallbackPath = fs.existsSync(path.join(__dirname, 'public', 'index.html'))
-        ? path.join(__dirname, 'public', 'index.html')
-        : path.join(__dirname, 'index.html');
-
-      fs.readFile(fallbackPath, (err2, indexContent) => {
-        if (err2) {
-          res.writeHead(404);
-          return res.end('File not found');
-        }
-        res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
-        res.end(indexContent);
-      });
-    } else {
-      res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
-      res.setHeader('Pragma', 'no-cache');
-      res.setHeader('Expires', '0');
-      res.writeHead(200, { 'Content-Type': contentType });
-      res.end(content);
+  const longCache = [".png", ".jpg", ".jpeg", ".css", ".js", ".woff2"].indexOf(ext) !== -1 && rel.indexOf("vendor/") === 0;
+  const assetCache = [".png", ".jpg", ".jpeg", ".ico"].indexOf(ext) !== -1 ? 86400 : (rel.indexOf("vendor/") === 0 ? 604800 : 0);
+  fs.stat(filePath, (err, stat) => {
+    if (err || !stat.isFile()) {
+      return sendFile(req, res, path.join(PUBLIC_DIR, "login.html"), 0);
     }
+    sendFile(req, res, filePath, assetCache);
   });
 });
 
-server.listen(PORT, '0.0.0.0', () => {
-  console.log(`========================================================`);
-  console.log(`🚀 سرور بومی Node.js با موفقیت روی 0.0.0.0:${PORT} فعال شد!`);
-  console.log(`✅ هماهنگ با Health Check سرور Render.com (/api/health)`);
-  console.log(`🔗 آماده برای namayandeelmi-javad.onrender.com و ndcohub.ir`);
-  console.log(`========================================================`);
+server.listen(PORT, "0.0.0.0", () => {
+  console.log("CRM v10 listening on 0.0.0.0:" + PORT);
 });
