@@ -3110,3 +3110,63 @@ function setupAllFormSubmitHandlers() {
   if (btnOrd) btnOrd.onclick = (e) => { e.preventDefault(); handleSaveOrd(); };
   if (formOrd) formOrd.onsubmit = (e) => { e.preventDefault(); handleSaveOrd(); };
 }
+
+
+// ============================================================================
+// 27. اسلش خودکار در تاریخ شمسی (Jalali Date Auto Slash - YYYY/MM/DD)
+// ============================================================================
+function setupJalaliDateAutoSlash() {
+  const dateInputs = document.querySelectorAll("input[placeholder*='1405'], #pharmacyDate, #doctorDate, #orderDate, #visitDate, #leaveFromDate, #leaveToDate");
+  dateInputs.forEach(inp => {
+    if (inp.dataset.slashBound === "true") return;
+    inp.dataset.slashBound = "true";
+
+    inp.addEventListener("input", function(e) {
+      let val = this.value.replace(/[^0-9]/g, "");
+      if (val.length > 4 && val.length <= 6) {
+        this.value = val.slice(0, 4) + "/" + val.slice(4);
+      } else if (val.length > 6) {
+        this.value = val.slice(0, 4) + "/" + val.slice(4, 6) + "/" + val.slice(6, 8);
+      } else {
+        this.value = val;
+      }
+    });
+
+    if (!inp.value) {
+      inp.value = new Date().toLocaleDateString("fa-IR");
+    }
+  });
+}
+
+// ============================================================================
+// 28. جابجایی تب فرم ثبت و لیست در داروخانه‌ها، پزشکان و سفارشات (Form/List Switcher)
+// ============================================================================
+function setupFormListSwitchers() {
+  const switchCard = (btnFormId, btnListId, formCardId, listCardId) => {
+    const bF = document.getElementById(btnFormId);
+    const bL = document.getElementById(btnListId);
+    const cF = document.getElementById(formCardId);
+    const cL = document.getElementById(listCardId);
+    if (!bF || !bL || !cF || !cL) return;
+
+    bF.addEventListener("click", () => {
+      bF.className = "btn btn-primary btn-sm";
+      bF.style.background = "#0d9488";
+      bL.className = "btn btn-outline btn-sm";
+      cF.style.display = "block";
+      cL.style.display = "none";
+    });
+
+    bL.addEventListener("click", () => {
+      bL.className = "btn btn-primary btn-sm";
+      bL.style.background = "#0d9488";
+      bF.className = "btn btn-outline btn-sm";
+      cF.style.display = "none";
+      cL.style.display = "block";
+    });
+  };
+
+  switchCard("btnShowPhForm", "btnShowPhList", "cardPhForm", "cardPhList");
+  switchCard("btnShowDocForm", "btnShowDocList", "cardDocForm", "cardDocList");
+  switchCard("btnShowOrdForm", "btnShowOrdList", "cardOrdForm", "cardOrdList");
+}
