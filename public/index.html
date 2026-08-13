@@ -16,7 +16,7 @@
   <meta name="theme-color" content="#0d9488" />
   
   <!-- Custom Style with Anti-Cache Version 9.1.0 -->
-  <link rel="stylesheet" href="style.css?v=11.7.0" />
+  <link rel="stylesheet" href="style.css?v=11.8.0" />
 </head>
 <body>
 
@@ -80,6 +80,7 @@
       <button type="button" class="nav-item" data-target="tab-sales-targets" onclick="switchTab('tab-sales-targets')"><span>🎯 تارگت فروش</span></button>
       <button type="button" class="nav-item" data-target="tab-custom-fields" onclick="switchTab('tab-custom-fields')"><span>➕ افزودن‌ها</span></button>
       <button type="button" class="nav-item" data-target="tab-columns-products" onclick="switchTab('tab-columns-products')"><span>🧱 ستون‌ها و کالاها</span></button>
+      <button type="button" class="nav-item" data-target="tab-manual-design" onclick="switchTab('tab-manual-design')"><span>🎨 طراحی دستی تب‌ها</span></button>
       <button type="button" class="nav-item" data-target="tab-users-permissions" onclick="switchTab('tab-users-permissions')"><span>👤 کاربران و دسترسی</span><span class="nav-badge" id="badgeUsersCount">0</span></button>
       <button type="button" class="nav-item" data-target="tab-messengers" onclick="switchTab('tab-messengers')"><span>💬 پیام‌رسان‌ها</span></button>
       <button type="button" class="nav-item" data-target="tab-backup" onclick="switchTab('tab-backup')"><span>💾 پشتیبان‌گیری</span></button>
@@ -1374,6 +1375,9 @@
               </div>
             </div>
 
+             </div>
+            </div>
+
             <div class="form-group full-width">
               <label class="form-label">محل نمایش فیلد جدید</label>
               <div style="display: flex; gap: 1.5rem; flex-wrap: wrap; margin-top: 0.5rem;">
@@ -1499,6 +1503,35 @@
             </tbody>
           </table>
         </div>
+      </div>
+    </section>
+
+    <!-- ======================================================================
+         15b. TAB: MANUAL TAB DESIGN (طراحی دستی تب‌ها)
+         ====================================================================== -->
+    <section id="tab-manual-design" class="tab-pane">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title"><span>🎨 طراحی دستی تب‌ها</span></div>
+        </div>
+        <p class="col-tab-hint">همه تب‌های برنامه اینجاست. روی یک تب بزنید تا همان صفحه بیاید. فیلد، کلید، کادر و نقشه را بکشید یا اندازه بدهید. می‌توانید امکانات یک تب را به تب دیگر کپی کنید. شکل نقشه ایران عوض نمی‌شود.</p>
+        <div id="manualTabGrid" class="col-tab-grid"></div>
+        <div class="man-toolbar">
+          <p id="manualDesignHint" class="col-help">یک تب را از بالا انتخاب کنید.</p>
+          <div class="man-toolbar-row">
+            <button type="button" id="btnManSave" class="btn btn-primary btn-sm" style="background:#0d9488">💾 ذخیره چیدمان روی تب اصلی</button>
+            <button type="button" id="btnManOpenTab" class="btn btn-outline btn-sm">باز کردن همان تب</button>
+            <button type="button" id="btnManReset" class="btn btn-danger btn-sm">برگشت به چیدمان پیش‌فرض</button>
+          </div>
+          <div class="man-toolbar-row">
+            <label>کپی از</label>
+            <select id="manCopyFrom" class="form-select"></select>
+            <label>به</label>
+            <select id="manCopyTo" class="form-select"></select>
+            <button type="button" id="btnManCopy" class="btn btn-outline btn-sm">📋 کپی امکانات و چیدمان</button>
+          </div>
+        </div>
+        <div id="manualDesignCanvas" class="man-canvas"></div>
       </div>
     </section>
 
@@ -2059,13 +2092,14 @@
   <script src="vendor/leaflet.js"></script>
   
   <!-- Data & Application Logic with Anti-Cache Version 9.1.0 -->
-  <script src="crm-data.js?v=11.7.0"></script>
-  <script src="crm-app.js?v=11.7.0"></script>
-  <script src="crm-features-v9.js?v=11.7.0"></script>
-  <script src="iran-facilities.js?v=11.7.0" defer></script>
-  <script src="crm-features-v10.js?v=11.7.0"></script>
-  <script src="crm-features-v11.js?v=11.7.0"></script>
-  <script src="crm-features-v12.js?v=11.7.0"></script>
+  <script src="crm-data.js?v=11.8.0"></script>
+  <script src="crm-app.js?v=11.8.0"></script>
+  <script src="crm-features-v9.js?v=11.8.0"></script>
+  <script src="iran-facilities.js?v=11.8.0" defer></script>
+  <script src="crm-features-v10.js?v=11.8.0"></script>
+  <script src="crm-features-v11.js?v=11.8.0"></script>
+  <script src="crm-features-v12.js?v=11.8.0"></script>
+  <script src="crm-features-v13.js?v=11.8.0"></script>
   <!-- فیلدهای مخفی سازگاری با کد قبلی (نباید در UI دیده شوند) -->
   <input type="hidden" id="pharmacyLocationText" value="" />
   <input type="hidden" id="doctorLocationText" value="" />

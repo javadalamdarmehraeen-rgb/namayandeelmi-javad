@@ -56,6 +56,18 @@
     return ((state && state.userTabs) || []).some(function (t) { return t.id === tabId; });
   }
 
+  function stampWidgetField(wrap, fid) {
+    if (!wrap) return wrap;
+    wrap.setAttribute("data-col-fid", fid);
+    if (!wrap.querySelector('[data-custom-field-id="' + fid + '"]')) {
+      var hid = document.createElement("input");
+      hid.type = "hidden";
+      hid.setAttribute("data-custom-field-id", fid);
+      wrap.appendChild(hid);
+    }
+    return wrap;
+  }
+
   window.buildDesignerWidget = function (field, tabId) {
     var kind = field.inputKind || field.type || "";
     var wrap = document.createElement("div");
@@ -73,7 +85,7 @@
         '<input type="hidden" id="' + fid + '-lat" data-widget-lat="' + fid + '">' +
         '<input type="hidden" id="' + fid + '-lng" data-widget-lng="' + fid + '">';
       setTimeout(function () { initUserMap(fid, tabId); }, 80);
-      return wrap;
+      return stampWidgetField(wrap, fid);
     }
     if (kind === "widget-myloc") {
       wrap.innerHTML = '<button type="button" class="btn btn-primary btn-sm" id="btn-' + fid + '">📡 ' + title + "</button>";
@@ -84,7 +96,7 @@
           b.addEventListener("click", function () { runMyLocation(tabId); });
         }
       }, 30);
-      return wrap;
+      return stampWidgetField(wrap, fid);
     }
     if (kind === "widget-getaddr") {
       wrap.innerHTML = '<button type="button" class="btn btn-success btn-sm" id="btn-' + fid + '">🔍 ' + title + "</button>";
@@ -95,7 +107,7 @@
           b.addEventListener("click", function () { runGetAddress(tabId); });
         }
       }, 30);
-      return wrap;
+      return stampWidgetField(wrap, fid);
     }
     if (kind === "widget-searchaddr") {
       wrap.innerHTML = '<label class="form-label">' + title + "</label>" +
@@ -112,12 +124,12 @@
           });
         }
       }, 30);
-      return wrap;
+      return stampWidgetField(wrap, fid);
     }
     if (kind === "widget-file") {
       wrap.innerHTML = '<label class="form-label">' + title + "</label>" +
         '<input type="file" class="form-input" data-custom-field-id="' + fid + '">';
-      return wrap;
+      return stampWidgetField(wrap, fid);
     }
     if (kind === "widget-save") {
       wrap.innerHTML = '<button type="button" class="btn btn-primary" id="btn-' + fid + '" style="background:#0d9488">💾 ' + title + "</button>";
@@ -128,7 +140,7 @@
           b.addEventListener("click", function () { saveUserTabRecord(tabId); });
         }
       }, 30);
-      return wrap;
+      return stampWidgetField(wrap, fid);
     }
     if (kind === "widget-reset") {
       wrap.innerHTML = '<button type="button" class="btn btn-outline" id="btn-' + fid + '">♻️ ' + title + "</button>";
@@ -139,7 +151,7 @@
           b.addEventListener("click", function () { resetUserTabForm(tabId); });
         }
       }, 30);
-      return wrap;
+      return stampWidgetField(wrap, fid);
     }
     if (kind === "widget-edit") {
       wrap.innerHTML = '<button type="button" class="btn btn-outline btn-sm" id="btn-' + fid + '">✏️ ' + title + "</button>";
@@ -154,7 +166,7 @@
           });
         }
       }, 30);
-      return wrap;
+      return stampWidgetField(wrap, fid);
     }
     if (kind === "widget-delete") {
       wrap.innerHTML = '<button type="button" class="btn btn-danger btn-sm" id="btn-' + fid + '">🗑️ ' + title + "</button>";
@@ -170,7 +182,7 @@
           });
         }
       }, 30);
-      return wrap;
+      return stampWidgetField(wrap, fid);
     }
     if (kind === "widget-excel") {
       wrap.innerHTML = '<button type="button" class="btn btn-success btn-sm" id="btn-' + fid + '">⬇️ ' + title + "</button>";
@@ -188,12 +200,12 @@
           });
         }
       }, 30);
-      return wrap;
+      return stampWidgetField(wrap, fid);
     }
     if (kind === "widget-search") {
       wrap.innerHTML = '<label class="form-label">' + title + "</label>" +
         '<input type="text" class="form-input" data-custom-field-id="' + fid + '" placeholder="جستجو...">';
-      return wrap;
+      return stampWidgetField(wrap, fid);
     }
     if (kind === "widget-print") {
       wrap.innerHTML = '<button type="button" class="btn btn-outline btn-sm" id="btn-' + fid + '">🖨️ ' + title + "</button>";
@@ -204,17 +216,17 @@
           b.addEventListener("click", function () { window.print(); });
         }
       }, 30);
-      return wrap;
+      return stampWidgetField(wrap, fid);
     }
     if (kind === "textarea") {
       wrap.innerHTML = '<label class="form-label">' + title + "</label>" +
         '<textarea class="form-textarea" data-custom-field-id="' + fid + '" rows="3"></textarea>';
-      return wrap;
+      return stampWidgetField(wrap, fid);
     }
     if (kind === "phone") {
       wrap.innerHTML = '<label class="form-label">' + title + "</label>" +
         '<input type="tel" class="form-input" data-custom-field-id="' + fid + '" dir="ltr" placeholder="0912...">';
-      return wrap;
+      return stampWidgetField(wrap, fid);
     }
     return null;
   };
@@ -672,11 +684,6 @@
         var boxMaker = panel.querySelector(".col-box-maker");
         if (boxMaker) boxMaker.parentNode.insertBefore(pal, boxMaker);
         else panel.insertBefore(pal, panel.firstChild.nextSibling);
-        pal.querySelectorAll(".col-add-widget").forEach(function (b) {
-          b.addEventListener("click", function () {
-            addWidgetToActiveTab(b.getAttribute("data-kind"), b.getAttribute("data-label"));
-          });
-        });
       }
 
       var maker = panel.querySelector(".col-box-maker");
@@ -763,18 +770,11 @@
   }
 
   var origApplyOrder = window.applyCustomFieldOrderInForm;
-  if (typeof origApplyOrder === "function") {
+  if (typeof origApplyOrder === "function" && !window._v12OrderWrap) {
+    window._v12OrderWrap = true;
     window.applyCustomFieldOrderInForm = function (entityType, containerId) {
-      var tabId = "tab-" + entityType;
-      ((state && state.userTabs) || []).forEach(function (t) {
-        if (t.key === entityType) tabId = t.id;
-      });
-      if (typeof origApplyOrder === "function") {
-        try { origApplyOrder(entityType, containerId); } catch (e) {}
-      }
-      if (typeof window.applyFullFormLayout === "function") {
-        try { window.applyFullFormLayout(tabId); } catch (e) {}
-      }
+      if (window._layoutBusy) return;
+      try { origApplyOrder(entityType, containerId); } catch (e) {}
     };
   }
 
@@ -787,6 +787,17 @@
     } catch (e) { console.error("v12 tabs", e); }
 
     try { enhanceDesignerChrome(); } catch (e) {}
+
+    if (!window._palDelegate) {
+      window._palDelegate = true;
+      document.addEventListener("click", function (e) {
+        var b = e.target.closest(".col-add-widget");
+        if (!b) return;
+        if (b.closest("#manualDesignCanvas")) return;
+        e.preventDefault();
+        addWidgetToActiveTab(b.getAttribute("data-kind"), b.getAttribute("data-label"));
+      });
+    }
 
     var origRefresh = window.refreshColumnsDesigner;
     if (typeof origRefresh === "function") {

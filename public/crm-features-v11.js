@@ -351,6 +351,7 @@
     "tab-sales-targets": "target",
     "tab-custom-fields": "additions",
     "tab-columns-products": "products",
+    "tab-manual-design": "manualdesign",
     "tab-users-permissions": "users",
     "tab-messengers": "messengers",
     "tab-backup": "backup",
@@ -564,6 +565,8 @@
       if (!btn.id || seen[btn.id] || skipBtn[btn.id]) return;
       if (btn.closest("#columnsDesignerHost") || btn.closest(".modal-overlay") || btn.closest("#jalaliCalendarPopup")) return;
       if (btn.closest(".app-header") || btn.closest(".app-nav") || btn.closest(".side-menu-drawer")) return;
+      if (btn.closest(".col-widget-wrap")) return;
+      if (btn.closest("#tab-manual-design")) return;
       var label = String(btn.textContent || btn.title || btn.id).replace(/\s+/g, " ").trim();
       var wrap = wrapWidget(btn);
       pushField(btn.id, label, "widget", wrap, false, "widget");

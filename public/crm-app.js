@@ -43,6 +43,7 @@ const MENU_SECTIONS_LIST = [
   { id: "tab-sales-targets", label: "تارگت فروش", icon: "🎯" },
   { id: "tab-custom-fields", label: "افزودن‌ها", icon: "➕" },
   { id: "tab-columns-products", label: "ستون‌ها و کالاها", icon: "🧱" },
+  { id: "tab-manual-design", label: "طراحی دستی تب‌ها", icon: "🎨" },
   { id: "tab-users-permissions", label: "کاربران و دسترسی", icon: "👤", badgeId: "badgeUsersCount" },
   { id: "tab-messengers", label: "پیام‌رسان‌ها", icon: "💬" },
   { id: "tab-backup", label: "پشتیبان‌گیری", icon: "💾" },
@@ -86,6 +87,7 @@ function loadState() {
   if (!state.userTabs) state.userTabs = [];
   if (!state.customRecords) state.customRecords = {};
   if (!state.tabOrder) state.tabOrder = {};
+  if (!state.manualLayouts) state.manualLayouts = {};
   applyGeneralSettingsToUI();
 }
 
