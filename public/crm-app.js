@@ -3212,10 +3212,12 @@ function setupAllFormSubmitHandlers() {
     }
 
     saveState();
+    try { if (typeof window.rememberPharmacyName === "function") window.rememberPharmacyName(name, { province: province, city: city, district: district, address: address, phone: phone, create: false }); } catch (eRem) {}
     resetPharmacyForm();
     renderPharmaciesList();
     renderDashboardOverviewMap();
     updateNavBadges();
+    try { if (typeof populatePharmacyDatalistInOrders === "function") populatePharmacyDatalistInOrders(); } catch (ePop) {}
   };
 
   if (btnPh) btnPh.onclick = (e) => { e.preventDefault(); handleSavePh(); };
