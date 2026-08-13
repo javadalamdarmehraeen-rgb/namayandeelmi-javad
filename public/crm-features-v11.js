@@ -490,43 +490,46 @@
       if (isHostGroup(g)) return;
       if (g.closest("#columnsDesignerHost") || g.closest("#colDesignerPanel") || g.closest(".modal-overlay") || g.closest("#jalaliCalendarPopup")) return;
       if (g.querySelector("[data-custom-field-id]")) return;
+      if (g.id === "orderItemsContainer" || g.closest("#orderItemsContainer") || g.querySelector("#orderItemsContainer")) return;
 
       var inputs = [];
       Array.prototype.forEach.call(g.querySelectorAll("input, select, textarea"), function (el) {
         if (el.type === "hidden") return;
         if (el.closest(".form-group") !== g) return;
         if (el.closest("#columnsDesignerHost")) return;
+        if (el.closest("#orderItemsContainer") || el.closest(".order-item-row")) return;
         inputs.push(el);
       });
 
       if (!inputs.length) {
         var hid = g.querySelector('input[type="hidden"][id]');
-        var title = g.querySelector("h4, .form-label, span");
+        var title = g.querySelector(":scope > .form-label, :scope > label, :scope > h4");
         if (hid && hid.id) {
           pushField(hid.id, fieldLabelOf(hid, g) || (title ? title.textContent : hid.id), "block", g, true, "block");
-        } else if (title && g.classList.contains("full-width") && !g.querySelector(".form-group")) {
-          var bid = g.id || g.getAttribute("data-col-fid") || ("blk-" + tabId + "-" + slugLabel(title.textContent));
-          pushField(bid, String(title.textContent || "").replace(/\s+/g, " ").trim(), "block", g, true, "block");
         }
         return;
       }
 
       inputs.forEach(function (el) {
-        if (!el.id) el.id = "auto-" + tabId + "-" + slugLabel(el.placeholder || el.name || "x") + "-" + idx;
+        if (!el.id) return;
         var type = "simple";
         if (el.tagName === "SELECT") type = "select";
         else if (el.type === "number") type = "number";
         else if (el.type === "file") type = "file";
         else if ((el.id || "").toLowerCase().indexOf("date") !== -1) type = "date";
-        pushField(el.id, fieldLabelOf(el, g), type, g, g.classList.contains("full-width") && inputs.length === 1, "field");
+        var ownLab = el.id && g.querySelector('label[for="' + el.id + '"]');
+        var labelText = ownLab ? String(ownLab.textContent || "").replace(/\s+/g, " ").trim() : (el.placeholder || el.id);
+        pushField(el.id, labelText, type, g, g.classList.contains("full-width") && inputs.length === 1, "field");
       });
     });
 
-    if (tabId === "tab-orders") {
-      pushField("orderItemName", "نام کالا (سطر اقلام سفارش)", "simple", $("orderItemsContainer") && $("orderItemsContainer").closest(".form-group"), true, "ordercol");
-      pushField("orderItemCount", "تعداد کالا", "number", null, false, "ordercol");
-      pushField("orderItemGift", "تعداد جایزه", "number", null, false, "ordercol");
-      pushField("orderItemPrice", "قیمت واحد کالا", "number", null, false, "ordercol");
+    if (tabId === "tab-orders" && $("orderItemsContainer")) {
+      var boxG = $("orderItemsContainer").closest(".form-group");
+      pushField("orderItemsBox", "کادر اقلام سفارش", "box", boxG, true, "box");
+      pushField("orderItemName", "نام کالا (داخل کادر اقلام)", "simple", boxG, false, "ordercol");
+      pushField("orderItemCount", "تعداد کالا (داخل کادر اقلام)", "number", boxG, false, "ordercol");
+      pushField("orderItemGift", "تعداد جایزه (داخل کادر اقلام)", "number", boxG, false, "ordercol");
+      pushField("orderItemPrice", "قیمت واحد (داخل کادر اقلام)", "number", boxG, false, "ordercol");
     }
     return fields;
   }
@@ -537,6 +540,8 @@
     var list = [];
     var listDefaults = DEFAULT_LIST_ON[key] || [];
     scanBuiltinFields(tabId).forEach(function (b) {
+      if (!b.id || /^auto-tab-orders-/.test(b.id)) return;
+      if (b.label && /اقلام دارویی سفارش/.test(b.label) && b.kind !== "box" && b.id !== "orderItemsBox") return;
       if (!meta[b.id]) meta[b.id] = {};
       if (meta[b.id].order == null || meta[b.id].order === "") meta[b.id].order = b.scanOrder;
       var showForm = meta[b.id].showInForm !== false && meta[b.id].hidden !== true;
@@ -554,10 +559,15 @@
         showInList: showList === true,
         full: b.full,
         kind: b.kind || "field",
-        place: meta[b.id].place || (b.full ? "under" : "beside"),
-        fontFamily: meta[b.id].fontFamily || "",
-        fontWeight: meta[b.id].fontWeight || "",
-        fontSize: meta[b.id].fontSize || ""
+        place: meta[b.id].place || (b.full || b.kind === "box" ? "under" : "beside"),
+        required: meta[b.id].required === true,
+        labelFontFamily: meta[b.id].labelFontFamily || "",
+        labelFontWeight: meta[b.id].labelFontWeight || "",
+        labelFontSize: meta[b.id].labelFontSize || "",
+        fieldFontFamily: meta[b.id].fieldFontFamily || "",
+        fieldFontWeight: meta[b.id].fieldFontWeight || "",
+        fieldFontSize: meta[b.id].fieldFontSize || "",
+        boxId: meta[b.id].boxId || ""
       });
     });
     sortedFields(key).forEach(function (c) {
@@ -577,9 +587,14 @@
         inputKind: c.inputKind,
         kind: "custom",
         place: c.place || "beside",
-        fontFamily: c.fontFamily || "",
-        fontWeight: c.fontWeight || "",
-        fontSize: c.fontSize || ""
+        required: c.required === true,
+        labelFontFamily: c.labelFontFamily || "",
+        labelFontWeight: c.labelFontWeight || "",
+        labelFontSize: c.labelFontSize || "",
+        fieldFontFamily: c.fieldFontFamily || "",
+        fieldFontWeight: c.fieldFontWeight || "",
+        fieldFontSize: c.fieldFontSize || "",
+        boxId: c.boxId || ""
       });
     });
     list.sort(function (a, b) {
@@ -698,6 +713,59 @@
     });
   }
 
+  function getBoxes(key) {
+    if (!state.formBoxes) state.formBoxes = {};
+    if (!state.formBoxes[key]) state.formBoxes[key] = [];
+    return state.formBoxes[key];
+  }
+
+  function applyUserBoxes(tabId, key, grid, placed) {
+    if (!grid) return;
+    var boxes = getBoxes(key);
+    boxes.forEach(function (box) {
+      if (!box || !box.id) return;
+      var wrap = document.getElementById(box.id);
+      if (!wrap) {
+        wrap = document.createElement("div");
+        wrap.id = box.id;
+        wrap.className = "col-user-box";
+        wrap.innerHTML = '<div class="col-user-box-title"></div><div class="col-user-box-body form-grid form-grid-sized"></div>';
+        grid.appendChild(wrap);
+      }
+      var title = wrap.querySelector(".col-user-box-title");
+      if (title) title.textContent = box.label || "کادر";
+      var body = wrap.querySelector(".col-user-box-body") || wrap;
+      (box.fieldIds || []).forEach(function (fid) {
+        if (fid === "orderItemsBox" || fid.indexOf("orderItem") === 0) return;
+        var item = null;
+        placed.forEach(function (p) { if (p.f.id === fid) item = p; });
+        if (item && item.group && item.group !== wrap) body.appendChild(item.group);
+      });
+    });
+  }
+
+  window.validateRequiredFields = function (tabId) {
+    var list = [];
+    try { list = getUnifiedFieldList(tabId); } catch (e) { return true; }
+    var missing = [];
+    list.forEach(function (f) {
+      if (!f.required || !f.showInForm || f.hidden) return;
+      if (f.kind === "ordercol" || f.kind === "box") return;
+      var el = document.getElementById(f.id);
+      if (!el) {
+        var g = findFieldGroup(tabId, f);
+        el = g && g.querySelector("input:not([type=hidden]), select, textarea");
+      }
+      if (!el) return;
+      if (!(String(el.value || "").trim())) missing.push(f.label || f.id);
+    });
+    if (missing.length) {
+      alert("این فیلدهای ستاره‌دار خالی است و باید پر شود:\n• " + missing.join("\n• "));
+      return false;
+    }
+    return true;
+  };
+
   function applyFullFormLayout(tabId) {
     if (!tabId || window._layoutBusy) return;
     var key = fieldKeyForTab(tabId);
@@ -744,6 +812,7 @@
         if (item.group.parentNode === grid) grid.appendChild(item.group);
       });
       if (container && container.parentNode === grid) grid.appendChild(container);
+      applyUserBoxes(tabId, key, grid, placed);
     }
     if (tabId === "tab-orders") applyOrderItemLayout();
     try {
@@ -928,8 +997,16 @@
         '<div class="form-group"><label><input type="checkbox" id="colFieldInList" checked> نمایش در لیست</label></div>' +
       "</div>" +
       '<div class="col-add-actions"><button type="button" id="btnSaveColField" class="btn btn-primary" style="background:#0d9488">ثبت فیلد در تب «' + escHtml(sec.label) + "»</button></div>" +
+      '<div class="col-box-maker">' +
+        "<strong>ایجاد کادر گروهی</strong>" +
+        '<div class="form-grid" style="margin-top:.5rem">' +
+          '<div class="form-group"><label class="form-label">نام کادر</label><input id="colBoxLabel" class="form-input" placeholder="مثلاً اطلاعات تماس"></div>' +
+        "</div>" +
+        '<button type="button" id="btnAddColBox" class="btn btn-outline btn-sm">➕ ثبت کادر</button>' +
+        '<div id="colBoxList"></div>' +
+      "</div>" +
       '<div class="col-preview" id="colOrderPreview"></div>' +
-      '<div id="colFieldList" class="table-responsive" style="margin-top:1rem"></div>';
+      '<div id="colFieldList" class="table-responsive col-sticky-table" style="margin-top:1rem"></div>';
 
     var typeSel = $("colFieldType");
     var optsWrap = $("colFieldOptsWrap");
@@ -962,6 +1039,65 @@
 
     if (window._editingColField) fillDesignerForm(window._editingColField);
     renderColFieldList();
+    renderColBoxList(tabId, key);
+    if ($("btnAddColBox")) {
+      $("btnAddColBox").addEventListener("click", function () {
+        var name = ($("colBoxLabel").value || "").trim();
+        if (!name) { alert("نام کادر را بنویسید."); return; }
+        getBoxes(key).push({ id: "box-" + key + "-" + Date.now(), label: name, fieldIds: [] });
+        saveState();
+        $("colBoxLabel").value = "";
+        applyFullFormLayout(tabId);
+        renderColBoxList(tabId, key);
+      });
+    }
+  }
+
+  function renderColBoxList(tabId, key) {
+    var host = $("colBoxList");
+    if (!host) return;
+    var boxes = getBoxes(key);
+    var fields = [];
+    try { fields = getUnifiedFieldList(tabId); } catch (e) {}
+    if (!boxes.length) {
+      host.innerHTML = "<p class='col-help'>کادری نیست. با نام دلخواه یک کادر بسازید و بعد مشخص کنید کدام فیلدها داخلش باشند.</p>";
+      return;
+    }
+    host.innerHTML = boxes.map(function (b) {
+      var checks = fields.filter(function (f) { return f.kind !== "box"; }).map(function (f) {
+        var on = (b.fieldIds || []).indexOf(f.id) !== -1;
+        return "<label class='col-box-chk'><input type='checkbox' data-box='" + escHtml(b.id) + "' data-fid='" + escHtml(f.id) + "'" + (on ? " checked" : "") + "> " + escHtml(f.label) + "</label>";
+      }).join("");
+      return "<div class='col-user-box-admin'><div class='col-user-box-admin-head'><strong>" + escHtml(b.label) + "</strong>" +
+        " <button type='button' class='btn btn-danger btn-sm col-del-box' data-box='" + escHtml(b.id) + "'>حذف</button></div>" +
+        "<div class='col-box-fields'>" + checks + "</div></div>";
+    }).join("");
+    Array.prototype.forEach.call(host.querySelectorAll("input[type=checkbox][data-box]"), function (chk) {
+      chk.addEventListener("change", function () {
+        var bid = chk.getAttribute("data-box");
+        var fid = chk.getAttribute("data-fid");
+        var box = getBoxes(key).filter(function (x) { return x.id === bid; })[0];
+        if (!box) return;
+        if (!box.fieldIds) box.fieldIds = [];
+        var i = box.fieldIds.indexOf(fid);
+        if (chk.checked && i === -1) box.fieldIds.push(fid);
+        if (!chk.checked && i !== -1) box.fieldIds.splice(i, 1);
+        writeFieldFlag(tabId, fid, "boxId", chk.checked ? bid : "");
+        saveState();
+        applyFullFormLayout(tabId);
+      });
+    });
+    Array.prototype.forEach.call(host.querySelectorAll(".col-del-box"), function (btn) {
+      btn.addEventListener("click", function () {
+        var bid = btn.getAttribute("data-box");
+        state.formBoxes[key] = getBoxes(key).filter(function (x) { return x.id !== bid; });
+        var el = document.getElementById(bid);
+        if (el) el.parentNode && el.parentNode.removeChild(el);
+        saveState();
+        applyFullFormLayout(tabId);
+        renderColBoxList(tabId, key);
+      });
+    });
   }
 
   function saveDesignerField(tabId, key, sec) {
@@ -1065,24 +1201,32 @@
       box.innerHTML = "<div class='col-empty'>فیلدی در فرم این تب نیست.</div>";
       return;
     }
-    var html = "<table class='data-table'><thead><tr><th>ردیف</th><th>عنوان</th><th>منبع</th><th>اندازه عرض</th><th>چینش</th><th>فونت</th><th>بولد</th><th>اندازه نوشته</th><th>فرم</th><th>لیست</th><th>جابجایی</th><th>عملیات</th></tr></thead><tbody>";
+    var fontOpts = function (cur) {
+      return "<option value=''" + (!cur ? " selected" : "") + ">پیش‌فرض</option>" +
+        "<option value='Tahoma'" + (cur === "Tahoma" ? " selected" : "") + ">Tahoma</option>" +
+        "<option value='Vazirmatn'" + (cur === "Vazirmatn" ? " selected" : "") + ">وزیر</option>" +
+        "<option value='Tahoma, Arial'" + (cur && cur.indexOf("Arial") !== -1 ? " selected" : "") + ">Arial</option>" +
+        "<option value='Georgia'" + (cur === "Georgia" ? " selected" : "") + ">Georgia</option>";
+    };
+    var html = "<table class='data-table'><thead><tr><th>ردیف</th><th>عنوان</th><th>نوع</th><th>عرض</th><th>چینش</th><th>فونت لیبل</th><th>بولد لیبل</th><th>سایز لیبل</th><th>فونت فیلد</th><th>بولد فیلد</th><th>سایز فیلد</th><th>ستاره</th><th>فرم</th><th>لیست</th><th>جابجایی</th><th>عملیات</th></tr></thead><tbody>";
     list.forEach(function (f, i) {
-      var src = f.builtin ? (f.kind === "ordercol" ? "سطر اقلام" : "ثابت فرم") : "اضافه‌شده";
+      var src = f.kind === "box" ? "کادر" : (f.kind === "ordercol" ? "داخل کادر اقلام" : (f.builtin ? "ثابت فرم" : "اضافه‌شده"));
       var hid = f.hidden ? " col-row-hidden" : "";
       var rowNo = i + 1;
       var place = f.place || "beside";
-      var fam = f.fontFamily || "";
-      var fw = f.fontWeight || "";
-      var fs = f.fontSize || "";
       html += "<tr class='" + hid + "' data-fid='" + escHtml(f.id) + "'>" +
-        "<td><input type='number' min='1' class='form-input col-order-input' data-fid='" + escHtml(f.id) + "' value='" + rowNo + "' title='شماره ردیف'></td>" +
-        "<td><strong>" + escHtml(f.label) + "</strong>" + (f.hidden ? " <span class='col-hidden-badge'>مخفی</span>" : "") + "</td>" +
+        "<td><input type='number' min='1' class='form-input col-order-input' data-fid='" + escHtml(f.id) + "' value='" + rowNo + "'></td>" +
+        "<td><strong>" + escHtml(f.label) + "</strong>" + (f.required ? " <span class='col-req-star'>*</span>" : "") + (f.hidden ? " <span class='col-hidden-badge'>مخفی</span>" : "") + "</td>" +
         "<td>" + src + "</td>" +
         "<td><input type='number' min='80' max='900' class='form-input col-size-input' data-fid='" + escHtml(f.id) + "' value='" + (f.size || 260) + "'></td>" +
         "<td><select class='form-select col-place-sel' data-fid='" + escHtml(f.id) + "'><option value='beside'" + (place !== "under" ? " selected" : "") + ">روبرو</option><option value='under'" + (place === "under" ? " selected" : "") + ">زیر هم</option></select></td>" +
-        "<td><select class='form-select col-font-sel' data-fid='" + escHtml(f.id) + "'><option value=''" + (!fam ? " selected" : "") + ">پیش‌فرض</option><option value='Tahoma'" + (fam === "Tahoma" ? " selected" : "") + ">Tahoma</option><option value='Vazirmatn'" + (fam === "Vazirmatn" ? " selected" : "") + ">وزیر</option><option value='Tahoma, Arial'" + (fam.indexOf("Arial") !== -1 ? " selected" : "") + ">Arial</option><option value='Georgia'" + (fam === "Georgia" ? " selected" : "") + ">Georgia</option></select></td>" +
-        "<td style='text-align:center'><input type='checkbox' class='col-bold-chk' data-fid='" + escHtml(f.id) + "'" + (fw === "bold" ? " checked" : "") + "></td>" +
-        "<td><select class='form-select col-fsize-sel' data-fid='" + escHtml(f.id) + "'><option value=''" + (!fs ? " selected" : "") + ">عادی</option><option value='13px'" + (fs === "13px" ? " selected" : "") + ">کوچک</option><option value='16px'" + (fs === "16px" ? " selected" : "") + ">متوسط</option><option value='18px'" + (fs === "18px" ? " selected" : "") + ">بزرگ</option><option value='22px'" + (fs === "22px" ? " selected" : "") + ">خیلی بزرگ</option></select></td>" +
+        "<td><select class='form-select col-labelfont-sel' data-fid='" + escHtml(f.id) + "'>" + fontOpts(f.labelFontFamily || "") + "</select></td>" +
+        "<td style='text-align:center'><input type='checkbox' class='col-labelbold-chk' data-fid='" + escHtml(f.id) + "'" + (f.labelFontWeight === "bold" ? " checked" : "") + "></td>" +
+        "<td><input type='number' min='10' max='40' class='form-input col-labelsize-inp' data-fid='" + escHtml(f.id) + "' value='" + (parseInt(f.labelFontSize, 10) || 14) + "' title='پیکسل'></td>" +
+        "<td><select class='form-select col-fieldfont-sel' data-fid='" + escHtml(f.id) + "'>" + fontOpts(f.fieldFontFamily || "") + "</select></td>" +
+        "<td style='text-align:center'><input type='checkbox' class='col-fieldbold-chk' data-fid='" + escHtml(f.id) + "'" + (f.fieldFontWeight === "bold" ? " checked" : "") + "></td>" +
+        "<td><input type='number' min='10' max='40' class='form-input col-fieldsize-inp' data-fid='" + escHtml(f.id) + "' value='" + (parseInt(f.fieldFontSize, 10) || 14) + "' title='پیکسل'></td>" +
+        "<td style='text-align:center'><input type='checkbox' class='col-req-chk' data-fid='" + escHtml(f.id) + "'" + (f.required ? " checked" : "") + " title='الزامی'></td>" +
         "<td style='text-align:center'><input type='checkbox' class='col-flag-form' data-fid='" + escHtml(f.id) + "'" + (f.showInForm ? " checked" : "") + "></td>" +
         "<td style='text-align:center'><input type='checkbox' class='col-flag-list' data-fid='" + escHtml(f.id) + "'" + (f.showInList ? " checked" : "") + "></td>" +
         "<td><button type='button' class='btn btn-outline btn-sm col-move-up' data-fid='" + escHtml(f.id) + "'>▲ بالاتر</button> " +
@@ -1119,27 +1263,24 @@
         applyFullFormLayout(tabId);
       });
     });
-    Array.prototype.forEach.call(box.querySelectorAll(".col-font-sel"), function (sel) {
-      sel.addEventListener("change", function () {
-        writeFieldFlag(tabId, sel.getAttribute("data-fid"), "fontFamily", sel.value);
-        saveState();
-        applyFullFormLayout(tabId);
+    function bindFlag(sel, flag, transform) {
+      Array.prototype.forEach.call(box.querySelectorAll(sel), function (el) {
+        el.addEventListener("change", function () {
+          var v = el.type === "checkbox" ? el.checked : el.value;
+          if (transform) v = transform(el);
+          writeFieldFlag(tabId, el.getAttribute("data-fid"), flag, v);
+          saveState();
+          applyFullFormLayout(tabId);
+        });
       });
-    });
-    Array.prototype.forEach.call(box.querySelectorAll(".col-bold-chk"), function (inp) {
-      inp.addEventListener("change", function () {
-        writeFieldFlag(tabId, inp.getAttribute("data-fid"), "fontWeight", inp.checked ? "bold" : "normal");
-        saveState();
-        applyFullFormLayout(tabId);
-      });
-    });
-    Array.prototype.forEach.call(box.querySelectorAll(".col-fsize-sel"), function (sel) {
-      sel.addEventListener("change", function () {
-        writeFieldFlag(tabId, sel.getAttribute("data-fid"), "fontSize", sel.value);
-        saveState();
-        applyFullFormLayout(tabId);
-      });
-    });
+    }
+    bindFlag(".col-labelfont-sel", "labelFontFamily");
+    bindFlag(".col-labelbold-chk", "labelFontWeight", function (el) { return el.checked ? "bold" : "normal"; });
+    bindFlag(".col-labelsize-inp", "labelFontSize");
+    bindFlag(".col-fieldfont-sel", "fieldFontFamily");
+    bindFlag(".col-fieldbold-chk", "fieldFontWeight", function (el) { return el.checked ? "bold" : "normal"; });
+    bindFlag(".col-fieldsize-inp", "fieldFontSize");
+    bindFlag(".col-req-chk", "required", function (el) { return el.checked; });
     Array.prototype.forEach.call(box.querySelectorAll(".col-flag-form"), function (inp) {
       inp.addEventListener("change", function () {
         writeFieldFlag(tabId, inp.getAttribute("data-fid"), "showInForm", inp.checked);
@@ -1612,8 +1753,8 @@
       obs.observe(el, { childList: true });
     });
 
-    logOp("بارگذاری نسخه ۱۱.۴");
-    console.log("v11.4 ready");
+    logOp("بارگذاری نسخه ۱۱.۵");
+    console.log("v11.5 ready");
   }
 
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot);

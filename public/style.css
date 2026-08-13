@@ -427,11 +427,23 @@ body {
 }
 .btn-warning:hover { background: #d97706; }
 
-.btn-danger {
-  background: var(--danger);
+.btn-danger,
+button.btn-danger {
+  background: #ef4444;
   color: #ffffff;
+  padding: 0.35rem 0.75rem;
+  font-size: 0.8rem;
+  min-height: 32px;
+  border-radius: 6px;
+  line-height: 1.2;
 }
 .btn-danger:hover { background: #dc2626; }
+.btn-outline.btn-sm,
+.btn-primary.btn-sm {
+  padding: 0.35rem 0.75rem;
+  font-size: 0.8rem;
+  min-height: 32px;
+}
 
 .btn-outline {
   background: transparent;
@@ -587,6 +599,14 @@ body {
   font-weight: 700;
   color: #334155;
   white-space: nowrap;
+  position: sticky;
+  top: 0;
+  z-index: 3;
+}
+.col-sticky-table thead th {
+  top: 0;
+  background: #ecfdf5;
+  box-shadow: 0 1px 0 #99f6e4;
 }
 
 .data-table tr:hover {
@@ -1462,24 +1482,20 @@ body {
   margin: 0 0 0.85rem;
 }
 .col-tab-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(168px, 1fr));
-  gap: 0.7rem;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
   margin-bottom: 1rem;
+  position: sticky;
+  top: 128px;
+  z-index: 20;
+  background: #fff;
+  padding: 0.45rem 0;
 }
 .col-tab-card {
-  display: flex;
-  align-items: center;
-  gap: 0.65rem;
-  background: #f8fafc;
-  border: 1.5px solid var(--border-color);
-  border-radius: 12px;
-  padding: 0.75rem 0.8rem;
-  cursor: pointer;
-  text-align: right;
-  font-family: inherit;
-  transition: all 0.18s ease;
-  width: 100%;
+  display: none;
 }
 .col-tab-card:hover {
   background: #f0fdf4;
@@ -1601,6 +1617,10 @@ body {
   .form-grid { grid-template-columns:1fr; }
   .stats-grid { grid-template-columns:1fr 1fr; }
   .nav-item { font-size:.75rem; padding:.35rem .55rem; }
+  .card { padding:1rem; }
+  .header-actions .btn-header-teal { display:none; }
+}
+ }
   .card { padding:1rem; }
   .header-actions .btn-header-teal { display:none; }
 }

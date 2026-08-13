@@ -771,6 +771,7 @@ function deleteCustomField(entity, fieldId) {
   });
   saveState();
   renderCustomFieldsTable();
+  renderAllCustomFieldsInFormsAndTablesble();
   renderAllCustomFieldsInFormsAndTables();
   if (typeof window.applyAllFormLayouts === "function") window.applyAllFormLayouts();
 }
@@ -3095,6 +3096,7 @@ function setupAllFormSubmitHandlers() {
   const formPh = document.getElementById("formPharmacy");
   const btnPh = document.getElementById("btnSavePharmacy");
   const handleSavePh = () => {
+    if (typeof window.validateRequiredFields === "function" && !window.validateRequiredFields("tab-pharmacies")) return;
     const editId = document.getElementById("pharmacyEditId").value;
     const dateAdded = document.getElementById("pharmacyDate").value.trim() || new Date().toLocaleDateString("fa-IR");
     const name = document.getElementById("pharmacyName").value.trim();
@@ -3150,6 +3152,7 @@ function setupAllFormSubmitHandlers() {
   const formDoc = document.getElementById("formDoctor");
   const btnDoc = document.getElementById("btnSaveDoctor");
   const handleSaveDoc = () => {
+    if (typeof window.validateRequiredFields === "function" && !window.validateRequiredFields("tab-doctors")) return;
     const editId = document.getElementById("doctorEditId").value;
     const dateAdded = document.getElementById("doctorDate").value.trim() || new Date().toLocaleDateString("fa-IR");
     const name = document.getElementById("doctorName").value.trim();
@@ -3837,6 +3840,10 @@ function deleteProductCatalogItem(id) {
   saveState();
   renderColumnsProductsTable();
   setupSalesTargetsTab();
+  mergeCatalogIntoOrderItems();
+  updateNavBadges();
+}
+esTargetsTab();
   mergeCatalogIntoOrderItems();
   updateNavBadges();
 }
