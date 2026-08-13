@@ -363,7 +363,9 @@ body {
   color: var(--text-main);
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-start;
+  flex-wrap: wrap;
+  gap: 2px;
 }
 
 .form-input,
@@ -2029,6 +2031,33 @@ td .btn, .col-ops .btn, .col-ops {
   margin-top: 0.65rem;
 }
 .man-inspector .form-input { background: #fff; }
+.man-copy-opt {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-weight: 700;
+  font-size: 0.84rem;
+}
+.man-copy-pick {
+  background: #fffbeb;
+  border: 1.5px solid #fde68a;
+  border-radius: 10px;
+  padding: 0.65rem 0.75rem;
+  margin-top: 0.45rem;
+}
+.man-copy-checks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem 0.75rem;
+  margin-top: 0.4rem;
+}
+#manualDesignCanvas .jalali-badge,
+#manualDesignCanvas .jalali-input-wrapper {
+  pointer-events: none !important;
+}
+#manualDesignCanvas .man-item {
+  pointer-events: auto;
+}
 
 .data-table {
   border-collapse: separate;

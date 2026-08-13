@@ -4,7 +4,7 @@
 (function () {
   "use strict";
 
-  var VER = "11.13.0";
+  var VER = "11.14.0";
   function $(id) { return document.getElementById(id); }
   function esc(s) {
     return String(s == null ? "" : s)
@@ -367,13 +367,11 @@
     var clone = host.querySelector(".man-clone");
     if (!clone) return;
     clone.classList.add("man-design-mode");
-    Array.prototype.forEach.call(clone.querySelectorAll(".card, form, .card-header"), function (el) {
-      el.classList.remove("man-item");
+    Array.prototype.forEach.call(clone.querySelectorAll(".card-header"), function (el) {
       el.setAttribute("data-man-skip", "1");
-      var h = el.querySelector(":scope > .man-handle");
-      var r = el.querySelector(":scope > .man-resize");
-      if (h && h.parentNode) h.parentNode.removeChild(h);
-      if (r && r.parentNode) r.parentNode.removeChild(r);
+    });
+    Array.prototype.forEach.call(clone.querySelectorAll(".jalali-badge, .jalali-input-wrapper"), function (el) {
+      el.style.pointerEvents = "none";
     });
     Array.prototype.forEach.call(clone.querySelectorAll("input, select, textarea, button.btn, .btn-toggle-option"), function (el) {
       if (el.classList.contains("man-handle") || el.classList.contains("man-resize")) return;

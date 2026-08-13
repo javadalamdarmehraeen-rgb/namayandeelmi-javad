@@ -840,7 +840,7 @@ function renderCustomFieldsInForm(entityType, containerId, currentValues = {}) {
         g.classList.remove("col-hide-form");
         const lab = g.querySelector(".form-label, label");
         if (lab && !lab.querySelector("input")) {
-          lab.textContent = field.label + (field.required ? " *" : "");
+          lab.textContent = field.label;
         }
       }
       if (currentValues && (currentValues[field.label] != null || currentValues[field.id] != null)) {
@@ -871,7 +871,7 @@ function renderCustomFieldsInForm(entityType, containerId, currentValues = {}) {
 
     const labelEl = document.createElement("label");
     labelEl.className = "form-label";
-    labelEl.textContent = field.label + (field.required ? " *" : "");
+    labelEl.textContent = field.label;
     labelRow.appendChild(labelEl);
 
     if ((kind === "select" || field.type === "select") && field.allowAddOption) {
@@ -1153,7 +1153,7 @@ function renderPharmaciesList(searchQuery = "") {
   `;
 
   const fieldsList = (state.customFields.pharmacy || []).filter(f => f.showInList)
-    .slice().sort((a, b) => (Number(a.order) || 999) - (Number(b.order) || 999));
+    .slice().sort((a, b) => (Number(a.listOrder != null ? a.listOrder : a.order) || 999) - (Number(b.listOrder != null ? b.listOrder : b.order) || 999));
   fieldsList.forEach(f => {
     const th = document.createElement("th");
     th.textContent = f.label;
@@ -2412,7 +2412,7 @@ function renderOrdersList(searchQuery = "") {
   `;
 
   const fieldsList = (state.customFields.order || []).filter(f => f.showInList)
-    .slice().sort((a, b) => (Number(a.order) || 999) - (Number(b.order) || 999));
+    .slice().sort((a, b) => (Number(a.listOrder != null ? a.listOrder : a.order) || 999) - (Number(b.listOrder != null ? b.listOrder : b.order) || 999));
   fieldsList.forEach(f => {
     const th = document.createElement("th");
     th.textContent = f.label;

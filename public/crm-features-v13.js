@@ -144,14 +144,17 @@
       seen[el] = true;
       out.push({ el: el, kind: kind });
     }
+    Array.prototype.forEach.call(root.querySelectorAll(".card"), function (el) {
+      if (el.closest(".man-toolbar") || el.closest("#manualTabGrid")) return;
+      take(el, "card");
+    });
     Array.prototype.forEach.call(root.querySelectorAll(".stat-card"), function (el) { take(el, "stat"); });
     Array.prototype.forEach.call(root.querySelectorAll(".col-user-box"), function (el) { take(el, "box"); });
     Array.prototype.forEach.call(root.querySelectorAll(".form-group"), function (el) {
       if (el.id && /CustomFieldsContainer|cfHost-/.test(el.id)) return;
       if (el.classList.contains("extra-cf-host")) return;
-      if (el.id && /^(cardPhForm|cardPhList|cardDocForm|cardDocList|cardOrdForm|cardOrdList)$/.test(el.id)) return;
       if (el.closest && el.closest(".card-header")) return;
-      if (el.querySelector(":scope > .form-group, :scope .form-group")) return;
+      if (el.querySelector(":scope > .form-group")) return;
       take(el, "field");
     });
     Array.prototype.forEach.call(root.querySelectorAll(".map-container"), function (el) {
@@ -486,8 +489,7 @@
     scope = scope || detectScope(el, canvas);
     var abs = opts.forceAbs ? true : !!prev.abs;
     var srcId = ((el && el.getAttribute && el.getAttribute("data-src-id")) || id || "").replace(/^man-/, "");
-    if (srcId && /^(cardPhForm|cardPhList|cardDocForm|cardDocList|cardOrdForm|cardOrdList|formPharmacy|formDoctor|formOrder)$/.test(srcId)) abs = false;
-    if (el && el.classList && el.classList.contains("card")) abs = false;
+    if (!opts.forceAbs && srcId && /^(formPharmacy|formDoctor|formOrder)$/.test(srcId) && el && el.tagName === "FORM") abs = false;
     lay.items[id] = {
       x: Math.round(er.left - cr.left + (canvas.scrollLeft || 0)),
       y: Math.round(er.top - cr.top + (canvas.scrollTop || 0)),
@@ -648,6 +650,7 @@
     applyManualLayout(toId);
     alert("از «" + fromId + "» به «" + toId + "» کپی شد: " + copiedFields + " فیلد/کلید + چیدمان دستی.");
   }
+  window.copyPageToTab = copyPageToTab;
 
   function resetLayout(tabId) {
     ensureState();
@@ -687,7 +690,7 @@
     if (copy && !copy.dataset.bound) {
       copy.dataset.bound = "1";
       copy.addEventListener("click", function () {
-        copyPageToTab(($("manCopyFrom") || {}).value, ($("manCopyTo") || {}).value);
+        (window.copyPageToTab || copyPageToTab)(($("manCopyFrom") || {}).value, ($("manCopyTo") || {}).value);
       });
     }
     if (reset && !reset.dataset.bound) {

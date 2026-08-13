@@ -668,14 +668,16 @@
         label: meta[b.id].label || b.label,
         type: b.type,
         order: Number(meta[b.id].order) || b.scanOrder,
+        listOrder: (meta[b.id].listOrder != null && meta[b.id].listOrder !== "") ? Number(meta[b.id].listOrder) : (Number(meta[b.id].order) || b.scanOrder),
         size: meta[b.id].size,
+        height: meta[b.id].height,
         hidden: !showForm,
         showInForm: showForm,
         showInList: showList === true,
         full: b.full,
         kind: b.kind || "field",
         place: meta[b.id].place || (b.full || b.kind === "box" ? "under" : "beside"),
-        required: meta[b.id].required === true,
+        required: meta[b.id].required === true || (meta[b.id].required == null && window._v18DefaultReq && window._v18DefaultReq[b.id]),
         exportExcel: meta[b.id].exportExcel === true,
         labelFontFamily: meta[b.id].labelFontFamily || "",
         labelFontWeight: meta[b.id].labelFontWeight || "",
@@ -693,7 +695,9 @@
         label: c.label,
         type: c.inputKind || c.type || "simple",
         order: Number(c.order) || 999,
+        listOrder: (c.listOrder != null && c.listOrder !== "") ? Number(c.listOrder) : (Number(c.order) || 999),
         size: c.size,
+        height: c.height,
         hidden: c.showInForm === false,
         showInForm: c.showInForm !== false,
         showInList: c.showInList !== false,
@@ -770,29 +774,64 @@
     return extra > 0;
   }
 
+  function stripLabelStarText(lab) {
+    if (!lab) return;
+    var nodes = lab.childNodes;
+    for (var i = 0; i < nodes.length; i++) {
+      var n = nodes[i];
+      if (n.nodeType === 3) {
+        n.nodeValue = String(n.nodeValue || "")
+          .replace(/\s*\*+\s*$/g, "")
+          .replace(/\s+\*\s+/g, " ")
+          .replace(/^\s*\*\s*/, "");
+      }
+    }
+    Array.prototype.forEach.call(lab.querySelectorAll("span"), function (sp) {
+      if (sp.classList && sp.classList.contains("req-star")) return;
+      var t = String(sp.textContent || "");
+      if (t.replace(/\s/g, "") === "*") {
+        if (sp.parentNode) sp.parentNode.removeChild(sp);
+      } else if (/\*/.test(t) && !sp.querySelector("input")) {
+        sp.textContent = t.replace(/\s*\*+\s*/g, " ").replace(/\s+/g, " ").trim();
+      }
+    });
+  }
+
   function paintRequiredStar(group, f) {
     if (!group || !f) return;
     var lab = (f.id && group.querySelector('label[for="' + f.id + '"]')) ||
       group.querySelector(".form-label, label, h4");
     if (!lab || lab.querySelector("input")) return;
+    stripLabelStarText(lab);
     var star = lab.querySelector(".req-star");
     if (f.required && f.showInForm && !f.hidden) {
       if (!star) {
         star = document.createElement("span");
         star.className = "req-star";
-        star.textContent = " *";
+        star.setAttribute("aria-hidden", "true");
+        star.textContent = "*";
         lab.appendChild(star);
+      } else {
+        star.textContent = "*";
       }
       star.style.color = "#dc2626";
       star.style.fontWeight = "900";
+      star.style.margin = "0";
+      star.style.padding = "0";
+      star.style.marginInlineStart = "1px";
     } else if (star) {
       star.parentNode.removeChild(star);
     }
     var inp = (f.id && document.getElementById(f.id)) ||
       group.querySelector("input:not([type=hidden]), select, textarea");
     if (inp && inp.tagName !== "BUTTON") {
-      if (f.required && f.showInForm && !f.hidden) inp.setAttribute("required", "required");
-      else if (!inp.defaultRequired) inp.removeAttribute("required");
+      if (f.required && f.showInForm && !f.hidden) {
+        inp.setAttribute("data-req", "1");
+        inp.removeAttribute("required");
+      } else {
+        inp.removeAttribute("data-req");
+        inp.removeAttribute("required");
+      }
     }
   }
 
@@ -844,6 +883,17 @@
       group.style.setProperty("min-width", Math.min(140, w) + "px", "important");
       group.style.setProperty("width", w + "px", "important");
     }
+    var hgt = parseInt(f.height, 10);
+    if (hgt > 20) {
+      var hInp = targetInp || group.querySelector(".form-input, .form-select, .form-textarea, input:not([type=hidden]), select, textarea");
+      if (hInp && hInp.tagName !== "BUTTON") {
+        hInp.style.setProperty("height", hgt + "px", "important");
+        hInp.style.setProperty("min-height", hgt + "px", "important");
+      }
+      if (f.kind === "widget" || (group.classList && (group.classList.contains("col-user-box") || group.classList.contains("col-widget-wrap")))) {
+        group.style.setProperty("min-height", hgt + "px", "important");
+      }
+    }
     if (size > 40) {
       var sizedInp = targetInp || group.querySelector(".form-input, .form-select, .form-textarea, input:not([type=hidden]), select, textarea");
       if (sizedInp) {
@@ -867,8 +917,11 @@
       else if (weight === "normal") el.style.fontWeight = "400";
       else el.style.removeProperty("font-weight");
       var px = parseInt(size, 10);
-      if (px) el.style.fontSize = px + "px";
-      else if (size) el.style.fontSize = size;
+      if (px) {
+        if (px > 28) px = 28;
+        if (px < 10) px = 10;
+        el.style.fontSize = px + "px";
+      } else if (size) el.style.fontSize = size;
       else el.style.removeProperty("font-size");
     }
     applyFont(lab, f.labelFontFamily || f.fontFamily, f.labelFontWeight || f.fontWeight, f.labelFontSize || f.fontSize);
@@ -965,7 +1018,9 @@
       if (!(String(el.value || "").trim())) missing.push(f.label || f.id);
     });
     if (missing.length) {
-      alert("این فیلدهای ستاره‌دار خالی است و باید پر شود:\n• " + missing.join("\n• "));
+      alert(missing.map(function (n) {
+        return "فیلد «" + n + "» خالی است و باید پر شود.";
+      }).join("\n"));
       return false;
     }
     return true;
@@ -1173,13 +1228,30 @@
     if (type === "select" || type === "date" || type === "number" || type === "simple") $("colFieldType").value = type;
     else $("colFieldType").value = "simple";
     $("colFieldOrder").value = field && field.order ? field.order : (getUnifiedFieldList(window._activeColTab).length + 1);
+    if ($("colFieldListOrder")) {
+      $("colFieldListOrder").value = field && field.listOrder ? field.listOrder : (getUnifiedFieldList(window._activeColTab).length + 1);
+    }
     var shownSize = field && parseInt(field.size, 10) > 40 ? parseInt(field.size, 10) : 0;
-    if (!shownSize && field) {
+    var shownH = field && parseInt(field.height, 10) > 20 ? parseInt(field.height, 10) : 0;
+    if (field) {
       var liveEl = document.getElementById(field.id);
-      if (liveEl) shownSize = Math.round(liveEl.getBoundingClientRect().width);
+      var liveG = null;
+      if (liveEl) {
+        liveG = liveEl.closest(".form-group") || liveEl;
+        var rw = Math.round(liveEl.getBoundingClientRect().width);
+        var rh = Math.round(liveEl.getBoundingClientRect().height);
+        if (!(shownSize > 40) && rw > 40) shownSize = rw;
+        if (!(shownH > 20) && rh > 16) shownH = rh;
+      }
+      if (!(shownSize > 40) && liveG) {
+        var gw = Math.round(liveG.getBoundingClientRect().width);
+        if (gw > 40) shownSize = gw;
+      }
       if (!(shownSize > 40) && (field.full || field.place === "under" || /Address|address|آدرس/.test((field.label || "") + (field.id || "")))) shownSize = 560;
     }
     $("colFieldSize").value = shownSize > 40 ? shownSize : 220;
+    if ($("colFieldHeight")) $("colFieldHeight").value = shownH > 20 ? shownH : 42;
+    if ($("colAddKind")) $("colAddKind").value = (field && (field.kind === "widget" || String(field.inputKind || "").indexOf("widget-") === 0)) ? "button" : (field && field.kind === "box" ? "box" : "field");
     if ($("colFieldPlace")) $("colFieldPlace").value = field && field.place ? field.place : (field && field.full ? "under" : "beside");
     $("colFieldOpts").value = field && field.options ? field.options.join("، ") : "";
     $("colFieldDep").value = field && field.dependsOn ? field.dependsOn : "";
@@ -1224,10 +1296,14 @@
         "</div>" +
       "</div>" +
       '<div class="form-grid col-add-grid">' +
-        '<div class="form-group"><label class="form-label">عنوان فیلد</label><input id="colFieldLabel" class="form-input" placeholder="مثلاً کد اقتصادی"></div>' +
-        '<div class="form-group"><label class="form-label">نوع</label><select id="colFieldType" class="form-select"><option value="simple">ساده (متنی)</option><option value="select">کشویی</option><option value="date">تاریخ</option><option value="number">عددی</option></select></div>' +
-        '<div class="form-group"><label class="form-label">شماره ترتیب در فرم</label><input id="colFieldOrder" class="form-input" type="number" min="1" value="' + (list.length + 1) + '"><small class="col-help">۱ یعنی اولین فیلد فرم این تب</small></div>' +
-        '<div class="form-group"><label class="form-label">عرض فیلد (پیکسل)</label><input id="colFieldSize" class="form-input" type="number" min="80" max="900" value="220"><small class="col-help">مثلاً ۲۲۰ معمولی، ۵۶۰ عریض مثل آدرس</small></div>' +
+        '<div class="form-group"><label class="form-label">چه چیزی اضافه شود؟</label><select id="colAddKind" class="form-select"><option value="field">فیلد</option><option value="box">کادر</option><option value="button">کلید</option></select><small class="col-help">فیلد، کادر یا کلید در جای خودش می‌نشیند</small></div>' +
+        '<div class="form-group"><label class="form-label" id="colFieldLabelCap">عنوان فیلد</label><input id="colFieldLabel" class="form-input" placeholder="مثلاً کد اقتصادی"></div>' +
+        '<div class="form-group" id="colFieldTypeWrap"><label class="form-label">نوع</label><select id="colFieldType" class="form-select"><option value="simple">ساده (متنی)</option><option value="select">کشویی</option><option value="date">تاریخ</option><option value="number">عددی</option></select></div>' +
+        '<div class="form-group" id="colBtnKindWrap" style="display:none"><label class="form-label">نوع کلید</label><select id="colBtnKind" class="form-select"><option value="widget-save">ثبت / ذخیره</option><option value="widget-edit">ویرایش</option><option value="widget-delete">حذف</option><option value="widget-reset">بازنشانی</option><option value="widget-excel">خروجی اکسل</option><option value="widget-print">چاپ</option><option value="widget-search">جستجو</option><option value="widget-myloc">موقعیت کنونی</option><option value="widget-getaddr">دریافت آدرس</option><option value="widget-map">نقشه</option></select></div>' +
+        '<div class="form-group"><label class="form-label">شماره ترتیب در فرم</label><input id="colFieldOrder" class="form-input" type="number" min="1" value="' + (list.length + 1) + '"><small class="col-help">فقط جای فیلد در فرم ثبت</small></div>' +
+        '<div class="form-group"><label class="form-label">شماره ترتیب در لیست</label><input id="colFieldListOrder" class="form-input" type="number" min="1" value="' + (list.length + 1) + '"><small class="col-help">جای ستون در جدول لیست — جدا از فرم</small></div>' +
+        '<div class="form-group"><label class="form-label">عرض (پیکسل)</label><input id="colFieldSize" class="form-input" type="number" min="40" max="1200" value="220"><small class="col-help">عدد واقعی عرض همان فیلد/کادر/کلید</small></div>' +
+        '<div class="form-group"><label class="form-label">ارتفاع (پیکسل)</label><input id="colFieldHeight" class="form-input" type="number" min="24" max="800" value="42"><small class="col-help">عدد واقعی ارتفاع همان مورد</small></div>' +
         '<div class="form-group"><label class="form-label">جای فیلد در صفحه</label><select id="colFieldPlace" class="form-select"><option value="beside">روبرو (کنار فیلدها)</option><option value="under">زیر هم (سطر جدا)</option></select></div>' +
         '<div class="form-group"><label class="form-label">داخل کدام کادر؟</label><select id="colFieldBoxTarget" class="form-select"><option value="">روی خود فرم (بدون کادر)</option></select></div>' +
         '<div class="form-group" id="colFieldOptsWrap"><label class="form-label">گزینه‌های کشویی</label><input id="colFieldOpts" class="form-input" placeholder="با ویرگول جدا کنید"></div>' +
@@ -1248,7 +1324,9 @@
         '<div id="colBoxList"></div>' +
       "</div>" +
       '<div class="col-preview" id="colOrderPreview"></div>' +
-      '<div id="colFieldList" class="table-responsive col-sticky-table" style="margin-top:1rem"></div>';
+      '<div id="colFieldList" class="table-responsive col-sticky-table" style="margin-top:1rem"></div>' +
+      '<div id="colBoxInfoHost" class="col-info-extra" style="margin-top:1.25rem"><h4 style="margin:0 0 .5rem;color:#0f766e">اطلاعات کادرها</h4><div id="colBoxInfoList" class="table-responsive col-sticky-table"></div></div>' +
+      '<div id="colBtnInfoHost" class="col-info-extra" style="margin-top:1.25rem"><h4 style="margin:0 0 .5rem;color:#0f766e">اطلاعات کلیدها</h4><div id="colBtnInfoList" class="table-responsive col-sticky-table"></div></div>';
 
     var typeSel = $("colFieldType");
     var optsWrap = $("colFieldOptsWrap");
@@ -1257,6 +1335,16 @@
     }
     if (typeSel) typeSel.addEventListener("change", toggleOpts);
     toggleOpts();
+    function toggleAddKind() {
+      var k = $("colAddKind") ? $("colAddKind").value : "field";
+      var cap = $("colFieldLabelCap");
+      if (cap) cap.textContent = k === "box" ? "عنوان کادر" : (k === "button" ? "عنوان کلید" : "عنوان فیلد");
+      if ($("colFieldTypeWrap")) $("colFieldTypeWrap").style.display = k === "field" ? "" : "none";
+      if ($("colBtnKindWrap")) $("colBtnKindWrap").style.display = k === "button" ? "" : "none";
+      if ($("colFieldOptsWrap")) $("colFieldOptsWrap").style.display = (k === "field" && typeSel && typeSel.value === "select") ? "" : "none";
+    }
+    if ($("colAddKind")) $("colAddKind").addEventListener("change", toggleAddKind);
+    toggleAddKind();
 
     if ($("btnColBackToGrid")) {
       $("btnColBackToGrid").addEventListener("click", function () {
@@ -1370,10 +1458,41 @@
     var order = parseInt($("colFieldOrder").value, 10);
     if (!order || order < 1) order = getUnifiedFieldList(tabId).length + 1;
     var size = parseInt($("colFieldSize").value, 10) || 220;
+    var heightVal = $("colFieldHeight") ? (parseInt($("colFieldHeight").value, 10) || 0) : 0;
+    var listOrderVal = $("colFieldListOrder") ? (parseInt($("colFieldListOrder").value, 10) || 0) : 0;
+    var addKind = $("colAddKind") ? $("colAddKind").value : "field";
     var placeVal = $("colFieldPlace") ? $("colFieldPlace").value : "beside";
     var reqVal = $("colFieldReq") ? $("colFieldReq").checked : false;
     var excelVal = $("colFieldExcel") ? $("colFieldExcel").checked : false;
     var editing = window._editingColField;
+
+    if (addKind === "box" && !editing) {
+      if (!label) { alert("عنوان کادر را بنویسید."); return; }
+      getBoxes(key).push({ id: "box-" + key + "-" + Date.now(), label: label, fieldIds: [], order: order, size: size, height: heightVal });
+      saveState();
+      logOp("افزودن کادر «" + label + "» به تب " + sec.label);
+      afterSaveStayOnList();
+      if (typeof window.renderColBoxInfoTable === "function") window.renderColBoxInfoTable(tabId, key);
+      alert("کادر «" + label + "» در تب «" + sec.label + "» ثبت شد.");
+      return;
+    }
+    if (addKind === "button" && !editing) {
+      var wkind = $("colBtnKind") ? $("colBtnKind").value : "widget-save";
+      if (typeof window.addWidgetToActiveTab === "function") {
+        var w = window.addWidgetToActiveTab(wkind, label || "کلید", { tabId: tabId, allowDup: true });
+        if (w) {
+          w.order = order;
+          w.listOrder = listOrderVal || order;
+          w.size = size;
+          w.height = heightVal;
+          w.place = placeVal;
+        }
+        saveState();
+      }
+      afterSaveStayOnList();
+      if (typeof window.renderColBtnInfoTable === "function") window.renderColBtnInfoTable(tabId, key);
+      return;
+    }
 
     function afterSaveStayOnList() {
       window._editingColField = null;
@@ -1398,6 +1517,8 @@
       if (!meta[editing.id]) meta[editing.id] = {};
       meta[editing.id].label = label;
       meta[editing.id].size = size;
+      if (heightVal > 20) meta[editing.id].height = heightVal;
+      if (listOrderVal > 0) meta[editing.id].listOrder = listOrderVal;
       meta[editing.id].place = placeVal || "beside";
       meta[editing.id].showInForm = $("colFieldInForm").checked;
       meta[editing.id].showInList = $("colFieldInList").checked;
@@ -1424,6 +1545,8 @@
         rec.showInForm = $("colFieldInForm").checked;
         rec.showInList = $("colFieldInList").checked;
         rec.size = size;
+        if (heightVal > 20) rec.height = heightVal;
+        if (listOrderVal > 0) rec.listOrder = listOrderVal;
         if ($("colFieldPlace")) rec.place = $("colFieldPlace").value || "beside";
         rec.dependsOn = ($("colFieldDep").value || "").trim();
         rec.required = reqVal;
@@ -1453,7 +1576,9 @@
       showInForm: $("colFieldInForm").checked,
       showInList: $("colFieldInList").checked,
       order: order,
+      listOrder: listOrderVal || order,
       size: size,
+      height: heightVal || 0,
       place: placeVal || "beside",
       required: reqVal,
       exportExcel: excelVal,
@@ -1495,23 +1620,31 @@
         "<option value='Tahoma, Arial'" + (cur && cur.indexOf("Arial") !== -1 ? " selected" : "") + ">Arial</option>" +
         "<option value='Georgia'" + (cur === "Georgia" ? " selected" : "") + ">Georgia</option>";
     };
-    var html = "<table class='data-table'><thead><tr><th>ردیف</th><th>عنوان</th><th>نوع</th><th>چینش</th><th>فونت لیبل</th><th>بولد لیبل</th><th>سایز لیبل</th><th>فونت فیلد</th><th>بولد فیلد</th><th>سایز فیلد</th><th>ستاره</th><th>فرم</th><th>لیست</th><th>اکسل</th><th>جابجایی</th><th>عملیات</th></tr></thead><tbody>";
+    var html = "<table class='data-table'><thead><tr><th>ترتیب فرم</th><th>ترتیب لیست</th><th>عنوان</th><th>نوع</th><th>چینش</th><th>فونت لیبل</th><th>بولد لیبل</th><th>سایز فونت لیبل</th><th>فونت فیلد</th><th>بولد فیلد</th><th>سایز فونت فیلد</th><th>ستاره</th><th>فرم</th><th>لیست</th><th>اکسل</th><th>جابجایی</th><th>عملیات</th></tr></thead><tbody>";
     list.forEach(function (f, i) {
-      var src = f.kind === "box" ? "کادر" : (f.kind === "ordercol" ? "داخل کادر اقلام" : (f.builtin ? "ثابت فرم" : "اضافه‌شده"));
+      var src = f.kind === "box" ? "کادر" : (f.kind === "ordercol" ? "داخل کادر اقلام" : (f.kind === "widget" ? "کلید" : (f.builtin ? "ثابت فرم" : "اضافه‌شده")));
       var hid = f.hidden ? " col-row-hidden" : "";
       var rowNo = i + 1;
+      var listNo = f.listOrder || rowNo;
       var place = f.place || "beside";
+      var labFs = parseInt(f.labelFontSize, 10) || 14;
+      var fldFs = parseInt(f.fieldFontSize, 10) || 14;
+      if (labFs > 28) labFs = 28;
+      if (labFs < 10) labFs = 10;
+      if (fldFs > 28) fldFs = 28;
+      if (fldFs < 10) fldFs = 10;
       html += "<tr class='" + hid + "' data-fid='" + escHtml(f.id) + "'>" +
-        "<td><input type='number' min='1' class='form-input col-order-input' data-fid='" + escHtml(f.id) + "' value='" + rowNo + "'></td>" +
+        "<td><input type='number' min='1' class='form-input col-order-input' data-fid='" + escHtml(f.id) + "' value='" + rowNo + "' title='ترتیب در فرم ثبت'></td>" +
+        "<td><input type='number' min='1' class='form-input col-listorder-input' data-fid='" + escHtml(f.id) + "' value='" + listNo + "' title='ترتیب در لیست'></td>" +
         "<td><strong>" + escHtml(f.label) + "</strong>" + (f.required ? " <span class='col-req-star'>*</span>" : "") + (f.hidden ? " <span class='col-hidden-badge'>مخفی</span>" : "") + "</td>" +
         "<td>" + src + "</td>" +
         "<td><select class='form-select col-place-sel' data-fid='" + escHtml(f.id) + "'><option value='beside'" + (place !== "under" ? " selected" : "") + ">روبرو</option><option value='under'" + (place === "under" ? " selected" : "") + ">زیر هم</option></select></td>" +
         "<td><select class='form-select col-labelfont-sel' data-fid='" + escHtml(f.id) + "'>" + fontOpts(f.labelFontFamily || "") + "</select></td>" +
         "<td style='text-align:center'><input type='checkbox' class='col-labelbold-chk' data-fid='" + escHtml(f.id) + "'" + (f.labelFontWeight === "bold" ? " checked" : "") + "></td>" +
-        "<td><input type='number' min='10' max='40' class='form-input col-labelsize-inp' data-fid='" + escHtml(f.id) + "' value='" + (parseInt(f.labelFontSize, 10) || 14) + "' title='پیکسل'></td>" +
+        "<td><input type='number' min='10' max='28' class='form-input col-labelsize-inp' data-fid='" + escHtml(f.id) + "' value='" + labFs + "' title='سایز فونت لیبل ۱۰ تا ۲۸'></td>" +
         "<td><select class='form-select col-fieldfont-sel' data-fid='" + escHtml(f.id) + "'>" + fontOpts(f.fieldFontFamily || "") + "</select></td>" +
         "<td style='text-align:center'><input type='checkbox' class='col-fieldbold-chk' data-fid='" + escHtml(f.id) + "'" + (f.fieldFontWeight === "bold" ? " checked" : "") + "></td>" +
-        "<td><input type='number' min='10' max='40' class='form-input col-fieldsize-inp' data-fid='" + escHtml(f.id) + "' value='" + (parseInt(f.fieldFontSize, 10) || 14) + "' title='پیکسل'></td>" +
+        "<td><input type='number' min='10' max='28' class='form-input col-fieldsize-inp' data-fid='" + escHtml(f.id) + "' value='" + fldFs + "' title='سایز فونت داخل فیلد ۱۰ تا ۲۸'></td>" +
         "<td style='text-align:center'><input type='checkbox' class='col-req-chk' data-fid='" + escHtml(f.id) + "'" + (f.required ? " checked" : "") + " title='الزامی'></td>" +
         "<td style='text-align:center'><input type='checkbox' class='col-flag-form' data-fid='" + escHtml(f.id) + "'" + (f.showInForm ? " checked" : "") + "></td>" +
         "<td style='text-align:center'><input type='checkbox' class='col-flag-list' data-fid='" + escHtml(f.id) + "'" + (f.showInList ? " checked" : "") + "></td>" +
@@ -1533,6 +1666,11 @@
     Array.prototype.forEach.call(box.querySelectorAll(".col-order-input"), function (inp) {
       inp.addEventListener("change", function () {
         setAnyFieldOrder(tabId, inp.getAttribute("data-fid"), parseInt(inp.value, 10));
+      });
+    });
+    Array.prototype.forEach.call(box.querySelectorAll(".col-listorder-input"), function (inp) {
+      inp.addEventListener("change", function () {
+        setListFieldOrder(tabId, inp.getAttribute("data-fid"), parseInt(inp.value, 10));
       });
     });
     Array.prototype.forEach.call(box.querySelectorAll(".col-excel-chk"), function (inp) {
@@ -1561,10 +1699,22 @@
     }
     bindFlag(".col-labelfont-sel", "labelFontFamily");
     bindFlag(".col-labelbold-chk", "labelFontWeight", function (el) { return el.checked ? "bold" : "normal"; });
-    bindFlag(".col-labelsize-inp", "labelFontSize");
+    bindFlag(".col-labelsize-inp", "labelFontSize", function (el) {
+      var n = parseInt(el.value, 10) || 14;
+      if (n < 10) n = 10;
+      if (n > 28) n = 28;
+      el.value = n;
+      return String(n);
+    });
     bindFlag(".col-fieldfont-sel", "fieldFontFamily");
     bindFlag(".col-fieldbold-chk", "fieldFontWeight", function (el) { return el.checked ? "bold" : "normal"; });
-    bindFlag(".col-fieldsize-inp", "fieldFontSize");
+    bindFlag(".col-fieldsize-inp", "fieldFontSize", function (el) {
+      var n = parseInt(el.value, 10) || 14;
+      if (n < 10) n = 10;
+      if (n > 28) n = 28;
+      el.value = n;
+      return String(n);
+    });
     bindFlag(".col-req-chk", "required", function (el) { return el.checked; });
     Array.prototype.forEach.call(box.querySelectorAll(".col-flag-form"), function (inp) {
       inp.addEventListener("change", function () {
@@ -1635,6 +1785,19 @@
     meta[fieldId].order = newOrder;
   }
 
+  function writeListFieldOrder(tabId, fieldId, newOrder) {
+    var key = fieldKeyForTab(tabId);
+    var custom = null;
+    getFieldList(key).forEach(function (f) { if (f.id === fieldId) custom = f; });
+    if (custom) {
+      custom.listOrder = newOrder;
+      return;
+    }
+    var meta = ensureMeta(key);
+    if (!meta[fieldId]) meta[fieldId] = {};
+    meta[fieldId].listOrder = newOrder;
+  }
+
   window.writeFieldSize = writeFieldSize;
   function writeFieldSize(tabId, fieldId, size) {
     var key = fieldKeyForTab(tabId);
@@ -1687,6 +1850,28 @@
     if (ok) return;
     reindexOrders(tabId, list.map(function (f) { return f.id; }));
     try { saveState(false); } catch (e) {}
+  }
+
+  function setListFieldOrder(tabId, fieldId, newOrder) {
+    var list = getUnifiedFieldList(tabId).slice().sort(function (a, b) {
+      var ao = Number(a.listOrder) || Number(a.order) || 999;
+      var bo = Number(b.listOrder) || Number(b.order) || 999;
+      if (ao !== bo) return ao - bo;
+      return String(a.id).localeCompare(String(b.id));
+    });
+    var ids = list.map(function (f) { return f.id; });
+    var from = ids.indexOf(fieldId);
+    if (from < 0) return;
+    var rowNum = parseInt(newOrder, 10);
+    if (!rowNum || rowNum < 1) rowNum = 1;
+    if (rowNum > ids.length) rowNum = ids.length;
+    ids.splice(from, 1);
+    ids.splice(rowNum - 1, 0, fieldId);
+    ids.forEach(function (id, i) { writeListFieldOrder(tabId, id, i + 1); });
+    saveState();
+    logOp("انتقال ستون لیست به ردیف " + rowNum);
+    renderColFieldList();
+    refreshEntityLists(tabId);
   }
 
   function setAnyFieldOrder(tabId, fieldId, newOrder) {
@@ -2047,8 +2232,8 @@
     window.paintFieldBox = paintFieldBox;
     window.paintRequiredStar = paintRequiredStar;
     window.groupIsShared = groupIsShared;
-    logOp("بارگذاری نسخه ۱۱.۱۳");
-    console.log("v11.13 ready");
+    logOp("بارگذاری نسخه ۱۱.۱۴");
+    console.log("v11.14 ready");
   }
 
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot);

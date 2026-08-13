@@ -16,7 +16,7 @@
   <meta name="theme-color" content="#0d9488" />
   
   <!-- Custom Style with Anti-Cache Version 9.1.0 -->
-  <link rel="stylesheet" href="style.css?v=11.13.0" />
+  <link rel="stylesheet" href="style.css?v=11.14.0" />
 </head>
 <body>
 
@@ -297,7 +297,7 @@
           <button type="button" class="btn btn-outline btn-sm" id="btnShowPhList">لیست (<span id="phListCountBadge">0</span>)</button>
         </div>
 
-        <form id="formPharmacy" onsubmit="return false;">
+        <form id="formPharmacy" onsubmit="return false;" novalidate>
           <input type="hidden" id="pharmacyEditId" value="" />
           <div class="form-grid">
             <div class="form-group">
@@ -493,7 +493,7 @@
           <button type="button" class="btn btn-outline btn-sm" id="btnShowDocList">لیست (<span id="docListCountBadge">0</span>)</button>
         </div>
 
-        <form id="formDoctor" onsubmit="return false;">
+        <form id="formDoctor" onsubmit="return false;" novalidate>
           <input type="hidden" id="doctorEditId" value="" />
           <div class="form-grid">
             <div class="form-group">
@@ -689,7 +689,7 @@
           <button type="button" class="btn btn-outline btn-sm" id="btnShowOrdList">لیست (<span id="ordListCountBadge">0</span>)</button>
         </div>
 
-        <form id="formOrder" onsubmit="return false;">
+        <form id="formOrder" onsubmit="return false;" novalidate>
           <input type="hidden" id="orderEditId" value="" />
           <input type="hidden" id="orderPharmacyMatchedId" value="" />
 
@@ -1463,7 +1463,7 @@
           </button>
         </div>
         <div id="productSavedBanner" class="product-saved-banner" hidden></div>
-        <form id="formProduct" onsubmit="return false;" style="margin-bottom: 1.5rem;">
+        <form id="formProduct" onsubmit="return false;" novalidate style="margin-bottom: 1.5rem;">
           <div class="form-grid">
             <div class="form-group">
               <label class="form-label">نام کالا *</label>
@@ -1535,6 +1535,11 @@
             <select id="manCopyTo" class="form-select"></select>
             <button type="button" id="btnManCopy" class="btn btn-outline btn-sm">📋 کپی امکانات و چیدمان</button>
           </div>
+          <div class="man-toolbar-row man-copy-mode-row">
+            <label class="man-copy-opt"><input type="radio" name="manCopyMode" id="manCopyModeAll" value="all" checked> کل امکانات تب</label>
+            <label class="man-copy-opt"><input type="radio" name="manCopyMode" id="manCopyModePart" value="part"> انتخاب بخشی از امکانات</label>
+          </div>
+          <div id="manCopyPickList" class="man-copy-pick" hidden></div>
         </div>
         <div id="manualDesignCanvas" class="man-canvas"></div>
       </div>
@@ -2097,19 +2102,20 @@
   <script src="vendor/leaflet.js"></script>
   
   <!-- Data & Application Logic with Anti-Cache Version 11.10.0 -->
-  <script src="crm-data.js?v=11.13.0"></script>
-  <script src="crm-app.js?v=11.13.0"></script>
-  <script src="crm-features-v9.js?v=11.13.0"></script>
-  <script src="iran-facilities.js?v=11.13.0" defer></script>
-  <script src="crm-features-v10.js?v=11.13.0"></script>
-  <script src="crm-features-v11.js?v=11.13.0"></script>
-  <script src="crm-features-v12.js?v=11.13.0"></script>
-  <script src="crm-features-v13.js?v=11.13.0"></script>
-  <script src="crm-jalali.js?v=11.13.0"></script>
-  <script src="crm-features-v14.js?v=11.13.0"></script>
-  <script src="crm-features-v15.js?v=11.13.0"></script>
-  <script src="crm-features-v16.js?v=11.13.0"></script>
-  <script src="crm-features-v17.js?v=11.13.0"></script>
+  <script src="crm-data.js?v=11.14.0"></script>
+  <script src="crm-app.js?v=11.14.0"></script>
+  <script src="crm-features-v9.js?v=11.14.0"></script>
+  <script src="iran-facilities.js?v=11.14.0" defer></script>
+  <script src="crm-features-v10.js?v=11.14.0"></script>
+  <script src="crm-features-v11.js?v=11.14.0"></script>
+  <script src="crm-features-v12.js?v=11.14.0"></script>
+  <script src="crm-features-v13.js?v=11.14.0"></script>
+  <script src="crm-jalali.js?v=11.14.0"></script>
+  <script src="crm-features-v14.js?v=11.14.0"></script>
+  <script src="crm-features-v15.js?v=11.14.0"></script>
+  <script src="crm-features-v16.js?v=11.14.0"></script>
+  <script src="crm-features-v17.js?v=11.14.0"></script>
+  <script src="crm-features-v18.js?v=11.14.0"></script>
   <!-- فیلدهای مخفی سازگاری با کد قبلی (نباید در UI دیده شوند) -->
   <input type="hidden" id="pharmacyLocationText" value="" />
   <input type="hidden" id="doctorLocationText" value="" />
