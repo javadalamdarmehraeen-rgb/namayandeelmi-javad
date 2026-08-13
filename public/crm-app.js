@@ -83,6 +83,8 @@ function loadState() {
   if (!state.customFields) state.customFields = {};
   if (!state.selectExtraOptions) state.selectExtraOptions = {};
   if (!state.formBoxes) state.formBoxes = {};
+  if (!state.userTabs) state.userTabs = [];
+  if (!state.customRecords) state.customRecords = {};
   applyGeneralSettingsToUI();
 }
 
@@ -791,9 +793,14 @@ function renderCustomFieldsInForm(entityType, containerId, currentValues = {}) {
   const container = document.getElementById(containerId);
   if (!container) return;
   if (typeof window.cleanupOrphanCustomFields === "function") {
-    window.cleanupOrphanCustomFields(entityType, containerId, true);
+    window.cleanupOrphanCustomFields(entityType, containerId, false);
   }
-  container.innerHTML = "";
+
+  const form = container.closest("form") || container.closest(".tab-pane");
+  const grid = form
+    ? (form.querySelector(":scope > .form-grid") || form.querySelector(".form-grid"))
+    : null;
+  const host = grid || container;
 
   const fields = (state.customFields[entityType] || []).slice().sort((a, b) => {
     const ao = a.order == null || a.order === "" ? 999 : Number(a.order);
@@ -801,10 +808,43 @@ function renderCustomFieldsInForm(entityType, containerId, currentValues = {}) {
     return ao - bo;
   });
   fields.forEach(field => {
-    if (field.showInForm === false) return;
+    const kind = field.inputKind || (field.type === "select" ? "select" : "simple");
+    const existing = form
+      ? form.querySelector('[data-custom-field-id="' + field.id + '"]')
+      : container.querySelector('[data-custom-field-id="' + field.id + '"]');
+
+    if (field.showInForm === false) {
+      if (existing) {
+        const g = existing.closest(".form-group");
+        if (g) g.classList.add("col-hide-form");
+      }
+      return;
+    }
+
+    if (existing) {
+      const g = existing.closest(".form-group");
+      if (g) {
+        g.classList.remove("col-hide-form");
+        const lab = g.querySelector(".form-label, label");
+        if (lab && !lab.querySelector("input")) {
+          lab.textContent = field.label + (field.required ? " *" : "");
+        }
+      }
+      if (currentValues && (currentValues[field.label] != null || currentValues[field.id] != null)) {
+        existing.value = currentValues[field.label] != null ? currentValues[field.label] : currentValues[field.id];
+      }
+      return;
+    }
+
+    if (String(kind).indexOf("widget") === 0 && typeof window.buildDesignerWidget === "function") {
+      const w = window.buildDesignerWidget(field, form && form.closest(".tab-pane") && form.closest(".tab-pane").id);
+      if (w) host.appendChild(w);
+      return;
+    }
 
     const div = document.createElement("div");
     div.className = "form-group";
+    div.setAttribute("data-col-fid", field.id);
     const size = parseInt(field.size, 10);
     if (size > 40) {
       div.style.maxWidth = size + "px";
@@ -818,10 +858,9 @@ function renderCustomFieldsInForm(entityType, containerId, currentValues = {}) {
 
     const labelEl = document.createElement("label");
     labelEl.className = "form-label";
-    labelEl.textContent = field.label;
+    labelEl.textContent = field.label + (field.required ? " *" : "");
     labelRow.appendChild(labelEl);
 
-    const kind = field.inputKind || (field.type === "select" ? "select" : "simple");
     if ((kind === "select" || field.type === "select") && field.allowAddOption) {
       const btnAddOpt = document.createElement("button");
       btnAddOpt.type = "button";
@@ -861,11 +900,11 @@ function renderCustomFieldsInForm(entityType, containerId, currentValues = {}) {
       div.appendChild(input);
     }
 
-    container.appendChild(div);
+    host.appendChild(div);
   });
 
   setupDropdownAutoClear();
-  if (typeof window.applyCustomFieldOrderInForm === "function") {
+  if (typeof window.applyCustomFieldOrderInForm === "function" && !window._layoutBusy) {
     window.applyCustomFieldOrderInForm(entityType, containerId);
   }
 }
@@ -3858,3 +3897,4 @@ function deleteProductCatalogItem(id) {
   mergeCatalogIntoOrderItems();
   updateNavBadges();
 }
+

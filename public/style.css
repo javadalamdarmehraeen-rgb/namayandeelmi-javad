@@ -1634,3 +1634,59 @@ button.btn-danger {
   .card { padding:1rem; }
   .header-actions .btn-header-teal { display:none; }
 }
+
+.col-user-box {
+  flex: 1 1 100%;
+  width: 100%;
+  max-width: 100%;
+  border: 1.5px solid #99f6e4;
+  background: #f0fdfa;
+  border-radius: 12px;
+  padding: 0.75rem 0.85rem 1rem;
+  margin: 0.4rem 0;
+}
+.col-user-box-title {
+  font-weight: 800;
+  color: #0f766e;
+  margin-bottom: 0.65rem;
+  font-size: 0.92rem;
+}
+.col-user-box-body { display: flex; flex-wrap: wrap; gap: 0.75rem; }
+.col-user-box-admin {
+  background: #fff;
+  border: 1px solid #99f6e4;
+  border-radius: 10px;
+  padding: 0.65rem 0.75rem;
+  margin-top: 0.65rem;
+}
+.col-user-box-admin-head {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+  margin-bottom: 0.45rem;
+}
+.col-box-fields { display: flex; flex-wrap: wrap; gap: 0.35rem 0.7rem; }
+.col-box-chk { font-size: 0.8rem; font-weight: 600; color: #334155; }
+.col-widget-wrap { display: flex; flex-direction: column; gap: 0.35rem; }
+.col-newtab-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  background: #ecfdf5;
+  border: 1.5px solid #6ee7b7;
+  border-radius: 10px;
+  padding: 0.65rem 0.8rem;
+  margin-bottom: 0.75rem;
+}
+.col-newtab-bar .form-input { max-width: 280px; }
+.col-widget-palette {
+  background: #fffbeb;
+  border: 1.5px solid #fde68a;
+  border-radius: 10px;
+  padding: 0.7rem 0.85rem;
+  margin: 0.85rem 0;
+}
+.col-widget-btns { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.45rem; }
+.user-made-tab .nav-item { font-size: 0.84rem; }

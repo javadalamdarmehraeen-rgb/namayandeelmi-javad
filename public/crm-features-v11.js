@@ -376,6 +376,12 @@
   }
 
   function fieldKeyForTab(tabId) {
+    try {
+      var ut = ((typeof state !== "undefined" && state && state.userTabs) || []).filter(function (t) {
+        return t.id === tabId;
+      })[0];
+      if (ut && ut.key) return ut.key;
+    } catch (e) {}
     return COL_TAB_KEYS[tabId] || String(tabId || "").replace(/^tab-/, "") || "misc";
   }
 
@@ -415,6 +421,16 @@
   function getMainGrid(tabId) {
     var form = getTabForm(tabId);
     if (!form) return null;
+    var direct = form.querySelector(":scope > .form-grid");
+    if (direct) return direct;
+    var pane = $(tabId);
+    if (pane) {
+      var card = pane.querySelector(".card");
+      if (card) {
+        var g = card.querySelector(":scope > form > .form-grid") || card.querySelector(":scope > .form-grid");
+        if (g) return g;
+      }
+    }
     return form.querySelector(".form-grid");
   }
 
@@ -531,6 +547,33 @@
       pushField("orderItemGift", "تعداد جایزه (داخل کادر اقلام)", "number", boxG, false, "ordercol");
       pushField("orderItemPrice", "قیمت واحد (داخل کادر اقلام)", "number", boxG, false, "ordercol");
     }
+
+    function wrapWidget(el) {
+      if (!el) return null;
+      if (el.classList && el.classList.contains("form-group")) return el;
+      if (el.parentNode && el.parentNode.classList && el.parentNode.classList.contains("col-widget-wrap")) {
+        return el.parentNode;
+      }
+      return el;
+    }
+    var skipBtn = {
+      btnToggleSideMenu: 1, btnCloseSideMenu: 1, btnNotificationBellHeader: 1,
+      btnOpenLoginModal: 1, btnLogoutSystem: 1, btnAddDashWidget: 1
+    };
+    Array.prototype.forEach.call(pane.querySelectorAll("button[id], .btn-toggle-option[id]"), function (btn) {
+      if (!btn.id || seen[btn.id] || skipBtn[btn.id]) return;
+      if (btn.closest("#columnsDesignerHost") || btn.closest(".modal-overlay") || btn.closest("#jalaliCalendarPopup")) return;
+      if (btn.closest(".app-header") || btn.closest(".app-nav") || btn.closest(".side-menu-drawer")) return;
+      var label = String(btn.textContent || btn.title || btn.id).replace(/\s+/g, " ").trim();
+      var wrap = wrapWidget(btn);
+      pushField(btn.id, label, "widget", wrap, false, "widget");
+    });
+    Array.prototype.forEach.call(pane.querySelectorAll(".map-container[id]"), function (mapEl) {
+      if (!mapEl.id || seen[mapEl.id]) return;
+      if (mapEl.closest("#columnsDesignerHost") || mapEl.closest(".modal-overlay")) return;
+      var wrap = wrapWidget(mapEl);
+      pushField(mapEl.id, "نقشه", "widget", wrap, true, "widget");
+    });
     return fields;
   }
 
@@ -615,9 +658,10 @@
     ((state.customFields || {})[entityType] || []).forEach(function (f) { valid[f.id] = true; });
     Array.prototype.slice.call(root.querySelectorAll("[data-custom-field-id]")).forEach(function (inp) {
       var id = inp.getAttribute("data-custom-field-id");
+      if (valid[id]) return;
       var g = inp.closest(".form-group");
-      if (!g || g === container) return;
-      if (!valid[id] || removeValidOutside) g.remove();
+      if (g) g.remove();
+      else inp.remove();
     });
   };
 
@@ -633,6 +677,10 @@
     var el = document.getElementById(field.id) ||
       document.querySelector('[data-col-fid="' + field.id + '"]');
     if (!el) return null;
+    if (field.kind === "widget") {
+      if (el.parentNode && el.parentNode.classList && el.parentNode.classList.contains("col-widget-wrap")) return el.parentNode;
+      return el;
+    }
     var g = el.classList && el.classList.contains("form-group") ? el : el.closest(".form-group");
     if (grid && g && g.parentNode !== grid) {
       var p = g.parentNode;
@@ -671,23 +719,27 @@
       group.style.setProperty("min-width", Math.min(140, w) + "px", "important");
       group.style.setProperty("width", w + "px", "important");
     }
-    var ff = f.fontFamily || "";
-    var fw = f.fontWeight || "";
-    var fs = f.fontSize || "";
-    var targets = [group];
     var lab = group.querySelector(".form-label, label, h4");
-    var inp = group.querySelector(".form-input, .form-select, .form-textarea, input, select, textarea");
-    if (lab) targets.push(lab);
-    if (inp) targets.push(inp);
-    targets.forEach(function (el) {
-      if (ff) el.style.fontFamily = ff;
+    var inp = group.querySelector(".form-input, .form-select, .form-textarea, input, select, textarea, button");
+    function applyFont(el, fam, weight, size) {
+      if (!el) return;
+      if (fam) el.style.fontFamily = fam;
       else el.style.removeProperty("font-family");
-      if (fw === "bold") el.style.fontWeight = "800";
-      else if (fw === "normal") el.style.fontWeight = "400";
+      if (weight === "bold") el.style.fontWeight = "800";
+      else if (weight === "normal") el.style.fontWeight = "400";
       else el.style.removeProperty("font-weight");
-      if (fs) el.style.fontSize = fs;
+      var px = parseInt(size, 10);
+      if (px) el.style.fontSize = px + "px";
+      else if (size) el.style.fontSize = size;
       else el.style.removeProperty("font-size");
-    });
+    }
+    applyFont(lab, f.labelFontFamily || f.fontFamily, f.labelFontWeight || f.fontWeight, f.labelFontSize || f.fontSize);
+    applyFont(inp, f.fieldFontFamily || f.fontFamily, f.fieldFontWeight || f.fontWeight, f.fieldFontSize || f.fontSize);
+    if (f.kind === "widget" && group.querySelector(".map-container")) {
+      group.classList.add("col-place-under");
+      group.style.setProperty("width", "100%", "important");
+      group.style.setProperty("max-width", "100%", "important");
+    }
   }
 
   function applyOrderItemLayout() {
@@ -739,7 +791,22 @@
         if (fid === "orderItemsBox" || fid.indexOf("orderItem") === 0) return;
         var item = null;
         placed.forEach(function (p) { if (p.f.id === fid) item = p; });
-        if (item && item.group && item.group !== wrap) body.appendChild(item.group);
+        if (item && item.group && item.group !== wrap) {
+          var g = item.group;
+          if (g.tagName === "BUTTON" || (g.classList && g.classList.contains("map-container"))) {
+            if (g.parentNode && g.parentNode.classList && g.parentNode.classList.contains("col-widget-wrap")) {
+              g = g.parentNode;
+            } else if (g.parentNode) {
+              var ww = document.createElement("div");
+              ww.className = "form-group col-widget-wrap";
+              ww.setAttribute("data-col-fid", fid);
+              g.parentNode.insertBefore(ww, g);
+              ww.appendChild(g);
+              g = ww;
+            }
+          }
+          if (g !== wrap) body.appendChild(g);
+        }
       });
     });
   }
@@ -774,12 +841,12 @@
     var container = cid ? $(cid) : null;
     if (cid && typeof renderCustomFieldsInForm === "function") {
       window._layoutBusy = true;
+      var skip = window.applyCustomFieldOrderInForm;
       try {
-        var skip = window.applyCustomFieldOrderInForm;
         window.applyCustomFieldOrderInForm = function () {};
         renderCustomFieldsInForm(key, cid);
-        window.applyCustomFieldOrderInForm = skip;
-      } catch (e) {}
+      } catch (e) { console.error("renderCustomFieldsInForm", e); }
+      window.applyCustomFieldOrderInForm = skip;
       window._layoutBusy = false;
     }
     var unified = getUnifiedFieldList(tabId);
@@ -804,6 +871,7 @@
     if (grid) {
       placed.forEach(function (item) {
         if (!item.f.showInForm || item.f.hidden) return;
+        if (item.f.kind === "widget") return;
         if (item.group.parentNode !== grid) grid.appendChild(item.group);
         else grid.appendChild(item.group);
       });
@@ -825,9 +893,24 @@
     } catch (e) {}
   }
 
+  window.applyFullFormLayout = applyFullFormLayout;
+  window.getMainGrid = getMainGrid;
+  window.getAllMenuSections = function () {
+    var base = (typeof MENU_SECTIONS_LIST !== "undefined" ? MENU_SECTIONS_LIST.slice() : []);
+    try {
+      ((state && state.userTabs) || []).forEach(function (t) {
+        if (!t || !t.id) return;
+        var exists = false;
+        base.forEach(function (s) { if (s.id === t.id) exists = true; });
+        if (!exists) base.push({ id: t.id, label: t.label, icon: t.icon || "📋", badgeId: t.badgeId });
+      });
+    } catch (e) {}
+    return base;
+  };
+
   window.applyAllFormLayouts = function () {
-    Object.keys(COL_TAB_KEYS).forEach(function (tabId) {
-      try { applyFullFormLayout(tabId); } catch (e) { console.error("layout", tabId, e); }
+    window.getAllMenuSections().forEach(function (sec) {
+      try { applyFullFormLayout(sec.id); } catch (e) { console.error("layout", sec.id, e); }
     });
   };
 
@@ -868,8 +951,8 @@
   }
 
   window.renderExtraTabCustomFields = function () {
-    if (typeof MENU_SECTIONS_LIST === "undefined") return;
-    MENU_SECTIONS_LIST.forEach(function (sec) {
+    var secs = typeof window.getAllMenuSections === "function" ? window.getAllMenuSections() : (typeof MENU_SECTIONS_LIST !== "undefined" ? MENU_SECTIONS_LIST : []);
+    secs.forEach(function (sec) {
       var key = fieldKeyForTab(sec.id);
       if (key === "pharmacy" || key === "doctor" || key === "order") return;
       var cid = ensureFieldHost(sec.id, key);
@@ -913,9 +996,9 @@
         '<div class="col-designer-panel" id="colDesignerPanel" hidden></div>';
       grid = $("colTabGrid");
     }
-    if (!grid || typeof MENU_SECTIONS_LIST === "undefined") return;
+    if (!grid || typeof window.getAllMenuSections !== "function") return;
     var html = "";
-    MENU_SECTIONS_LIST.forEach(function (sec) {
+    window.getAllMenuSections().forEach(function (sec) {
       var n = 0;
       try { n = getUnifiedFieldList(sec.id).length; } catch (e) { n = 0; }
       var active = window._activeColTab === sec.id ? " active" : "";
@@ -966,7 +1049,7 @@
       panel.innerHTML = "";
       return;
     }
-    var sec = ((typeof MENU_SECTIONS_LIST !== "undefined" ? MENU_SECTIONS_LIST : []).filter(function (s) {
+    var sec = ((typeof window.getAllMenuSections === "function" ? window.getAllMenuSections() : []).filter(function (s) {
       return s.id === tabId;
     })[0]) || { label: tabId, icon: "🧱" };
     var key = fieldKeyForTab(tabId);
@@ -1043,7 +1126,14 @@
       $("btnAddColBox").addEventListener("click", function () {
         var name = ($("colBoxLabel").value || "").trim();
         if (!name) { alert("نام کادر را بنویسید."); return; }
-        getBoxes(key).push({ id: "box-" + key + "-" + Date.now(), label: name, fieldIds: [] });
+        if (window._editingBoxId) {
+          var box = getBoxes(key).filter(function (x) { return x.id === window._editingBoxId; })[0];
+          if (box) box.label = name;
+          window._editingBoxId = "";
+          if ($("btnAddColBox")) $("btnAddColBox").textContent = "➕ ثبت کادر";
+        } else {
+          getBoxes(key).push({ id: "box-" + key + "-" + Date.now(), label: name, fieldIds: [] });
+        }
         saveState();
         $("colBoxLabel").value = "";
         applyFullFormLayout(tabId);
@@ -1068,6 +1158,7 @@
         return "<label class='col-box-chk'><input type='checkbox' data-box='" + escHtml(b.id) + "' data-fid='" + escHtml(f.id) + "'" + (on ? " checked" : "") + "> " + escHtml(f.label) + "</label>";
       }).join("");
       return "<div class='col-user-box-admin'><div class='col-user-box-admin-head'><strong>" + escHtml(b.label) + "</strong>" +
+        " <button type='button' class='btn btn-outline btn-sm col-edit-box' data-box='" + escHtml(b.id) + "'>✏️ ویرایش</button>" +
         " <button type='button' class='btn btn-danger btn-sm col-del-box' data-box='" + escHtml(b.id) + "'>حذف</button></div>" +
         "<div class='col-box-fields'>" + checks + "</div></div>";
     }).join("");
@@ -1084,6 +1175,17 @@
         writeFieldFlag(tabId, fid, "boxId", chk.checked ? bid : "");
         saveState();
         applyFullFormLayout(tabId);
+      });
+    });
+    Array.prototype.forEach.call(host.querySelectorAll(".col-edit-box"), function (btn) {
+      btn.addEventListener("click", function () {
+        var bid = btn.getAttribute("data-box");
+        var box = getBoxes(key).filter(function (x) { return x.id === bid; })[0];
+        if (!box) return;
+        window._editingBoxId = bid;
+        if ($("colBoxLabel")) $("colBoxLabel").value = box.label || "";
+        if ($("btnAddColBox")) $("btnAddColBox").textContent = "💾 ذخیره ویرایش کادر";
+        if ($("colBoxLabel")) $("colBoxLabel").focus();
       });
     });
     Array.prototype.forEach.call(host.querySelectorAll(".col-del-box"), function (btn) {
@@ -1752,8 +1854,8 @@
       obs.observe(el, { childList: true });
     });
 
-    logOp("بارگذاری نسخه ۱۱.۵.۱");
-    console.log("v11.5.1 ready");
+    logOp("بارگذاری نسخه ۱۱.۶");
+    console.log("v11.6 ready");
   }
 
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot);
