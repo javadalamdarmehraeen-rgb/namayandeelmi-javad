@@ -324,10 +324,19 @@ body {
   flex-wrap: wrap;
   align-items: flex-start;
 }
-.form-grid.form-grid-sized > .form-group.full-width {
+.form-grid.form-grid-sized > .form-group.full-width:not(.col-place-beside) {
   flex: 1 1 100%;
   max-width: 100%;
   width: 100%;
+}
+.form-grid.form-grid-sized > .form-group.col-place-under {
+  flex: 1 1 100% !important;
+  max-width: 100% !important;
+  width: 100% !important;
+  min-width: 100% !important;
+}
+.form-grid.form-grid-sized > .form-group.col-place-beside {
+  flex: 1 1 260px;
 }
 .form-group.col-hide-form {
   display: none !important;

@@ -3730,7 +3730,9 @@ function setupColumnsProductsTab() {
     }
 
     if (!state.products) state.products = [];
-    const idx = state.products.findIndex(p => p.name === name);
+    const editId = window._editingProductId || "";
+    let idx = editId ? state.products.findIndex(p => p.id === editId) : -1;
+    if (idx === -1) idx = state.products.findIndex(p => p.name === name);
     if (idx !== -1) {
       state.products[idx] = { ...state.products[idx], name, distributorPrice: distPrice, pharmacyPrice: phPrice, stock };
     } else {
@@ -3742,6 +3744,7 @@ function setupColumnsProductsTab() {
         stock
       });
     }
+    window._editingProductId = "";
 
     saveState();
     window._lastSavedProductName = name;
@@ -3768,6 +3771,7 @@ function setupColumnsProductsTab() {
   const btnResetProd = document.getElementById("btnResetProductForm");
   if (btnResetProd) {
     btnResetProd.onclick = () => {
+      window._editingProductId = "";
       if (formProd) formProd.reset();
       const nameEl = document.getElementById("productName");
       if (nameEl) nameEl.classList.remove("product-name-just-saved");
@@ -3801,6 +3805,30 @@ function renderColumnsProductsTable() {
     `;
     tbody.appendChild(tr);
   });
+}
+
+function editProductCatalogItem(id) {
+  const prod = (state.products || []).find(p => p.id === id);
+  if (!prod) return;
+  window._editingProductId = id;
+  const nameEl = document.getElementById("productName");
+  const distEl = document.getElementById("productDistPrice");
+  const phEl = document.getElementById("productPrice");
+  const stEl = document.getElementById("productStock");
+  if (nameEl) nameEl.value = prod.name || "";
+  if (distEl) distEl.value = prod.distributorPrice || prod.price || "";
+  if (phEl) phEl.value = prod.pharmacyPrice || prod.price || "";
+  if (stEl) stEl.value = prod.stock || "";
+  const banner = document.getElementById("productSavedBanner");
+  if (banner) {
+    banner.hidden = false;
+    banner.innerHTML = "در حال ویرایش کالا: <strong>«" + (prod.name || "") + "»</strong>";
+  }
+  if (nameEl) {
+    nameEl.classList.add("product-name-just-saved");
+    nameEl.focus();
+    nameEl.scrollIntoView({ behavior: "smooth", block: "center" });
+  }
 }
 
 function deleteProductCatalogItem(id) {

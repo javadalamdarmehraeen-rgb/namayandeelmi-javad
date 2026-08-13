@@ -552,7 +552,12 @@
         hidden: !showForm,
         showInForm: showForm,
         showInList: showList === true,
-        full: b.full
+        full: b.full,
+        kind: b.kind || "field",
+        place: meta[b.id].place || (b.full ? "under" : "beside"),
+        fontFamily: meta[b.id].fontFamily || "",
+        fontWeight: meta[b.id].fontWeight || "",
+        fontSize: meta[b.id].fontSize || ""
       });
     });
     sortedFields(key).forEach(function (c) {
@@ -569,7 +574,12 @@
         options: c.options,
         allowAddOption: c.allowAddOption,
         dependsOn: c.dependsOn,
-        inputKind: c.inputKind
+        inputKind: c.inputKind,
+        kind: "custom",
+        place: c.place || "beside",
+        fontFamily: c.fontFamily || "",
+        fontWeight: c.fontWeight || "",
+        fontSize: c.fontSize || ""
       });
     });
     list.sort(function (a, b) {
@@ -632,18 +642,37 @@
     group.removeAttribute("data-col-hidden");
     var size = parseInt(f.size, 10);
     var place = f.place || (f.full ? "under" : "beside");
+    group.classList.toggle("col-place-under", place === "under");
+    group.classList.toggle("col-place-beside", place !== "under");
     if (place === "under") {
-      group.style.flex = "1 1 100%";
-      group.style.maxWidth = "100%";
-      group.style.minWidth = "100%";
-      group.style.width = "100%";
+      group.style.setProperty("flex", "1 1 100%", "important");
+      group.style.setProperty("max-width", "100%", "important");
+      group.style.setProperty("min-width", "100%", "important");
+      group.style.setProperty("width", "100%", "important");
     } else {
       var w = size > 40 ? size : 260;
-      group.style.flex = "1 1 " + w + "px";
-      group.style.maxWidth = w + "px";
-      group.style.minWidth = Math.min(140, w) + "px";
-      group.style.width = w + "px";
+      group.style.setProperty("flex", "1 1 " + w + "px", "important");
+      group.style.setProperty("max-width", w + "px", "important");
+      group.style.setProperty("min-width", Math.min(140, w) + "px", "important");
+      group.style.setProperty("width", w + "px", "important");
     }
+    var ff = f.fontFamily || "";
+    var fw = f.fontWeight || "";
+    var fs = f.fontSize || "";
+    var targets = [group];
+    var lab = group.querySelector(".form-label, label, h4");
+    var inp = group.querySelector(".form-input, .form-select, .form-textarea, input, select, textarea");
+    if (lab) targets.push(lab);
+    if (inp) targets.push(inp);
+    targets.forEach(function (el) {
+      if (ff) el.style.fontFamily = ff;
+      else el.style.removeProperty("font-family");
+      if (fw === "bold") el.style.fontWeight = "800";
+      else if (fw === "normal") el.style.fontWeight = "400";
+      else el.style.removeProperty("font-weight");
+      if (fs) el.style.fontSize = fs;
+      else el.style.removeProperty("font-size");
+    });
   }
 
   function applyOrderItemLayout() {
@@ -1036,17 +1065,24 @@
       box.innerHTML = "<div class='col-empty'>فیلدی در فرم این تب نیست.</div>";
       return;
     }
-    var html = "<table class='data-table'><thead><tr><th>ردیف / ترتیب</th><th>عنوان</th><th>منبع</th><th>اندازه (px)</th><th>نمایش در فرم</th><th>نمایش در لیست</th><th>جابجایی</th><th>عملیات</th></tr></thead><tbody>";
+    var html = "<table class='data-table'><thead><tr><th>ردیف</th><th>عنوان</th><th>منبع</th><th>اندازه عرض</th><th>چینش</th><th>فونت</th><th>بولد</th><th>اندازه نوشته</th><th>فرم</th><th>لیست</th><th>جابجایی</th><th>عملیات</th></tr></thead><tbody>";
     list.forEach(function (f, i) {
-      var kind = f.inputKind || f.type || "simple";
-      var src = f.builtin ? "ثابت فرم" : "اضافه‌شده";
+      var src = f.builtin ? (f.kind === "ordercol" ? "سطر اقلام" : "ثابت فرم") : "اضافه‌شده";
       var hid = f.hidden ? " col-row-hidden" : "";
       var rowNo = i + 1;
+      var place = f.place || "beside";
+      var fam = f.fontFamily || "";
+      var fw = f.fontWeight || "";
+      var fs = f.fontSize || "";
       html += "<tr class='" + hid + "' data-fid='" + escHtml(f.id) + "'>" +
         "<td><input type='number' min='1' class='form-input col-order-input' data-fid='" + escHtml(f.id) + "' value='" + rowNo + "' title='شماره ردیف'></td>" +
         "<td><strong>" + escHtml(f.label) + "</strong>" + (f.hidden ? " <span class='col-hidden-badge'>مخفی</span>" : "") + "</td>" +
         "<td>" + src + "</td>" +
         "<td><input type='number' min='80' max='900' class='form-input col-size-input' data-fid='" + escHtml(f.id) + "' value='" + (f.size || 260) + "'></td>" +
+        "<td><select class='form-select col-place-sel' data-fid='" + escHtml(f.id) + "'><option value='beside'" + (place !== "under" ? " selected" : "") + ">روبرو</option><option value='under'" + (place === "under" ? " selected" : "") + ">زیر هم</option></select></td>" +
+        "<td><select class='form-select col-font-sel' data-fid='" + escHtml(f.id) + "'><option value=''" + (!fam ? " selected" : "") + ">پیش‌فرض</option><option value='Tahoma'" + (fam === "Tahoma" ? " selected" : "") + ">Tahoma</option><option value='Vazirmatn'" + (fam === "Vazirmatn" ? " selected" : "") + ">وزیر</option><option value='Tahoma, Arial'" + (fam.indexOf("Arial") !== -1 ? " selected" : "") + ">Arial</option><option value='Georgia'" + (fam === "Georgia" ? " selected" : "") + ">Georgia</option></select></td>" +
+        "<td style='text-align:center'><input type='checkbox' class='col-bold-chk' data-fid='" + escHtml(f.id) + "'" + (fw === "bold" ? " checked" : "") + "></td>" +
+        "<td><select class='form-select col-fsize-sel' data-fid='" + escHtml(f.id) + "'><option value=''" + (!fs ? " selected" : "") + ">عادی</option><option value='13px'" + (fs === "13px" ? " selected" : "") + ">کوچک</option><option value='16px'" + (fs === "16px" ? " selected" : "") + ">متوسط</option><option value='18px'" + (fs === "18px" ? " selected" : "") + ">بزرگ</option><option value='22px'" + (fs === "22px" ? " selected" : "") + ">خیلی بزرگ</option></select></td>" +
         "<td style='text-align:center'><input type='checkbox' class='col-flag-form' data-fid='" + escHtml(f.id) + "'" + (f.showInForm ? " checked" : "") + "></td>" +
         "<td style='text-align:center'><input type='checkbox' class='col-flag-list' data-fid='" + escHtml(f.id) + "'" + (f.showInList ? " checked" : "") + "></td>" +
         "<td><button type='button' class='btn btn-outline btn-sm col-move-up' data-fid='" + escHtml(f.id) + "'>▲ بالاتر</button> " +
@@ -1079,6 +1115,27 @@
     Array.prototype.forEach.call(box.querySelectorAll(".col-place-sel"), function (sel) {
       sel.addEventListener("change", function () {
         writeFieldFlag(tabId, sel.getAttribute("data-fid"), "place", sel.value);
+        saveState();
+        applyFullFormLayout(tabId);
+      });
+    });
+    Array.prototype.forEach.call(box.querySelectorAll(".col-font-sel"), function (sel) {
+      sel.addEventListener("change", function () {
+        writeFieldFlag(tabId, sel.getAttribute("data-fid"), "fontFamily", sel.value);
+        saveState();
+        applyFullFormLayout(tabId);
+      });
+    });
+    Array.prototype.forEach.call(box.querySelectorAll(".col-bold-chk"), function (inp) {
+      inp.addEventListener("change", function () {
+        writeFieldFlag(tabId, inp.getAttribute("data-fid"), "fontWeight", inp.checked ? "bold" : "normal");
+        saveState();
+        applyFullFormLayout(tabId);
+      });
+    });
+    Array.prototype.forEach.call(box.querySelectorAll(".col-fsize-sel"), function (sel) {
+      sel.addEventListener("change", function () {
+        writeFieldFlag(tabId, sel.getAttribute("data-fid"), "fontSize", sel.value);
         saveState();
         applyFullFormLayout(tabId);
       });
