@@ -728,7 +728,8 @@ function setupCustomFieldsTab() {
       const newField = {
         id: "cf-" + target + "-" + Date.now(),
         label: label,
-        type: type,
+        type: type === "select" ? "select" : "simple",
+        inputKind: type,
         options: options,
         showInForm: showInForm,
         showInList: showInList,
@@ -764,7 +765,7 @@ function renderCustomFieldsTable() {
       tr.innerHTML = `
         <td><span class="status-badge" style="background: #eff6ff; color: #1e40af;">${entityLabels[entity] || entity}</span></td>
         <td><strong>${f.label}</strong></td>
-        <td>${f.type === "select" ? "کشویی" : "ساده"}</td>
+        <td>${(f.inputKind === "date" || f.type === "date") ? "تاریخ" : (f.type === "select" ? "کشویی" : "ساده")}</td>
         <td>${f.type === "select" && f.options ? f.options.join("، ") : "-"}</td>
         <td>${f.showInForm ? "✅ بله" : "❌ خیر"}</td>
         <td>${f.showInList ? "✅ بله" : "❌ خیر"}</td>
@@ -813,7 +814,7 @@ function renderCustomFieldsInForm(entityType, containerId, currentValues = {}) {
     return ao - bo;
   });
   fields.forEach(field => {
-    const kind = field.inputKind || (field.type === "select" ? "select" : "simple");
+    const kind = field.inputKind || field.type || "simple";
     const existing = form
       ? form.querySelector('[data-custom-field-id="' + field.id + '"]')
       : container.querySelector('[data-custom-field-id="' + field.id + '"]');
@@ -895,14 +896,20 @@ function renderCustomFieldsInForm(entityType, containerId, currentValues = {}) {
     } else {
       const input = document.createElement("input");
       input.type = kind === "number" ? "number" : "text";
-      input.className = "form-input";
+      input.className = kind === "date" ? "form-input jalali-date-input" : "form-input";
       input.dataset.customFieldId = field.id;
+      if (kind === "date") input.setAttribute("data-kind", "date");
       input.placeholder = kind === "date"
-        ? `تاریخ ${field.label} (مثال: 1405/05/21)`
+        ? `تاریخ ${field.label} (مثال: 1405/05/22)`
         : `وارد کنید: ${field.label}...`;
       if (currentValues[field.label]) input.value = currentValues[field.label];
       else if (currentValues[field.id]) input.value = currentValues[field.id];
       div.appendChild(input);
+      if (kind === "date" && typeof window.attachJalaliPicker === "function") {
+        window.attachJalaliPicker(input);
+      } else if ((kind === "simple" || kind === "text" || kind === "") && typeof window.attachInstantAdd === "function") {
+        window.attachInstantAdd(input);
+      }
     }
 
     host.appendChild(div);
@@ -1043,7 +1050,7 @@ function setupPharmacyTab() {
   if (form) {
     form.addEventListener("submit", () => {
       const editId = document.getElementById("pharmacyEditId").value;
-      const dateAdded = document.getElementById("pharmacyDate").value.trim() || new Date().toLocaleDateString("fa-IR");
+      const dateAdded = document.getElementById("pharmacyDate").value.trim() || jalaliTodayEnglish();
       const name = document.getElementById("pharmacyName").value.trim();
       const phone = document.getElementById("pharmacyPhone").value.trim();
       const manager = document.getElementById("pharmacyManager").value.trim();
@@ -1097,7 +1104,7 @@ function setupPharmacyTab() {
 
 function resetPharmacyForm() {
   document.getElementById("pharmacyEditId").value = "";
-  document.getElementById("pharmacyDate").value = new Date().toLocaleDateString("fa-IR");
+  document.getElementById("pharmacyDate").value = jalaliTodayEnglish();
   document.getElementById("pharmacyName").value = "";
   document.getElementById("pharmacyPhone").value = "";
   document.getElementById("pharmacyManager").value = "";
@@ -1293,7 +1300,7 @@ function setupDoctorTab() {
   if (form) {
     form.addEventListener("submit", () => {
       const editId = document.getElementById("doctorEditId").value;
-      const dateAdded = document.getElementById("doctorDate").value.trim() || new Date().toLocaleDateString("fa-IR");
+      const dateAdded = document.getElementById("doctorDate").value.trim() || jalaliTodayEnglish();
       const name = document.getElementById("doctorName").value.trim();
       const specialty = document.getElementById("doctorSpecialty").value.trim();
       const phone = document.getElementById("doctorPhone").value.trim();
@@ -1346,7 +1353,7 @@ function setupDoctorTab() {
 
 function resetDoctorForm() {
   document.getElementById("doctorEditId").value = "";
-  document.getElementById("doctorDate").value = new Date().toLocaleDateString("fa-IR");
+  document.getElementById("doctorDate").value = jalaliTodayEnglish();
   document.getElementById("doctorName").value = "";
   document.getElementById("doctorSpecialty").value = "";
   document.getElementById("doctorPhone").value = "";
@@ -2130,7 +2137,7 @@ function setupOrdersTab() {
       const district = document.getElementById("orderDistrict").value;
       const address = document.getElementById("orderAddress").value.trim();
       const repName = document.getElementById("orderRepName").value;
-      const orderDate = document.getElementById("orderDate").value.trim() || new Date().toLocaleDateString("fa-IR");
+      const orderDate = document.getElementById("orderDate").value.trim() || jalaliTodayEnglish();
       const status = document.getElementById("orderStatus").value;
       const notes = document.getElementById("orderNotes").value.trim();
       const customFieldsVals = extractCustomFieldValuesFromForm("order", "orderCustomFieldsContainer");
@@ -2183,7 +2190,7 @@ function resetOrderForm() {
   document.getElementById("orderPharmacyMatchedId").value = "";
   document.getElementById("orderPharmacyName").value = "";
   document.getElementById("orderAddress").value = "";
-  document.getElementById("orderDate").value = new Date().toLocaleDateString("fa-IR");
+  document.getElementById("orderDate").value = jalaliTodayEnglish();
   document.getElementById("orderNotes").value = "";
   document.getElementById("existingPharmacyTopAlert").style.display = "none";
 
@@ -3153,7 +3160,7 @@ function setupAllFormSubmitHandlers() {
   const handleSavePh = () => {
     if (typeof window.validateRequiredFields === "function" && !window.validateRequiredFields("tab-pharmacies")) return;
     const editId = document.getElementById("pharmacyEditId").value;
-    const dateAdded = document.getElementById("pharmacyDate").value.trim() || new Date().toLocaleDateString("fa-IR");
+    const dateAdded = document.getElementById("pharmacyDate").value.trim() || jalaliTodayEnglish();
     const name = document.getElementById("pharmacyName").value.trim();
     const phone = document.getElementById("pharmacyPhone").value.trim();
     const manager = document.getElementById("pharmacyManager").value.trim();
@@ -3209,7 +3216,7 @@ function setupAllFormSubmitHandlers() {
   const handleSaveDoc = () => {
     if (typeof window.validateRequiredFields === "function" && !window.validateRequiredFields("tab-doctors")) return;
     const editId = document.getElementById("doctorEditId").value;
-    const dateAdded = document.getElementById("doctorDate").value.trim() || new Date().toLocaleDateString("fa-IR");
+    const dateAdded = document.getElementById("doctorDate").value.trim() || jalaliTodayEnglish();
     const name = document.getElementById("doctorName").value.trim();
     const specialty = document.getElementById("doctorSpecialty").value.trim();
     const phone = document.getElementById("doctorPhone").value.trim();
@@ -3270,7 +3277,7 @@ function setupAllFormSubmitHandlers() {
     const district = document.getElementById("orderDistrict").value;
     const address = document.getElementById("orderAddress").value.trim();
     const repName = document.getElementById("orderRepName").value || currentUserName;
-    const orderDate = document.getElementById("orderDate").value.trim() || new Date().toLocaleDateString("fa-IR");
+    const orderDate = document.getElementById("orderDate").value.trim() || jalaliTodayEnglish();
     const status = document.getElementById("orderStatus").value;
     const notes = document.getElementById("orderNotes").value.trim();
 
@@ -3326,6 +3333,25 @@ function setupAllFormSubmitHandlers() {
 // ============================================================================
 // 27. اسلش خودکار در تاریخ شمسی (Jalali Date Auto Slash - YYYY/MM/DD)
 // ============================================================================
+
+function jalaliTodayEnglish() {
+  if (window.CRMJalali && typeof window.CRMJalali.jalaliTodayStr === "function") {
+    return window.CRMJalali.jalaliTodayStr();
+  }
+  try {
+    const fa = "۰۱۲۳۴۵۶۷۸۹";
+    const ar = "٠١٢٣٤٥٦٧٨٩";
+    let s = new Date().toLocaleDateString("fa-IR", { timeZone: "Asia/Tehran" });
+    s = s.replace(/[۰-۹]/g, d => String(fa.indexOf(d))).replace(/[٠-٩]/g, d => String(ar.indexOf(d))).replace(/-/g, "/");
+    const m = s.match(/^(\d{4})\/(\d{1,2})\/(\d{1,2})$/);
+    if (!m) return "1405/05/22";
+    const pad = n => (Number(n) < 10 ? "0" : "") + Number(n);
+    return m[1] + "/" + pad(m[2]) + "/" + pad(m[3]);
+  } catch (e) {
+    return "1405/05/22";
+  }
+}
+
 function setupJalaliDateAutoSlash() {
   const dateInputs = document.querySelectorAll("input[placeholder*='1405'], #pharmacyDate, #doctorDate, #orderDate, #visitDate, #leaveFromDate, #leaveToDate");
   dateInputs.forEach(inp => {
@@ -3344,7 +3370,7 @@ function setupJalaliDateAutoSlash() {
     });
 
     if (!inp.value) {
-      inp.value = new Date().toLocaleDateString("fa-IR");
+      inp.value = jalaliTodayEnglish();
     }
   });
 }
@@ -3390,7 +3416,7 @@ function setupFormListSwitchers() {
 // ============================================================================
 // 29. تقویم تعاملی شمسی با پاپ‌آپ و نشانگر روز (Matching Screenshot Date Picker)
 // ============================================================================
-let activeDateInputForPicker = null;
+window.activeDateInputForPicker = null;
 
 function setupJalaliCalendarPicker() {
   const popup = document.getElementById("jalaliCalendarPopup");
@@ -3410,18 +3436,26 @@ function setupJalaliCalendarPicker() {
     const badge = document.createElement("div");
     badge.className = "jalali-badge";
     badge.title = "انتخاب تاریخ از تقویم";
-    const g = new Intl.DateTimeFormat("en-US", { timeZone: "Asia/Tehran", month: "short", day: "numeric" }).formatToParts(new Date());
-    const gm = (g.find(p => p.type === "month") || {}).value || "Aug";
-    const gd = (g.find(p => p.type === "day") || {}).value || "13";
+    const GMON = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
+    let gm = "AUG", gd = "13";
+    if (window.CRMJalali && typeof window.CRMJalali.gregorianBadge === "function") {
+      const gb = window.CRMJalali.gregorianBadge();
+      gm = gb.mon; gd = gb.day;
+    } else {
+      const g = new Intl.DateTimeFormat("en-US", { timeZone: "Asia/Tehran", month: "numeric", day: "numeric" }).formatToParts(new Date());
+      const mi = parseInt((g.find(p => p.type === "month") || {}).value || "8", 10);
+      gm = GMON[mi - 1] || "AUG";
+      gd = String(parseInt((g.find(p => p.type === "day") || {}).value || "13", 10));
+    }
     badge.innerHTML = `
-      <span class="jalali-badge-header">${gm.toUpperCase()}</span>
+      <span class="jalali-badge-header">${gm}</span>
       <span class="jalali-badge-day">${gd}</span>
     `;
     wrapper.insertBefore(badge, inp);
 
     const openPicker = (e) => {
       e.stopPropagation();
-      activeDateInputForPicker = inp;
+      window.activeDateInputForPicker = inp;
       renderJalaliCalendarDays();
       const rect = inp.getBoundingClientRect();
       popup.style.top = (window.scrollY + rect.bottom + 6) + "px";
@@ -3459,16 +3493,20 @@ function setupJalaliCalendarPicker() {
   }
 
   if (btnToday) {
+    const todayStr = (window.CRMJalali && window.CRMJalali.jalaliTodayStr)
+      ? window.CRMJalali.jalaliTodayStr()
+      : "1405/05/22";
+    btnToday.textContent = "امروز: " + todayStr;
     btnToday.onclick = () => {
-      if (activeDateInputForPicker) {
-        activeDateInputForPicker.value = "1405/05/21";
+      if (window.activeDateInputForPicker) {
+        window.activeDateInputForPicker.value = todayStr;
       }
       popup.classList.remove("active");
     };
   }
 
   document.addEventListener("click", (e) => {
-    if (!popup.contains(e.target) && !e.target.classList.contains("jalali-badge") && e.target !== activeDateInputForPicker) {
+    if (!popup.contains(e.target) && !e.target.classList.contains("jalali-badge") && e.target !== window.activeDateInputForPicker) {
       popup.classList.remove("active");
     }
   });
@@ -3480,12 +3518,21 @@ function renderJalaliCalendarDays() {
   const yearSel = document.getElementById("jalaliYearSelect");
   if (!grid) return;
 
-  grid.innerHTML = "";
-  const year = yearSel ? yearSel.value : "1405";
-  const month = monthSel ? monthSel.value : "05";
+  const J = window.CRMJalali;
+  const year = yearSel ? parseInt(String(yearSel.value).replace(/[^\d]/g, ""), 10) || 1405 : 1405;
+  const month = monthSel ? parseInt(String(monthSel.value).replace(/[^\d]/g, ""), 10) || 5 : 5;
+  let startEmpty = 0;
+  let dim = month <= 6 ? 31 : (month <= 11 ? 30 : 29);
+  let todayDay = 0;
+  if (J) {
+    startEmpty = J.weekdayIran(year, month, 1);
+    dim = J.monthLength(year, month);
+    const t = J.todayJ();
+    if (t.jy === year && t.jm === month) todayDay = t.jd;
+  }
 
-  // افزودن چند خانه خالی اولیه برای شروع ماه
-  for (let i = 0; i < 2; i++) {
+  grid.innerHTML = "";
+  for (let i = 0; i < startEmpty; i++) {
     const empty = document.createElement("div");
     empty.className = "jalali-day-cell empty";
     grid.appendChild(empty);
@@ -3493,17 +3540,18 @@ function renderJalaliCalendarDays() {
 
   const persianNumbers = ["۱", "۲", "۳", "۴", "۵", "۶", "۷", "۸", "۹", "۱۰", "۱۱", "۱۲", "۱۳", "۱۴", "۱۵", "۱۶", "۱۷", "۱۸", "۱۹", "۲۰", "۲۱", "۲۲", "۲۳", "۲۴", "۲۵", "۲۶", "۲۷", "۲۸", "۲۹", "۳۰", "۳۱"];
 
-  for (let d = 1; d <= 31; d++) {
+  for (let d = 1; d <= dim; d++) {
     const btn = document.createElement("button");
     btn.type = "button";
-    btn.className = "jalali-day-cell" + (d === 21 ? " active" : "");
+    btn.className = "jalali-day-cell" + (d === todayDay ? " today active" : "");
     btn.textContent = persianNumbers[d - 1] || d;
 
     btn.onclick = (e) => {
       e.stopPropagation();
       const dStr = d < 10 ? "0" + d : String(d);
-      if (activeDateInputForPicker) {
-        activeDateInputForPicker.value = `${year}/${month}/${dStr}`;
+      const mStr = month < 10 ? "0" + month : String(month);
+      if (window.activeDateInputForPicker) {
+        window.activeDateInputForPicker.value = year + "/" + mStr + "/" + dStr;
       }
       document.getElementById("jalaliCalendarPopup").classList.remove("active");
     };

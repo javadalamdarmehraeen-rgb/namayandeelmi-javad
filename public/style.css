@@ -1176,7 +1176,7 @@ button.btn-danger {
 }
 
 .jalali-popup-picker {
-  position: absolute;
+  position: fixed;
   top: 100%;
   right: 0;
   width: 310px;
@@ -1278,6 +1278,10 @@ button.btn-danger {
   color: #0d9488;
 }
 
+.jalali-day-cell.today:not(.active) {
+  outline: 2px solid #0d9488;
+  color: #0d9488;
+}
 .jalali-day-cell.active {
   background: #0d9488;
   color: #ffffff;

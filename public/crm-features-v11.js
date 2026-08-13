@@ -65,13 +65,18 @@
   }
 
   function gregorianNow() {
-    var parts = new Intl.DateTimeFormat("en-US", { timeZone: "Asia/Tehran", month: "short", day: "numeric" }).formatToParts(new Date());
-    var m = "AUG", d = "13";
+    if (window.CRMJalali && typeof window.CRMJalali.gregorianBadge === "function") {
+      var gb = window.CRMJalali.gregorianBadge();
+      return { m: gb.mon, d: gb.day };
+    }
+    var GMON = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
+    var parts = new Intl.DateTimeFormat("en-US", { timeZone: "Asia/Tehran", month: "numeric", day: "numeric" }).formatToParts(new Date());
+    var mi = 8, d = "13";
     parts.forEach(function (p) {
-      if (p.type === "month") m = p.value.toUpperCase();
-      if (p.type === "day") d = p.value;
+      if (p.type === "month") mi = parseInt(p.value, 10);
+      if (p.type === "day") d = String(parseInt(p.value, 10));
     });
-    return { m: m, d: d };
+    return { m: GMON[mi - 1] || "AUG", d: d };
   }
 
   function refreshAllDateBadges() {

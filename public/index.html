@@ -16,7 +16,7 @@
   <meta name="theme-color" content="#0d9488" />
   
   <!-- Custom Style with Anti-Cache Version 9.1.0 -->
-  <link rel="stylesheet" href="style.css?v=11.9.0" />
+  <link rel="stylesheet" href="style.css?v=11.9.1" />
 </head>
 <body>
 
@@ -1357,7 +1357,8 @@
             <div class="form-group">
               <label class="form-label" for="cfType">نوع فیلد *</label>
               <select id="cfType" class="form-select dropdown-auto-clear" required>
-                <option value="simple">ساده (متنی / عددی)</option>
+                <option value="simple">ساده (متنی)</option>
+                <option value="date">تاریخ (با تقویم شمسی)</option>
                 <option value="select">کشویی (انتخابی)</option>
               </select>
             </div>
@@ -2086,21 +2087,22 @@
       <div>ش</div><div>ی</div><div>د</div><div>س</div><div>چ</div><div>پ</div><div>ج</div>
     </div>
     <div id="jalaliDaysGrid" class="jalali-days-grid"></div>
-    <button type="button" id="jalaliTodayBtn" class="jalali-today-btn">امروز: ۱۴۰۵/۰۵/۲۱</button>
+    <button type="button" id="jalaliTodayBtn" class="jalali-today-btn">امروز: ۱۴۰۵/۰۵/۲۲</button>
   </div>
 
   <!-- Leaflet JS -->
   <script src="vendor/leaflet.js"></script>
   
-  <!-- Data & Application Logic with Anti-Cache Version 9.1.0 -->
-  <script src="crm-data.js?v=11.9.0"></script>
-  <script src="crm-app.js?v=11.9.0"></script>
-  <script src="crm-features-v9.js?v=11.9.0"></script>
-  <script src="iran-facilities.js?v=11.9.0" defer></script>
-  <script src="crm-features-v10.js?v=11.9.0"></script>
-  <script src="crm-features-v11.js?v=11.9.0"></script>
-  <script src="crm-features-v12.js?v=11.9.0"></script>
-  <script src="crm-features-v13.js?v=11.9.0"></script>
+  <!-- Data & Application Logic with Anti-Cache Version 11.9.1 -->
+  <script src="crm-data.js?v=11.9.1"></script>
+  <script src="crm-app.js?v=11.9.1"></script>
+  <script src="crm-features-v9.js?v=11.9.1"></script>
+  <script src="iran-facilities.js?v=11.9.1" defer></script>
+  <script src="crm-features-v10.js?v=11.9.1"></script>
+  <script src="crm-features-v11.js?v=11.9.1"></script>
+  <script src="crm-features-v12.js?v=11.9.1"></script>
+  <script src="crm-features-v13.js?v=11.9.1"></script>
+  <script src="crm-jalali.js?v=11.9.1"></script>
   <!-- فیلدهای مخفی سازگاری با کد قبلی (نباید در UI دیده شوند) -->
   <input type="hidden" id="pharmacyLocationText" value="" />
   <input type="hidden" id="doctorLocationText" value="" />

@@ -249,9 +249,24 @@
         }).join("") + "</select>";
       return stampWidgetField(wrap, fid, field);
     }
+    if (kind === "date") {
+      wrap.innerHTML = '<label class="form-label">' + title + "</label>" +
+        '<input type="text" class="form-input jalali-date-input" data-kind="date" data-custom-field-id="' + fid + '" placeholder="1405/05/22" inputmode="numeric">';
+      setTimeout(function () {
+        var inp = wrap.querySelector("input");
+        if (inp && window.attachJalaliPicker) window.attachJalaliPicker(inp);
+      }, 30);
+      return stampWidgetField(wrap, fid, field);
+    }
     var itype = kind === "number" ? "number" : "text";
     wrap.innerHTML = '<label class="form-label">' + title + "</label>" +
       '<input type="' + itype + '" class="form-input" data-custom-field-id="' + fid + '" placeholder="' + title + '...">';
+    if (kind !== "number") {
+      setTimeout(function () {
+        var inp = wrap.querySelector("input");
+        if (inp && window.attachInstantAdd) window.attachInstantAdd(inp);
+      }, 30);
+    }
     return stampWidgetField(wrap, fid, field);
   };
   window.WIDGET_PALETTE = WIDGET_PALETTE;
