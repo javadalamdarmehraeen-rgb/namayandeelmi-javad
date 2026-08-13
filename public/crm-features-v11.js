@@ -490,10 +490,73 @@
     var fields = [];
     var seen = {};
     var idx = 0;
+    var FA_LABELS = {
+      pharmacyLat: "عرض جغرافیایی",
+      pharmacyLng: "طول جغرافیایی",
+      doctorLat: "عرض جغرافیایی",
+      doctorLng: "طول جغرافیایی",
+      phFileInput: "فایل داروخانه",
+      docFileInput: "فایل پزشک",
+      phMapSearchInput: "جستجوی لوکیشن داروخانه",
+      docMapSearchInput: "جستجوی لوکیشن مطب",
+      pharmacyLocationText: "متن لوکیشن داروخانه",
+      doctorLocationText: "متن لوکیشن مطب",
+      pharmacyIsPercentage: "داروخانه درصدی",
+      doctorIsPercentage: "پزشک درصدی",
+      btnSavePharmacy: "ثبت اطلاعات داروخانه",
+      btnSaveDoctor: "ثبت اطلاعات پزشک",
+      btnSaveOrder: "ثبت و ذخیره سفارش",
+      btnResetPharmacyForm: "بازنشانی فرم داروخانه",
+      btnResetDoctorForm: "بازنشانی فرم پزشک",
+      btnResetOrderForm: "سفارش جدید",
+      btnPharmacyCurrentLocation: "موقعیت فعلی داروخانه",
+      btnDoctorCurrentLocation: "موقعیت فعلی مطب",
+      btnPharmacyGetAddressFromPoint: "دریافت آدرس این نقطه",
+      btnDoctorGetAddressFromPoint: "دریافت آدرس این نقطه",
+      btnPhMapSearch: "جستجوی نقشه داروخانه",
+      btnDocMapSearch: "جستجوی نقشه مطب",
+      btnPhPercentageNo: "درصدی: خیر",
+      btnPhPercentageYes: "درصدی: بله",
+      btnDocPercentageNo: "درصدی: خیر",
+      btnDocPercentageYes: "درصدی: بله",
+      btnShowPhForm: "فرم ثبت داروخانه",
+      btnShowPhList: "لیست داروخانه‌ها",
+      btnShowDocForm: "فرم ثبت پزشک",
+      btnShowDocList: "لیست پزشکان",
+      btnShowOrdForm: "فرم ثبت سفارش",
+      btnShowOrdList: "لیست سفارشات",
+      btnExportPharmaciesCSV: "خروجی اکسل داروخانه‌ها",
+      btnExportDoctorsCSV: "خروجی اکسل پزشکان",
+      btnExportOrdersCSV: "خروجی اکسل سفارشات",
+      btnAddOrderItemRow: "افزودن قلم دارویی",
+      "map-pharmacy-form": "نقشه داروخانه",
+      "map-doctor-form": "نقشه مطب",
+      "map-dashboard-overview": "نقشه داشبورد",
+      "map-full-overview": "نقشه جامع",
+      "map-live-reps": "نقشه موقعیت زنده",
+      "map-my-visit": "نقشه ویزیت",
+      "map-search-info": "نقشه جستجو",
+      "map-rep-routes-full": "نقشه رصد تردد",
+      "map-rep-homes": "نقشه منزل نمایندگان",
+      "map-activity-log": "نقشه فعالیت",
+      searchPharmacyInput: "جستجوی داروخانه",
+      searchDoctorInput: "جستجوی پزشک",
+      searchOrderInput: "جستجوی سفارش",
+      phMonthFilter: "فیلتر ماه داروخانه",
+      pharmacyEditId: "شناسه ویرایش داروخانه",
+      doctorEditId: "شناسه ویرایش پزشک",
+      orderEditId: "شناسه ویرایش سفارش",
+      orderPharmacyMatchedId: "شناسه داروخانه سفارش"
+    };
+    window.FA_FIELD_LABELS = FA_LABELS;
     function pushField(id, labelText, type, group, full, kind) {
       if (!id || seen[id]) return;
       seen[id] = true;
       idx += 1;
+      if (FA_LABELS[id]) labelText = FA_LABELS[id];
+      else if (labelText && /^[A-Za-z][A-Za-z0-9_\-]*$/.test(String(labelText).trim())) {
+        labelText = FA_LABELS[id] || labelText;
+      }
       if (labelText && labelText.length > 80) labelText = labelText.slice(0, 77) + "…";
       if (group && !group.getAttribute("data-col-fid")) group.setAttribute("data-col-fid", id);
       fields.push({
@@ -541,6 +604,7 @@
         else if ((el.id || "").toLowerCase().indexOf("date") !== -1) type = "date";
         var ownLab = el.id && g.querySelector('label[for="' + el.id + '"]');
         var labelText = ownLab ? String(ownLab.textContent || "").replace(/\s+/g, " ").trim() : (el.placeholder || el.id);
+        if ((!ownLab || /^[A-Za-z][A-Za-z0-9_\-]*$/.test(labelText)) && FA_LABELS[el.id]) labelText = FA_LABELS[el.id];
         pushField(el.id, labelText, type, g, g.classList.contains("full-width") && inputs.length === 1, "field");
       });
     });
@@ -572,7 +636,7 @@
       if (btn.closest(".app-header") || btn.closest(".app-nav") || btn.closest(".side-menu-drawer")) return;
       if (btn.closest(".col-widget-wrap")) return;
       if (btn.closest("#tab-manual-design")) return;
-      var label = String(btn.textContent || btn.title || btn.id).replace(/\s+/g, " ").trim();
+      var label = (FA_LABELS[btn.id] || String(btn.textContent || btn.title || btn.id)).replace(/\s+/g, " ").trim();
       var wrap = wrapWidget(btn);
       pushField(btn.id, label, "widget", wrap, false, "widget");
     });
@@ -580,7 +644,7 @@
       if (!mapEl.id || seen[mapEl.id]) return;
       if (mapEl.closest("#columnsDesignerHost") || mapEl.closest(".modal-overlay")) return;
       var wrap = wrapWidget(mapEl);
-      pushField(mapEl.id, "نقشه", "widget", wrap, true, "widget");
+      pushField(mapEl.id, FA_LABELS[mapEl.id] || "نقشه", "widget", wrap, true, "widget");
     });
     return fields;
   }
@@ -612,6 +676,7 @@
         kind: b.kind || "field",
         place: meta[b.id].place || (b.full || b.kind === "box" ? "under" : "beside"),
         required: meta[b.id].required === true,
+        exportExcel: meta[b.id].exportExcel === true,
         labelFontFamily: meta[b.id].labelFontFamily || "",
         labelFontWeight: meta[b.id].labelFontWeight || "",
         labelFontSize: meta[b.id].labelFontSize || "",
@@ -639,6 +704,7 @@
         kind: "custom",
         place: c.place || "beside",
         required: c.required === true,
+        exportExcel: c.exportExcel === true,
         labelFontFamily: c.labelFontFamily || "",
         labelFontWeight: c.labelFontWeight || "",
         labelFontSize: c.labelFontSize || "",
@@ -690,37 +756,88 @@
       return el;
     }
     var g = el.classList && el.classList.contains("form-group") ? el : el.closest(".form-group");
-    if (grid && g && g.parentNode !== grid) {
-      var p = g.parentNode;
-      while (p && p !== grid) {
-        if (p.classList && p.classList.contains("form-group") && p.parentNode === grid) return p;
-        p = p.parentNode;
-      }
-    }
     return g;
   }
 
+  function groupIsShared(group, fieldId) {
+    if (!group || !fieldId) return false;
+    if (group.querySelector(".form-group")) return true;
+    var extra = 0;
+    Array.prototype.forEach.call(group.querySelectorAll("input[id], select[id], textarea[id]"), function (el) {
+      if (el.type === "hidden") return;
+      if (el.id && el.id !== fieldId) extra += 1;
+    });
+    return extra > 0;
+  }
+
+  function paintRequiredStar(group, f) {
+    if (!group || !f) return;
+    var lab = (f.id && group.querySelector('label[for="' + f.id + '"]')) ||
+      group.querySelector(".form-label, label, h4");
+    if (!lab || lab.querySelector("input")) return;
+    var star = lab.querySelector(".req-star");
+    if (f.required && f.showInForm && !f.hidden) {
+      if (!star) {
+        star = document.createElement("span");
+        star.className = "req-star";
+        star.textContent = " *";
+        lab.appendChild(star);
+      }
+      star.style.color = "#dc2626";
+      star.style.fontWeight = "900";
+    } else if (star) {
+      star.parentNode.removeChild(star);
+    }
+    var inp = (f.id && document.getElementById(f.id)) ||
+      group.querySelector("input:not([type=hidden]), select, textarea");
+    if (inp && inp.tagName !== "BUTTON") {
+      if (f.required && f.showInForm && !f.hidden) inp.setAttribute("required", "required");
+      else if (!inp.defaultRequired) inp.removeAttribute("required");
+    }
+  }
+
   function paintFieldBox(group, f) {
-    if (!group) return;
+    if (!group || !f) return;
     var hide = !f.showInForm || f.hidden;
-    group.classList.toggle("col-hide-form", hide);
+    var shared = groupIsShared(group, f.id);
+    var targetInp = (f.id && group.contains(document.getElementById(f.id)) && document.getElementById(f.id)) ||
+      group.querySelector("input:not([type=hidden]), select, textarea");
     if (hide) {
-      group.style.display = "none";
-      group.setAttribute("data-col-hidden", "1");
+      if (shared && targetInp) {
+        var hidLab = f.id && group.querySelector('label[for="' + f.id + '"]');
+        if (hidLab) hidLab.style.display = "none";
+        targetInp.style.display = "none";
+        targetInp.setAttribute("data-col-hidden", "1");
+        var hidCombo = targetInp.closest ? targetInp.closest(".crm-combo") : null;
+        if (hidCombo) hidCombo.style.display = "none";
+      } else {
+        group.classList.toggle("col-hide-form", true);
+        group.style.display = "none";
+        group.setAttribute("data-col-hidden", "1");
+      }
       return;
     }
+    group.classList.remove("col-hide-form");
     group.style.display = "";
     group.removeAttribute("data-col-hidden");
+    if (targetInp) {
+      targetInp.style.display = "";
+      targetInp.removeAttribute("data-col-hidden");
+      var showLab = f.id && group.querySelector('label[for="' + f.id + '"]');
+      if (showLab) showLab.style.display = "";
+      var showCombo = targetInp.closest ? targetInp.closest(".crm-combo") : null;
+      if (showCombo) showCombo.style.display = "";
+    }
     var size = parseInt(f.size, 10);
-    var place = f.place || (size > 40 ? "beside" : (f.full ? "under" : "beside"));
-    group.classList.toggle("col-place-under", place === "under" && !(size > 40));
-    group.classList.toggle("col-place-beside", place !== "under" || size > 40);
-    if (place === "under" && !(size > 40)) {
+    var place = f.place || (f.full ? "under" : "beside");
+    group.classList.toggle("col-place-under", place === "under");
+    group.classList.toggle("col-place-beside", place !== "under");
+    if (place === "under") {
       group.style.setProperty("flex", "1 1 100%", "important");
       group.style.setProperty("max-width", "100%", "important");
       group.style.setProperty("min-width", "100%", "important");
       group.style.setProperty("width", "100%", "important");
-    } else {
+    } else if (!shared) {
       var w = size > 40 ? size : 260;
       group.style.setProperty("flex", "0 0 " + w + "px", "important");
       group.style.setProperty("max-width", w + "px", "important");
@@ -728,13 +845,13 @@
       group.style.setProperty("width", w + "px", "important");
     }
     if (size > 40) {
-      var sizedInp = group.querySelector(".form-input, .form-select, .form-textarea, input:not([type=hidden]), select, textarea");
+      var sizedInp = targetInp || group.querySelector(".form-input, .form-select, .form-textarea, input:not([type=hidden]), select, textarea");
       if (sizedInp) {
         sizedInp.style.setProperty("width", size + "px", "important");
         sizedInp.style.setProperty("max-width", size + "px", "important");
         sizedInp.style.setProperty("min-width", Math.min(120, size) + "px", "important");
       }
-      var combo = group.querySelector(".crm-combo");
+      var combo = sizedInp && sizedInp.closest ? sizedInp.closest(".crm-combo") : group.querySelector(".crm-combo");
       if (combo) {
         combo.style.setProperty("width", size + "px", "important");
         combo.style.setProperty("max-width", size + "px", "important");
@@ -887,6 +1004,7 @@
         if (lab && !lab.querySelector("input")) lab.textContent = meta[f.id].label;
       }
       paintFieldBox(group, f);
+      paintRequiredStar(group, f);
       placed.push({ f: f, group: group });
     });
     if (grid) {
@@ -898,6 +1016,7 @@
       });
       placed.forEach(function (item) {
         if (item.f.showInForm && !item.f.hidden) return;
+        if (groupIsShared(item.group, item.f.id)) return;
         if (item.group.parentNode === grid) grid.appendChild(item.group);
       });
       if (container && container.parentNode === grid) grid.appendChild(container);
@@ -1067,6 +1186,8 @@
     $("colFieldFly").checked = !field || field.allowAddOption !== false;
     $("colFieldInForm").checked = !field || field.showInForm !== false;
     $("colFieldInList").checked = !field || field.showInList !== false;
+    if ($("colFieldReq")) $("colFieldReq").checked = !!(field && field.required);
+    if ($("colFieldExcel")) $("colFieldExcel").checked = !!(field && field.exportExcel);
     var btn = $("btnSaveColField");
     if (btn) btn.textContent = field ? ("ذخیره ویرایش «" + field.label + "»") : "ثبت فیلد در این تب";
     var optsWrap = $("colFieldOptsWrap");
@@ -1106,7 +1227,7 @@
         '<div class="form-group"><label class="form-label">عنوان فیلد</label><input id="colFieldLabel" class="form-input" placeholder="مثلاً کد اقتصادی"></div>' +
         '<div class="form-group"><label class="form-label">نوع</label><select id="colFieldType" class="form-select"><option value="simple">ساده (متنی)</option><option value="select">کشویی</option><option value="date">تاریخ</option><option value="number">عددی</option></select></div>' +
         '<div class="form-group"><label class="form-label">شماره ترتیب در فرم</label><input id="colFieldOrder" class="form-input" type="number" min="1" value="' + (list.length + 1) + '"><small class="col-help">۱ یعنی اولین فیلد فرم این تب</small></div>' +
-        '<div class="form-group"><label class="form-label">اندازه (پیکسل)</label><input id="colFieldSize" class="form-input" type="number" min="80" value="220"></div>' +
+        '<div class="form-group"><label class="form-label">عرض فیلد (پیکسل)</label><input id="colFieldSize" class="form-input" type="number" min="80" max="900" value="220"><small class="col-help">مثلاً ۲۲۰ معمولی، ۵۶۰ عریض مثل آدرس</small></div>' +
         '<div class="form-group"><label class="form-label">جای فیلد در صفحه</label><select id="colFieldPlace" class="form-select"><option value="beside">روبرو (کنار فیلدها)</option><option value="under">زیر هم (سطر جدا)</option></select></div>' +
         '<div class="form-group"><label class="form-label">داخل کدام کادر؟</label><select id="colFieldBoxTarget" class="form-select"><option value="">روی خود فرم (بدون کادر)</option></select></div>' +
         '<div class="form-group" id="colFieldOptsWrap"><label class="form-label">گزینه‌های کشویی</label><input id="colFieldOpts" class="form-input" placeholder="با ویرگول جدا کنید"></div>' +
@@ -1114,6 +1235,8 @@
         '<div class="form-group"><label><input type="checkbox" id="colFieldFly" checked> افزودن لحظه‌ای گزینه</label></div>' +
         '<div class="form-group"><label><input type="checkbox" id="colFieldInForm" checked> نمایش در فرم</label></div>' +
         '<div class="form-group"><label><input type="checkbox" id="colFieldInList" checked> نمایش در لیست</label></div>' +
+        '<div class="form-group"><label><input type="checkbox" id="colFieldReq"> ستاره‌دار (الزامی)</label></div>' +
+        '<div class="form-group"><label><input type="checkbox" id="colFieldExcel"> خروجی اکسل</label></div>' +
       "</div>" +
       '<div class="col-add-actions"><button type="button" id="btnSaveColField" class="btn btn-primary" style="background:#0d9488">ثبت فیلد در تب «' + escHtml(sec.label) + "»</button></div>" +
       '<div class="col-box-maker">' +
@@ -1247,24 +1370,45 @@
     var order = parseInt($("colFieldOrder").value, 10);
     if (!order || order < 1) order = getUnifiedFieldList(tabId).length + 1;
     var size = parseInt($("colFieldSize").value, 10) || 220;
+    var placeVal = $("colFieldPlace") ? $("colFieldPlace").value : "beside";
+    var reqVal = $("colFieldReq") ? $("colFieldReq").checked : false;
+    var excelVal = $("colFieldExcel") ? $("colFieldExcel").checked : false;
     var editing = window._editingColField;
+
+    function afterSaveStayOnList() {
+      window._editingColField = null;
+      fillDesignerForm(null);
+      var btn = $("btnSaveColField");
+      if (btn) btn.textContent = "ثبت فیلد در تب «" + (sec.label || "") + "»";
+      applyFullFormLayout(tabId);
+      renderColFieldList();
+      renderColTabGrid();
+      var box = $("colFieldList");
+      if (box) {
+        box.scrollIntoView({ block: "start" });
+        if (window._colEditScroll) box.scrollTop = window._colEditScroll.list || 0;
+      }
+      if (window._colEditScroll && window._colEditScroll.y != null) {
+        try { window.scrollTo(0, window._colEditScroll.y); } catch (e) {}
+      }
+    }
 
     if (editing && editing.builtin) {
       var meta = ensureMeta(key);
       if (!meta[editing.id]) meta[editing.id] = {};
       meta[editing.id].label = label;
       meta[editing.id].size = size;
-      if ($("colFieldPlace")) meta[editing.id].place = $("colFieldPlace").value || "beside";
+      meta[editing.id].place = placeVal || "beside";
       meta[editing.id].showInForm = $("colFieldInForm").checked;
       meta[editing.id].showInList = $("colFieldInList").checked;
       meta[editing.id].hidden = !$("colFieldInForm").checked;
+      meta[editing.id].required = reqVal;
+      meta[editing.id].exportExcel = excelVal;
       saveState();
       logOp("ویرایش فیلد ثابت «" + label + "» در تب " + sec.label);
-      window._editingColField = null;
       setAnyFieldOrder(tabId, editing.id, order);
-      renderColDesignerPanel();
-      renderColTabGrid();
-      alert("تغییرات فیلد «" + label + "» روی فرم تب «" + sec.label + "» اعمال شد.");
+      afterSaveStayOnList();
+      alert("تغییرات فیلد «" + label + "» ذخیره شد.");
       return;
     }
 
@@ -1282,6 +1426,8 @@
         rec.size = size;
         if ($("colFieldPlace")) rec.place = $("colFieldPlace").value || "beside";
         rec.dependsOn = ($("colFieldDep").value || "").trim();
+        rec.required = reqVal;
+        rec.exportExcel = excelVal;
         saveState();
         logOp("ویرایش فیلد «" + label + "» در تب " + sec.label);
         document.querySelectorAll('[data-custom-field-id="' + rec.id + '"]').forEach(function (inp) {
@@ -1290,10 +1436,8 @@
         });
         if (typeof renderCustomFieldsTable === "function") renderCustomFieldsTable();
         if (typeof renderAllCustomFieldsInFormsAndTables === "function") renderAllCustomFieldsInFormsAndTables();
-        window._editingColField = null;
         setAnyFieldOrder(tabId, rec.id, order);
-        renderColDesignerPanel();
-        renderColTabGrid();
+        afterSaveStayOnList();
         alert("ویرایش فیلد «" + label + "» ذخیره شد و روی فرم تب اعمال گردید.");
         return;
       }
@@ -1310,6 +1454,9 @@
       showInList: $("colFieldInList").checked,
       order: order,
       size: size,
+      place: placeVal || "beside",
+      required: reqVal,
+      exportExcel: excelVal,
       dependsOn: ($("colFieldDep").value || "").trim()
     };
     getFieldList(key).push(neu);
@@ -1318,9 +1465,8 @@
     if (typeof renderCustomFieldsTable === "function") renderCustomFieldsTable();
     if (typeof renderAllCustomFieldsInFormsAndTables === "function") renderAllCustomFieldsInFormsAndTables();
     setAnyFieldOrder(tabId, neu.id, order);
-    renderColDesignerPanel();
-    renderColTabGrid();
-    alert("فیلد «" + label + "» در تب «" + sec.label + "» ثبت شد و در ردیف " + order + " فرم نشست.");
+    afterSaveStayOnList();
+    alert("فیلد «" + label + "» در تب «" + sec.label + "» ثبت شد.");
   }
 
   function renderColFieldList() {
@@ -1349,7 +1495,7 @@
         "<option value='Tahoma, Arial'" + (cur && cur.indexOf("Arial") !== -1 ? " selected" : "") + ">Arial</option>" +
         "<option value='Georgia'" + (cur === "Georgia" ? " selected" : "") + ">Georgia</option>";
     };
-    var html = "<table class='data-table'><thead><tr><th>ردیف</th><th>عنوان</th><th>نوع</th><th>عرض</th><th>چینش</th><th>فونت لیبل</th><th>بولد لیبل</th><th>سایز لیبل</th><th>فونت فیلد</th><th>بولد فیلد</th><th>سایز فیلد</th><th>ستاره</th><th>فرم</th><th>لیست</th><th>جابجایی</th><th>عملیات</th></tr></thead><tbody>";
+    var html = "<table class='data-table'><thead><tr><th>ردیف</th><th>عنوان</th><th>نوع</th><th>چینش</th><th>فونت لیبل</th><th>بولد لیبل</th><th>سایز لیبل</th><th>فونت فیلد</th><th>بولد فیلد</th><th>سایز فیلد</th><th>ستاره</th><th>فرم</th><th>لیست</th><th>اکسل</th><th>جابجایی</th><th>عملیات</th></tr></thead><tbody>";
     list.forEach(function (f, i) {
       var src = f.kind === "box" ? "کادر" : (f.kind === "ordercol" ? "داخل کادر اقلام" : (f.builtin ? "ثابت فرم" : "اضافه‌شده"));
       var hid = f.hidden ? " col-row-hidden" : "";
@@ -1359,7 +1505,6 @@
         "<td><input type='number' min='1' class='form-input col-order-input' data-fid='" + escHtml(f.id) + "' value='" + rowNo + "'></td>" +
         "<td><strong>" + escHtml(f.label) + "</strong>" + (f.required ? " <span class='col-req-star'>*</span>" : "") + (f.hidden ? " <span class='col-hidden-badge'>مخفی</span>" : "") + "</td>" +
         "<td>" + src + "</td>" +
-        "<td><input type='number' min='80' max='900' class='form-input col-size-input' data-fid='" + escHtml(f.id) + "' value='" + (parseInt(f.size, 10) > 40 ? parseInt(f.size, 10) : ((f.full || f.place === "under" || /Address|address|آدرس/.test((f.label || "") + (f.id || ""))) ? 560 : 220)) + "'></td>" +
         "<td><select class='form-select col-place-sel' data-fid='" + escHtml(f.id) + "'><option value='beside'" + (place !== "under" ? " selected" : "") + ">روبرو</option><option value='under'" + (place === "under" ? " selected" : "") + ">زیر هم</option></select></td>" +
         "<td><select class='form-select col-labelfont-sel' data-fid='" + escHtml(f.id) + "'>" + fontOpts(f.labelFontFamily || "") + "</select></td>" +
         "<td style='text-align:center'><input type='checkbox' class='col-labelbold-chk' data-fid='" + escHtml(f.id) + "'" + (f.labelFontWeight === "bold" ? " checked" : "") + "></td>" +
@@ -1370,6 +1515,7 @@
         "<td style='text-align:center'><input type='checkbox' class='col-req-chk' data-fid='" + escHtml(f.id) + "'" + (f.required ? " checked" : "") + " title='الزامی'></td>" +
         "<td style='text-align:center'><input type='checkbox' class='col-flag-form' data-fid='" + escHtml(f.id) + "'" + (f.showInForm ? " checked" : "") + "></td>" +
         "<td style='text-align:center'><input type='checkbox' class='col-flag-list' data-fid='" + escHtml(f.id) + "'" + (f.showInList ? " checked" : "") + "></td>" +
+        "<td style='text-align:center'><input type='checkbox' class='col-excel-chk' data-fid='" + escHtml(f.id) + "'" + (f.exportExcel ? " checked" : "") + " title='خروجی اکسل'></td>" +
         "<td><button type='button' class='btn btn-outline btn-sm col-move-up' data-fid='" + escHtml(f.id) + "'>▲ بالاتر</button> " +
         "<button type='button' class='btn btn-outline btn-sm col-move-down' data-fid='" + escHtml(f.id) + "'>▼ پایین‌تر</button></td>" +
         "<td class='col-ops'>";
@@ -1389,15 +1535,10 @@
         setAnyFieldOrder(tabId, inp.getAttribute("data-fid"), parseInt(inp.value, 10));
       });
     });
-    Array.prototype.forEach.call(box.querySelectorAll(".col-size-input"), function (inp) {
+    Array.prototype.forEach.call(box.querySelectorAll(".col-excel-chk"), function (inp) {
       inp.addEventListener("change", function () {
-        writeFieldSize(tabId, inp.getAttribute("data-fid"), inp.value);
+        writeFieldFlag(tabId, inp.getAttribute("data-fid"), "exportExcel", inp.checked);
         saveState();
-        applyFullFormLayout(tabId);
-        if (typeof window.applyFieldPixelSize === "function") {
-          window.applyFieldPixelSize(tabId, inp.getAttribute("data-fid"), inp.value);
-        }
-        logOp("تغییر اندازه فیلد به " + inp.value + "px");
       });
     });
     Array.prototype.forEach.call(box.querySelectorAll(".col-place-sel"), function (sel) {
@@ -1452,6 +1593,7 @@
         var id = btn.getAttribute("data-fid");
         var field = getUnifiedFieldList(tabId).filter(function (f) { return f.id === id; })[0];
         if (!field) return;
+        window._colEditScroll = { y: window.scrollY, list: box.scrollTop || 0 };
         window._editingColField = field;
         fillDesignerForm(field);
         var lab = $("colFieldLabel");
@@ -1501,13 +1643,11 @@
     size = parseInt(size, 10) || 220;
     if (custom) {
       custom.size = size;
-      if (size > 40) custom.place = custom.place || "beside";
       return;
     }
     var meta = ensureMeta(key);
     if (!meta[fieldId]) meta[fieldId] = {};
     meta[fieldId].size = size;
-    if (size > 40 && meta[fieldId].place !== "under") meta[fieldId].place = "beside";
   }
 
   function writeFieldFlag(tabId, fieldId, flag, value) {
@@ -1903,8 +2043,12 @@
       obs.observe(el, { childList: true });
     });
 
-    logOp("بارگذاری نسخه ۱۱.۶");
-    console.log("v11.6 ready");
+    window.getUnifiedFieldList = getUnifiedFieldList;
+    window.paintFieldBox = paintFieldBox;
+    window.paintRequiredStar = paintRequiredStar;
+    window.groupIsShared = groupIsShared;
+    logOp("بارگذاری نسخه ۱۱.۱۳");
+    console.log("v11.13 ready");
   }
 
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot);

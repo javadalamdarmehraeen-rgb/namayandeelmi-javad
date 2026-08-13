@@ -149,16 +149,19 @@
     Array.prototype.forEach.call(root.querySelectorAll(".form-group"), function (el) {
       if (el.id && /CustomFieldsContainer|cfHost-/.test(el.id)) return;
       if (el.classList.contains("extra-cf-host")) return;
+      if (el.id && /^(cardPhForm|cardPhList|cardDocForm|cardDocList|cardOrdForm|cardOrdList)$/.test(el.id)) return;
+      if (el.closest && el.closest(".card-header")) return;
+      if (el.querySelector(":scope > .form-group, :scope .form-group")) return;
       take(el, "field");
     });
     Array.prototype.forEach.call(root.querySelectorAll(".map-container"), function (el) {
-      if (el.closest(".form-group")) return;
+      if (el.closest(".form-group") && el.closest(".form-group").querySelector("input, select, textarea")) return;
       take(el, "map");
     });
     Array.prototype.forEach.call(root.querySelectorAll("button.btn, .btn-toggle-option"), function (el) {
-      if (el.closest(".form-group")) return;
       if (el.closest("table")) return;
       if (el.closest(".card-header") && /صفحه اصلی|بازگشت/.test(el.textContent || "")) return;
+      if (el.closest(".man-toolbar") || el.classList.contains("man-handle")) return;
       take(el, "btn");
     });
     return out;
@@ -482,8 +485,9 @@
     var er = el.getBoundingClientRect();
     scope = scope || detectScope(el, canvas);
     var abs = opts.forceAbs ? true : !!prev.abs;
-    if (id && /^(cardPhForm|cardPhList|cardDocForm|cardDocList|cardOrdForm|cardOrdList|formPharmacy|formDoctor|formOrder)$/.test(id)) abs = false;
-    if (el && el.id && /^(cardPhForm|cardPhList|cardDocForm|cardDocList|cardOrdForm|cardOrdList)$/.test(el.id)) abs = false;
+    var srcId = ((el && el.getAttribute && el.getAttribute("data-src-id")) || id || "").replace(/^man-/, "");
+    if (srcId && /^(cardPhForm|cardPhList|cardDocForm|cardDocList|cardOrdForm|cardOrdList|formPharmacy|formDoctor|formOrder)$/.test(srcId)) abs = false;
+    if (el && el.classList && el.classList.contains("card")) abs = false;
     lay.items[id] = {
       x: Math.round(er.left - cr.left + (canvas.scrollLeft || 0)),
       y: Math.round(er.top - cr.top + (canvas.scrollTop || 0)),

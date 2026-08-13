@@ -322,7 +322,7 @@ body {
 .form-grid.form-grid-sized {
   display: flex;
   flex-wrap: wrap;
-  align-items: flex-start;
+  align-items: flex-end;
 }
 .form-grid.form-grid-sized > .form-group.full-width:not(.col-place-beside) {
   flex: 1 1 100%;
@@ -1755,10 +1755,22 @@ td .btn, .col-ops .btn, .col-ops {
 }
 .man-clone { display: block !important; }
 .man-item {
-  outline: 1px dashed rgba(13, 148, 136, 0.45);
+  outline: none;
   position: relative;
 }
-.man-item:hover { outline-color: #0d9488; }
+.man-item:hover { outline: 1px dashed rgba(13, 148, 136, 0.75); }
+.req-star { color: #dc2626; font-weight: 900; }
+.form-grid.form-grid-sized > .form-group {
+  justify-content: flex-end;
+}
+.form-grid.form-grid-sized > .form-group > .form-label {
+  min-height: 2.7em;
+  align-items: flex-end;
+}
+.jalali-input-wrapper .form-input {
+  flex: 1 1 auto;
+  min-height: 42px;
+}
 .man-handle {
   position: absolute;
   top: 2px;

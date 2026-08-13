@@ -2,7 +2,7 @@
 (function () {
   "use strict";
 
-  var VER = "11.12.0";
+  var VER = "11.13.0";
   function $(id) { return document.getElementById(id); }
   function esc(s) {
     return String(s == null ? "" : s)
@@ -461,8 +461,16 @@
     if (!(size > 40) || !fieldId) return;
     var el = document.getElementById(fieldId);
     var group = el && el.closest(".form-group");
-    if (group) {
-      group.classList.remove("col-place-under");
+    var keepUnder = !!(group && group.classList.contains("col-place-under"));
+    try {
+      var key = tabId === "tab-pharmacies" ? "pharmacy" : tabId === "tab-doctors" ? "doctor" : tabId === "tab-orders" ? "order" : "";
+      var meta = key && window.state && state.formFieldMeta && state.formFieldMeta[key] && state.formFieldMeta[key][fieldId];
+      if (meta && meta.place === "under") keepUnder = true;
+      ((state.customFields && key && state.customFields[key]) || []).forEach(function (f) {
+        if (f.id === fieldId && f.place === "under") keepUnder = true;
+      });
+    } catch (eK) {}
+    if (group && !keepUnder) {
       group.classList.add("col-place-beside");
       group.style.setProperty("flex", "0 0 " + size + "px", "important");
       group.style.setProperty("width", size + "px", "important");
