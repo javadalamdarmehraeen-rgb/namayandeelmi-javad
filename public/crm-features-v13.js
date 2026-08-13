@@ -134,31 +134,145 @@
 
   function collectDesignTargets(root) {
     var out = [];
-    var skip = { BUTTON: 1 };
+    var seen = {};
     function take(el, kind) {
       if (!el || el.getAttribute("data-man-skip") === "1") return;
-      if (el.closest(".data-table") && kind === "btn") return;
+      if (el.closest(".man-toolbar") || el.closest("#manualTabGrid")) return;
+      if (el.closest("table") && kind === "btn") return;
       if (el.closest(".col-ops")) return;
+      if (seen[el]) return;
+      seen[el] = true;
       out.push({ el: el, kind: kind });
     }
     Array.prototype.forEach.call(root.querySelectorAll(".stat-card"), function (el) { take(el, "stat"); });
     Array.prototype.forEach.call(root.querySelectorAll(".col-user-box"), function (el) { take(el, "box"); });
     Array.prototype.forEach.call(root.querySelectorAll(".form-group"), function (el) {
-      if (el.closest(".col-user-box-body")) return;
       if (el.id && /CustomFieldsContainer|cfHost-/.test(el.id)) return;
+      if (el.classList.contains("extra-cf-host")) return;
       take(el, "field");
     });
-    Array.prototype.forEach.call(root.querySelectorAll(".map-container"), function (el) { take(el, "map"); });
-    Array.prototype.forEach.call(root.querySelectorAll(".card"), function (el) {
-      if (el.parentNode === root || el.parentNode.classList.contains("man-canvas-inner")) take(el, "card");
+    Array.prototype.forEach.call(root.querySelectorAll(".map-container"), function (el) {
+      if (el.closest(".form-group")) return;
+      take(el, "map");
     });
     Array.prototype.forEach.call(root.querySelectorAll("button.btn, .btn-toggle-option"), function (el) {
       if (el.closest(".form-group")) return;
       if (el.closest("table")) return;
-      if (el.closest(".card-header") && el.closest(".man-toolbar")) return;
+      if (el.closest(".card-header") && /صفحه اصلی|بازگشت/.test(el.textContent || "")) return;
       take(el, "btn");
     });
     return out;
+  }
+
+  function paletteList() {
+    return window.WIDGET_PALETTE || [];
+  }
+
+  function renderManPalette() {
+    var host = $("manWidgetPalette");
+    if (!host) return;
+    host.innerHTML = "<strong>امکانات آماده همین برنامه</strong>" +
+      "<p class='col-help'>تب را از گرید بالا انتخاب کنید. روی امکان بزنید یا آن را روی بوم بکشید. بعد جایش را با ⠿ عوض کنید.</p>" +
+      '<div class="col-widget-btns">' +
+      paletteList().map(function (w) {
+        return '<button type="button" class="btn btn-outline btn-sm col-add-widget man-pal-btn" draggable="true" data-kind="' +
+          w.kind + '" data-label="' + esc(w.label) + '">' + w.icon + " " + esc(w.label) + "</button>";
+      }).join("") + "</div>";
+    var box = $("manBoxMaker");
+    if (box && !box.dataset.ready) {
+      box.dataset.ready = "1";
+      box.innerHTML = "<strong>ساخت کادر</strong>" +
+        '<div class="form-grid" style="margin-top:.4rem">' +
+        '<div class="form-group"><label class="form-label">نام کادر</label><input id="manBoxLabel" class="form-input" placeholder="مثلاً اطلاعات تماس"></div></div>' +
+        '<button type="button" id="btnManAddBox" class="btn btn-primary btn-sm" style="background:#0d9488;margin-top:.4rem">➕ ثبت کادر روی تب فعال</button>';
+      var bb = $("btnManAddBox");
+      if (bb) bb.addEventListener("click", function () {
+        var name = (($("manBoxLabel") || {}).value || "").trim();
+        if (!name) { alert("نام کادر را بنویسید."); return; }
+        var tabId = window._activeManualTab;
+        if (!tabId) { alert("اول تب را انتخاب کنید."); return; }
+        var key = fieldKeyForTab(tabId);
+        if (!state.formBoxes) state.formBoxes = {};
+        if (!state.formBoxes[key]) state.formBoxes[key] = [];
+        state.formBoxes[key].push({ id: "box-" + key + "-" + Date.now(), label: name, fieldIds: [] });
+        if (typeof saveState === "function") saveState();
+        if (typeof window.applyFullFormLayout === "function") window.applyFullFormLayout(tabId);
+        openManualCanvas(tabId);
+        $("manBoxLabel").value = "";
+      });
+    }
+    Array.prototype.forEach.call(host.querySelectorAll(".man-pal-btn"), function (b) {
+      b.addEventListener("dragstart", function (ev) {
+        ev.dataTransfer.setData("text/plain", JSON.stringify({
+          kind: b.getAttribute("data-kind"),
+          label: b.getAttribute("data-label")
+        }));
+        ev.dataTransfer.effectAllowed = "copy";
+      });
+    });
+  }
+
+  window.refreshManualCanvas = function (tabId) {
+    if (!tabId) tabId = window._activeManualTab;
+    if (tabId && window._activeManualTab === tabId && $("manualDesignCanvas")) openManualCanvas(tabId);
+  };
+
+  window.placeFieldOnTab = function (tabId, fieldId, x, y, scope, scopeId) {
+    var lay = layoutOf(tabId);
+    lay.items[fieldId] = { x: x || 20, y: y || 20, w: 220, h: 72, abs: true, scope: scope || "form", scopeId: scopeId || "" };
+    var key = fieldKeyForTab(tabId);
+    ((state.customFields[key] || [])).forEach(function (f) {
+      if (f.id === fieldId) {
+        f.actionScope = scope || "form";
+        f.scopeId = scopeId || "";
+      }
+    });
+    if (typeof saveState === "function") saveState(false);
+    applyManualLayout(tabId);
+  };
+
+  function detectScope(el, root) {
+    var r = el.getBoundingClientRect();
+    var cx = r.left + r.width / 2;
+    var cy = r.top + r.height / 2;
+    var rows = root.querySelectorAll("tbody tr");
+    for (var i = 0; i < rows.length; i++) {
+      var rr = rows[i].getBoundingClientRect();
+      if (cx >= rr.left && cx <= rr.right && cy >= rr.top - 8 && cy <= rr.bottom + 8) {
+        return { type: "row", id: rows[i].getAttribute("data-edit") || rows[i].getAttribute("data-rid") || ("row-" + i), label: "ردیف " + (i + 1) };
+      }
+    }
+    var boxes = root.querySelectorAll(".col-user-box");
+    var best = null, bestD = 1e9;
+    for (var j = 0; j < boxes.length; j++) {
+      var br = boxes[j].getBoundingClientRect();
+      var inside = cx >= br.left && cx <= br.right && cy >= br.top && cy <= br.bottom;
+      var near = cy >= br.top - 48 && cy <= br.bottom + 48 && cx >= br.left - 24 && cx <= br.right + 24;
+      if (inside || near) {
+        var d = Math.abs(cy - (br.top + br.height / 2));
+        if (d < bestD) {
+          bestD = d;
+          best = { type: "box", id: boxes[j].id || boxes[j].getAttribute("data-man-id"), label: (boxes[j].querySelector(".col-user-box-title") || {}).textContent || "کادر" };
+        }
+      }
+    }
+    if (best) return best;
+    return { type: "form", id: "", label: "کل فرم" };
+  }
+
+  function paintScopeBadge(el, scope) {
+    if (!el) return;
+    var b = el.querySelector(":scope > .man-scope-badge");
+    if (!b) {
+      b = document.createElement("span");
+      b.className = "man-scope-badge";
+      el.appendChild(b);
+    }
+    b.className = "man-scope-badge man-scope-" + (scope.type || "form");
+    b.textContent = scope.type === "row" ? ("برای " + (scope.label || "همین ردیف")) :
+      scope.type === "box" ? ("برای کادر: " + (scope.label || "")) : "برای کل فرم";
+    el.setAttribute("data-action-scope", scope.type || "form");
+    el.setAttribute("data-scope-id", scope.id || "");
   }
 
   function designIdOf(el) {
@@ -197,7 +311,10 @@
       return;
     }
     var sec = designableSections().filter(function (s) { return s.id === tabId; })[0] || { label: tabId, icon: "📋" };
-    if (hint) hint.innerHTML = "الان صفحهٔ «" + esc(sec.icon + " " + sec.label) + "» را می‌چینید. بکشید، گوشه را برای اندازه بگیرید. ذخیره را بزنید تا روی تب اصلی بنشیند.";
+    if (hint) hint.innerHTML = "الان صفحهٔ «" + esc(sec.icon + " " + sec.label) + "» را می‌چینید. فیلد، کلید، نقشه و کادر را بکشید. برچسب رنگی می‌گوید این کلید برای ردیف است، کادر است یا کل فرم.";
+    var st = $("manAddStatus");
+    if (st) st.textContent = "تب فعال: " + (sec.icon || "") + " " + (sec.label || tabId);
+    renderManPalette();
 
     host.innerHTML = "";
     var stage = document.createElement("div");
@@ -223,6 +340,35 @@
     inner.appendChild(clone);
     stage.appendChild(inner);
     host.appendChild(stage);
+
+    inner.addEventListener("dragover", function (ev) {
+      ev.preventDefault();
+      ev.dataTransfer.dropEffect = "copy";
+    });
+    inner.addEventListener("drop", function (ev) {
+      ev.preventDefault();
+      var raw = ev.dataTransfer.getData("text/plain");
+      var pack;
+      try { pack = JSON.parse(raw); } catch (e) { return; }
+      if (!pack || !pack.kind) return;
+      var cr = inner.getBoundingClientRect();
+      var x = Math.round(ev.clientX - cr.left + inner.scrollLeft);
+      var y = Math.round(ev.clientY - cr.top + inner.scrollTop);
+      var ghost = document.createElement("div");
+      ghost.style.position = "absolute";
+      ghost.style.left = x + "px";
+      ghost.style.top = y + "px";
+      ghost.style.width = "40px";
+      ghost.style.height = "40px";
+      inner.appendChild(ghost);
+      var sc = detectScope(ghost, clone);
+      if (ghost.parentNode) ghost.parentNode.removeChild(ghost);
+      if (typeof window.addWidgetToActiveTab === "function") {
+        window.addWidgetToActiveTab(pack.kind, pack.label, {
+          tabId: tabId, x: x, y: y, scope: sc.type, scopeId: sc.id
+        });
+      }
+    });
 
     var targets = collectDesignTargets(clone);
     targets.forEach(function (t, i) {
@@ -250,6 +396,12 @@
     }
     bindDrag(el, tabId, id);
     bindResize(el, tabId, id);
+    var saved = (layoutOf(tabId).items || {})[id] || {};
+    paintScopeBadge(el, {
+      type: el.getAttribute("data-action-scope") || saved.scope || "form",
+      id: el.getAttribute("data-scope-id") || saved.scopeId || "",
+      label: saved.scope === "box" ? "کادر" : (saved.scope === "row" ? "ردیف" : "کل فرم")
+    });
   }
 
   function bindDrag(el, tabId, id) {
@@ -325,17 +477,27 @@
     });
   }
 
-  function writeItemBox(tabId, id, el, canvas) {
+  function writeItemBox(tabId, id, el, canvas, scope) {
     var lay = layoutOf(tabId);
     var cr = canvas.getBoundingClientRect();
     var er = el.getBoundingClientRect();
+    scope = scope || detectScope(el, canvas);
     lay.items[id] = {
       x: Math.round(er.left - cr.left + canvas.scrollLeft),
       y: Math.round(er.top - cr.top + canvas.scrollTop),
       w: Math.round(er.width),
       h: Math.round(er.height),
-      abs: true
+      abs: true,
+      scope: scope.type || "form",
+      scopeId: scope.id || ""
     };
+    var key = fieldKeyForTab(tabId);
+    ((state.customFields && state.customFields[key]) || []).forEach(function (f) {
+      if (f.id === id) {
+        f.actionScope = scope.type || "form";
+        f.scopeId = scope.id || "";
+      }
+    });
     if (typeof saveState === "function") saveState(false);
   }
 
@@ -549,6 +711,7 @@
     try { wrapApplyOrderTabId(); } catch (e) {}
     try { wrapApplyLayoutDedupe(); } catch (e) {}
     try { renderManualGrid(); } catch (e) {}
+    try { renderManPalette(); } catch (e) {}
     try { bindToolbar(); } catch (e) {}
     try {
       (typeof window.getAllMenuSections === "function" ? window.getAllMenuSections() : []).forEach(function (s) {

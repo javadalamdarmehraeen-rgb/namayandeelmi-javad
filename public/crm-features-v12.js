@@ -43,7 +43,8 @@
     { kind: "widget-delete", label: "حذف", icon: "🗑️", group: "tool" },
     { kind: "widget-excel", label: "خروجی اکسل", icon: "⬇️", group: "tool" },
     { kind: "widget-search", label: "جستجو در لیست", icon: "🔎", group: "tool" },
-    { kind: "widget-print", label: "چاپ", icon: "🖨️", group: "tool" }
+    { kind: "widget-print", label: "چاپ", icon: "🖨️", group: "tool" },
+    { kind: "widget-list", label: "لیست رکوردها", icon: "📋", group: "tool" }
   ];
 
   function tabKey(tabId) {
@@ -56,9 +57,11 @@
     return ((state && state.userTabs) || []).some(function (t) { return t.id === tabId; });
   }
 
-  function stampWidgetField(wrap, fid) {
+  function stampWidgetField(wrap, fid, field) {
     if (!wrap) return wrap;
     wrap.setAttribute("data-col-fid", fid);
+    if (field && field.actionScope) wrap.setAttribute("data-action-scope", field.actionScope);
+    if (field && field.scopeId) wrap.setAttribute("data-scope-id", field.scopeId);
     if (!wrap.querySelector('[data-custom-field-id="' + fid + '"]')) {
       var hid = document.createElement("input");
       hid.type = "hidden";
@@ -85,7 +88,7 @@
         '<input type="hidden" id="' + fid + '-lat" data-widget-lat="' + fid + '">' +
         '<input type="hidden" id="' + fid + '-lng" data-widget-lng="' + fid + '">';
       setTimeout(function () { initUserMap(fid, tabId); }, 80);
-      return stampWidgetField(wrap, fid);
+      return stampWidgetField(wrap, fid, field);
     }
     if (kind === "widget-myloc") {
       wrap.innerHTML = '<button type="button" class="btn btn-primary btn-sm" id="btn-' + fid + '">📡 ' + title + "</button>";
@@ -96,7 +99,7 @@
           b.addEventListener("click", function () { runMyLocation(tabId); });
         }
       }, 30);
-      return stampWidgetField(wrap, fid);
+      return stampWidgetField(wrap, fid, field);
     }
     if (kind === "widget-getaddr") {
       wrap.innerHTML = '<button type="button" class="btn btn-success btn-sm" id="btn-' + fid + '">🔍 ' + title + "</button>";
@@ -107,7 +110,7 @@
           b.addEventListener("click", function () { runGetAddress(tabId); });
         }
       }, 30);
-      return stampWidgetField(wrap, fid);
+      return stampWidgetField(wrap, fid, field);
     }
     if (kind === "widget-searchaddr") {
       wrap.innerHTML = '<label class="form-label">' + title + "</label>" +
@@ -124,12 +127,12 @@
           });
         }
       }, 30);
-      return stampWidgetField(wrap, fid);
+      return stampWidgetField(wrap, fid, field);
     }
     if (kind === "widget-file") {
       wrap.innerHTML = '<label class="form-label">' + title + "</label>" +
         '<input type="file" class="form-input" data-custom-field-id="' + fid + '">';
-      return stampWidgetField(wrap, fid);
+      return stampWidgetField(wrap, fid, field);
     }
     if (kind === "widget-save") {
       wrap.innerHTML = '<button type="button" class="btn btn-primary" id="btn-' + fid + '" style="background:#0d9488">💾 ' + title + "</button>";
@@ -137,10 +140,10 @@
         var b = $("btn-" + fid);
         if (b && !b.dataset.bound) {
           b.dataset.bound = "1";
-          b.addEventListener("click", function () { saveUserTabRecord(tabId); });
+          b.addEventListener("click", function () { saveUserTabRecord(tabId, wrap); });
         }
       }, 30);
-      return stampWidgetField(wrap, fid);
+      return stampWidgetField(wrap, fid, field);
     }
     if (kind === "widget-reset") {
       wrap.innerHTML = '<button type="button" class="btn btn-outline" id="btn-' + fid + '">♻️ ' + title + "</button>";
@@ -148,10 +151,10 @@
         var b = $("btn-" + fid);
         if (b && !b.dataset.bound) {
           b.dataset.bound = "1";
-          b.addEventListener("click", function () { resetUserTabForm(tabId); });
+          b.addEventListener("click", function () { resetUserTabForm(tabId, wrap); });
         }
       }, 30);
-      return stampWidgetField(wrap, fid);
+      return stampWidgetField(wrap, fid, field);
     }
     if (kind === "widget-edit") {
       wrap.innerHTML = '<button type="button" class="btn btn-outline btn-sm" id="btn-' + fid + '">✏️ ' + title + "</button>";
@@ -162,11 +165,13 @@
           b.addEventListener("click", function () {
             var recs = ((state.customRecords || {})[tabKey(tabId)] || []);
             if (!recs.length) { alert("هنوز رکوردی برای ویرایش نیست."); return; }
-            loadUserTabRecord(tabId, recs[recs.length - 1].id);
+            var sid = wrap.getAttribute("data-scope-id");
+            var rec = recs.filter(function (r) { return r.id === sid; })[0] || recs[recs.length - 1];
+            loadUserTabRecord(tabId, rec.id);
           });
         }
       }, 30);
-      return stampWidgetField(wrap, fid);
+      return stampWidgetField(wrap, fid, field);
     }
     if (kind === "widget-delete") {
       wrap.innerHTML = '<button type="button" class="btn btn-danger btn-sm" id="btn-' + fid + '">🗑️ ' + title + "</button>";
@@ -176,13 +181,13 @@
           b.dataset.bound = "1";
           b.addEventListener("click", function () {
             var hid = $("edit-" + tabKey(tabId));
-            var id = hid && hid.value;
-            if (!id) { alert("ابتدا یک ردیف را برای حذف انتخاب/ویرایش کنید."); return; }
+            var id = (wrap.getAttribute("data-action-scope") === "row" && wrap.getAttribute("data-scope-id")) || (hid && hid.value);
+            if (!id) { alert("ابتدا یک ردیف را برای حذف انتخاب کنید یا کلید را کنار همان ردیف بگذارید."); return; }
             deleteUserTabRecord(tabId, id);
           });
         }
       }, 30);
-      return stampWidgetField(wrap, fid);
+      return stampWidgetField(wrap, fid, field);
     }
     if (kind === "widget-excel") {
       wrap.innerHTML = '<button type="button" class="btn btn-success btn-sm" id="btn-' + fid + '">⬇️ ' + title + "</button>";
@@ -200,12 +205,12 @@
           });
         }
       }, 30);
-      return stampWidgetField(wrap, fid);
+      return stampWidgetField(wrap, fid, field);
     }
     if (kind === "widget-search") {
       wrap.innerHTML = '<label class="form-label">' + title + "</label>" +
         '<input type="text" class="form-input" data-custom-field-id="' + fid + '" placeholder="جستجو...">';
-      return stampWidgetField(wrap, fid);
+      return stampWidgetField(wrap, fid, field);
     }
     if (kind === "widget-print") {
       wrap.innerHTML = '<button type="button" class="btn btn-outline btn-sm" id="btn-' + fid + '">🖨️ ' + title + "</button>";
@@ -216,20 +221,40 @@
           b.addEventListener("click", function () { window.print(); });
         }
       }, 30);
-      return stampWidgetField(wrap, fid);
+      return stampWidgetField(wrap, fid, field);
     }
     if (kind === "textarea") {
       wrap.innerHTML = '<label class="form-label">' + title + "</label>" +
         '<textarea class="form-textarea" data-custom-field-id="' + fid + '" rows="3"></textarea>';
-      return stampWidgetField(wrap, fid);
+      return stampWidgetField(wrap, fid, field);
     }
     if (kind === "phone") {
       wrap.innerHTML = '<label class="form-label">' + title + "</label>" +
         '<input type="tel" class="form-input" data-custom-field-id="' + fid + '" dir="ltr" placeholder="0912...">';
-      return stampWidgetField(wrap, fid);
+      return stampWidgetField(wrap, fid, field);
     }
-    return null;
+    if (kind === "widget-list") {
+      wrap.classList.add("full-width");
+      wrap.innerHTML = '<label class="form-label">' + title + "</label>" +
+        '<div class="table-responsive"><table class="data-table"><thead><tr id="head-' + esc(tabKey(tabId)) + '"></tr></thead>' +
+        '<tbody id="body-' + esc(tabKey(tabId)) + '"></tbody></table></div>';
+      setTimeout(function () { renderUserTabList(tabId); }, 40);
+      return stampWidgetField(wrap, fid, field);
+    }
+    if (kind === "select") {
+      wrap.innerHTML = '<label class="form-label">' + title + "</label>" +
+        '<select class="form-select" data-custom-field-id="' + fid + '"><option value="">انتخاب کنید...</option>' +
+        (field.options || ["گزینه ۱", "گزینه ۲"]).map(function (o) {
+          return "<option>" + esc(o) + "</option>";
+        }).join("") + "</select>";
+      return stampWidgetField(wrap, fid, field);
+    }
+    var itype = kind === "number" ? "number" : "text";
+    wrap.innerHTML = '<label class="form-label">' + title + "</label>" +
+      '<input type="' + itype + '" class="form-input" data-custom-field-id="' + fid + '" placeholder="' + title + '...">';
+    return stampWidgetField(wrap, fid, field);
   };
+  window.WIDGET_PALETTE = WIDGET_PALETTE;
 
   var userMaps = {};
   function initUserMap(fid, tabId) {
@@ -335,7 +360,7 @@
     return vals;
   }
 
-  function saveUserTabRecord(tabId) {
+  function saveUserTabRecord(tabId, scopeEl) {
     if (!isUserTab(tabId)) {
       var form = $(tabId) && $(tabId).querySelector("form");
       if (form && typeof form.requestSubmit === "function") form.requestSubmit();
@@ -445,26 +470,33 @@
     sec.id = tab.id;
     sec.className = "tab-pane user-made-tab";
     sec.innerHTML =
-      '<div class="card">' +
+      '<div class="card user-blank-card">' +
         '<div class="card-header"><div class="card-title"><span>' + esc(tab.icon || "📋") + " " + esc(tab.label) + "</span></div>" +
         '<button type="button" class="btn btn-outline btn-sm" onclick="switchTab(\'tab-dashboard\')">🏠 صفحه اصلی</button></div>' +
+        '<p class="col-help" style="margin:0 0 .75rem">صفحه خالی است. از «ستون‌ها و کالاها» یا «طراحی دستی تب‌ها» فیلد و کلید بگذارید.</p>' +
         '<form id="form-' + key + '" onsubmit="return false;">' +
           '<input type="hidden" id="edit-' + key + '" value="">' +
           '<div class="form-grid" id="grid-' + key + '"></div>' +
           '<div id="cfHost-' + key + '" class="form-group full-width form-grid extra-cf-host"></div>' +
-          '<div class="form-group full-width" style="margin-top:1rem;display:flex;gap:.5rem;flex-wrap:wrap">' +
-            '<button type="button" class="btn btn-primary" id="btnSave-' + key + '" style="background:#0d9488">ثبت</button>' +
-            '<button type="button" class="btn btn-outline" id="btnReset-' + key + '">بازنشانی</button>' +
-          "</div></form></div>" +
-      '<div class="card"><div class="card-header"><div class="card-title"><span>لیست ' + esc(tab.label) + "</span></div></div>" +
-        '<div class="table-responsive"><table class="data-table"><thead><tr id="head-' + key + '"></tr></thead>' +
-        '<tbody id="body-' + key + '"></tbody></table></div></div>';
+        "</form></div>";
     main.appendChild(sec);
-    var bs = $("btnSave-" + key);
-    var br = $("btnReset-" + key);
-    if (bs) bs.addEventListener("click", function () { saveUserTabRecord(tab.id); });
-    if (br) br.addEventListener("click", function () { resetUserTabForm(tab.id); });
-    renderUserTabList(tab.id);
+  }
+
+  function stripDefaultUserChrome(tab) {
+    if (!tab || !$(tab.id)) return;
+    var key = tab.key || tabKey(tab.id);
+    var pane = $(tab.id);
+    ["btnSave-" + key, "btnReset-" + key].forEach(function (id) {
+      var b = $(id);
+      if (!b) return;
+      var g = b.closest(".form-group") || b.parentNode;
+      if (g && g.parentNode) g.parentNode.removeChild(g);
+    });
+    var head = $("head-" + key);
+    if (head) {
+      var card = head.closest(".card");
+      if (card && card.parentNode && !card.querySelector("form")) card.parentNode.removeChild(card);
+    }
   }
 
   window.createUserTab = function (label) {
@@ -495,9 +527,9 @@
     ensureUserTabPane(tab);
     if (typeof setupNavigationMenu === "function") setupNavigationMenu();
     window._activeColTab = tab.id;
+    window._activeManualTab = tab.id;
     if (typeof window.refreshColumnsDesigner === "function") window.refreshColumnsDesigner();
-    if (typeof switchTab === "function") switchTab(tab.id);
-    alert("تب «" + label + "» با آیکون " + tab.icon + " ساخته شد. از امکانات آماده و فیلدها برای طراحی‌اش استفاده کنید.");
+    alert("تب «" + label + "» خالی ساخته شد. همین‌جا از امکانات آماده روی آن بگذارید.");
     return tab.id;
   };
 
@@ -519,39 +551,68 @@
     if (typeof switchTab === "function") switchTab("tab-dashboard");
   };
 
-  function addWidgetToActiveTab(kind, label) {
-    var tabId = window._activeColTab;
-    if (!tabId) { alert("اول یک تب را از گرید بالا انتخاب کنید."); return; }
-    var key = tabKey(tabId);
+  window.addWidgetToActiveTab = function (kind, label, opts) {
+    opts = opts || {};
+    var tabId = opts.tabId || window._activeManualTab || window._activeColTab;
+    if (!tabId || tabId === "tab-manual-design") {
+      alert("اول یک تب را از گرید بالا انتخاب کنید.");
+      return null;
+    }
+    var key = fieldKeyOfTab(tabId);
     if (!state.customFields) state.customFields = {};
     if (!state.customFields[key]) state.customFields[key] = [];
-    if (String(kind).indexOf("widget-") === 0) {
+    if (isUserTab(tabId)) {
+      var ut = (state.userTabs || []).filter(function (t) { return t.id === tabId; })[0];
+      if (ut) ensureUserTabPane(ut);
+    }
+    var isWidget = String(kind).indexOf("widget-") === 0;
+    if (isWidget && !opts.allowDup) {
       var exists = state.customFields[key].filter(function (f) { return f.inputKind === kind; })[0];
       if (exists) {
-        alert("این کلید از قبل در این تب هست. از تیک کادر داخلش بگذارید.");
-        return;
+        if (typeof window.applyFullFormLayout === "function") window.applyFullFormLayout(tabId);
+        if (typeof window.refreshManualCanvas === "function") window.refreshManualCanvas(tabId);
+        var st = $("colAddStatus") || $("manAddStatus");
+        if (st) st.textContent = "«" + label + "» از قبل روی این تب هست.";
+        else alert("«" + label + "» از قبل روی این تب هست. می‌توانید جایش را در طراحی دستی عوض کنید.");
+        return exists;
       }
     }
     var neu = {
       id: "cf-" + key + "-" + kind.replace(/\W/g, "") + "-" + Date.now(),
       label: label,
-      type: "simple",
+      type: kind === "select" ? "select" : "simple",
       inputKind: kind,
+      options: kind === "select" ? ["گزینه ۱", "گزینه ۲"] : [],
       showInForm: true,
-      showInList: kind.indexOf("widget-") !== 0,
+      showInList: !isWidget,
       order: (state.customFields[key].length || 0) + 1,
-      size: kind === "widget-map" ? 900 : 260,
-      place: kind === "widget-map" ? "under" : "beside"
+      size: kind === "widget-map" || kind === "textarea" || kind === "widget-list" ? 900 : 220,
+      place: kind === "widget-map" || kind === "textarea" || kind === "widget-list" ? "under" : "beside",
+      actionScope: opts.scope || "form",
+      scopeId: opts.scopeId || ""
     };
+    if (opts.x != null) neu._placeX = opts.x;
+    if (opts.y != null) neu._placeY = opts.y;
     state.customFields[key].push(neu);
     saveState();
-    if (typeof renderCustomFieldsInForm === "function") {
-      var cid = (key === "pharmacy" ? "pharmacyCustomFieldsContainer" : key === "doctor" ? "doctorCustomFieldsContainer" : key === "order" ? "orderCustomFieldsContainer" : ("cfHost-" + key));
-      if ($(cid)) renderCustomFieldsInForm(key, cid);
+    var cid = (key === "pharmacy" ? "pharmacyCustomFieldsContainer" : key === "doctor" ? "doctorCustomFieldsContainer" : key === "order" ? "orderCustomFieldsContainer" : ("cfHost-" + key));
+    if (!$(cid) && typeof window.applyFullFormLayout === "function") {
+      /* host after layout */
     }
     if (typeof window.applyFullFormLayout === "function") window.applyFullFormLayout(tabId);
+    else if (typeof renderCustomFieldsInForm === "function" && $(cid)) renderCustomFieldsInForm(key, cid);
+    if (opts.x != null && typeof window.placeFieldOnTab === "function") {
+      window.placeFieldOnTab(tabId, neu.id, opts.x, opts.y, opts.scope, opts.scopeId);
+    }
     if (typeof window.refreshColumnsDesigner === "function") window.refreshColumnsDesigner();
-    alert("«" + label + "» به تب اضافه شد. اگر کادر دارید از تیک‌های کادر داخلش بگذارید.");
+    if (typeof window.refreshManualCanvas === "function") window.refreshManualCanvas(tabId);
+    var st2 = $("colAddStatus") || $("manAddStatus");
+    if (st2) st2.textContent = "«" + label + "» به تب اضافه شد.";
+    else alert("«" + label + "» به تب اضافه شد.");
+    return neu;
+  };
+  function addWidgetToActiveTab(kind, label) {
+    return window.addWidgetToActiveTab(kind, label);
   }
 
   function fieldKeyOfTab(tabId) {
@@ -676,10 +737,11 @@
         pal.id = "colWidgetPalette";
         pal.className = "col-widget-palette";
         pal.innerHTML = "<strong>امکانات آماده همین برنامه</strong>" +
-          "<p class='col-help'>این دکمه‌ها فیلد یا کلید را روی تب فعلی می‌سازند. بعد می‌توانید داخل کادر تیک بزنید یا از بخش کادر، مستقیم داخل کادر بسازید.</p>" +
+          "<p class='col-help'>اول تب را از گرید بالا انتخاب کنید، بعد روی یک امکان بزنید. روی تب خالی ساخته می‌شود.</p>" +
+          '<div id="colAddStatus" class="col-add-status">تب فعال: انتخاب نشده</div>' +
           '<div class="col-widget-btns">' +
           WIDGET_PALETTE.map(function (w) {
-            return '<button type="button" class="btn btn-outline btn-sm col-add-widget" data-kind="' + w.kind + '" data-label="' + esc(w.label) + '">' + w.icon + " " + esc(w.label) + "</button>";
+            return '<button type="button" class="btn btn-outline btn-sm col-add-widget" draggable="true" data-kind="' + w.kind + '" data-label="' + esc(w.label) + '">' + w.icon + " " + esc(w.label) + "</button>";
           }).join("") + "</div>";
         var boxMaker = panel.querySelector(".col-box-maker");
         if (boxMaker) boxMaker.parentNode.insertBefore(pal, boxMaker);
@@ -754,6 +816,12 @@
         }
       }
 
+      var stBar = $("colAddStatus");
+      if (stBar) {
+        var secN = (secs.filter(function (s) { return s.id === window._activeColTab; })[0] || {});
+        stBar.textContent = "تب فعال: " + (secN.icon || "") + " " + (secN.label || window._activeColTab);
+      }
+
       if (isUserTab(window._activeColTab) && !$("btnDeleteUserTab")) {
         var actions = panel.querySelector(".col-panel-actions");
         if (actions) {
@@ -782,7 +850,10 @@
     try {
       if (state && !state.userTabs) state.userTabs = [];
       if (state && !state.customRecords) state.customRecords = {};
-      (state.userTabs || []).forEach(ensureUserTabPane);
+      (state.userTabs || []).forEach(function (t) {
+        ensureUserTabPane(t);
+        stripDefaultUserChrome(t);
+      });
       if ((state.userTabs || []).length && typeof setupNavigationMenu === "function") setupNavigationMenu();
     } catch (e) { console.error("v12 tabs", e); }
 
