@@ -342,22 +342,29 @@
       panel.innerHTML = html;
       return;
     }
+    var geoIds = /Province|City|District/;
     list.forEach(function (f) {
+      if (geoIds.test(f.id || "")) {
+        html += "<div class='add-sel-card add-sel-geo' data-sid='" + esc(f.id) + "'>";
+        html += "<div class='add-sel-head'><strong>" + esc(f.label) + "</strong>";
+        html += "<span class='col-help'>از کادر استان←شهر←منطقه بالای همین صفحه استفاده کنید</span></div></div>";
+        return;
+      }
       html += "<div class='add-sel-card' data-sid='" + esc(f.id) + "'>";
       html += "<div class='add-sel-head'><strong>" + esc(f.label) + "</strong>";
       html += "<span class='col-help'>" + (f.custom ? "فیلد اضافه‌شده" : "کشویی فرم") + "</span>";
       if (f.custom) {
-        html += "<button type='button' class='btn btn-outline btn-sm add-edit-field' data-sid='" + esc(f.id) + "'>✏️ ویرایش فیلد</button>";
-        html += "<button type='button' class='btn btn-danger btn-sm add-del-field' data-sid='" + esc(f.id) + "'>🗑️ حذف فیلد</button>";
+        html += "<button type='button' class='btn btn-outline btn-sm add-edit-field' data-sid='" + esc(f.id) + "'>✏️ ویرایش</button>";
+        html += "<button type='button' class='btn btn-danger btn-sm add-del-field' data-sid='" + esc(f.id) + "'>🗑️ حذف</button>";
       }
-      html += "</div><ul class='add-opt-list'>";
+      html += "</div><ul class='add-opt-list add-opt-tight'>";
       (f.options || []).forEach(function (op, i) {
-        html += "<li><span>" + esc(op.text) + "</span><span class='add-opt-ops'>" +
-          "<button type='button' class='btn btn-outline btn-sm add-edit-opt' data-sid='" + esc(f.id) + "' data-idx='" + i + "' data-val='" + esc(op.value) + "'>✏️ ویرایش</button> " +
-          "<button type='button' class='btn btn-danger btn-sm add-del-opt' data-sid='" + esc(f.id) + "' data-idx='" + i + "' data-val='" + esc(op.value) + "'>🗑️ حذف</button>" +
+        html += "<li><span class='add-opt-name'>" + esc(op.text) + "</span><span class='add-opt-ops'>" +
+          "<button type='button' class='btn btn-outline btn-sm add-edit-opt' data-sid='" + esc(f.id) + "' data-idx='" + i + "' data-val='" + esc(op.value) + "'>✏️</button>" +
+          "<button type='button' class='btn btn-danger btn-sm add-del-opt' data-sid='" + esc(f.id) + "' data-idx='" + i + "' data-val='" + esc(op.value) + "'>🗑️</button>" +
           "</span></li>";
       });
-      html += "</ul><button type='button' class='btn btn-outline btn-sm add-new-opt' data-sid='" + esc(f.id) + "'>➕ گزینه جدید برای «" + esc(f.label) + "»</button></div>";
+      html += "</ul><button type='button' class='btn btn-outline btn-sm add-new-opt' data-sid='" + esc(f.id) + "'>➕ گزینه جدید</button></div>";
     });
     panel.innerHTML = html;
 

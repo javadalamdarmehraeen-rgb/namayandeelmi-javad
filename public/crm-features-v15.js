@@ -545,7 +545,6 @@
     try { ensureInspectorBar(); } catch (e) {}
     try { bindDesignerClicks(); } catch (e) {}
     setTimeout(function () {
-      try { freezeAllTables(); } catch (e) {}
       try { shrinkPharmacyField(); } catch (e) {}
       try { restoreProtectedCards(); } catch (e) {}
     }, 200);
@@ -557,7 +556,6 @@
         origSw(id);
         setTimeout(function () {
           try { restoreProtectedCards(); } catch (e) {}
-          try { freezeAllTables(); } catch (e) {}
           try { bindAddFieldHard(); } catch (e) {}
           if (id === "tab-orders") shrinkPharmacyField();
           if (id === "tab-manual-design") {
@@ -566,7 +564,6 @@
           }
           if (id === "tab-custom-fields") bindAddFieldHard();
           if (id === "tab-columns-products") {
-            freezeAllTables();
             hookDesignerSizeDisplay();
           }
           try { paintSavedSizes(id); } catch (e) {}

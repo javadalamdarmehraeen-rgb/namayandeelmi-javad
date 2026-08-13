@@ -376,6 +376,9 @@
     });
     applySavedToClone(tabId, clone);
     fillCopySelects(tabId);
+    if (typeof window.lockManualDesigner === "function") {
+      try { window.lockManualDesigner(); } catch (eLk) {}
+    }
   }
 
   function enableDesignItem(el, tabId, idx) {

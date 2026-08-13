@@ -712,17 +712,17 @@
     group.style.display = "";
     group.removeAttribute("data-col-hidden");
     var size = parseInt(f.size, 10);
-    var place = f.place || (f.full ? "under" : "beside");
-    group.classList.toggle("col-place-under", place === "under");
-    group.classList.toggle("col-place-beside", place !== "under");
-    if (place === "under") {
+    var place = f.place || (size > 40 ? "beside" : (f.full ? "under" : "beside"));
+    group.classList.toggle("col-place-under", place === "under" && !(size > 40));
+    group.classList.toggle("col-place-beside", place !== "under" || size > 40);
+    if (place === "under" && !(size > 40)) {
       group.style.setProperty("flex", "1 1 100%", "important");
       group.style.setProperty("max-width", "100%", "important");
       group.style.setProperty("min-width", "100%", "important");
       group.style.setProperty("width", "100%", "important");
     } else {
       var w = size > 40 ? size : 260;
-      group.style.setProperty("flex", "1 1 " + w + "px", "important");
+      group.style.setProperty("flex", "0 0 " + w + "px", "important");
       group.style.setProperty("max-width", w + "px", "important");
       group.style.setProperty("min-width", Math.min(140, w) + "px", "important");
       group.style.setProperty("width", w + "px", "important");
@@ -731,7 +731,13 @@
       var sizedInp = group.querySelector(".form-input, .form-select, .form-textarea, input:not([type=hidden]), select, textarea");
       if (sizedInp) {
         sizedInp.style.setProperty("width", size + "px", "important");
-        sizedInp.style.setProperty("max-width", "100%", "important");
+        sizedInp.style.setProperty("max-width", size + "px", "important");
+        sizedInp.style.setProperty("min-width", Math.min(120, size) + "px", "important");
+      }
+      var combo = group.querySelector(".crm-combo");
+      if (combo) {
+        combo.style.setProperty("width", size + "px", "important");
+        combo.style.setProperty("max-width", size + "px", "important");
       }
     }
     var lab = group.querySelector(".form-label, label, h4");
@@ -1388,6 +1394,9 @@
         writeFieldSize(tabId, inp.getAttribute("data-fid"), inp.value);
         saveState();
         applyFullFormLayout(tabId);
+        if (typeof window.applyFieldPixelSize === "function") {
+          window.applyFieldPixelSize(tabId, inp.getAttribute("data-fid"), inp.value);
+        }
         logOp("تغییر اندازه فیلد به " + inp.value + "px");
       });
     });
@@ -1490,10 +1499,15 @@
     var custom = null;
     getFieldList(key).forEach(function (f) { if (f.id === fieldId) custom = f; });
     size = parseInt(size, 10) || 220;
-    if (custom) { custom.size = size; return; }
+    if (custom) {
+      custom.size = size;
+      if (size > 40) custom.place = custom.place || "beside";
+      return;
+    }
     var meta = ensureMeta(key);
     if (!meta[fieldId]) meta[fieldId] = {};
     meta[fieldId].size = size;
+    if (size > 40 && meta[fieldId].place !== "under") meta[fieldId].place = "beside";
   }
 
   function writeFieldFlag(tabId, fieldId, flag, value) {
