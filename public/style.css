@@ -329,6 +329,14 @@ body {
   max-width: 100%;
   width: 100%;
 }
+.form-group.col-hide-form {
+  display: none !important;
+}
+.col-place-sel {
+  min-width: 140px;
+  padding: 0.3rem 0.4rem;
+  font-size: 0.78rem;
+}
 
 .form-group {
   display: flex;

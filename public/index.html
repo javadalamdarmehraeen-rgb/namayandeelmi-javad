@@ -16,7 +16,7 @@
   <meta name="theme-color" content="#0d9488" />
   
   <!-- Custom Style with Anti-Cache Version 9.1.0 -->
-  <link rel="stylesheet" href="style.css?v=11.3.1" />
+  <link rel="stylesheet" href="style.css?v=11.4.0" />
 </head>
 <body>
 
@@ -1347,6 +1347,23 @@
             </tbody>
           </table>
         </div>
+
+        <h4 style="margin: 1.5rem 0 0.75rem; color: #0f172a;">📋 همه فیلدهای کشویی سیستم (برای افزودن گزینه)</h4>
+        <p style="font-size: 0.85rem; color: #64748b; margin-bottom: 0.75rem;">استان، شهر، وضعیت سفارش، نقش کاربر و هر کشویی دیگری که در برنامه هست اینجا دیده می‌شود. گزینه جدید به همان فیلد اضافه می‌شود.</p>
+        <div class="table-responsive">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>تب / محل</th>
+                <th>عنوان فیلد کشویی</th>
+                <th>شناسه</th>
+                <th>گزینه‌های فعلی</th>
+                <th>افزودن گزینه</th>
+              </tr>
+            </thead>
+            <tbody id="tableAllSelectsBody"></tbody>
+          </table>
+        </div>
       </div>
     </section>
 
@@ -1360,7 +1377,7 @@
             <span>🧱 طراحی فیلد و ستون برای همه تب‌ها</span>
           </div>
         </div>
-        <p style="font-size:.88rem;color:#64748b;margin-bottom:1rem;">مثل داشبورد، اول تب را انتخاب کنید. بعد فقط فیلدهای همان تب را اضافه یا حذف کنید تا صفحه شلوغ نشود. شماره ترتیب محل قرارگیری فیلد در فرم همان تب را مشخص می‌کند.</p>
+        <p style="font-size:.88rem;color:#64748b;margin-bottom:1rem;">اول تب را انتخاب کنید. همه فیلدهای همان صفحه اینجاست. شماره ردیف جای واقعی فیلد در فرم است. چینش روبرو یعنی چند فیلد کنار هم؛ زیر هم یعنی هر کدام یک سطر.</p>
         <div id="columnsDesignerHost"></div>
       </div>
       <div class="card">
@@ -1975,12 +1992,12 @@
   <script src="vendor/leaflet.js"></script>
   
   <!-- Data & Application Logic with Anti-Cache Version 9.1.0 -->
-  <script src="crm-data.js?v=11.3.1"></script>
-  <script src="crm-app.js?v=11.3.1"></script>
-  <script src="crm-features-v9.js?v=11.3.1"></script>
-  <script src="iran-facilities.js?v=11.3.1" defer></script>
-  <script src="crm-features-v10.js?v=11.3.1"></script>
-  <script src="crm-features-v11.js?v=11.3.1"></script>
+  <script src="crm-data.js?v=11.4.0"></script>
+  <script src="crm-app.js?v=11.4.0"></script>
+  <script src="crm-features-v9.js?v=11.4.0"></script>
+  <script src="iran-facilities.js?v=11.4.0" defer></script>
+  <script src="crm-features-v10.js?v=11.4.0"></script>
+  <script src="crm-features-v11.js?v=11.4.0"></script>
   <!-- فیلدهای مخفی سازگاری با کد قبلی (نباید در UI دیده شوند) -->
   <input type="hidden" id="pharmacyLocationText" value="" />
   <input type="hidden" id="doctorLocationText" value="" />

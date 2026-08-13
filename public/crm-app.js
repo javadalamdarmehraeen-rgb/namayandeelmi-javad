@@ -81,6 +81,7 @@ function loadState() {
   }
   if (!state.formFieldMeta) state.formFieldMeta = {};
   if (!state.customFields) state.customFields = {};
+  if (!state.selectExtraOptions) state.selectExtraOptions = {};
   applyGeneralSettingsToUI();
 }
 

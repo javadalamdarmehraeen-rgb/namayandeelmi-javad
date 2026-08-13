@@ -400,6 +400,7 @@
   }
 
   function ensureMeta(key) {
+    if (typeof state === "undefined" || !state) return {};
     if (!state.formFieldMeta) state.formFieldMeta = {};
     if (!state.formFieldMeta[key]) state.formFieldMeta[key] = {};
     return state.formFieldMeta[key];
@@ -450,39 +451,83 @@
     return String(s || "").replace(/\s+/g, "-").replace(/[^\w\u0600-\u06FF\-]/g, "").slice(0, 40) || "field";
   }
 
+  function fieldLabelOf(el, group) {
+    if (el && el.id) {
+      var lab = group.querySelector('label[for="' + el.id + '"]');
+      if (lab) return String(lab.textContent || "").replace(/\s+/g, " ").trim();
+    }
+    var l = group.querySelector(".form-label, label, h4");
+    if (l) return String(l.textContent || "").replace(/\s+/g, " ").trim();
+    if (el && el.placeholder) return String(el.placeholder).replace(/\s+/g, " ").trim();
+    return (el && el.id) || "فیلد";
+  }
+
   function scanBuiltinFields(tabId) {
-    var grid = getMainGrid(tabId);
-    if (!grid) return [];
+    var pane = $(tabId);
+    if (!pane) return [];
     var fields = [];
+    var seen = {};
     var idx = 0;
-    Array.prototype.forEach.call(grid.children, function (ch) {
-      if (!ch.classList || !ch.classList.contains("form-group")) return;
-      if (isHostGroup(ch)) return;
-      if (ch.querySelector("[data-custom-field-id]")) return;
+    function pushField(id, labelText, type, group, full, kind) {
+      if (!id || seen[id]) return;
+      seen[id] = true;
       idx += 1;
-      var input = ch.querySelector("input:not([type=hidden]), select, textarea");
-      var label = ch.querySelector(".form-label, label, h4");
-      var labelText = "";
-      if (label) labelText = String(label.textContent || "").replace(/\s+/g, " ").trim();
-      if (!labelText && ch.querySelector("span")) {
-        labelText = String(ch.querySelector("span").textContent || "").replace(/\s+/g, " ").trim();
+      if (labelText && labelText.length > 80) labelText = labelText.slice(0, 77) + "…";
+      if (group && !group.getAttribute("data-col-fid")) group.setAttribute("data-col-fid", id);
+      fields.push({
+        id: id,
+        label: labelText || id,
+        type: type || "simple",
+        scanOrder: idx,
+        el: group,
+        full: !!full,
+        kind: kind || "field"
+      });
+    }
+
+    var groups = pane.querySelectorAll(".form-group");
+    Array.prototype.forEach.call(groups, function (g) {
+      if (isHostGroup(g)) return;
+      if (g.closest("#columnsDesignerHost") || g.closest("#colDesignerPanel") || g.closest(".modal-overlay") || g.closest("#jalaliCalendarPopup")) return;
+      if (g.querySelector("[data-custom-field-id]")) return;
+
+      var inputs = [];
+      Array.prototype.forEach.call(g.querySelectorAll("input, select, textarea"), function (el) {
+        if (el.type === "hidden") return;
+        if (el.closest(".form-group") !== g) return;
+        if (el.closest("#columnsDesignerHost")) return;
+        inputs.push(el);
+      });
+
+      if (!inputs.length) {
+        var hid = g.querySelector('input[type="hidden"][id]');
+        var title = g.querySelector("h4, .form-label, span");
+        if (hid && hid.id) {
+          pushField(hid.id, fieldLabelOf(hid, g) || (title ? title.textContent : hid.id), "block", g, true, "block");
+        } else if (title && g.classList.contains("full-width") && !g.querySelector(".form-group")) {
+          var bid = g.id || g.getAttribute("data-col-fid") || ("blk-" + tabId + "-" + slugLabel(title.textContent));
+          pushField(bid, String(title.textContent || "").replace(/\s+/g, " ").trim(), "block", g, true, "block");
+        }
+        return;
       }
-      if (labelText.length > 70) labelText = labelText.slice(0, 67) + "…";
-      var id = ch.getAttribute("data-col-fid");
-      if (!id) {
-        id = (input && input.id) || ch.id || ("bf-" + tabId + "-" + slugLabel(labelText || String(idx)));
-        ch.setAttribute("data-col-fid", id);
-      }
-      if (!labelText) labelText = id;
-      var type = "block";
-      if (input) {
-        if (input.tagName === "SELECT") type = "select";
-        else if (input.type === "number") type = "number";
-        else if ((input.id || "").toLowerCase().indexOf("date") !== -1) type = "date";
-        else type = "simple";
-      }
-      fields.push({ id: id, label: labelText, type: type, scanOrder: idx, el: ch, full: ch.classList.contains("full-width") });
+
+      inputs.forEach(function (el) {
+        if (!el.id) el.id = "auto-" + tabId + "-" + slugLabel(el.placeholder || el.name || "x") + "-" + idx;
+        var type = "simple";
+        if (el.tagName === "SELECT") type = "select";
+        else if (el.type === "number") type = "number";
+        else if (el.type === "file") type = "file";
+        else if ((el.id || "").toLowerCase().indexOf("date") !== -1) type = "date";
+        pushField(el.id, fieldLabelOf(el, g), type, g, g.classList.contains("full-width") && inputs.length === 1, "field");
+      });
     });
+
+    if (tabId === "tab-orders") {
+      pushField("orderItemName", "نام کالا (سطر اقلام سفارش)", "simple", $("orderItemsContainer") && $("orderItemsContainer").closest(".form-group"), true, "ordercol");
+      pushField("orderItemCount", "تعداد کالا", "number", null, false, "ordercol");
+      pushField("orderItemGift", "تعداد جایزه", "number", null, false, "ordercol");
+      pushField("orderItemPrice", "قیمت واحد کالا", "number", null, false, "ordercol");
+    }
     return fields;
   }
 
@@ -560,9 +605,10 @@
         document.querySelector('[data-custom-field-id="' + field.id + '"]');
       return inp ? inp.closest(".form-group") : null;
     }
-    var el = document.getElementById(field.id);
+    var el = document.getElementById(field.id) ||
+      document.querySelector('[data-col-fid="' + field.id + '"]');
     if (!el) return null;
-    var g = el.closest(".form-group");
+    var g = el.classList && el.classList.contains("form-group") ? el : el.closest(".form-group");
     if (grid && g && g.parentNode !== grid) {
       var p = g.parentNode;
       while (p && p !== grid) {
@@ -573,59 +619,104 @@
     return g;
   }
 
+  function paintFieldBox(group, f) {
+    if (!group) return;
+    var hide = !f.showInForm || f.hidden;
+    group.classList.toggle("col-hide-form", hide);
+    if (hide) {
+      group.style.display = "none";
+      group.setAttribute("data-col-hidden", "1");
+      return;
+    }
+    group.style.display = "";
+    group.removeAttribute("data-col-hidden");
+    var size = parseInt(f.size, 10);
+    var place = f.place || (f.full ? "under" : "beside");
+    if (place === "under") {
+      group.style.flex = "1 1 100%";
+      group.style.maxWidth = "100%";
+      group.style.minWidth = "100%";
+      group.style.width = "100%";
+    } else {
+      var w = size > 40 ? size : 260;
+      group.style.flex = "1 1 " + w + "px";
+      group.style.maxWidth = w + "px";
+      group.style.minWidth = Math.min(140, w) + "px";
+      group.style.width = w + "px";
+    }
+  }
+
+  function applyOrderItemLayout() {
+    var meta = ensureMeta("order");
+    var specs = [
+      { id: "orderItemName", def: "2.2fr" },
+      { id: "orderItemCount", def: "0.7fr" },
+      { id: "orderItemGift", def: "0.9fr" },
+      { id: "orderItemPrice", def: "1.1fr" }
+    ];
+    var underCount = 0;
+    var parts = specs.map(function (s) {
+      var m = meta[s.id] || {};
+      if (m.showInForm === false || m.hidden) return "0px";
+      if ((m.place || "beside") === "under") { underCount += 1; return "1fr"; }
+      var size = parseInt(m.size, 10);
+      return size > 40 ? (size + "px") : s.def;
+    });
+    parts.push("auto");
+    var tpl = underCount === specs.length ? "1fr" : parts.join(" ");
+    document.querySelectorAll(".order-item-row, .order-item-head").forEach(function (el) {
+      el.style.gridTemplateColumns = tpl;
+    });
+  }
+
   function applyFullFormLayout(tabId) {
-    if (!tabId) return;
+    if (!tabId || window._layoutBusy) return;
     var key = fieldKeyForTab(tabId);
-    ensureFieldHost(tabId, key);
+    var cid = ensureFieldHost(tabId, key);
     var grid = getMainGrid(tabId);
-    var container = $(containerIdForKey(key));
+    var container = cid ? $(cid) : null;
+    if (cid && typeof renderCustomFieldsInForm === "function") {
+      window._layoutBusy = true;
+      try {
+        var skip = window.applyCustomFieldOrderInForm;
+        window.applyCustomFieldOrderInForm = function () {};
+        renderCustomFieldsInForm(key, cid);
+        window.applyCustomFieldOrderInForm = skip;
+      } catch (e) {}
+      window._layoutBusy = false;
+    }
     var unified = getUnifiedFieldList(tabId);
     var meta = ensureMeta(key);
+    if (grid) grid.classList.add("form-grid-sized");
+    var placed = [];
     unified.forEach(function (f) {
+      if (f.kind === "ordercol") return;
       var group = findFieldGroup(tabId, f);
+      if (!group && !f.builtin && container) {
+        group = container.querySelector('[data-custom-field-id="' + f.id + '"]');
+        if (group) group = group.closest(".form-group");
+      }
       if (!group) return;
-      if (f.hidden || f.showInForm === false) {
-        group.style.display = "none";
-        group.setAttribute("data-col-hidden", "1");
-      } else {
-        group.style.display = "";
-        group.removeAttribute("data-col-hidden");
-      }
-      var size = parseInt(f.size, 10);
-      var isFull = group.classList.contains("full-width") || f.full;
-      if (grid) grid.classList.add("form-grid-sized");
-      if (isFull && !(size > 40)) {
-        group.style.flex = "1 1 100%";
-        group.style.maxWidth = "100%";
-        group.style.minWidth = "";
-        group.style.width = "100%";
-      } else if (size > 40) {
-        group.style.flex = "1 1 " + size + "px";
-        group.style.maxWidth = size + "px";
-        group.style.minWidth = Math.min(140, size) + "px";
-        group.style.width = size + "px";
-      } else {
-        group.style.flex = "1 1 260px";
-        group.style.maxWidth = "";
-        group.style.minWidth = "";
-        group.style.width = "";
-      }
       if (f.builtin && meta[f.id] && meta[f.id].label) {
         var lab = group.querySelector(".form-label, label");
-        if (lab) lab.textContent = meta[f.id].label;
+        if (lab && !lab.querySelector("input")) lab.textContent = meta[f.id].label;
       }
+      paintFieldBox(group, f);
+      placed.push({ f: f, group: group });
     });
-    if (!grid) return;
-    unified.forEach(function (f) {
-      var group = findFieldGroup(tabId, f);
-      if (!group) return;
-      if (group.parentNode !== grid && group.parentNode) {
-        grid.appendChild(group);
-      } else if (group.parentNode === grid) {
-        grid.appendChild(group);
-      }
-    });
-    if (container && container.parentNode === grid) grid.appendChild(container);
+    if (grid) {
+      placed.forEach(function (item) {
+        if (!item.f.showInForm || item.f.hidden) return;
+        if (item.group.parentNode !== grid) grid.appendChild(item.group);
+        else grid.appendChild(item.group);
+      });
+      placed.forEach(function (item) {
+        if (item.f.showInForm && !item.f.hidden) return;
+        if (item.group.parentNode === grid) grid.appendChild(item.group);
+      });
+      if (container && container.parentNode === grid) grid.appendChild(container);
+    }
+    if (tabId === "tab-orders") applyOrderItemLayout();
     try {
       if (tabId === "tab-pharmacies" && typeof mapPharmacyForm !== "undefined" && mapPharmacyForm) {
         setTimeout(function () { mapPharmacyForm.invalidateSize(); }, 160);
@@ -985,11 +1076,19 @@
         logOp("تغییر اندازه فیلد به " + inp.value + "px");
       });
     });
+    Array.prototype.forEach.call(box.querySelectorAll(".col-place-sel"), function (sel) {
+      sel.addEventListener("change", function () {
+        writeFieldFlag(tabId, sel.getAttribute("data-fid"), "place", sel.value);
+        saveState();
+        applyFullFormLayout(tabId);
+      });
+    });
     Array.prototype.forEach.call(box.querySelectorAll(".col-flag-form"), function (inp) {
       inp.addEventListener("change", function () {
         writeFieldFlag(tabId, inp.getAttribute("data-fid"), "showInForm", inp.checked);
         saveState();
         applyFullFormLayout(tabId);
+        refreshEntityLists(tabId);
         renderColFieldList();
       });
     });
@@ -1069,6 +1168,7 @@
     getFieldList(key).forEach(function (f) { if (f.id === fieldId) custom = f; });
     if (custom) {
       custom[flag] = value;
+      if (flag === "showInForm") custom.showInForm = value;
       return;
     }
     var meta = ensureMeta(key);
@@ -1235,6 +1335,89 @@
     return out;
   };
 
+  function tabLabelOfPane(el) {
+    var pane = el.closest(".tab-pane");
+    if (!pane || !pane.id || typeof MENU_SECTIONS_LIST === "undefined") return "سایر";
+    var sec = MENU_SECTIONS_LIST.filter(function (s) { return s.id === pane.id; })[0];
+    return sec ? (sec.icon + " " + sec.label) : pane.id;
+  }
+
+  window.applySelectExtraOptions = function () {
+    if (!state || !state.selectExtraOptions) return;
+    Object.keys(state.selectExtraOptions).forEach(function (id) {
+      var sel = document.getElementById(id);
+      if (!sel || sel.tagName !== "SELECT") return;
+      (state.selectExtraOptions[id] || []).forEach(function (opt) {
+        var exists = false;
+        Array.prototype.forEach.call(sel.options, function (o) { if (o.value === opt) exists = true; });
+        if (!exists) {
+          var o = document.createElement("option");
+          o.value = opt;
+          o.textContent = opt;
+          sel.appendChild(o);
+        }
+      });
+    });
+  };
+
+  window.renderAllSystemSelects = function () {
+    var box = $("tableAllSelectsBody");
+    if (!box) return;
+    window.applySelectExtraOptions();
+    var rows = [];
+    document.querySelectorAll("select.form-select, select[id]").forEach(function (sel) {
+      if (!sel.id) return;
+      if (sel.closest("#jalaliCalendarPopup") || sel.closest("#columnsDesignerHost") || sel.closest(".modal-overlay")) return;
+      if (sel.id.indexOf("jalali") === 0) return;
+      var label = "";
+      var lab = document.querySelector('label[for="' + sel.id + '"]');
+      if (lab) label = lab.textContent.replace(/\s+/g, " ").trim();
+      if (!label) {
+        var g = sel.closest(".form-group");
+        if (g) {
+          var l2 = g.querySelector(".form-label, label");
+          if (l2) label = l2.textContent.replace(/\s+/g, " ").trim();
+        }
+      }
+      if (!label) label = sel.id;
+      var opts = [];
+      Array.prototype.forEach.call(sel.options, function (o) {
+        if (o.value) opts.push(o.textContent || o.value);
+      });
+      rows.push({
+        id: sel.id,
+        tab: tabLabelOfPane(sel),
+        label: label,
+        opts: opts
+      });
+    });
+    if (!rows.length) {
+      box.innerHTML = "<tr><td colspan='5'>کشویی‌ای پیدا نشد.</td></tr>";
+      return;
+    }
+    box.innerHTML = rows.map(function (r) {
+      return "<tr><td>" + escHtml(r.tab) + "</td><td><strong>" + escHtml(r.label) + "</strong></td><td dir='ltr'>" + escHtml(r.id) + "</td><td>" + escHtml(r.opts.slice(0, 12).join("، ")) + (r.opts.length > 12 ? "…" : "") + "</td>" +
+        "<td><button type='button' class='btn btn-outline btn-sm btn-add-sel-opt' data-sid='" + escHtml(r.id) + "' data-slabel='" + escHtml(r.label) + "'>➕ گزینه جدید</button></td></tr>";
+    }).join("");
+    Array.prototype.forEach.call(box.querySelectorAll(".btn-add-sel-opt"), function (btn) {
+      btn.addEventListener("click", function () {
+        var id = btn.getAttribute("data-sid");
+        var slabel = btn.getAttribute("data-slabel") || id;
+        var val = prompt("گزینه جدید برای «" + slabel + "»:");
+        if (!val || !String(val).trim()) return;
+        val = String(val).trim();
+        if (!state.selectExtraOptions) state.selectExtraOptions = {};
+        if (!state.selectExtraOptions[id]) state.selectExtraOptions[id] = [];
+        if (state.selectExtraOptions[id].indexOf(val) === -1) state.selectExtraOptions[id].push(val);
+        saveState();
+        window.applySelectExtraOptions();
+        window.renderAllSystemSelects();
+        logOp("افزودن گزینه «" + val + "» به کشویی " + slabel);
+        alert("گزینه «" + val + "» به فیلد «" + slabel + "» اضافه شد.");
+      });
+    });
+  };
+
   function applyFieldPermissions() {
     var role = sessionStorage.getItem("crmUserRole") || "";
     var name = sessionStorage.getItem("crmUserName") || "";
@@ -1339,6 +1522,8 @@
       window.applyAllFormLayouts();
     } catch (e) {}
     try { if (typeof mergeCatalogIntoOrderItems === "function") mergeCatalogIntoOrderItems(); } catch (e) {}
+    try { window.applySelectExtraOptions(); } catch (e) {}
+    try { window.renderAllSystemSelects(); } catch (e) {}
     try { applyFieldPermissions(); } catch (e) {}
     try { renderDiagOps(); } catch (e) {}
     try { enhanceOverviewSearch(); } catch (e) {}
@@ -1356,11 +1541,9 @@
           if (id === "tab-columns-products") setupColumnsDesigner();
           if (id === "tab-troubleshooting") renderDiagOps();
           if (id === "tab-users-permissions") patchUserCardsWithPasswordChange();
+          if (id === "tab-custom-fields" && typeof window.renderAllSystemSelects === "function") window.renderAllSystemSelects();
           if (id === "tab-orders" && typeof mergeCatalogIntoOrderItems === "function") mergeCatalogIntoOrderItems();
-          if (typeof applyFullFormLayout === "function") applyFullFormLayout(id);
-          else if (typeof window.applyAllFormLayouts === "function" && id && id.indexOf("tab-") === 0) {
-            try { applyFullFormLayout(id); } catch (e) {}
-          }
+          try { applyFullFormLayout(id); } catch (e) {}
         }, 120);
       };
     }
@@ -1372,8 +1555,8 @@
       obs.observe(el, { childList: true });
     });
 
-    logOp("بارگذاری نسخه ۱۱.۲");
-    console.log("v11.3 ready");
+    logOp("بارگذاری نسخه ۱۱.۴");
+    console.log("v11.4 ready");
   }
 
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot);
