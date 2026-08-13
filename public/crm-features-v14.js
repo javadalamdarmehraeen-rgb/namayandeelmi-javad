@@ -178,11 +178,12 @@
   /* ---------- افزودن‌ها: گرید تب + کشویی‌ها با زیرمجموعه ---------- */
   function fillCfTargets() {
     var sel = $("cfTargetEntity");
-    if (!sel || sel.dataset.v14 === "1") return;
-    sel.dataset.v14 = "1";
-    var keep = sel.value;
+    if (!sel) return;
+    var secs = allSections();
+    if (!secs.length) return;
+    var keep = sel.value || (sel.options[0] && sel.options[0].value) || "pharmacy";
     sel.innerHTML = "";
-    allSections().forEach(function (sec) {
+    secs.forEach(function (sec) {
       if (sec.id === "tab-custom-fields" || sec.id === "tab-manual-design") return;
       var o = document.createElement("option");
       o.value = fieldKeyForTab(sec.id);
@@ -191,6 +192,8 @@
       sel.appendChild(o);
     });
     if (keep) sel.value = keep;
+    if (!sel.value && sel.options.length) sel.selectedIndex = 0;
+    sel.dataset.v14 = "1";
   }
 
   function hardenCustomFieldForm() {

@@ -16,7 +16,7 @@
   <meta name="theme-color" content="#0d9488" />
   
   <!-- Custom Style with Anti-Cache Version 9.1.0 -->
-  <link rel="stylesheet" href="style.css?v=11.10.0" />
+  <link rel="stylesheet" href="style.css?v=11.11.0" />
 </head>
 <body>
 
@@ -694,13 +694,13 @@
           <input type="hidden" id="orderPharmacyMatchedId" value="" />
 
           <div class="form-grid">
-            <div class="form-group full-width">
+            <div class="form-group">
               <label class="form-label" for="orderPharmacyName">
-                <span>نام داروخانه * (تایپ کنید — اگر چند داروخانه هم‌نام باشد همه با مشخصات کامل می‌آید)</span>
+                <span>نام داروخانه *</span>
               </label>
               <input type="text" id="orderPharmacyName" class="form-input" placeholder="نام داروخانه را وارد کنید..." required autocomplete="off" />
               <datalist id="pharmacyNamesList"></datalist>
-              <div id="orderPharmacyPickBox" class="ph-pick-box" hidden></div>
+              <div id="orderPharmacyPickBox" class="ph-pick-box ph-pick-overlay" hidden></div>
             </div>
 
             <div class="form-group">
@@ -765,7 +765,8 @@
               <datalist id="orderProductCatalogList"></datalist>
               <div id="orderItemsContainer" style="display: flex; flex-direction: column; gap: 0.5rem;"></div>
               <div style="display: flex; justify-content: flex-end; margin-top: 0.75rem; font-weight: 700; color: #0f172a;">
-                <span>م     </div>
+                <span>مبلغ کل سفارش: <strong id="orderTotalAmountDisplay">0</strong> ریال</span>
+              </div>
             </div>
 
             <div id="orderCustomFieldsContainer" class="form-group full-width form-grid" style="margin-top: 0.5rem;"></div>
@@ -1076,7 +1077,7 @@
           </button>
         </div>
 
-        <form id="formLeaveRequest" onsubmit="return false;" style="background: #f8fafc; padding: 1.25rem; border-radius: 10px; border: 1px solid var(--border-color); margin-bottom: 1.5rem;">
+ 10px; border: 1px solid var(--border-color); margin-bottom: 1.5rem;">
           <h4 style="margin-bottom: 1rem; color: #1e293b;">📝 ثبت درخواست مرخصی / مأموریت جدید</h4>
           <div class="form-grid">
             <div class="form-group">
@@ -1395,7 +1396,7 @@
           </div>
 
           <div style="display: flex; justify-content: flex-end; margin-top: 1rem;">
-            <button type="submit" id="btnSaveCustomField" class="btn btn-primary" style="background: #0d9488;">
+            <button type="button" id="btnSaveCustomField" class="btn btn-primary" style="background: #0d9488;">
               <span>➕ افزودن فیلد سفارشی</span>
             </button>
           </div>
@@ -2096,22 +2097,19 @@
   <script src="vendor/leaflet.js"></script>
   
   <!-- Data & Application Logic with Anti-Cache Version 11.10.0 -->
-  <script src="crm-data.js?v=11.10.0"></script>
-  <script src="crm-app.js?v=11.10.0"></script>
-  <script src="crm-features-v9.js?v=11.10.0"></script>
-  <script src="iran-facilities.js?v=11.10.0" defer></script>
-  <script src="crm-features-v10.js?v=11.10.0"></script>
-  <script src="crm-features-v11.js?v=11.10.0"></script>
-  <script src="crm-features-v12.js?v=11.10.0"></script>
-  <script src="crm-features-v13.js?v=11.10.0"></script>
-  <script src="crm-jalali.js?v=11.10.0"></script>
-  <script src="crm-features-v14.js?v=11.10.0"></script>
+  <script src="crm-data.js?v=11.11.0"></script>
+  <script src="crm-app.js?v=11.11.0"></script>
+  <script src="crm-features-v9.js?v=11.11.0"></script>
+  <script src="iran-facilities.js?v=11.11.0" defer></script>
+  <script src="crm-features-v10.js?v=11.11.0"></script>
+  <script src="crm-features-v11.js?v=11.11.0"></script>
+  <script src="crm-features-v12.js?v=11.11.0"></script>
+  <script src="crm-features-v13.js?v=11.11.0"></script>
+  <script src="crm-jalali.js?v=11.11.0"></script>
+  <script src="crm-features-v14.js?v=11.11.0"></script>
+  <script src="crm-features-v15.js?v=11.11.0"></script>
   <!-- فیلدهای مخفی سازگاری با کد قبلی (نباید در UI دیده شوند) -->
   <input type="hidden" id="pharmacyLocationText" value="" />
-  <input type="hidden" id="doctorLocationText" value="" />
-</body>
-</html>
-"pharmacyLocationText" value="" />
   <input type="hidden" id="doctorLocationText" value="" />
 </body>
 </html>

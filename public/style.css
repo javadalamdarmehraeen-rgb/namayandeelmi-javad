@@ -1924,3 +1924,104 @@ td .btn, .col-ops .btn, .col-ops {
 }
 .prod-field-bar .form-input,
 .prod-field-bar .form-select { max-width: 240px; }
+
+/* v15 freeze header + horizontal scrollbar under header */
+.tbl-freeze-shell {
+  display: flex;
+  flex-direction: column;
+  max-height: min(65vh, 680px);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  background: #fff;
+}
+.tbl-freeze-head {
+  flex: 0 0 auto;
+  overflow: hidden;
+  background: #ecfdf5;
+  border-bottom: 1px solid #99f6e4;
+}
+.tbl-freeze-head table {
+  border-collapse: separate;
+  border-spacing: 0;
+  margin: 0;
+}
+.tbl-freeze-head th {
+  position: static;
+  background: #ecfdf5 !important;
+  box-shadow: none;
+}
+.tbl-freeze-xbar {
+  flex: 0 0 16px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  background: #f0fdfa;
+  border-bottom: 1px solid #99f6e4;
+}
+.tbl-freeze-xbar-inner { height: 1px; }
+.tbl-freeze-body {
+  flex: 1 1 auto;
+  overflow: auto;
+  min-height: 0;
+}
+.tbl-freeze-body .table-responsive {
+  overflow: visible;
+  max-height: none;
+  border: none;
+}
+.tbl-freeze-src thead { display: none; }
+.tbl-freeze-src { border-collapse: separate; border-spacing: 0; }
+
+#cardPhForm, #cardPhList, #cardDocForm, #cardDocList, #cardOrdForm, #cardOrdList {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+.ph-pick-overlay {
+  position: absolute;
+  top: calc(100% + 4px);
+  right: 0;
+  left: 0;
+  z-index: 40;
+  max-height: 240px;
+  margin-top: 0;
+  box-shadow: 0 10px 24px rgba(15,23,42,0.16);
+}
+.form-group { position: relative; }
+
+.man-design-mode input,
+.man-design-mode select,
+.man-design-mode textarea,
+.man-design-mode button.btn,
+.man-design-mode .btn-toggle-option {
+  pointer-events: none !important;
+}
+.man-design-mode .man-handle,
+.man-design-mode .man-resize {
+  pointer-events: auto !important;
+}
+.man-design-mode .btn-toggle-option.active {
+  background: #fff !important;
+  color: #92400e !important;
+  box-shadow: none !important;
+}
+.man-item.man-selected {
+  outline: 2px solid #0d9488 !important;
+  outline-offset: 2px;
+}
+.man-inspector {
+  background: #ecfdf5;
+  border: 1.5px solid #6ee7b7;
+  border-radius: 10px;
+  padding: 0.65rem 0.75rem;
+  margin-top: 0.65rem;
+}
+.man-inspector .form-input { background: #fff; }
+
+.data-table {
+  border-collapse: separate;
+  border-spacing: 0;
+}
+.data-table th {
+  background: #ecfdf5;
+}

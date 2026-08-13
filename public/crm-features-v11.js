@@ -727,6 +727,13 @@
       group.style.setProperty("min-width", Math.min(140, w) + "px", "important");
       group.style.setProperty("width", w + "px", "important");
     }
+    if (size > 40) {
+      var sizedInp = group.querySelector(".form-input, .form-select, .form-textarea, input:not([type=hidden]), select, textarea");
+      if (sizedInp) {
+        sizedInp.style.setProperty("width", size + "px", "important");
+        sizedInp.style.setProperty("max-width", "100%", "important");
+      }
+    }
     var lab = group.querySelector(".form-label, label, h4");
     var inp = group.querySelector(".form-input, .form-select, .form-textarea, input, select, textarea, button");
     function applyFont(el, fam, weight, size) {
@@ -1041,7 +1048,14 @@
     if (type === "select" || type === "date" || type === "number" || type === "simple") $("colFieldType").value = type;
     else $("colFieldType").value = "simple";
     $("colFieldOrder").value = field && field.order ? field.order : (getUnifiedFieldList(window._activeColTab).length + 1);
-    $("colFieldSize").value = field && field.size ? field.size : 220;
+    var shownSize = field && parseInt(field.size, 10) > 40 ? parseInt(field.size, 10) : 0;
+    if (!shownSize && field) {
+      var liveEl = document.getElementById(field.id);
+      if (liveEl) shownSize = Math.round(liveEl.getBoundingClientRect().width);
+      if (!(shownSize > 40) && (field.full || field.place === "under" || /Address|address|آدرس/.test((field.label || "") + (field.id || "")))) shownSize = 560;
+    }
+    $("colFieldSize").value = shownSize > 40 ? shownSize : 220;
+    if ($("colFieldPlace")) $("colFieldPlace").value = field && field.place ? field.place : (field && field.full ? "under" : "beside");
     $("colFieldOpts").value = field && field.options ? field.options.join("، ") : "";
     $("colFieldDep").value = field && field.dependsOn ? field.dependsOn : "";
     $("colFieldFly").checked = !field || field.allowAddOption !== false;
@@ -1234,6 +1248,7 @@
       if (!meta[editing.id]) meta[editing.id] = {};
       meta[editing.id].label = label;
       meta[editing.id].size = size;
+      if ($("colFieldPlace")) meta[editing.id].place = $("colFieldPlace").value || "beside";
       meta[editing.id].showInForm = $("colFieldInForm").checked;
       meta[editing.id].showInList = $("colFieldInList").checked;
       meta[editing.id].hidden = !$("colFieldInForm").checked;
@@ -1259,6 +1274,7 @@
         rec.showInForm = $("colFieldInForm").checked;
         rec.showInList = $("colFieldInList").checked;
         rec.size = size;
+        if ($("colFieldPlace")) rec.place = $("colFieldPlace").value || "beside";
         rec.dependsOn = ($("colFieldDep").value || "").trim();
         saveState();
         logOp("ویرایش فیلد «" + label + "» در تب " + sec.label);
@@ -1337,7 +1353,7 @@
         "<td><input type='number' min='1' class='form-input col-order-input' data-fid='" + escHtml(f.id) + "' value='" + rowNo + "'></td>" +
         "<td><strong>" + escHtml(f.label) + "</strong>" + (f.required ? " <span class='col-req-star'>*</span>" : "") + (f.hidden ? " <span class='col-hidden-badge'>مخفی</span>" : "") + "</td>" +
         "<td>" + src + "</td>" +
-        "<td><input type='number' min='80' max='900' class='form-input col-size-input' data-fid='" + escHtml(f.id) + "' value='" + (f.size || 260) + "'></td>" +
+        "<td><input type='number' min='80' max='900' class='form-input col-size-input' data-fid='" + escHtml(f.id) + "' value='" + (parseInt(f.size, 10) > 40 ? parseInt(f.size, 10) : ((f.full || f.place === "under" || /Address|address|آدرس/.test((f.label || "") + (f.id || ""))) ? 560 : 220)) + "'></td>" +
         "<td><select class='form-select col-place-sel' data-fid='" + escHtml(f.id) + "'><option value='beside'" + (place !== "under" ? " selected" : "") + ">روبرو</option><option value='under'" + (place === "under" ? " selected" : "") + ">زیر هم</option></select></td>" +
         "<td><select class='form-select col-labelfont-sel' data-fid='" + escHtml(f.id) + "'>" + fontOpts(f.labelFontFamily || "") + "</select></td>" +
         "<td style='text-align:center'><input type='checkbox' class='col-labelbold-chk' data-fid='" + escHtml(f.id) + "'" + (f.labelFontWeight === "bold" ? " checked" : "") + "></td>" +
@@ -1468,6 +1484,7 @@
     meta[fieldId].order = newOrder;
   }
 
+  window.writeFieldSize = writeFieldSize;
   function writeFieldSize(tabId, fieldId, size) {
     var key = fieldKeyForTab(tabId);
     var custom = null;

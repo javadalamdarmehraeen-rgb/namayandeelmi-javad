@@ -55,6 +55,12 @@ const MENU_SECTIONS_LIST = [
 // 0. مدیریت وضعیت و حافظه (State Management & LocalStorage)
 // ----------------------------------------------------------------------------
 function loadState() {
+  try {
+    const raw0 = localStorage.getItem(STORAGE_KEY);
+    if (raw0 && !localStorage.getItem("CRM_APP_STATE_BACKUP_BEFORE_11_11_0")) {
+      localStorage.setItem("CRM_APP_STATE_BACKUP_BEFORE_11_11_0", raw0);
+    }
+  } catch (eBak) {}
   const saved = localStorage.getItem(STORAGE_KEY);
   if (saved) {
     try {
@@ -703,7 +709,8 @@ function setupCustomFieldsTab() {
   }
 
   if (formCF) {
-    formCF.addEventListener("submit", () => {
+    formCF.addEventListener("submit", (ev) => {
+      if (ev && ev.preventDefault) ev.preventDefault();
       const target = document.getElementById("cfTargetEntity").value;
       const label = document.getElementById("cfLabel").value.trim();
       const type = document.getElementById("cfType").value;
@@ -3288,6 +3295,10 @@ function setupAllFormSubmitHandlers() {
     const orderDate = document.getElementById("orderDate").value.trim() || jalaliTodayEnglish();
     const status = document.getElementById("orderStatus").value;
     const notes = document.getElementById("orderNotes").value.trim();
+    const pharmacyId = ((document.getElementById("orderPharmacyMatchedId") || {}).value) || "";
+    const customFieldsVals = (typeof extractCustomFieldValuesFromForm === "function")
+      ? extractCustomFieldValuesFromForm("order", "orderCustomFieldsContainer")
+      : {};
 
     if (!pharmacyName || !province || !city || !district) {
       alert("لطفاً نام داروخانه، استان، شهر و منطقه را وارد کنید.");

@@ -91,7 +91,7 @@ const server = http.createServer((req, res) => {
     return send(req, res, 200, JSON.stringify({
       ok: true, status: "healthy", message: "OK",
       service: "namayandeelmi-javad-crm",
-      version: "11.10.0",
+      version: "11.11.0",
       timestamp: new Date().toISOString()
     }), "application/json; charset=utf-8");
   }
@@ -185,5 +185,5 @@ const server = http.createServer((req, res) => {
 });
 
 server.listen(PORT, "0.0.0.0", () => {
-  console.log("CRM v11.10.0 listening on 0.0.0.0:" + PORT);
+  console.log("CRM v11.11.0 listening on 0.0.0.0:" + PORT);
 });

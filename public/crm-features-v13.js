@@ -324,7 +324,7 @@
     inner.id = "manualCanvasInner";
     var clone = src.cloneNode(true);
     clone.id = "man-clone-" + tabId;
-    clone.classList.add("man-clone", "tab-pane", "active");
+    clone.classList.add("man-clone", "tab-pane", "active", "man-design-mode");
     clone.classList.remove("tab-pane");
     clone.style.display = "block";
     Array.prototype.forEach.call(clone.querySelectorAll("[id]"), function (el) {
@@ -433,7 +433,7 @@
       function up() {
         document.removeEventListener("pointermove", move);
         document.removeEventListener("pointerup", up);
-        writeItemBox(tabId, id, el, canvas);
+        writeItemBox(tabId, id, el, canvas, null, { forceAbs: true });
       }
       document.addEventListener("pointermove", move);
       document.addEventListener("pointerup", up);
@@ -451,13 +451,6 @@
       var startY = ev.clientY;
       var startW = el.offsetWidth;
       var startH = el.offsetHeight;
-      if (el.style.position !== "absolute") {
-        var cr = canvas.getBoundingClientRect();
-        var er = el.getBoundingClientRect();
-        el.style.position = "absolute";
-        el.style.left = (er.left - cr.left + canvas.scrollLeft) + "px";
-        el.style.top = (er.top - cr.top + canvas.scrollTop) + "px";
-      }
       function move(e2) {
         var w = Math.max(80, startW - (e2.clientX - startX));
         var h = Math.max(36, startH + (e2.clientY - startY));
@@ -477,19 +470,26 @@
     });
   }
 
-  function writeItemBox(tabId, id, el, canvas, scope) {
+  function writeItemBox(tabId, id, el, canvas, scope, opts) {
+    opts = opts || {};
     var lay = layoutOf(tabId);
-    var cr = canvas.getBoundingClientRect();
+    var prev = (lay.items || {})[id] || {};
+    var host = (el && el.closest && el.closest(".card")) || canvas;
+    var cr = (host && host.getBoundingClientRect) ? host.getBoundingClientRect() : canvas.getBoundingClientRect();
     var er = el.getBoundingClientRect();
     scope = scope || detectScope(el, canvas);
+    var abs = opts.forceAbs ? true : !!prev.abs;
+    if (id && /^(cardPhForm|cardPhList|cardDocForm|cardDocList|cardOrdForm|cardOrdList|formPharmacy|formDoctor|formOrder)$/.test(id)) abs = false;
+    if (el && el.id && /^(cardPhForm|cardPhList|cardDocForm|cardDocList|cardOrdForm|cardOrdList)$/.test(el.id)) abs = false;
     lay.items[id] = {
-      x: Math.round(er.left - cr.left + canvas.scrollLeft),
-      y: Math.round(er.top - cr.top + canvas.scrollTop),
+      x: Math.round(er.left - cr.left + (canvas.scrollLeft || 0)),
+      y: Math.round(er.top - cr.top + (canvas.scrollTop || 0)),
       w: Math.round(er.width),
       h: Math.round(er.height),
-      abs: true,
+      abs: abs,
       scope: scope.type || "form",
-      scopeId: scope.id || ""
+      scopeId: scope.id || "",
+      cardId: (host && host.id) || prev.cardId || ""
     };
     var key = fieldKeyForTab(tabId);
     ((state.customFields && state.customFields[key]) || []).forEach(function (f) {
@@ -505,17 +505,18 @@
     var items = layoutOf(tabId).items || {};
     Object.keys(items).forEach(function (id) {
       var box = items[id];
-      if (!box || !box.abs) return;
+      if (!box) return;
       var el = clone.querySelector('[data-man-id="' + id + '"]') ||
         clone.querySelector('[data-col-fid="' + id + '"]') ||
         clone.querySelector('[data-src-id="' + id + '"]') ||
         clone.querySelector("#man-" + id);
       if (!el) return;
+      if (box.w) { el.style.width = box.w + "px"; el.style.maxWidth = box.w + "px"; }
+      if (box.h) el.style.height = box.h + "px";
+      if (!box.abs) return;
       el.style.position = "absolute";
       el.style.left = box.x + "px";
       el.style.top = box.y + "px";
-      if (box.w) { el.style.width = box.w + "px"; el.style.maxWidth = box.w + "px"; }
-      if (box.h) el.style.height = box.h + "px";
       el.style.margin = "0";
       el.style.zIndex = "5";
     });
@@ -527,13 +528,12 @@
     var pane = $(tabId);
     var lay = (state.manualLayouts || {})[tabId];
     if (!pane || !lay || !lay.items) return;
-    var parent = pane.querySelector("form") || pane.querySelector(".card") || pane;
-    if (getComputedStyle(parent).position === "static") parent.style.position = "relative";
-    var maxY = 480;
+    var skipId = /^(cardPhForm|cardPhList|cardDocForm|cardDocList|cardOrdForm|cardOrdList|formPharmacy|formDoctor|formOrder)$/;
+    var maxByHost = {};
     Object.keys(lay.items).forEach(function (id) {
       var box = lay.items[id];
-      if (!box || !box.abs) return;
-      if (box.y + box.h > maxY) maxY = box.y + box.h;
+      if (!box) return;
+      if (skipId.test(id)) return;
       var el = null;
       try {
         el = pane.querySelector('[data-col-fid="' + id + '"]') ||
@@ -541,16 +541,27 @@
           pane.querySelector('[data-man-id="' + id + '"]');
       } catch (e) { el = null; }
       if (!el) return;
-      el.style.position = "absolute";
-      el.style.left = (box.x || 0) + "px";
-      el.style.top = (box.y || 0) + "px";
-      el.style.margin = "0";
-      el.style.zIndex = "4";
+      if (el.id && skipId.test(el.id)) return;
       if (box.w) {
         el.style.width = box.w + "px";
         el.style.maxWidth = box.w + "px";
       }
       if (box.h) el.style.height = box.h + "px";
+      if (!box.abs) {
+        el.style.position = "";
+        el.style.left = "";
+        el.style.top = "";
+        return;
+      }
+      var host = (box.cardId && document.getElementById(box.cardId)) || el.closest(".card") || pane;
+      if (host && getComputedStyle(host).position === "static") host.style.position = "relative";
+      var hk = host.id || "_";
+      if ((box.y || 0) + (box.h || 0) > (maxByHost[hk] || 0)) maxByHost[hk] = (box.y || 0) + (box.h || 0);
+      el.style.position = "absolute";
+      el.style.left = (box.x || 0) + "px";
+      el.style.top = (box.y || 0) + "px";
+      el.style.margin = "0";
+      el.style.zIndex = "4";
       if (el.classList.contains("map-container") || el.querySelector(".map-container")) {
         var map = el.classList.contains("map-container") ? el : el.querySelector(".map-container");
         if (map && box.h) {
@@ -564,7 +575,10 @@
         }
       }
     });
-    parent.style.minHeight = (maxY + 40) + "px";
+    Object.keys(maxByHost).forEach(function (hk) {
+      var hostEl = hk === "_" ? pane : document.getElementById(hk);
+      if (hostEl) hostEl.style.minHeight = (maxByHost[hk] + 40) + "px";
+    });
   }
 
   function cssEscape(id) {
