@@ -362,6 +362,11 @@
     doctor: "doctorCustomFieldsContainer",
     order: "orderCustomFieldsContainer"
   };
+  var DEFAULT_LIST_ON = {
+    pharmacy: ["pharmacyDate", "pharmacyProvince", "pharmacyCity", "pharmacyName", "pharmacyPhone", "pharmacyIsPercentage", "phMapSearchInput"],
+    doctor: ["doctorDate", "doctorName", "doctorSpecialty", "doctorProvince", "doctorIsPercentage", "docMapSearchInput"],
+    order: ["orderRepName", "orderPharmacyName", "orderProvince", "orderDate", "orderStatus"]
+  };
   var KEY_TO_TAB = {};
   Object.keys(COL_TAB_KEYS).forEach(function (tab) { KEY_TO_TAB[COL_TAB_KEYS[tab]] = tab; });
 
@@ -379,6 +384,7 @@
   }
 
   function getFieldList(key) {
+    if (typeof state === "undefined" || !state) return [];
     if (!state.customFields) state.customFields = {};
     if (!state.customFields[key]) state.customFields[key] = [];
     return state.customFields[key];
@@ -586,11 +592,23 @@
         group.removeAttribute("data-col-hidden");
       }
       var size = parseInt(f.size, 10);
-      if (size > 40) {
-        group.style.maxWidth = size + "px";
+      var isFull = group.classList.contains("full-width") || f.full;
+      if (grid) grid.classList.add("form-grid-sized");
+      if (isFull && !(size > 40)) {
+        group.style.flex = "1 1 100%";
+        group.style.maxWidth = "100%";
+        group.style.minWidth = "";
         group.style.width = "100%";
+      } else if (size > 40) {
+        group.style.flex = "1 1 " + size + "px";
+        group.style.maxWidth = size + "px";
+        group.style.minWidth = Math.min(140, size) + "px";
+        group.style.width = size + "px";
       } else {
+        group.style.flex = "1 1 260px";
         group.style.maxWidth = "";
+        group.style.minWidth = "";
+        group.style.width = "";
       }
       if (f.builtin && meta[f.id] && meta[f.id].label) {
         var lab = group.querySelector(".form-label, label");
@@ -620,7 +638,7 @@
 
   window.applyAllFormLayouts = function () {
     Object.keys(COL_TAB_KEYS).forEach(function (tabId) {
-      applyFullFormLayout(tabId);
+      try { applyFullFormLayout(tabId); } catch (e) { console.error("layout", tabId, e); }
     });
   };
 
@@ -680,25 +698,37 @@
   function setupColumnsDesigner() {
     var host = $("columnsDesignerHost");
     if (!host) return;
-    if (host.dataset.v112 !== "1") {
-      host.dataset.v112 = "1";
-      host.dataset.v111 = "1";
-      host.dataset.ready = "1";
+    host.dataset.v112 = "1";
+    host.dataset.v111 = "1";
+    host.dataset.ready = "1";
+    if (!$("colTabGrid") || !host.querySelector(".col-tab-grid")) {
       host.innerHTML =
         '<p class="col-tab-hint">همه تب‌ها مثل داشبورد اینجاست. روی یک تب بزنید تا <strong>همه فیلدهای همان فرم</strong> (ثابت + اضافه‌شده) را ببینید، ویرایش یا حذف کنید.</p>' +
         '<div class="col-tab-grid" id="colTabGrid"></div>' +
         '<div class="col-designer-panel" id="colDesignerPanel" hidden></div>';
     }
-    renderColTabGrid();
-    if (window._activeColTab) renderColDesignerPanel();
+    try { renderColTabGrid(); } catch (e) { console.error("renderColTabGrid", e); }
+    if (window._activeColTab) {
+      try { renderColDesignerPanel(); } catch (e) { console.error("renderColDesignerPanel", e); }
+    }
   }
 
   function renderColTabGrid() {
     var grid = $("colTabGrid");
+    if (!grid) {
+      var host = $("columnsDesignerHost");
+      if (!host) return;
+      host.innerHTML =
+        '<p class="col-tab-hint">همه تب‌ها مثل داشبورد اینجاست. روی یک تب بزنید تا فیلدهای همان تب را ببینید.</p>' +
+        '<div class="col-tab-grid" id="colTabGrid"></div>' +
+        '<div class="col-designer-panel" id="colDesignerPanel" hidden></div>';
+      grid = $("colTabGrid");
+    }
     if (!grid || typeof MENU_SECTIONS_LIST === "undefined") return;
     var html = "";
     MENU_SECTIONS_LIST.forEach(function (sec) {
-      var n = getUnifiedFieldList(sec.id).length;
+      var n = 0;
+      try { n = getUnifiedFieldList(sec.id).length; } catch (e) { n = 0; }
       var active = window._activeColTab === sec.id ? " active" : "";
       html += '<button type="button" class="col-tab-card' + active + '" data-col-tab="' + sec.id + '">' +
         '<span class="col-tab-icon">' + sec.icon + "</span>" +
@@ -753,7 +783,9 @@
     })[0]) || { label: tabId, icon: "🧱" };
     var key = fieldKeyForTab(tabId);
     ensureFieldHost(tabId, key);
-    var list = getUnifiedFieldList(tabId);
+    try { ensureSequentialOrders(tabId); } catch (e) {}
+    var list = [];
+    try { list = getUnifiedFieldList(tabId); } catch (e) { console.error(e); list = []; }
     panel.hidden = false;
     panel.innerHTML =
       '<div class="col-panel-head">' +
