@@ -904,6 +904,13 @@
         base.forEach(function (s) { if (s.id === t.id) exists = true; });
         if (!exists) base.push({ id: t.id, label: t.label, icon: t.icon || "📋", badgeId: t.badgeId });
       });
+      if (!state.tabOrder) state.tabOrder = {};
+      base.forEach(function (s, i) {
+        if (state.tabOrder[s.id] == null || state.tabOrder[s.id] === "") state.tabOrder[s.id] = i + 1;
+      });
+      base.sort(function (a, b) {
+        return (Number(state.tabOrder[a.id]) || 999) - (Number(state.tabOrder[b.id]) || 999);
+      });
     } catch (e) {}
     return base;
   };
@@ -1072,6 +1079,8 @@
         '<div class="form-group"><label class="form-label">نوع</label><select id="colFieldType" class="form-select"><option value="simple">ساده (متنی)</option><option value="select">کشویی</option><option value="date">تاریخ</option><option value="number">عددی</option></select></div>' +
         '<div class="form-group"><label class="form-label">شماره ترتیب در فرم</label><input id="colFieldOrder" class="form-input" type="number" min="1" value="' + (list.length + 1) + '"><small class="col-help">۱ یعنی اولین فیلد فرم این تب</small></div>' +
         '<div class="form-group"><label class="form-label">اندازه (پیکسل)</label><input id="colFieldSize" class="form-input" type="number" min="80" value="220"></div>' +
+        '<div class="form-group"><label class="form-label">جای فیلد در صفحه</label><select id="colFieldPlace" class="form-select"><option value="beside">روبرو (کنار فیلدها)</option><option value="under">زیر هم (سطر جدا)</option></select></div>' +
+        '<div class="form-group"><label class="form-label">داخل کدام کادر؟</label><select id="colFieldBoxTarget" class="form-select"><option value="">روی خود فرم (بدون کادر)</option></select></div>' +
         '<div class="form-group" id="colFieldOptsWrap"><label class="form-label">گزینه‌های کشویی</label><input id="colFieldOpts" class="form-input" placeholder="با ویرگول جدا کنید"></div>' +
         '<div class="form-group"><label class="form-label">وابسته به فیلد (شناسه اختیاری)</label><input id="colFieldDep" class="form-input" placeholder="خالی بماند اگر مستقل است"></div>' +
         '<div class="form-group"><label><input type="checkbox" id="colFieldFly" checked> افزودن لحظه‌ای گزینه</label></div>' +
@@ -1142,6 +1151,7 @@
     }
   }
 
+  window.renderColBoxList = renderColBoxList;
   function renderColBoxList(tabId, key) {
     var host = $("colBoxList");
     if (!host) return;

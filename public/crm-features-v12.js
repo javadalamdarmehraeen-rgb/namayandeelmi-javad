@@ -26,15 +26,24 @@
   };
 
   var WIDGET_PALETTE = [
-    { kind: "widget-map", label: "نقشه", icon: "🗺️" },
-    { kind: "widget-myloc", label: "موقعیت کنونی من", icon: "📡" },
-    { kind: "widget-getaddr", label: "دریافت آدرس این نقطه", icon: "🔍" },
-    { kind: "widget-searchaddr", label: "جستجوی آدرس روی نقشه", icon: "🧭" },
-    { kind: "widget-file", label: "بارگذاری فایل", icon: "📎" },
-    { kind: "widget-save", label: "ثبت / ذخیره", icon: "💾" },
-    { kind: "widget-reset", label: "بازنشانی فرم", icon: "♻️" },
-    { kind: "widget-edit", label: "ویرایش", icon: "✏️" },
-    { kind: "widget-delete", label: "حذف", icon: "🗑️" }
+    { kind: "simple", label: "فیلد متنی", icon: "✏️", group: "field" },
+    { kind: "number", label: "فیلد عددی", icon: "🔢", group: "field" },
+    { kind: "date", label: "فیلد تاریخ", icon: "📅", group: "field" },
+    { kind: "select", label: "فیلد کشویی", icon: "📑", group: "field" },
+    { kind: "textarea", label: "متن بلند", icon: "📝", group: "field" },
+    { kind: "phone", label: "شماره تماس", icon: "📞", group: "field" },
+    { kind: "widget-file", label: "بارگذاری فایل", icon: "📎", group: "field" },
+    { kind: "widget-map", label: "نقشه", icon: "🗺️", group: "tool" },
+    { kind: "widget-myloc", label: "موقعیت کنونی من", icon: "📡", group: "tool" },
+    { kind: "widget-getaddr", label: "دریافت آدرس این نقطه", icon: "🔍", group: "tool" },
+    { kind: "widget-searchaddr", label: "جستجوی آدرس روی نقشه", icon: "🧭", group: "tool" },
+    { kind: "widget-save", label: "ثبت / ذخیره", icon: "💾", group: "tool" },
+    { kind: "widget-reset", label: "بازنشانی فرم", icon: "♻️", group: "tool" },
+    { kind: "widget-edit", label: "ویرایش", icon: "✏️", group: "tool" },
+    { kind: "widget-delete", label: "حذف", icon: "🗑️", group: "tool" },
+    { kind: "widget-excel", label: "خروجی اکسل", icon: "⬇️", group: "tool" },
+    { kind: "widget-search", label: "جستجو در لیست", icon: "🔎", group: "tool" },
+    { kind: "widget-print", label: "چاپ", icon: "🖨️", group: "tool" }
   ];
 
   function tabKey(tabId) {
@@ -161,6 +170,50 @@
           });
         }
       }, 30);
+      return wrap;
+    }
+    if (kind === "widget-excel") {
+      wrap.innerHTML = '<button type="button" class="btn btn-success btn-sm" id="btn-' + fid + '">⬇️ ' + title + "</button>";
+      setTimeout(function () {
+        var b = $("btn-" + fid);
+        if (b && !b.dataset.bound) {
+          b.dataset.bound = "1";
+          b.addEventListener("click", function () {
+            if (typeof downloadCSVFile === "function") {
+              var recs = ((state.customRecords || {})[tabKey(tabId)] || []);
+              downloadCSVFile("tab-export.xls", ["ردیف", "داده"], recs.map(function (r, i) {
+                return [i + 1, JSON.stringify(r.values || {})];
+              }));
+            } else alert("خروجی اکسل آماده است.");
+          });
+        }
+      }, 30);
+      return wrap;
+    }
+    if (kind === "widget-search") {
+      wrap.innerHTML = '<label class="form-label">' + title + "</label>" +
+        '<input type="text" class="form-input" data-custom-field-id="' + fid + '" placeholder="جستجو...">';
+      return wrap;
+    }
+    if (kind === "widget-print") {
+      wrap.innerHTML = '<button type="button" class="btn btn-outline btn-sm" id="btn-' + fid + '">🖨️ ' + title + "</button>";
+      setTimeout(function () {
+        var b = $("btn-" + fid);
+        if (b && !b.dataset.bound) {
+          b.dataset.bound = "1";
+          b.addEventListener("click", function () { window.print(); });
+        }
+      }, 30);
+      return wrap;
+    }
+    if (kind === "textarea") {
+      wrap.innerHTML = '<label class="form-label">' + title + "</label>" +
+        '<textarea class="form-textarea" data-custom-field-id="' + fid + '" rows="3"></textarea>';
+      return wrap;
+    }
+    if (kind === "phone") {
+      wrap.innerHTML = '<label class="form-label">' + title + "</label>" +
+        '<input type="tel" class="form-input" data-custom-field-id="' + fid + '" dir="ltr" placeholder="0912...">';
       return wrap;
     }
     return null;
@@ -414,6 +467,13 @@
       key: "usertab-" + stamp,
       userMade: true
     };
+    if (!state.tabOrder) state.tabOrder = {};
+    var maxN = 0;
+    Object.keys(state.tabOrder).forEach(function (k) {
+      var n = Number(state.tabOrder[k]) || 0;
+      if (n > maxN) maxN = n;
+    });
+    state.tabOrder[tab.id] = maxN + 1;
     state.userTabs.push(tab);
     if (!state.customFields) state.customFields = {};
     if (!state.customFields[tab.key]) state.customFields[tab.key] = [];
@@ -453,10 +513,12 @@
     var key = tabKey(tabId);
     if (!state.customFields) state.customFields = {};
     if (!state.customFields[key]) state.customFields[key] = [];
-    var exists = state.customFields[key].filter(function (f) { return f.inputKind === kind; })[0];
-    if (exists) {
-      alert("این امکان از قبل در این تب هست. از جدول پایین داخل کادر تیک بزنید.");
-      return;
+    if (String(kind).indexOf("widget-") === 0) {
+      var exists = state.customFields[key].filter(function (f) { return f.inputKind === kind; })[0];
+      if (exists) {
+        alert("این کلید از قبل در این تب هست. از تیک کادر داخلش بگذارید.");
+        return;
+      }
     }
     var neu = {
       id: "cf-" + key + "-" + kind.replace(/\W/g, "") + "-" + Date.now(),
@@ -480,37 +542,129 @@
     alert("«" + label + "» به تب اضافه شد. اگر کادر دارید از تیک‌های کادر داخلش بگذارید.");
   }
 
+  function fieldKeyOfTab(tabId) {
+    var ut = ((state.userTabs || []).filter(function (t) { return t.id === tabId; })[0]);
+    if (ut && ut.key) return ut.key;
+    var map = { "tab-pharmacies": "pharmacy", "tab-doctors": "doctor", "tab-orders": "order" };
+    return map[tabId] || String(tabId || "").replace(/^tab-/, "") || "misc";
+  }
+
+  function createFieldOnTab(tabId, kind, label, boxId) {
+    var key = fieldKeyOfTab(tabId);
+    if (!state.customFields) state.customFields = {};
+    if (!state.customFields[key]) state.customFields[key] = [];
+    var isWidget = String(kind).indexOf("widget-") === 0;
+    var neu = {
+      id: "cf-" + key + "-" + Date.now() + "-" + Math.floor(Math.random() * 999),
+      label: label,
+      type: kind === "select" ? "select" : (kind === "number" ? "simple" : "simple"),
+      inputKind: kind,
+      options: kind === "select" ? ["گزینه ۱", "گزینه ۲"] : [],
+      allowAddOption: kind === "select",
+      showInForm: true,
+      showInList: !isWidget,
+      order: state.customFields[key].length + 1,
+      size: kind === "widget-map" || kind === "textarea" ? 900 : 260,
+      place: kind === "widget-map" || kind === "textarea" ? "under" : "beside",
+      boxId: boxId || ""
+    };
+    state.customFields[key].push(neu);
+    if (boxId) {
+      if (!state.formBoxes) state.formBoxes = {};
+      if (!state.formBoxes[key]) state.formBoxes[key] = [];
+      state.formBoxes[key].forEach(function (bx) {
+        if (bx.id === boxId) {
+          if (!bx.fieldIds) bx.fieldIds = [];
+          if (bx.fieldIds.indexOf(neu.id) === -1) bx.fieldIds.push(neu.id);
+        }
+      });
+    }
+    return neu;
+  }
+
   function enhanceDesignerChrome() {
     var host = $("columnsDesignerHost");
     if (!host) return;
+    var secs = typeof window.getAllMenuSections === "function" ? window.getAllMenuSections() : [];
 
     if (!$("colNewTabBar")) {
       var bar = document.createElement("div");
       bar.id = "colNewTabBar";
       bar.className = "col-newtab-bar";
       bar.innerHTML =
-        '<strong>تب جدید مدیر:</strong>' +
+        "<strong>تب جدید مدیر:</strong>" +
         '<input id="colNewTabLabel" class="form-input" placeholder="مثلاً بازرسی انبار">' +
+        '<input id="colNewTabOrder" class="form-input" type="number" min="1" placeholder="شماره تب" style="max-width:110px">' +
         '<button type="button" id="btnCreateUserTab" class="btn btn-primary btn-sm" style="background:#0d9488">➕ ساخت تب جدید</button>' +
-        '<span class="col-help">آیکون از روی اسم به‌صورت خودکار می‌آید. اندازه و فونت مثل تب‌های فعلی است.</span>';
+        '<span class="col-help">تب به منوی اصلی و سایدبار هم اضافه می‌شود. شماره یعنی جای تب در منو.</span>';
       var grid = $("colTabGrid");
       if (grid && grid.parentNode) grid.parentNode.insertBefore(bar, grid);
       else host.insertBefore(bar, host.firstChild);
       var btn = $("btnCreateUserTab");
       if (btn) btn.addEventListener("click", function () {
-        window.createUserTab(($("colNewTabLabel") || {}).value);
+        var id = window.createUserTab(($("colNewTabLabel") || {}).value);
+        var ord = parseInt(($("colNewTabOrder") || {}).value, 10);
+        if (id && ord > 0) {
+          if (!state.tabOrder) state.tabOrder = {};
+          state.tabOrder[id] = ord;
+          saveState();
+          if (typeof setupNavigationMenu === "function") setupNavigationMenu();
+          if (typeof window.refreshColumnsDesigner === "function") window.refreshColumnsDesigner();
+        }
         if ($("colNewTabLabel")) $("colNewTabLabel").value = "";
+      });
+    }
+
+    var orderHost = $("colTabOrderBar");
+    if (!orderHost) {
+      orderHost = document.createElement("div");
+      orderHost.id = "colTabOrderBar";
+      orderHost.className = "col-tab-order-bar";
+      var g2 = $("colTabGrid");
+      if (g2 && g2.parentNode) g2.parentNode.insertBefore(orderHost, g2.nextSibling);
+      else host.appendChild(orderHost);
+    }
+    if (!state.tabOrder) state.tabOrder = {};
+    orderHost.innerHTML = "<strong>شماره تب‌ها در منوی اصلی</strong><div class='col-tab-order-list'>" +
+      secs.map(function (sec, i) {
+        var n = Number(state.tabOrder[sec.id]) || (i + 1);
+        return "<label class='col-tab-order-row'><span>" + esc(sec.icon + " " + sec.label) +
+          "</span><input type='number' min='1' class='form-input col-tab-ord' data-tid='" + esc(sec.id) + "' value='" + n + "'></label>";
+      }).join("") + "</div>" +
+      '<button type="button" id="btnSaveTabOrder" class="btn btn-primary btn-sm" style="background:#0d9488;margin-top:.45rem">ذخیره ترتیب تب‌ها</button>';
+    var saveOrd = $("btnSaveTabOrder");
+    if (saveOrd && !saveOrd.dataset.bound) {
+      saveOrd.dataset.bound = "1";
+      saveOrd.addEventListener("click", function () {
+        orderHost.querySelectorAll(".col-tab-ord").forEach(function (inp) {
+          state.tabOrder[inp.getAttribute("data-tid")] = parseInt(inp.value, 10) || 1;
+        });
+        saveState();
+        if (typeof setupNavigationMenu === "function") setupNavigationMenu();
+        if (typeof window.refreshColumnsDesigner === "function") window.refreshColumnsDesigner();
+        alert("ترتیب تب‌ها در منوی اصلی ذخیره شد.");
       });
     }
 
     var panel = $("colDesignerPanel");
     if (panel && !panel.hidden && window._activeColTab) {
+      var boxSel = $("colFieldBoxTarget");
+      if (boxSel && boxSel.options.length <= 1) {
+        var key0 = fieldKeyOfTab(window._activeColTab);
+        ((state.formBoxes && state.formBoxes[key0]) || []).forEach(function (b) {
+          var o = document.createElement("option");
+          o.value = b.id;
+          o.textContent = b.label;
+          boxSel.appendChild(o);
+        });
+      }
+
       if (!$("colWidgetPalette")) {
         var pal = document.createElement("div");
         pal.id = "colWidgetPalette";
         pal.className = "col-widget-palette";
         pal.innerHTML = "<strong>امکانات آماده همین برنامه</strong>" +
-          "<p class='col-help'>نقشه، موقعیت فعلی، دریافت آدرس، جستجو، فایل، ثبت، بازنشانی، ویرایش و حذف را به تب/کادر اضافه کنید. روی تب‌های فعلی، کلیدهای اصلی در جدول پایین هم هستند.</p>" +
+          "<p class='col-help'>این دکمه‌ها فیلد یا کلید را روی تب فعلی می‌سازند. بعد می‌توانید داخل کادر تیک بزنید یا از بخش کادر، مستقیم داخل کادر بسازید.</p>" +
           '<div class="col-widget-btns">' +
           WIDGET_PALETTE.map(function (w) {
             return '<button type="button" class="btn btn-outline btn-sm col-add-widget" data-kind="' + w.kind + '" data-label="' + esc(w.label) + '">' + w.icon + " " + esc(w.label) + "</button>";
@@ -524,6 +678,75 @@
           });
         });
       }
+
+      var maker = panel.querySelector(".col-box-maker");
+      if (maker && !maker.dataset.rich) {
+        maker.dataset.rich = "1";
+        var oldList = $("colBoxList");
+        maker.innerHTML =
+          "<strong>ساخت / ویرایش کادر</strong>" +
+          '<div class="form-grid" style="margin-top:.5rem">' +
+            '<div class="form-group"><label class="form-label">نام کادر</label><input id="colBoxLabel" class="form-input" placeholder="مثلاً اطلاعات تماس"></div>' +
+            '<div class="form-group"><label class="form-label">این کادر در کدام تب باشد؟</label><select id="colBoxTab" class="form-select"></select></div>' +
+            '<div class="form-group"><label class="form-label">شماره ترتیب کادر</label><input id="colBoxOrder" class="form-input" type="number" min="1" value="1"></div>' +
+          "</div>" +
+          "<p class='col-help' style='margin:.55rem 0 .35rem'>داخل این کادر چه چیزی ساخته شود؟ (چند مورد را می‌توانید روشن کنید)</p>" +
+          '<div id="colBoxNewItems" class="col-widget-btns">' +
+          WIDGET_PALETTE.map(function (w) {
+            return "<label class='col-box-chk'><input type='checkbox' class='col-box-newitem' data-kind='" + w.kind + "' data-label='" + esc(w.label) + "'> " + w.icon + " " + esc(w.label) + "</label>";
+          }).join("") + "</div>" +
+          '<button type="button" id="btnAddColBox" class="btn btn-primary btn-sm" style="background:#0d9488;margin-top:.65rem">➕ ثبت کادر</button>' +
+          '<div id="colBoxList"></div>';
+        var tabSel = $("colBoxTab");
+        if (tabSel) {
+          secs.forEach(function (sec) {
+            var o = document.createElement("option");
+            o.value = sec.id;
+            o.textContent = sec.icon + " " + sec.label;
+            if (sec.id === window._activeColTab) o.selected = true;
+            tabSel.appendChild(o);
+          });
+        }
+        var addBtn = $("btnAddColBox");
+        if (addBtn) {
+          addBtn.addEventListener("click", function () {
+            var name = (($("colBoxLabel") || {}).value || "").trim();
+            if (!name) { alert("نام کادر را بنویسید."); return; }
+            var destTab = (($("colBoxTab") || {}).value) || window._activeColTab;
+            var destKey = fieldKeyOfTab(destTab);
+            if (!state.formBoxes) state.formBoxes = {};
+            if (!state.formBoxes[destKey]) state.formBoxes[destKey] = [];
+            var box;
+            if (window._editingBoxId) {
+              box = state.formBoxes[destKey].filter(function (x) { return x.id === window._editingBoxId; })[0];
+              if (!box) {
+                box = { id: window._editingBoxId, label: name, fieldIds: [] };
+                state.formBoxes[destKey].push(box);
+              }
+              box.label = name;
+              window._editingBoxId = "";
+              addBtn.textContent = "➕ ثبت کادر";
+            } else {
+              box = { id: "box-" + destKey + "-" + Date.now(), label: name, fieldIds: [], order: parseInt(($("colBoxOrder") || {}).value, 10) || 1 };
+              state.formBoxes[destKey].push(box);
+            }
+            maker.querySelectorAll(".col-box-newitem:checked").forEach(function (chk) {
+              createFieldOnTab(destTab, chk.getAttribute("data-kind"), chk.getAttribute("data-label"), box.id);
+              chk.checked = false;
+            });
+            saveState();
+            if ($("colBoxLabel")) $("colBoxLabel").value = "";
+            if (typeof window.applyFullFormLayout === "function") window.applyFullFormLayout(destTab);
+            if (typeof window.refreshColumnsDesigner === "function") window.refreshColumnsDesigner();
+            alert("کادر «" + name + "» در تب انتخاب‌شده ثبت شد و موارد تیک‌خورده داخلش قرار گرفت.");
+          });
+        }
+        var destKeyNow = fieldKeyOfTab(window._activeColTab);
+        if (typeof window.renderColBoxList === "function") {
+          try { window.renderColBoxList(window._activeColTab, destKeyNow); } catch (e) {}
+        }
+      }
+
       if (isUserTab(window._activeColTab) && !$("btnDeleteUserTab")) {
         var actions = panel.querySelector(".col-panel-actions");
         if (actions) {

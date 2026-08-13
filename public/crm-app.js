@@ -85,6 +85,7 @@ function loadState() {
   if (!state.formBoxes) state.formBoxes = {};
   if (!state.userTabs) state.userTabs = [];
   if (!state.customRecords) state.customRecords = {};
+  if (!state.tabOrder) state.tabOrder = {};
   applyGeneralSettingsToUI();
 }
 
@@ -110,56 +111,58 @@ function setupNavigationMenu() {
   const horizontalContainer = document.getElementById("horizontalNavContainer");
   const sideContainer = document.getElementById("sideMenuItemsContainer");
   const launchpadGrid = document.getElementById("dashboardLaunchpadGrid");
+  const sections = (typeof window.getAllMenuSections === "function")
+    ? window.getAllMenuSections()
+    : MENU_SECTIONS_LIST;
+  const currentBtn = document.querySelector("#horizontalNavContainer .nav-item.active");
+  const currentId = currentBtn ? currentBtn.getAttribute("data-target") : "tab-dashboard";
 
-  if (!MENU_SECTIONS_LIST || !MENU_SECTIONS_LIST.length) {
+  if (!sections || !sections.length) {
     // منوی ثابت HTML را نگه دار تا تب‌ها ناپدید نشوند
   } else {
-  if (horizontalContainer) horizontalContainer.innerHTML = "";
-  if (sideContainer) sideContainer.innerHTML = "";
-  if (launchpadGrid) launchpadGrid.innerHTML = "";
+    if (horizontalContainer) horizontalContainer.innerHTML = "";
+    if (sideContainer) sideContainer.innerHTML = "";
+    if (launchpadGrid) launchpadGrid.innerHTML = "";
 
-  MENU_SECTIONS_LIST.forEach((sec, index) => {
-    // 1. ساخت دکمه منوی افقی (wrapping grid - بدون اسکرول به چپ و راست)
-    if (horizontalContainer) {
-      const btn = document.createElement("button");
-      btn.className = "nav-item" + (index === 0 ? " active" : "");
-      btn.setAttribute("data-target", sec.id);
-      btn.innerHTML = `
-        <span>${sec.icon} ${sec.label}</span>
-        ${sec.badgeId ? `<span class="nav-badge" id="${sec.badgeId}">0</span>` : ""}
-      `;
-      btn.onclick = () => switchTab(sec.id);
-      horizontalContainer.appendChild(btn);
-    }
-
-    // 2. ساخت آیتم منوی کشویی سایدبار
-    if (sideContainer) {
-      const btnSide = document.createElement("button");
-      btnSide.className = "side-menu-item" + (index === 0 ? " active" : "");
-      btnSide.setAttribute("data-side-target", sec.id);
-      btnSide.innerHTML = `
-        <span>${sec.label}</span>
-        <span>${sec.icon}</span>
-      `;
-      btnSide.onclick = () => {
-        switchTab(sec.id);
-        closeSideMenu();
-      };
-      sideContainer.appendChild(btnSide);
-    }
-
-    // لانچ‌پد داشبورد حذف شده؛ اگر عنصر مخفی بود چیزی ساخته نمی‌شود.
-  });
+    sections.forEach((sec) => {
+      const isOn = sec.id === currentId;
+      if (horizontalContainer) {
+        const btn = document.createElement("button");
+        btn.className = "nav-item" + (isOn ? " active" : "");
+        btn.setAttribute("data-target", sec.id);
+        btn.innerHTML = `
+          <span>${sec.icon} ${sec.label}</span>
+          ${sec.badgeId ? `<span class="nav-badge" id="${sec.badgeId}">0</span>` : ""}
+        `;
+        btn.onclick = () => switchTab(sec.id);
+        horizontalContainer.appendChild(btn);
+      }
+      if (sideContainer) {
+        const btnSide = document.createElement("button");
+        btnSide.className = "side-menu-item" + (isOn ? " active" : "");
+        btnSide.setAttribute("data-side-target", sec.id);
+        btnSide.innerHTML = `
+          <span>${sec.label}</span>
+          <span>${sec.icon}</span>
+        `;
+        btnSide.onclick = () => {
+          switchTab(sec.id);
+          closeSideMenu();
+        };
+        sideContainer.appendChild(btnSide);
+      }
+    });
   }
 
-  // کنترل باز و بسته شدن سایدبار
-  const btnToggleSide = document.getElementById("btnToggleSideMenu");
-  const btnCloseSide = document.getElementById("btnCloseSideMenu");
-  const overlay = document.getElementById("sideMenuOverlay");
-
-  if (btnToggleSide) btnToggleSide.addEventListener("click", openSideMenu);
-  if (btnCloseSide) btnCloseSide.addEventListener("click", closeSideMenu);
-  if (overlay) overlay.addEventListener("click", closeSideMenu);
+  if (!window._navHamburgerBound) {
+    window._navHamburgerBound = true;
+    const btnToggleSide = document.getElementById("btnToggleSideMenu");
+    const btnCloseSide = document.getElementById("btnCloseSideMenu");
+    const overlay = document.getElementById("sideMenuOverlay");
+    if (btnToggleSide) btnToggleSide.addEventListener("click", openSideMenu);
+    if (btnCloseSide) btnCloseSide.addEventListener("click", closeSideMenu);
+    if (overlay) overlay.addEventListener("click", closeSideMenu);
+  }
 
   try { updateNavBadges(); } catch (e) { console.warn(e); }
 }
