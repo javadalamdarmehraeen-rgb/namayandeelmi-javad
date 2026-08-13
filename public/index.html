@@ -16,7 +16,7 @@
   <meta name="theme-color" content="#0d9488" />
   
   <!-- Custom Style with Anti-Cache Version 9.1.0 -->
-  <link rel="stylesheet" href="style.css?v=11.9.1" />
+  <link rel="stylesheet" href="style.css?v=11.10.0" />
 </head>
 <body>
 
@@ -694,12 +694,13 @@
           <input type="hidden" id="orderPharmacyMatchedId" value="" />
 
           <div class="form-grid">
-            <div class="form-group">
+            <div class="form-group full-width">
               <label class="form-label" for="orderPharmacyName">
-                <span>نام داروخانه * (تایپ یا انتخاب کنید)</span>
+                <span>نام داروخانه * (تایپ کنید — اگر چند داروخانه هم‌نام باشد همه با مشخصات کامل می‌آید)</span>
               </label>
-              <input type="text" id="orderPharmacyName" class="form-input" list="pharmacyNamesList" placeholder="نام داروخانه را وارد کنید..." required autocomplete="off" />
+              <input type="text" id="orderPharmacyName" class="form-input" placeholder="نام داروخانه را وارد کنید..." required autocomplete="off" />
               <datalist id="pharmacyNamesList"></datalist>
+              <div id="orderPharmacyPickBox" class="ph-pick-box" hidden></div>
             </div>
 
             <div class="form-group">
@@ -1337,17 +1338,21 @@
           </div>
         </div>
         <p style="font-size: 0.88rem; color: #64748b; margin-bottom: 1.25rem;">
-          فیلدها می‌توانند در فرم ثبت، در جدول لیست یا هر دو نمایش داده شوند. برای فیلدهای کشویی، دکمه افزودن گزینه جدید در فرم ثبت فعال می‌شود.
+          مثل ستون‌ها، اول تب را انتخاب کنید. کشویی‌های همان تب با همه گزینه‌های زیرمجموعه دیده می‌شود. روبه‌روی هر مورد ویرایش و حذف است.
         </p>
-        <form id="formCustomField" onsubmit="return false;" style="background: #f8fafc; padding: 1.25rem; border-radius: var(--radius-lg); border: 1px solid var(--border-color); margin-bottom: 1.5rem;">
-          <h4 style="margin-bottom: 1rem; color: #1e293b;">➕ افزودن فیلد جدید</h4>
+        <div id="addTabGrid" class="col-tab-grid"></div>
+        <div id="addTabPanel" class="add-tab-panel"></div>
+        <form id="formCustomField" onsubmit="return false;" style="background: #f8fafc; padding: 1.25rem; border-radius: var(--radius-lg); border: 1px solid var(--border-color); margin: 1.5rem 0;">
+          <h4 style="margin-bottom: 1rem; color: #1e293b;">➕ افزودن فیلد جدید (ساده / تاریخ / کشویی)</h4>
+          <div id="cfSaveStatus" class="col-add-status">بعد از ثبت، فیلد روی همان تب ذخیره می‌شود.</div>
           <div class="form-grid">
             <div class="form-group">
-              <label class="form-label" for="cfTargetEntity">بخش مربوطه (موجودیت) *</label>
+              <label class="form-label" for="cfTargetEntity">تب مربوطه *</label>
               <select id="cfTargetEntity" class="form-select dropdown-auto-clear" required>
-                <option value="pharmacy">داروخانه‌ها (Pharmacy)</option>
-                <option value="doctor">پزشکان و مطب‌ها (Doctor)</option>
-                <option value="order">سفارشات (Order)</option>
+                <option value="pharmacy">🏥 داروخانه‌ها</option>
+                <option value="doctor">👨‍⚕️ پزشکان</option>
+                <option value="order">📦 سفارشات</option>
+                <option value="products">💊 کالاها</option>
               </select>
             </div>
             <div class="form-group">
@@ -1372,9 +1377,6 @@
                   امکان افزودن گزینه جدید به منوی کشویی توسط کاربر در فرم ثبت و بخش افزودن‌ها
                 </label>
               </div>
-            </div>
-
-             </div>
             </div>
 
             <div class="form-group full-width">
@@ -1418,8 +1420,8 @@
           </table>
         </div>
 
-        <h4 style="margin: 1.5rem 0 0.75rem; color: #0f172a;">📋 همه فیلدهای کشویی سیستم (برای افزودن گزینه)</h4>
-        <p style="font-size: 0.85rem; color: #64748b; margin-bottom: 0.75rem;">استان، شهر، وضعیت سفارش، نقش کاربر و هر کشویی دیگری که در برنامه هست اینجا دیده می‌شود. گزینه جدید به همان فیلد اضافه می‌شود.</p>
+        <h4 style="margin: 1.5rem 0 0.75rem; color: #0f172a;">📋 فهرست فشرده همه کشویی‌ها</h4>
+        <p style="font-size: 0.85rem; color: #64748b; margin-bottom: 0.75rem;">همان گزینه‌ها در گرید تب بالا با ویرایش/حذف هم هست. اینجا فهرست فشرده است.</p>
         <div class="table-responsive">
           <table class="data-table">
             <thead>
@@ -2093,18 +2095,23 @@
   <!-- Leaflet JS -->
   <script src="vendor/leaflet.js"></script>
   
-  <!-- Data & Application Logic with Anti-Cache Version 11.9.1 -->
-  <script src="crm-data.js?v=11.9.1"></script>
-  <script src="crm-app.js?v=11.9.1"></script>
-  <script src="crm-features-v9.js?v=11.9.1"></script>
-  <script src="iran-facilities.js?v=11.9.1" defer></script>
-  <script src="crm-features-v10.js?v=11.9.1"></script>
-  <script src="crm-features-v11.js?v=11.9.1"></script>
-  <script src="crm-features-v12.js?v=11.9.1"></script>
-  <script src="crm-features-v13.js?v=11.9.1"></script>
-  <script src="crm-jalali.js?v=11.9.1"></script>
+  <!-- Data & Application Logic with Anti-Cache Version 11.10.0 -->
+  <script src="crm-data.js?v=11.10.0"></script>
+  <script src="crm-app.js?v=11.10.0"></script>
+  <script src="crm-features-v9.js?v=11.10.0"></script>
+  <script src="iran-facilities.js?v=11.10.0" defer></script>
+  <script src="crm-features-v10.js?v=11.10.0"></script>
+  <script src="crm-features-v11.js?v=11.10.0"></script>
+  <script src="crm-features-v12.js?v=11.10.0"></script>
+  <script src="crm-features-v13.js?v=11.10.0"></script>
+  <script src="crm-jalali.js?v=11.10.0"></script>
+  <script src="crm-features-v14.js?v=11.10.0"></script>
   <!-- فیلدهای مخفی سازگاری با کد قبلی (نباید در UI دیده شوند) -->
   <input type="hidden" id="pharmacyLocationText" value="" />
+  <input type="hidden" id="doctorLocationText" value="" />
+</body>
+</html>
+"pharmacyLocationText" value="" />
   <input type="hidden" id="doctorLocationText" value="" />
 </body>
 </html>

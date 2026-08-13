@@ -1819,3 +1819,108 @@ td .btn, .col-ops .btn, .col-ops {
 .man-scope-box { background: #fef3c7; color: #92400e; }
 .man-scope-row { background: #dbeafe; color: #1e40af; }
 .user-blank-card { min-height: 180px; }
+
+#tab-manual-design .card { overflow: visible; }
+.man-toolbar,
+.man-toolbar-raised {
+  position: relative;
+  z-index: 60;
+  overflow: visible;
+}
+.man-toolbar-row,
+.man-copy-row {
+  position: relative;
+  z-index: 61;
+  overflow: visible;
+}
+.man-toolbar-row .form-select,
+.man-copy-select {
+  position: relative;
+  z-index: 62;
+  background: #fff;
+  min-width: 200px;
+}
+.man-canvas {
+  position: relative;
+  z-index: 1;
+  margin-top: 0.85rem;
+}
+
+.add-tab-panel { margin: 0.5rem 0 1rem; }
+.add-panel-head { margin-bottom: 0.65rem; }
+.add-sel-card {
+  background: #fff;
+  border: 1.5px solid #99f6e4;
+  border-radius: 12px;
+  padding: 0.75rem 0.9rem 0.85rem;
+  margin-bottom: 0.75rem;
+}
+.add-sel-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem 0.65rem;
+  margin-bottom: 0.45rem;
+}
+.add-opt-list {
+  list-style: none;
+  margin: 0 0 0.55rem;
+  padding: 0;
+}
+.add-opt-list li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.35rem 0.2rem;
+  border-bottom: 1px dashed #e2e8f0;
+  font-weight: 700;
+}
+.add-opt-ops { display: flex; gap: 0.3rem; flex-wrap: wrap; }
+
+.ph-pick-box {
+  margin-top: 0.45rem;
+  border: 1.5px solid #0d9488;
+  border-radius: 12px;
+  background: #f0fdfa;
+  max-height: 280px;
+  overflow: auto;
+  z-index: 30;
+  position: relative;
+}
+.ph-pick-hint, .ph-pick-empty {
+  padding: 0.55rem 0.75rem;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #0f766e;
+}
+.ph-pick-card {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  width: 100%;
+  text-align: right;
+  background: #fff;
+  border: none;
+  border-top: 1px solid #ccfbf1;
+  padding: 0.55rem 0.75rem;
+  font-family: inherit;
+  cursor: pointer;
+}
+.ph-pick-card:hover { background: #ecfdf5; }
+.ph-pick-card strong { color: #0f766e; }
+.ph-pick-card span { font-size: 0.78rem; color: #334155; }
+
+.prod-field-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.45rem;
+  background: #fffbeb;
+  border: 1.5px solid #fde68a;
+  border-radius: 10px;
+  padding: 0.65rem 0.75rem;
+  margin-bottom: 0.85rem;
+}
+.prod-field-bar .form-input,
+.prod-field-bar .form-select { max-width: 240px; }

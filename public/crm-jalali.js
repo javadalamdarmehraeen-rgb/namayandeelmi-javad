@@ -371,7 +371,6 @@
       inp.dataset.pickerBound = "true";
       badge.addEventListener("click", function (ev) { openPickerFor(inp, ev); });
       inp.addEventListener("click", function (ev) { openPickerFor(inp, ev); });
-      inp.addEventListener("focus", function (ev) { openPickerFor(inp, ev); });
     } else if (inp.dataset.pickerUpgraded !== "1") {
       inp.dataset.pickerUpgraded = "1";
       badge.addEventListener("click", function (ev) { openPickerFor(inp, ev); });
@@ -410,10 +409,10 @@
     if (inp.type === "number" || inp.type === "password" || inp.type === "file" || inp.type === "hidden" || inp.type === "email" || inp.type === "tel") return true;
     if (inp.readOnly || inp.disabled) return true;
     if (inp.classList.contains("jalali-date-input") || fieldKindOf(inp) === "date") return true;
-    if (inp.closest("#jalaliCalendarPopup") || inp.closest("#columnsDesignerHost") || inp.closest("#colDesignerPanel") || inp.closest(".modal-overlay") || inp.closest("#manualDesignCanvas") || inp.closest(".man-toolbar")) return true;
+    if (inp.closest("#jalaliCalendarPopup") || inp.closest("#columnsDesignerHost") || inp.closest("#colDesignerPanel") || inp.closest(".modal-overlay") || inp.closest("#manualDesignCanvas") || inp.closest(".man-toolbar") || inp.closest("#formCustomField") || inp.closest("#prodFieldBar") || inp.closest("#addTabPanel")) return true;
     if (inp.closest(".order-item-row") || inp.classList.contains("order-item-name")) return true;
     var id = inp.id || "";
-    if (/Date|Lat|Lng|password|Password|username|Username|Search|search|Notes|notes|tgtYear|tgtCount|productPrice|productStock|productDist/.test(id)) return true;
+    if (/Date|Lat|Lng|password|Password|username|Username|Search|search|Notes|notes|tgtYear|tgtCount|productPrice|productStock|productDist|cfLabel|cfOptions|colField|colNewTab|colBox|manBox|prodNewField/.test(id)) return true;
     if (inp.closest(".geo-suggest-wrap")) return true;
     return false;
   }

@@ -846,6 +846,17 @@
           del.className = "btn btn-danger btn-sm";
           del.textContent = "حذف این تب";
           del.addEventListener("click", function () { window.deleteUserTab(window._activeColTab); });
+          if (!$("btnEditUserTab")) {
+            var ed = document.createElement("button");
+            ed.type = "button";
+            ed.id = "btnEditUserTab";
+            ed.className = "btn btn-outline btn-sm";
+            ed.textContent = "✏️ ویرایش این تب";
+            ed.addEventListener("click", function () {
+              if (typeof window.editUserTab === "function") window.editUserTab(window._activeColTab);
+            });
+            actions.appendChild(ed);
+          }
           actions.appendChild(del);
         }
       }

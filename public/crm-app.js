@@ -3171,6 +3171,9 @@ function setupAllFormSubmitHandlers() {
     const lat = parseFloat(document.getElementById("pharmacyLat").value) || 35.7605;
     const lng = parseFloat(document.getElementById("pharmacyLng").value) || 51.4180;
     const isPercentage = document.getElementById("pharmacyIsPercentage").value === "true";
+    const customFieldsVals = (typeof extractCustomFieldValuesFromForm === "function")
+      ? extractCustomFieldValuesFromForm("pharmacy", "pharmacyCustomFieldsContainer")
+      : {};
 
     if (!name || !province || !city || !district || !address) {
       alert("لطفاً تمامی فیلدهای ستاره‌دار (*) فرم داروخانه را پر کنید.");
@@ -3188,13 +3191,14 @@ function setupAllFormSubmitHandlers() {
     if (editId) {
       const idx = state.pharmacies.findIndex(p => p.id === editId);
       if (idx !== -1) {
-        state.pharmacies[idx] = { ...state.pharmacies[idx], dateAdded, name, phone, manager, province, city, district, address, lat, lng, isPercentage };
+        state.pharmacies[idx] = { ...state.pharmacies[idx], dateAdded, name, phone, manager, province, city, district, address, lat, lng, isPercentage, customFields: customFieldsVals };
       }
       alert(`✅ داروخانه «${name}» با موفقیت ویرایش و ذخیره شد.`);
     } else {
       state.pharmacies.push({
         id: "ph-" + Date.now(),
         dateAdded, name, phone, manager, province, city, district, address, lat, lng, isPercentage,
+        customFields: customFieldsVals,
         repName: currentUserName
       });
       alert(`✅ داروخانه «${name}» با موفقیت ثبت شد.`);
@@ -3227,6 +3231,9 @@ function setupAllFormSubmitHandlers() {
     const lat = parseFloat(document.getElementById("doctorLat").value) || 35.7580;
     const lng = parseFloat(document.getElementById("doctorLng").value) || 51.4400;
     const isPercentage = document.getElementById("doctorIsPercentage").value === "true";
+    const customFieldsVals = (typeof extractCustomFieldValuesFromForm === "function")
+      ? extractCustomFieldValuesFromForm("doctor", "doctorCustomFieldsContainer")
+      : {};
 
     if (!name || !specialty || !province || !city || !district || !address) {
       alert("لطفاً تمامی فیلدهای ستاره‌دار (*) فرم پزشک/مطب را پر کنید.");
@@ -3243,13 +3250,14 @@ function setupAllFormSubmitHandlers() {
     if (editId) {
       const idx = state.doctors.findIndex(d => d.id === editId);
       if (idx !== -1) {
-        state.doctors[idx] = { ...state.doctors[idx], dateAdded, name, specialty, phone, province, city, district, address, lat, lng, isPercentage };
+        state.doctors[idx] = { ...state.doctors[idx], dateAdded, name, specialty, phone, province, city, district, address, lat, lng, isPercentage, customFields: customFieldsVals };
       }
       alert(`✅ پزشک/مطب «${name}» با موفقیت ویرایش و ذخیره شد.`);
     } else {
       state.doctors.push({
         id: "doc-" + Date.now(),
         dateAdded, name, specialty, phone, province, city, district, address, lat, lng, isPercentage,
+        customFields: customFieldsVals,
         repName: currentUserName
       });
       alert(`✅ پزشک/مطب «${name}» با موفقیت ثبت شد.`);
@@ -3307,13 +3315,14 @@ function setupAllFormSubmitHandlers() {
     if (editId) {
       const idx = state.orders.findIndex(o => o.id === editId);
       if (idx !== -1) {
-        state.orders[idx] = { ...state.orders[idx], pharmacyName, province, city, district, address, repName, orderDate, status, notes, items, totalAmount };
+        state.orders[idx] = { ...state.orders[idx], pharmacyName, pharmacyId, province, city, district, address, repName, orderDate, status, notes, items, totalAmount, customFields: customFieldsVals };
       }
       alert(`✅ سفارش داروخانه «${pharmacyName}» ویرایش شد.`);
     } else {
       state.orders.push({
         id: "ord-" + Date.now(),
-        pharmacyName, province, city, district, address, repName, orderDate, status, notes, items, totalAmount
+        pharmacyName, pharmacyId, province, city, district, address, repName, orderDate, status, notes, items, totalAmount,
+        customFields: customFieldsVals
       });
       alert(`✅ سفارش جدید برای داروخانه «${pharmacyName}» ثبت شد. از باقیمانده تارگت نماینده کسر گردید.`);
     }
@@ -3830,6 +3839,9 @@ function setupColumnsProductsTab() {
     const distPrice = parseInt(document.getElementById("productDistPrice") ? document.getElementById("productDistPrice").value : 40000) || 40000;
     const phPrice = parseInt(document.getElementById("productPrice") ? document.getElementById("productPrice").value : 45000) || 45000;
     const stock = parseInt(document.getElementById("productStock") ? document.getElementById("productStock").value : 5000) || 5000;
+    const customFieldsVals = (typeof extractCustomFieldValuesFromForm === "function")
+      ? extractCustomFieldValuesFromForm("products", "productCustomFieldsContainer")
+      : {};
 
     if (!name) {
       alert("لطفاً نام کالا را وارد کنید.");
@@ -3841,14 +3853,15 @@ function setupColumnsProductsTab() {
     let idx = editId ? state.products.findIndex(p => p.id === editId) : -1;
     if (idx === -1) idx = state.products.findIndex(p => p.name === name);
     if (idx !== -1) {
-      state.products[idx] = { ...state.products[idx], name, distributorPrice: distPrice, pharmacyPrice: phPrice, stock };
+      state.products[idx] = { ...state.products[idx], name, distributorPrice: distPrice, pharmacyPrice: phPrice, stock, customFields: customFieldsVals };
     } else {
       state.products.push({
         id: "prod-" + Date.now(),
         name,
         distributorPrice: distPrice,
         pharmacyPrice: phPrice,
-        stock
+        stock,
+        customFields: customFieldsVals
       });
     }
     window._editingProductId = "";
@@ -3939,6 +3952,9 @@ function editProductCatalogItem(id) {
     nameEl.focus();
     nameEl.scrollIntoView({ behavior: "smooth", block: "center" });
   }
+  if (typeof renderCustomFieldsInForm === "function" && document.getElementById("productCustomFieldsContainer")) {
+    renderCustomFieldsInForm("products", "productCustomFieldsContainer", prod.customFields || {});
+  }
 }
 
 function deleteProductCatalogItem(id) {
@@ -3950,4 +3966,3 @@ function deleteProductCatalogItem(id) {
   mergeCatalogIntoOrderItems();
   updateNavBadges();
 }
-

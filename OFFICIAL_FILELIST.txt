@@ -30,6 +30,7 @@ public/crm-features-v10.js
 public/crm-features-v11.js
 public/crm-features-v12.js
 public/crm-features-v13.js
+public/crm-features-v14.js
 public/crm-features-v9.js
 public/crm-jalali.js
 public/data/iran-provinces-lite.geojson
