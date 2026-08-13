@@ -18,6 +18,8 @@
 
 # misc
 .DS_Store
+Thumbs.db
+desktop.ini
 *.pem
 
 # debug
@@ -36,3 +38,19 @@ yarn-error.log*
 
 # typescript
 *.tsbuildinfo
+
+# leftover junk that must never re-enter the repo
+*.rartemp
+__rzi_*
+*.orig
+*.bak
+*~
+
+# old overlay leftovers (do not commit again)
+public/crm-enhancements.js
+public/data/iran-provinces.geojson
+public/icon.svg
+public/logo.svg
+public/src-svg/
+CHANGELOG_ENHANCEMENTS.md
+crm-app-all-in-one.html
