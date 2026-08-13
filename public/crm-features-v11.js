@@ -919,13 +919,12 @@
       var n = 0;
       try { n = getUnifiedFieldList(sec.id).length; } catch (e) { n = 0; }
       var active = window._activeColTab === sec.id ? " active" : "";
-      html += '<button type="button" class="col-tab-card' + active + '" data-col-tab="' + sec.id + '">' +
-        '<span class="col-tab-icon">' + sec.icon + "</span>" +
-        '<span class="col-tab-meta"><span class="col-tab-label">' + escHtml(sec.label) + "</span>" +
-        '<span class="col-tab-count">' + n + " فیلد</span></span></button>";
+      html += '<button type="button" class="nav-item col-designer-tab col-tab-card' + active + '" data-col-tab="' + sec.id + '">' +
+        "<span>" + sec.icon + " " + escHtml(sec.label) + "</span>" +
+        '<span class="nav-badge">' + n + "</span></button>";
     });
     grid.innerHTML = html;
-    Array.prototype.forEach.call(grid.querySelectorAll(".col-tab-card"), function (btn) {
+    Array.prototype.forEach.call(grid.querySelectorAll(".col-designer-tab"), function (btn) {
       btn.addEventListener("click", function () {
         window._activeColTab = btn.getAttribute("data-col-tab");
         window._editingColField = null;
@@ -1753,8 +1752,8 @@
       obs.observe(el, { childList: true });
     });
 
-    logOp("بارگذاری نسخه ۱۱.۵");
-    console.log("v11.5 ready");
+    logOp("بارگذاری نسخه ۱۱.۵.۱");
+    console.log("v11.5.1 ready");
   }
 
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot);

@@ -16,7 +16,7 @@
   <meta name="theme-color" content="#0d9488" />
   
   <!-- Custom Style with Anti-Cache Version 9.1.0 -->
-  <link rel="stylesheet" href="style.css?v=11.5.0" />
+  <link rel="stylesheet" href="style.css?v=11.5.1" />
 </head>
 <body>
 
@@ -30,7 +30,7 @@
   <header class="app-header">
     <div class="header-container">
       <div class="logo-area">
-        <button id="btnToggleSideMenu" class="btn-menu-hamburger" title="منوی امکانات برنامه">
+        <button id="btnToggleSideMenu" class="btn-menu-hamburger" title="منوی امکانات برنامه" onclick="openSideMenu()">
           <span>☰</span>
         </button>
         <div class="logo-icon logo-icon-img" title="طنین طب طاها">
@@ -63,9 +63,55 @@
   <!-- Navigation Bar (Quick Horizontal Scrollable Tabs) -->
   <nav class="app-nav">
     <div class="nav-container" id="horizontalNavContainer">
-      <!-- Generated dynamically from all 20 sections -->
+      <button type="button" class="nav-item active" data-target="tab-dashboard" onclick="switchTab('tab-dashboard')"><span>📊 داشبورد</span></button>
+      <button type="button" class="nav-item" data-target="tab-pharmacies" onclick="switchTab('tab-pharmacies')"><span>🏥 داروخانه‌ها</span><span class="nav-badge" id="badgePharmaciesCount">0</span></button>
+      <button type="button" class="nav-item" data-target="tab-doctors" onclick="switchTab('tab-doctors')"><span>👨‍⚕️ پزشکان</span><span class="nav-badge" id="badgeDoctorsCount">0</span></button>
+      <button type="button" class="nav-item" data-target="tab-orders" onclick="switchTab('tab-orders')"><span>📦 سفارشات</span><span class="nav-badge" id="badgeOrdersCount">0</span></button>
+      <button type="button" class="nav-item" data-target="tab-activity-log" onclick="switchTab('tab-activity-log')"><span>⏱️ فعالیت لحظه‌ای</span></button>
+      <button type="button" class="nav-item" data-target="tab-overview-map" onclick="switchTab('tab-overview-map')"><span>🗺️ نقشه جامع</span></button>
+      <button type="button" class="nav-item" data-target="tab-live-location" onclick="switchTab('tab-live-location')"><span>📍 موقعیت زنده</span></button>
+      <button type="button" class="nav-item" data-target="tab-search-info" onclick="switchTab('tab-search-info')"><span>🔍 جستجوی اطلاعات</span></button>
+      <button type="button" class="nav-item" data-target="tab-rep-routes" onclick="switchTab('tab-rep-routes')"><span>🛣️ رصد تردد</span></button>
+      <button type="button" class="nav-item" data-target="tab-my-visit" onclick="switchTab('tab-my-visit')"><span>▶️ شروع/پایان ویزیت</span></button>
+      <button type="button" class="nav-item" data-target="tab-rep-homes" onclick="switchTab('tab-rep-homes')"><span>🏠 منزل نمایندگان</span></button>
+      <button type="button" class="nav-item" data-target="tab-leaves" onclick="switchTab('tab-leaves')"><span>📝 مرخصی‌ها</span><span class="nav-badge" id="badgeLeavesCount">0</span></button>
+      <button type="button" class="nav-item" data-target="tab-notifications" onclick="switchTab('tab-notifications')"><span>🔔 اعلان‌ها</span></button>
+      <button type="button" class="nav-item" data-target="tab-monthly-reports" onclick="switchTab('tab-monthly-reports')"><span>📈 گزارش ماهانه</span></button>
+      <button type="button" class="nav-item" data-target="tab-sales-targets" onclick="switchTab('tab-sales-targets')"><span>🎯 تارگت فروش</span></button>
+      <button type="button" class="nav-item" data-target="tab-custom-fields" onclick="switchTab('tab-custom-fields')"><span>➕ افزودن‌ها</span></button>
+      <button type="button" class="nav-item" data-target="tab-columns-products" onclick="switchTab('tab-columns-products')"><span>🧱 ستون‌ها و کالاها</span></button>
+      <button type="button" class="nav-item" data-target="tab-users-permissions" onclick="switchTab('tab-users-permissions')"><span>👤 کاربران و دسترسی</span><span class="nav-badge" id="badgeUsersCount">0</span></button>
+      <button type="button" class="nav-item" data-target="tab-messengers" onclick="switchTab('tab-messengers')"><span>💬 پیام‌رسان‌ها</span></button>
+      <button type="button" class="nav-item" data-target="tab-backup" onclick="switchTab('tab-backup')"><span>💾 پشتیبان‌گیری</span></button>
+      <button type="button" class="nav-item" data-target="tab-install-app" onclick="switchTab('tab-install-app')"><span>📲 نصب اپ</span></button>
+      <button type="button" class="nav-item" data-target="tab-troubleshooting" onclick="switchTab('tab-troubleshooting')"><span>🛠️ عیب‌یابی</span></button>
     </div>
   </nav>
+  <script>
+    window.switchTab = window.switchTab || function (targetId) {
+      document.querySelectorAll("#horizontalNavContainer .nav-item").forEach(function (b) {
+        b.classList.toggle("active", b.getAttribute("data-target") === targetId);
+      });
+      document.querySelectorAll("#sideMenuItemsContainer .side-menu-item").forEach(function (b) {
+        b.classList.toggle("active", b.getAttribute("data-side-target") === targetId);
+      });
+      document.querySelectorAll(".tab-pane").forEach(function (p) { p.classList.remove("active"); });
+      var t = document.getElementById(targetId);
+      if (t) t.classList.add("active");
+    };
+    window.openSideMenu = window.openSideMenu || function () {
+      var d = document.getElementById("sideMenuDrawer");
+      var o = document.getElementById("sideMenuOverlay");
+      if (d) d.classList.add("active");
+      if (o) o.classList.add("active");
+    };
+    window.closeSideMenu = window.closeSideMenu || function () {
+      var d = document.getElementById("sideMenuDrawer");
+      var o = document.getElementById("sideMenuOverlay");
+      if (d) d.classList.remove("active");
+      if (o) o.classList.remove("active");
+    };
+  </script>
 
   <!-- SIDEBAR NAVIGATION DRAWER (Matching Screenshot 1) -->
   <aside id="sideMenuDrawer" class="side-menu-drawer">
@@ -74,13 +120,34 @@
         <img src="logo.png" alt="3T" class="side-logo-img" />
         <span style="font-weight: 800; font-size: 1.05rem; color: #fff;">طنین طب طاها</span>
       </div>
-      <button id="btnCloseSideMenu" class="btn-close-side" title="بستن">✕</button>
+      <button id="btnCloseSideMenu" class="btn-close-side" title="بستن" onclick="closeSideMenu()">✕</button>
     </div>
     <div class="side-menu-content" id="sideMenuItemsContainer">
-      <!-- Dynamic list of all 20 sections matching Screenshot 1 -->
+      <button type="button" class="side-menu-item active" data-side-target="tab-dashboard" onclick="switchTab('tab-dashboard');closeSideMenu();"><span>داشبورد</span><span>📊</span></button>
+      <button type="button" class="side-menu-item" data-side-target="tab-pharmacies" onclick="switchTab('tab-pharmacies');closeSideMenu();"><span>داروخانه‌ها</span><span>🏥</span></button>
+      <button type="button" class="side-menu-item" data-side-target="tab-doctors" onclick="switchTab('tab-doctors');closeSideMenu();"><span>پزشکان</span><span>👨‍⚕️</span></button>
+      <button type="button" class="side-menu-item" data-side-target="tab-orders" onclick="switchTab('tab-orders');closeSideMenu();"><span>سفارشات</span><span>📦</span></button>
+      <button type="button" class="side-menu-item" data-side-target="tab-activity-log" onclick="switchTab('tab-activity-log');closeSideMenu();"><span>فعالیت لحظه‌ای</span><span>⏱️</span></button>
+      <button type="button" class="side-menu-item" data-side-target="tab-overview-map" onclick="switchTab('tab-overview-map');closeSideMenu();"><span>نقشه جامع</span><span>🗺️</span></button>
+      <button type="button" class="side-menu-item" data-side-target="tab-live-location" onclick="switchTab('tab-live-location');closeSideMenu();"><span>موقعیت زنده</span><span>📍</span></button>
+      <button type="button" class="side-menu-item" data-side-target="tab-search-info" onclick="switchTab('tab-search-info');closeSideMenu();"><span>جستجوی اطلاعات</span><span>🔍</span></button>
+      <button type="button" class="side-menu-item" data-side-target="tab-rep-routes" onclick="switchTab('tab-rep-routes');closeSideMenu();"><span>رصد تردد</span><span>🛣️</span></button>
+      <button type="button" class="side-menu-item" data-side-target="tab-my-visit" onclick="switchTab('tab-my-visit');closeSideMenu();"><span>شروع/پایان ویزیت</span><span>▶️</span></button>
+      <button type="button" class="side-menu-item" data-side-target="tab-rep-homes" onclick="switchTab('tab-rep-homes');closeSideMenu();"><span>منزل نمایندگان</span><span>🏠</span></button>
+      <button type="button" class="side-menu-item" data-side-target="tab-leaves" onclick="switchTab('tab-leaves');closeSideMenu();"><span>مرخصی‌ها</span><span>📝</span></button>
+      <button type="button" class="side-menu-item" data-side-target="tab-notifications" onclick="switchTab('tab-notifications');closeSideMenu();"><span>اعلان‌ها</span><span>🔔</span></button>
+      <button type="button" class="side-menu-item" data-side-target="tab-monthly-reports" onclick="switchTab('tab-monthly-reports');closeSideMenu();"><span>گزارش ماهانه</span><span>📈</span></button>
+      <button type="button" class="side-menu-item" data-side-target="tab-sales-targets" onclick="switchTab('tab-sales-targets');closeSideMenu();"><span>تارگت فروش</span><span>🎯</span></button>
+      <button type="button" class="side-menu-item" data-side-target="tab-custom-fields" onclick="switchTab('tab-custom-fields');closeSideMenu();"><span>افزودن‌ها</span><span>➕</span></button>
+      <button type="button" class="side-menu-item" data-side-target="tab-columns-products" onclick="switchTab('tab-columns-products');closeSideMenu();"><span>ستون‌ها و کالاها</span><span>🧱</span></button>
+      <button type="button" class="side-menu-item" data-side-target="tab-users-permissions" onclick="switchTab('tab-users-permissions');closeSideMenu();"><span>کاربران و دسترسی</span><span>👤</span></button>
+      <button type="button" class="side-menu-item" data-side-target="tab-messengers" onclick="switchTab('tab-messengers');closeSideMenu();"><span>پیام‌رسان‌ها</span><span>💬</span></button>
+      <button type="button" class="side-menu-item" data-side-target="tab-backup" onclick="switchTab('tab-backup');closeSideMenu();"><span>پشتیبان‌گیری</span><span>💾</span></button>
+      <button type="button" class="side-menu-item" data-side-target="tab-install-app" onclick="switchTab('tab-install-app');closeSideMenu();"><span>نصب اپ</span><span>📲</span></button>
+      <button type="button" class="side-menu-item" data-side-target="tab-troubleshooting" onclick="switchTab('tab-troubleshooting');closeSideMenu();"><span>عیب‌یابی</span><span>🛠️</span></button>
     </div>
   </aside>
-  <div id="sideMenuOverlay" class="side-menu-overlay"></div>
+  <div id="sideMenuOverlay" class="side-menu-overlay" onclick="closeSideMenu()"></div>
 
   <!-- Main Content Area -->
   <main class="main-content">
@@ -1992,12 +2059,12 @@
   <script src="vendor/leaflet.js"></script>
   
   <!-- Data & Application Logic with Anti-Cache Version 9.1.0 -->
-  <script src="crm-data.js?v=11.5.0"></script>
-  <script src="crm-app.js?v=11.5.0"></script>
-  <script src="crm-features-v9.js?v=11.5.0"></script>
-  <script src="iran-facilities.js?v=11.5.0" defer></script>
-  <script src="crm-features-v10.js?v=11.5.0"></script>
-  <script src="crm-features-v11.js?v=11.5.0"></script>
+  <script src="crm-data.js?v=11.5.1"></script>
+  <script src="crm-app.js?v=11.5.1"></script>
+  <script src="crm-features-v9.js?v=11.5.1"></script>
+  <script src="iran-facilities.js?v=11.5.1" defer></script>
+  <script src="crm-features-v10.js?v=11.5.1"></script>
+  <script src="crm-features-v11.js?v=11.5.1"></script>
   <!-- فیلدهای مخفی سازگاری با کد قبلی (نباید در UI دیده شوند) -->
   <input type="hidden" id="pharmacyLocationText" value="" />
   <input type="hidden" id="doctorLocationText" value="" />

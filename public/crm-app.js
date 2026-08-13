@@ -82,6 +82,7 @@ function loadState() {
   if (!state.formFieldMeta) state.formFieldMeta = {};
   if (!state.customFields) state.customFields = {};
   if (!state.selectExtraOptions) state.selectExtraOptions = {};
+  if (!state.formBoxes) state.formBoxes = {};
   applyGeneralSettingsToUI();
 }
 
@@ -108,6 +109,9 @@ function setupNavigationMenu() {
   const sideContainer = document.getElementById("sideMenuItemsContainer");
   const launchpadGrid = document.getElementById("dashboardLaunchpadGrid");
 
+  if (!MENU_SECTIONS_LIST || !MENU_SECTIONS_LIST.length) {
+    // منوی ثابت HTML را نگه دار تا تب‌ها ناپدید نشوند
+  } else {
   if (horizontalContainer) horizontalContainer.innerHTML = "";
   if (sideContainer) sideContainer.innerHTML = "";
   if (launchpadGrid) launchpadGrid.innerHTML = "";
@@ -144,6 +148,7 @@ function setupNavigationMenu() {
 
     // لانچ‌پد داشبورد حذف شده؛ اگر عنصر مخفی بود چیزی ساخته نمی‌شود.
   });
+  }
 
   // کنترل باز و بسته شدن سایدبار
   const btnToggleSide = document.getElementById("btnToggleSideMenu");
@@ -154,7 +159,7 @@ function setupNavigationMenu() {
   if (btnCloseSide) btnCloseSide.addEventListener("click", closeSideMenu);
   if (overlay) overlay.addEventListener("click", closeSideMenu);
 
-  updateNavBadges();
+  try { updateNavBadges(); } catch (e) { console.warn(e); }
 }
 
 function openSideMenu() {
@@ -168,8 +173,8 @@ function closeSideMenu() {
 }
 
 function switchTab(targetId) {
-  const navButtons = document.querySelectorAll(".nav-item");
-  const sideButtons = document.querySelectorAll(".side-menu-item");
+  const navButtons = document.querySelectorAll("#horizontalNavContainer .nav-item");
+  const sideButtons = document.querySelectorAll("#sideMenuItemsContainer .side-menu-item");
   const tabPanes = document.querySelectorAll(".tab-pane");
 
   navButtons.forEach(b => {
@@ -213,22 +218,28 @@ function switchTab(targetId) {
 }
 
 function updateNavBadges() {
-  const phBadge = document.getElementById("badgePharmaciesCount");
-  const docBadge = document.getElementById("badgeDoctorsCount");
-  const ordBadge = document.getElementById("badgeOrdersCount");
-  const usersBadge = document.getElementById("badgeUsersCount");
-
-  if (phBadge) phBadge.textContent = state.pharmacies.length;
-  if (docBadge) docBadge.textContent = state.doctors.length;
-  if (ordBadge) ordBadge.textContent = state.orders.length;
-  if (usersBadge) usersBadge.textContent = state.users.length;
-
-  document.getElementById("statPharmacies").textContent = state.pharmacies.length;
-  document.getElementById("statDoctors").textContent = state.doctors.length;
-  document.getElementById("statReps").textContent = state.reps.length;
-  document.getElementById("statOrders").textContent = state.orders.length;
-  document.getElementById("statUsers").textContent = state.users.length;
-  document.getElementById("statLeaves").textContent = (state.leaves || []).length;
+  if (!state) return;
+  const setTxt = (id, val) => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = val;
+  };
+  const ph = (state.pharmacies || []).length;
+  const doc = (state.doctors || []).length;
+  const ord = (state.orders || []).length;
+  const users = (state.users || []).length;
+  const reps = (state.reps || []).length;
+  const leaves = (state.leaves || []).length;
+  setTxt("badgePharmaciesCount", ph);
+  setTxt("badgeDoctorsCount", doc);
+  setTxt("badgeOrdersCount", ord);
+  setTxt("badgeUsersCount", users);
+  setTxt("badgeLeavesCount", leaves);
+  setTxt("statPharmacies", ph);
+  setTxt("statDoctors", doc);
+  setTxt("statReps", reps);
+  setTxt("statOrders", ord);
+  setTxt("statUsers", users);
+  setTxt("statLeaves", leaves);
 }
 
 // ----------------------------------------------------------------------------
@@ -771,7 +782,7 @@ function deleteCustomField(entity, fieldId) {
   });
   saveState();
   renderCustomFieldsTable();
-  renderAllCustomFieldsInFormsAndTablesble();
+  
   renderAllCustomFieldsInFormsAndTables();
   if (typeof window.applyAllFormLayouts === "function") window.applyAllFormLayouts();
 }
@@ -1171,7 +1182,7 @@ function editPharmacy(id) {
   populateCities(ph.province, cityEl, ph.city);
   populateDistricts(ph.province, ph.city, distEl, ph.district);
 
-  updatePharmupdatePharmacyFormMarker(ph.lat || 35.7605, ph.lng || 51.4180, ph.name, true);
+  updatePharmacyFormMarker(ph.lat || 35.7605, ph.lng || 51.4180, ph.name, true);
   renderCustomFieldsInForm("pharmacy", "pharmacyCustomFieldsContainer", ph.customFields || {});
 
   document.getElementById("tab-pharmacies").scrollIntoView({ behavior: "smooth" });
@@ -3207,6 +3218,7 @@ function setupAllFormSubmitHandlers() {
   const formOrd = document.getElementById("formOrder");
   const btnOrd = document.getElementById("btnSaveOrder");
   const handleSaveOrd = () => {
+    if (typeof window.validateRequiredFields === "function" && !window.validateRequiredFields("tab-orders")) return;
     const editId = document.getElementById("orderEditId").value;
     const pharmacyName = document.getElementById("orderPharmacyName").value.trim();
     const province = document.getElementById("orderProvince").value;
@@ -3803,7 +3815,10 @@ function renderColumnsProductsTable() {
       <td><strong style="color:#0d9488;">${Number(prod.pharmacyPrice || prod.price || 45000).toLocaleString("fa-IR")} ریال</strong></td>
       <td>${prod.stock || 5000} عدد</td>
       <td>
-        <button class="btn btn-danger btn-sm" onclick="deleteProductCatalogItem('${prod.id}')">🗑️ حذف</button>
+        <div style="display:flex;gap:0.4rem;flex-wrap:wrap;">
+          <button type="button" class="btn btn-outline btn-sm" onclick="editProductCatalogItem('${prod.id}')">✏️ ویرایش</button>
+          <button type="button" class="btn btn-danger btn-sm" onclick="deleteProductCatalogItem('${prod.id}')">🗑️ حذف</button>
+        </div>
       </td>
     `;
     tbody.appendChild(tr);
@@ -3840,10 +3855,6 @@ function deleteProductCatalogItem(id) {
   saveState();
   renderColumnsProductsTable();
   setupSalesTargetsTab();
-  mergeCatalogIntoOrderItems();
-  updateNavBadges();
-}
-esTargetsTab();
   mergeCatalogIntoOrderItems();
   updateNavBadges();
 }
