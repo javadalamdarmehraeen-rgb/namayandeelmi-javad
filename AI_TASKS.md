@@ -465,6 +465,32 @@ Scope summary:
 
 ---
 
+## TASK-009
+
+v11.15.1 hotfix — remove hardcoded required-field saves (star-respecting saves)
+
+Status:
+DONE
+
+User report: after v11.15.0, with only pharmacyName starred, saving a
+pharmacy still raised a forced-field warning for province/city/district/
+address.
+
+Root cause (VERIFIED): 9 hardcoded empty-field alert blocks in entity save
+paths (3 active handlers in crm-features-v9.js; 6 duplicated in two code
+generations of crm-app.js), independent of the star system.
+
+Fix (VERIFIED): all 9 replaced with calls to the star-aware
+`window.validateRequiredFields(tabId)`; only admin-starred fields can block
+saving now, app-wide. Order "minimum one item" rule kept (business rule).
+Version bumped to 11.15.1 everywhere (package.json, server.js, sw.js,
+index.html ?v=). node --check green; server smoke green (11.15.1).
+
+PENDING USER VERIFICATION in browser on all three forms (pharmacy/doctor/
+order) with only their chosen starred fields.
+
+---
+
 # 12. NEXT IMMEDIATE TASK
 
 No pending coding task.

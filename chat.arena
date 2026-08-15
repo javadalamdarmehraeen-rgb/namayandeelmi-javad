@@ -1,6 +1,6 @@
 CHAT.ARENA — حافظه دائمی و کامل پروژه «نماینده علمی» (طنین طب طاها / TENIN TEB TAHA)
 =====================================================================================
-نسخه این فایل: 1.0 | تاریخ به‌روزرسانی: 2026-08-16 (۲۶ مرداد ۱۴۰۵) | نسخه برنامه: 11.15.0
+نسخه این فایل: 1.3 | تاریخ به‌روزرسانی: 2026-08-16 (۲۶ مرداد ۱۴۰۵) | نسخه برنامه: 11.15.1
 این فایل به دستور کاربر ساخته شده و قانون دائمی دارد: بعد از هر گفتگو و هر نسخه جدید برنامه،
 این فایل به‌روزرسانی می‌شود و نسخه به‌روز آن همیشه داخل فایل زیپ تحویلی قرار می‌گیرد.
 (قانون شماره ۶۳ در AI_RULES.md)
@@ -126,6 +126,18 @@ public/*= تمام چیزی است که کاربر نهایی می‌بیند.
 • جزئیات کامل هر نسخه V9 به بعد در CHANGES_V9.md / CHANGES_V10.md / CHANGES_V11.md
   (محتوای کاملشان در بخش ۹ همین فایل هست).
 
+نسخه 11.15.1 — رفع نقص گزارش‌شده توسط کاربر:
+۱) ریشه واقعی اخطار اجباری پیدا شد: ۹ بررسی سخت‌کدشده مستقل از سیستم ستاره در مسیرهای
+   ذخیره داروخانه/پزشک/سفارش (سه‌تایی در crm-features-v9.js + شش‌تایی در دو نسل کد
+   crm-app.js) که پیام «لطفاً نام، استان، شهر، منطقه و آدرس/لوکیشن داروخانه را کامل
+   کنید.» و مشابه آن را بدون توجه به ستاره اجرا می‌کردند.
+۲) هر ۹ نقطه حذف و همه مسیرهای ذخیره به اعتبارسنج واحد ستاره‌محور
+   (window.validateRequiredFields) وصل شدند؛ از این نسخه در کل برنامه فقط فیلدهای
+   ستاره‌دارِ مدیر می‌توانند ذخیره را متوقف کنند و فیلدهای مخفی/حذف‌شده نادیده گرفته
+   می‌شوند. بررسی «حداقل یک قلم کالا» به‌عنوان قانون کسب‌وکار حفظ شد.
+۳) تست: node --check سبز روی همه JSها؛ دود server.js با /api/health نسخه 11.15.1.
+   تأیید نهایی در مرورگر کاربر در انتظار است.
+
 نسخه 11.15.0 — ۱۴ خواسته‌شماره‌دار کاربر (خلاصه پیاده‌سازی؛ متن خواسته‌ها در بخش ۸):
 ۱) بقایای ستاره اجباری قدیمی حذف شد؛ فقط نام داروخانه و نام پزشک الزامی‌اند + مهاجرت
    یک‌باره state (fixRequiredDefaults در v19).
@@ -193,6 +205,12 @@ public/*= تمام چیزی است که کاربر نهایی می‌بیند.
   دستور صریح کاربر.
 قانون ۵: پاسخ‌ها فارسی؛ تحویل = زیپ کامل + دستور git با شماره نسخه.
 قانون ۶: هیچ ادعایی بدون تست؛ وضعیت‌ها با برچسب تأییدشده/در انتظار/ناشناخته.
+قانون ۷ (دستور کاربر، ۱۴۰۵/۰۵/۲۶): پایان هر درخواست = تحویل خودکار زیپ تازه؛ یعنی
+  وقتی کاربر پرامپت جدید می‌دهد و کار تمام می‌شود، بدون این‌که کاربر چیزی بخواهد: زیپ
+  کامل بازسازی می‌شود، سرور دانلود به فایل جدید وصل (و در صورت نیاز ری‌استارت) می‌شود،
+  و فایل زیپ جدید کنار صفحه به کاربر نشان داده می‌شود؛ قبل از تحویل، نسخه داخل
+  package.json زیپ با نسخه اعلام‌شده تطبیق داده و اثبات آن در پاسخ گفته می‌شود.
+  (AI_RULES.md بند ۶۴)
 
 ══════════════════════════════════════════════════════════════════════════════════
 بخش ۷) روند تحویل به کاربر
@@ -216,13 +234,13 @@ public/*= تمام چیزی است که کاربر نهایی می‌بیند.
   [متنی ]      645 بایت  .gitignore
   [متنی ]     1949 بایت  .gitlab-ci.yml
   [متنی ]    16641 بایت  AI_ARCHITECTURE.md
-  [متنی ]    21808 بایت  AI_DECISION_LOG.md
+  [متنی ]    23654 بایت  AI_DECISION_LOG.md
   [متنی ]    15537 بایت  AI_PROJECT_CONTEXT.md
-  [متنی ]    20302 بایت  AI_RULES.md
-  [متنی ]    16848 بایت  AI_TASKS.md
+  [متنی ]    21207 بایت  AI_RULES.md
+  [متنی ]    17794 بایت  AI_TASKS.md
   [متنی ]    17623 بایت  ARENA_HANDOFF_PROMPT.md
   [متنی ]      600 بایت  CHANGES_V10.md
-  [متنی ]    21078 بایت  CHANGES_V11.md
+  [متنی ]    22242 بایت  CHANGES_V11.md
   [متنی ]     3939 بایت  CHANGES_V9.md
   [متنی ]     1754 بایت  CLEAN_EXTRA_FILES.bat
   [متنی ]     2297 بایت  KEEP_ONLY_GITHUB.bat
@@ -248,7 +266,7 @@ public/*= تمام چیزی است که کاربر نهایی می‌بیند.
   [متنی ]     9805 بایت  mobile/README.md
   [متنی ]     9796 بایت  mobile/src/simAuth.ts
   [متنی ]     8066 بایت  public/cloudflare-worker.js
-  [متنی ]   169221 بایت  public/crm-app.js
+  [متنی ]   168687 بایت  public/crm-app.js
   [متنی ]    34134 بایت  public/crm-data.js
   [متنی ]    13643 بایت  public/crm-features-v10.js
   [متنی ]   106445 بایت  public/crm-features-v11.js
@@ -260,7 +278,7 @@ public/*= تمام چیزی است که کاربر نهایی می‌بیند.
   [متنی ]    19662 بایت  public/crm-features-v17.js
   [متنی ]    33040 بایت  public/crm-features-v18.js
   [متنی ]    60983 بایت  public/crm-features-v19.js
-  [متنی ]    68352 بایت  public/crm-features-v9.js
+  [متنی ]    68001 بایت  public/crm-features-v9.js
   [متنی ]    25683 بایت  public/crm-jalali.js
   [متنی ]   125901 بایت  public/index.html
   [متنی ]    11799 بایت  public/iran-facilities.js
@@ -583,6 +601,61 @@ git push origin main
 دائمی، روند تحویل، کل این گفتگو به ترتیب، و محتوای کامل تک‌تک فایل‌های متنی پروژه در
 بخش ۹. همچنین قانون دائمی به‌روزرسانی chat.arena به‌عنوان بند ۶۳ به AI_RULES.md
 اضافه شد و زیپ تحویلی دوباره ساخته شد تا chat.arena به‌روز داخل آن باشد.
+افزوده صادقانه: هنگام این کار، سه سند حافظه (AI_RULES/AI_TASKS/AI_DECISION_LOG)
+به‌اشتباه بازنویسی کامل شدند؛ بلافاصله متوجه شدم، هر سه را از گیت برگرداندم و تغییرات
+را فقط به‌صورت افزایشی اعمال کردم (دیف نهایی فقط افزودنی است).
+
+──────────────────────────────── نوبت ۶ ────────────────────────────────
+🧑 کاربر (عیناً):
+«مشکل ستاره حل نشد و  اخظار می دهد درحای که من فقط نام داروخانه را ستاره دار کرده ام.
+طوری این مشکل را حل کن که در کل برنامه و کل تب ها دیگر این مشکل را نداشته باشیم.
+اخطار به شرح زیر است
+لطفاً نام، استان، شهر، منطقه و آدرس/لوکیشن داروخانه را کامل کنید.»
+
+🤖 دستیار:
+علت دقیق پیدا شد: آن اخطار از سیستم ستاره نبود — ۹ بررسی سخت‌کدشده (hardcoded) در
+توابع ذخیره وجود داشت که مستقل از تنظیمات ستاره، خالی‌بودن نام/استان/شهر/منطقه/آدرس
+(و تخصص برای پزشک) را اجبار می‌کرد: سه مسیر فعال در crm-features-v9.js (تابع‌های
+savePharmacyV9 / saveDoctorV9 / saveOrderV9) و شش نسخه تکراری در دو نسل کد
+crm-app.js. هر ۹ نقطه با اتصال به اعتبارسنج واحد ستاره‌محور
+(window.validateRequiredFields) جایگزین شدند؛ از نسخه 11.15.1 فقط فیلدهای ستاره‌دارِ
+مدیر ذخیره را متوقف می‌کنند و فیلدهای مخفی/حذف‌شده نادیده گرفته می‌شوند. بررسی «حداقل
+یک قلم کالا در سفارش» (قانون کسب‌وکار) حفظ شد. نسخه به 11.15.1 برده شد
+(package.json / server.js / sw.js / همه ?v= در index.html) و CHANGES_V11.md به‌روز شد.
+تست‌ها: node --check سبز روی همه JSها؛ تست واقعی سرور با /api/health نسخه 11.15.1 و
+ایندکس ۲۰۰. زیپ تحویلی دوباره ساخته شد. تأیید نهایی در مرورگر کاربر: «در انتظار تأیید».
+
+──────────────────────────────── نوبت ۷ ────────────────────────────────
+🧑 کاربر (عیناً):
+«فایل زیپ همان نسخه ۱۱.۱۵.۰ قبلی است.
+
+این قانون جدید است هر بار که پرامپت جدید می دهم و تو بررسی میکنی و پایان می بابد فایل
+زیپ جدید برای دانلود در کنار صفحه بیاید»
+
+🤖 دستیار:
+بررسی شد: زیپ namayandeelmi-v11.15.1.zip واقعاً نسخه ۱۱.۱۵.۱ است (اثبات از داخل خود
+زیپ: package.json نسخه 11.15.1، کش sw.js با نام ttt-v11.15.1، و رشته اخطار قدیمی در
+crm-features-v9.js داخل زیپ صفر مورد). دانلودهای قبلی کاربر طبق لاگ سرور قبل از ساخته
+شدن این زیپ انجام شده بود — یعنی فایل قدیمی ۱۱.۱۵.۰ را گرفته بود.
+قانون جدید کاربر به‌عنوان قانون دائمی بند ۶۴ در AI_RULES.md ثبت شد: پایان هر درخواست =
+زیپ تازه + اتصال پیش‌نمایش دانلود به فایل جدید + نمایش زیپ کنار صفحه + اثبات تطبیق
+نسخه از داخل زیپ در پاسخ. همچنین بند ۴۱ در AI_DECISION_LOG.md ثبت شد و همین قانون در
+بخش ۶ همین فایل (قانون ۷) آمده است. در همین نوبت chat.arena به نسخه ۱.۲ به‌روز و زیپ
+دوباره ساخته و تحویل داده شد.
+
+──────────────────────────────── نوبت ۸ ────────────────────────────────
+🧑 کاربر (عیناً؛ همراه با تصویر پیوست از صفحه دانلود که تیترش «نسخه ۱۱.۱۵.۰» را نشان
+می‌داد ولی لینک داخل کادر تیره v11.15.1 بود):
+«طبق تصویر در بالا شماره نسخه عوض نشده اما در کادر مشکی رنگ شماره نسخه جدید را
+نشان می دهد»
+
+🤖 دستیار:
+دقیق بود: تیتر صفحه دانلود («نسخه ۱۱.۱۵.۰») سخت‌کد شده بود و فقط نام فایل به‌روز شده
+بود. سرور دانلود (download_server.py) بازنویسی شد تا شماره نسخه را خودکار از نام فایل
+زیپ استخراج و به ارقام فارسی نمایش دهد — از این به بعد تیتر صفحه هیچ‌وقت نمی‌تواند از
+نسخه واقعی عقب بماند. سرور ری‌استارت و صفحه تست شد: <title>دانلود نسخه ۱۱.۱۵.۱</title>.
+لاگ نشان داد کاربر زیپ v11.15.1 را هم دانلود کرده بود. chat.arena به ۱.۳ به‌روز و زیپ
+دوباره ساخته و تحویل شد.
 
 
 ══════════════════════════════════════════════════════════════════════════════════
@@ -1825,7 +1898,7 @@ Then change only what is requested.
 ~~~~~~~~
 
 ──────────────────────────────────────────────────────────────────────────────────
-فایل: AI_DECISION_LOG.md (21808 بایت)
+فایل: AI_DECISION_LOG.md (23654 بایت)
 ──────────────────────────────────────────────────────────────────────────────────
 ~~~~~~~~markdown
 # AI DECISION LOG
@@ -2880,6 +2953,8 @@ in-browser confirmation by the user (PENDING USER VERIFICATION).
 
 ---
 
+---
+
 # 39. CHAT.ARENA MEMORY FILE DECISION
 
 Date: 2026-08-16
@@ -2897,6 +2972,50 @@ in every delivered ZIP mandatory.
 
 Reason:
 the user explicitly wants immunity against chat loss / context breakage.
+
+---
+
+# 40. V11.15.1 HOTFIX — HARDCODED REQUIRED-FIELD CHECKS REMOVED
+
+Date: 2026-08-16
+
+User report: the star problem was not solved by v11.15.0; with only
+pharmacyName starred, saving a pharmacy still raised
+«لطفاً نام، استان، شهر، منطقه و آدرس/لوکیشن داروخانه را کامل کنید.»
+
+Root cause (VERIFIED from source): 9 hardcoded `if (!field...) alert(...)`
+blocks in the entity save paths, independent of the star system:
+3 in the active v9 handlers (`savePharmacyV9`, `saveDoctorV9`,
+`saveOrderV9` in crm-features-v9.js) and 6 in the two duplicated code
+generations of crm-app.js.
+
+Fix (VERIFIED): all 9 blocks replaced by a call to
+`window.validateRequiredFields(tabId)` — the star-aware validator that only
+blocks on admin-starred fields and skips hidden/deleted fields. The
+"at least one order item" check was kept as a business rule (not a field).
+Version bumped to 11.15.1 (package.json, server.js health/log, sw.js cache,
+index.html ?v= params). node --check green; /api/health reports 11.15.1.
+
+PENDING USER VERIFICATION in the browser: with only pharmacyName starred,
+saving a pharmacy with empty province/city/district/address must now succeed
+without any forced-field warning.
+
+---
+
+# 41. AUTOMATIC DELIVERY ZIP RULE
+
+Date: 2026-08-16
+
+User feedback: the ZIP they downloaded was still v11.15.0 (server logs
+confirmed those downloads happened before the v11.15.1 build existed), and
+they declared a new PERMANENT rule: whenever a user request is completed, a
+fresh download ZIP must automatically appear next to the page.
+
+Decision:
+Recorded as AI_RULES.md #64. Delivery checklist per completed request:
+rebuild ZIP → point the download preview at the new file (restart it) →
+present the ZIP → verify the embedded package.json version and state the
+proof in the reply.
 
 # END OF AI DECISION LOG
 ~~~~~~~~
@@ -3711,7 +3830,7 @@ Then WAIT for approval before making changes.
 ~~~~~~~~
 
 ──────────────────────────────────────────────────────────────────────────────────
-فایل: AI_RULES.md (20302 بایت)
+فایل: AI_RULES.md (21207 بایت)
 ──────────────────────────────────────────────────────────────────────────────────
 ~~~~~~~~markdown
 # AI RULES
@@ -4972,11 +5091,31 @@ The agent MUST:
    it is append-update only, except for refreshing file contents and the
    summary sections.
 
+---
+
+# 64. AUTOMATIC DELIVERY ZIP RULE (PERMANENT — USER-MANDATED)
+
+Declared by the user on 2026-08-16 and valid for ALL future work:
+
+Every time the user sends a new request and the agent finishes handling it,
+the agent's turn is NOT complete until a FRESH download package exists:
+
+1. Rebuild the full program ZIP (exclude `.git` / `node_modules`; include the
+   updated `chat.arena`) with the name pattern `namayandeelmi-v<version>.zip`.
+2. Ensure the live download preview (port 8000 server) serves the NEW file —
+   update `download_server.py`'s `ZIP_PATH`/`ZIP_NAME` when the name changes
+   and restart the preview process.
+3. Present the new ZIP file to the user at the end of the turn.
+4. Verify before delivery: unzip and check the embedded `package.json`
+   version matches the announced version, then state that proof in the reply.
+
+Skipping any of these steps is an incomplete delivery.
+
 # END OF AI RULES
 ~~~~~~~~
 
 ──────────────────────────────────────────────────────────────────────────────────
-فایل: AI_TASKS.md (16848 بایت)
+فایل: AI_TASKS.md (17794 بایت)
 ──────────────────────────────────────────────────────────────────────────────────
 ~~~~~~~~markdown
 # AI TASKS
@@ -5443,6 +5582,32 @@ Scope summary:
    repository.
 3. AI_RULES.md #63 created: chat.arena must be updated after every chat and
    every delivered version, and must be included in every delivered ZIP.
+
+---
+
+## TASK-009
+
+v11.15.1 hotfix — remove hardcoded required-field saves (star-respecting saves)
+
+Status:
+DONE
+
+User report: after v11.15.0, with only pharmacyName starred, saving a
+pharmacy still raised a forced-field warning for province/city/district/
+address.
+
+Root cause (VERIFIED): 9 hardcoded empty-field alert blocks in entity save
+paths (3 active handlers in crm-features-v9.js; 6 duplicated in two code
+generations of crm-app.js), independent of the star system.
+
+Fix (VERIFIED): all 9 replaced with calls to the star-aware
+`window.validateRequiredFields(tabId)`; only admin-starred fields can block
+saving now, app-wide. Order "minimum one item" rule kept (business rule).
+Version bumped to 11.15.1 everywhere (package.json, server.js, sw.js,
+index.html ?v=). node --check green; server smoke green (11.15.1).
+
+PENDING USER VERIFICATION in browser on all three forms (pharmacy/doctor/
+order) with only their chosen starred fields.
 
 ---
 
@@ -7007,9 +7172,15 @@ Leaflet محلی. فونت گوگل حذف شد. gzip روی JS/CSS/HTML.
 ~~~~~~~~
 
 ──────────────────────────────────────────────────────────────────────────────────
-فایل: CHANGES_V11.md (21078 بایت)
+فایل: CHANGES_V11.md (22242 بایت)
 ──────────────────────────────────────────────────────────────────────────────────
 ~~~~~~~~markdown
+# نسخه ۱۱.۱۵.۱
+
+1. ریشه اصلی اخطار اجباری پیدا و حذف شد: ۹ بررسی سخت‌کدشده (بدون ربط به سیستم ستاره) در ذخیره داروخانه، پزشک و سفارش — سه‌تایی در crm-features-v9.js و شش‌تایی در دو نسل کد crm-app.js — حذف شدند. پیام‌هایی مثل «لطفاً نام، استان، شهر، منطقه و آدرس/لوکیشن داروخانه را کامل کنید.» دیگر بدون توجه به ستاره اجرا نمی‌شوند.
+2. از این نسخه به بعد در کل برنامه و همه تب‌ها فقط فیلدهایی که مدیر ستاره‌دار کرده موقع ذخیره اجبار می‌کنند؛ همه مسیرهای ذخیره به اعتبارسنج واحد ستاره‌محور (validateRequiredFields) وصل شدند که فیلدهای مخفی یا حذف‌شده را هم نادیده می‌گیرد.
+3. بررسی «حداقل یک قلم کالا در سفارش» به‌عنوان قانون کسب‌وکار حفظ شد (ربطی به ستاره فیلدها ندارد).
+
 # نسخه ۱۱.۱۵.۰
 
 1. اجبار ستاره‌دار قدیمی پاک شد؛ فقط «نام داروخانه» و «نام پزشک» به‌صورت پیش‌فرض الزامی‌اند و ثبت دیگر به‌خاطر فیلدهای خالی دیگر اخطار نمی‌دهد (مهاجرت یک‌باره روی داده فعلی اعمال می‌شود).
@@ -9358,7 +9529,7 @@ export default nextConfig;
 ~~~~~~~~json
 {
   "name": "namayandeelmi-javad-crm",
-  "version": "11.15.0",
+  "version": "11.15.1",
   "description": "سیستم جامع مدیریت و ویزیت علمی، داروخانه‌ها، پزشکان و سفارشات (CRM / PWA) هماهنگ با Render و Neon",
   "main": "server.js",
   "engines": {
@@ -9553,7 +9724,7 @@ const server = http.createServer((req, res) => {
     return send(req, res, 200, JSON.stringify({
       ok: true, status: "healthy", message: "OK",
       service: "namayandeelmi-javad-crm",
-      version: "11.15.0",
+      version: "11.15.1",
       timestamp: new Date().toISOString()
     }), "application/json; charset=utf-8");
   }
@@ -9647,7 +9818,7 @@ const server = http.createServer((req, res) => {
 });
 
 server.listen(PORT, "0.0.0.0", () => {
-  console.log("CRM v11.15.0 listening on 0.0.0.0:" + PORT);
+  console.log("CRM v11.15.1 listening on 0.0.0.0:" + PORT);
 });
 ~~~~~~~~
 
@@ -10768,7 +10939,7 @@ async function sendWhatsappCloud(text, to, token) {
 ~~~~~~~~
 
 ──────────────────────────────────────────────────────────────────────────────────
-فایل: public/crm-app.js (169221 بایت)
+فایل: public/crm-app.js (168687 بایت)
 ──────────────────────────────────────────────────────────────────────────────────
 ~~~~~~~~javascript
 // ============================================================================
@@ -11844,10 +12015,7 @@ function setupPharmacyTab() {
       const fileName = (fileInput.files && fileInput.files[0]) ? fileInput.files[0].name : null;
       const customFieldsVals = extractCustomFieldValuesFromForm("pharmacy", "pharmacyCustomFieldsContainer");
 
-      if (!name || !province || !city || !district || !address) {
-        alert("لطفاً تمامی فیلدهای ستاره‌دار (*) فرم داروخانه را پر کنید.");
-        return;
-      }
+      if (typeof window.validateRequiredFields === "function" && !window.validateRequiredFields("tab-pharmacies")) return;
 
       if (editId) {
         const idx = state.pharmacies.findIndex(p => p.id === editId);
@@ -12094,10 +12262,7 @@ function setupDoctorTab() {
       const fileName = (fileInput.files && fileInput.files[0]) ? fileInput.files[0].name : null;
       const customFieldsVals = extractCustomFieldValuesFromForm("doctor", "doctorCustomFieldsContainer");
 
-      if (!name || !specialty || !province || !city || !district || !address) {
-        alert("لطفاً تمامی فیلدهای ستاره‌دار (*) فرم پزشک/مطب را پر کنید.");
-        return;
-      }
+      if (typeof window.validateRequiredFields === "function" && !window.validateRequiredFields("tab-doctors")) return;
 
       if (editId) {
         const idx = state.doctors.findIndex(d => d.id === editId);
@@ -12922,10 +13087,7 @@ function setupOrdersTab() {
       const notes = document.getElementById("orderNotes").value.trim();
       const customFieldsVals = extractCustomFieldValuesFromForm("order", "orderCustomFieldsContainer");
 
-      if (!pharmacyName || !province || !city || !district) {
-        alert("لطفاً نام داروخانه، استان، شهر و منطقه را وارد کنید.");
-        return;
-      }
+      if (typeof window.validateRequiredFields === "function" && !window.validateRequiredFields("tab-orders")) return;
 
       const items = getOrderItemsFromUI();
       if (items.length === 0 || !items[0].name) {
@@ -14020,10 +14182,7 @@ function setupAllFormSubmitHandlers() {
       ? extractCustomFieldValuesFromForm("pharmacy", "pharmacyCustomFieldsContainer")
       : {};
 
-    if (!name || !province || !city || !district || !address) {
-      alert("لطفاً تمامی فیلدهای ستاره‌دار (*) فرم داروخانه را پر کنید.");
-      return;
-    }
+    if (typeof window.validateRequiredFields === "function" && !window.validateRequiredFields("tab-pharmacies")) return;
 
     // بررسی تکراری بودن داروخانه (Requirement 2 in prompt)
     if (!editId) {
@@ -14082,10 +14241,7 @@ function setupAllFormSubmitHandlers() {
       ? extractCustomFieldValuesFromForm("doctor", "doctorCustomFieldsContainer")
       : {};
 
-    if (!name || !specialty || !province || !city || !district || !address) {
-      alert("لطفاً تمامی فیلدهای ستاره‌دار (*) فرم پزشک/مطب را پر کنید.");
-      return;
-    }
+    if (typeof window.validateRequiredFields === "function" && !window.validateRequiredFields("tab-doctors")) return;
 
     if (!editId) {
       const isDup = state.doctors.some(d => d.name === name || (phone && d.phone === phone));
@@ -14140,10 +14296,7 @@ function setupAllFormSubmitHandlers() {
       ? extractCustomFieldValuesFromForm("order", "orderCustomFieldsContainer")
       : {};
 
-    if (!pharmacyName || !province || !city || !district) {
-      alert("لطفاً نام داروخانه، استان، شهر و منطقه را وارد کنید.");
-      return;
-    }
+    if (typeof window.validateRequiredFields === "function" && !window.validateRequiredFields("tab-orders")) return;
 
     const items = getOrderItemsFromUI();
     if (items.length === 0 || !items[0].name) {
@@ -24251,7 +24404,7 @@ button.v19-gps svg{display:block}
 ~~~~~~~~
 
 ──────────────────────────────────────────────────────────────────────────────────
-فایل: public/crm-features-v9.js (68352 بایت)
+فایل: public/crm-features-v9.js (68001 بایت)
 ──────────────────────────────────────────────────────────────────────────────────
 ~~~~~~~~javascript
 // ===========================================================================
@@ -24778,10 +24931,7 @@ button.v19-gps svg{display:block}
         ? extractCustomFieldValuesFromForm("pharmacy", "pharmacyCustomFieldsContainer")
         : {}
     };
-    if (!rec.name || !rec.province || !rec.city || !rec.district || !rec.address) {
-      safeAlert("لطفاً نام، استان، شهر، منطقه و آدرس/لوکیشن داروخانه را کامل کنید.");
-      return;
-    }
+    if (typeof window.validateRequiredFields === "function" && !window.validateRequiredFields("tab-pharmacies")) return;
     if (!editId) {
       const dup = state.pharmacies.some(function (p) { return p.name === rec.name || (rec.phone && p.phone === rec.phone); });
       if (dup) safeAlert("هشدار: داروخانه‌ای با این نام یا تلفن قبلاً ثبت شده؛ با این حال ذخیره می‌شود.");
@@ -24829,10 +24979,7 @@ button.v19-gps svg{display:block}
         ? extractCustomFieldValuesFromForm("doctor", "doctorCustomFieldsContainer")
         : {}
     };
-    if (!rec.name || !rec.specialty || !rec.province || !rec.city || !rec.district || !rec.address) {
-      safeAlert("لطفاً فیلدهای ستاره‌دار پزشک/مطب و آدرس/لوکیشن را کامل کنید.");
-      return;
-    }
+    if (typeof window.validateRequiredFields === "function" && !window.validateRequiredFields("tab-doctors")) return;
     if (!editId) {
       const dup = state.doctors.some(function (d) { return d.name === rec.name || (rec.phone && d.phone === rec.phone); });
       if (dup) safeAlert("هشدار: پزشک/مطب با این نام یا تلفن قبلاً ثبت شده است.");
@@ -24897,10 +25044,7 @@ button.v19-gps svg{display:block}
         ? extractCustomFieldValuesFromForm("order", "orderCustomFieldsContainer")
         : {}
     };
-    if (!rec.pharmacyName || !rec.province || !rec.city || !rec.district) {
-      safeAlert("لطفاً نام داروخانه، استان، شهر و منطقه را وارد کنید.");
-      return;
-    }
+    if (typeof window.validateRequiredFields === "function" && !window.validateRequiredFields("tab-orders")) return;
     if (!items.length) {
       safeAlert("حداقل یک قلم کالا وارد کنید.");
       return;
@@ -26441,7 +26585,7 @@ button.v19-gps svg{display:block}
   <meta name="theme-color" content="#0d9488" />
   
   <!-- Custom Style with Anti-Cache Version 9.1.0 -->
-  <link rel="stylesheet" href="style.css?v=11.15.0" />
+  <link rel="stylesheet" href="style.css?v=11.15.1" />
 </head>
 <body>
 
@@ -28495,21 +28639,21 @@ button.v19-gps svg{display:block}
   <script src="vendor/leaflet.js"></script>
   
   <!-- Data & Application Logic with Anti-Cache Version 11.10.0 -->
-  <script src="crm-data.js?v=11.15.0"></script>
-  <script src="crm-app.js?v=11.15.0"></script>
-  <script src="crm-features-v9.js?v=11.15.0"></script>
-  <script src="iran-facilities.js?v=11.15.0" defer></script>
-  <script src="crm-features-v10.js?v=11.15.0"></script>
-  <script src="crm-features-v11.js?v=11.15.0"></script>
-  <script src="crm-features-v12.js?v=11.15.0"></script>
-  <script src="crm-features-v13.js?v=11.15.0"></script>
-  <script src="crm-jalali.js?v=11.15.0"></script>
-  <script src="crm-features-v14.js?v=11.15.0"></script>
-  <script src="crm-features-v15.js?v=11.15.0"></script>
-  <script src="crm-features-v16.js?v=11.15.0"></script>
-  <script src="crm-features-v17.js?v=11.15.0"></script>
-  <script src="crm-features-v18.js?v=11.15.0"></script>
-  <script src="crm-features-v19.js?v=11.15.0"></script>
+  <script src="crm-data.js?v=11.15.1"></script>
+  <script src="crm-app.js?v=11.15.1"></script>
+  <script src="crm-features-v9.js?v=11.15.1"></script>
+  <script src="iran-facilities.js?v=11.15.1" defer></script>
+  <script src="crm-features-v10.js?v=11.15.1"></script>
+  <script src="crm-features-v11.js?v=11.15.1"></script>
+  <script src="crm-features-v12.js?v=11.15.1"></script>
+  <script src="crm-features-v13.js?v=11.15.1"></script>
+  <script src="crm-jalali.js?v=11.15.1"></script>
+  <script src="crm-features-v14.js?v=11.15.1"></script>
+  <script src="crm-features-v15.js?v=11.15.1"></script>
+  <script src="crm-features-v16.js?v=11.15.1"></script>
+  <script src="crm-features-v17.js?v=11.15.1"></script>
+  <script src="crm-features-v18.js?v=11.15.1"></script>
+  <script src="crm-features-v19.js?v=11.15.1"></script>
   <!-- فیلدهای مخفی سازگاری با کد قبلی (نباید در UI دیده شوند) -->
   <input type="hidden" id="pharmacyLocationText" value="" />
   <input type="hidden" id="doctorLocationText" value="" />
@@ -31535,7 +31679,7 @@ self.addEventListener("fetch", (event) => {
 فایل: public/sw.js (1145 بایت)
 ──────────────────────────────────────────────────────────────────────────────────
 ~~~~~~~~javascript
-const CACHE = "ttt-v11.15.0";
+const CACHE = "ttt-v11.15.1";
 const PRECACHE = ["/", "/login", "/favicon.png", "/logo.png", "/vendor/leaflet.js", "/vendor/leaflet.css"];
 self.addEventListener("install", function (e) {
   e.waitUntil(caches.open(CACHE).then(function (c) { return c.addAll(PRECACHE).catch(function () {}); }).then(function () { return self.skipWaiting(); }));
@@ -56942,4 +57086,4 @@ export function createZip(entries: ZipEntry[], modified = new Date()): Buffer {
 ~~~~~~~~
 
 
-— پایان chat.arena نسخه ۱.۰ (نسخه برنامه 11.15.0) — این فایل با هر گفتگو/نسخه به‌روزرسانی می‌شود —
+— پایان chat.arena نسخه ۱.۳ (نسخه برنامه 11.15.1) — این فایل با هر گفتگو/نسخه به‌روزرسانی می‌شود —

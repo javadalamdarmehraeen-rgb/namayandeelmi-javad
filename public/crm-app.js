@@ -1071,10 +1071,7 @@ function setupPharmacyTab() {
       const fileName = (fileInput.files && fileInput.files[0]) ? fileInput.files[0].name : null;
       const customFieldsVals = extractCustomFieldValuesFromForm("pharmacy", "pharmacyCustomFieldsContainer");
 
-      if (!name || !province || !city || !district || !address) {
-        alert("لطفاً تمامی فیلدهای ستاره‌دار (*) فرم داروخانه را پر کنید.");
-        return;
-      }
+      if (typeof window.validateRequiredFields === "function" && !window.validateRequiredFields("tab-pharmacies")) return;
 
       if (editId) {
         const idx = state.pharmacies.findIndex(p => p.id === editId);
@@ -1321,10 +1318,7 @@ function setupDoctorTab() {
       const fileName = (fileInput.files && fileInput.files[0]) ? fileInput.files[0].name : null;
       const customFieldsVals = extractCustomFieldValuesFromForm("doctor", "doctorCustomFieldsContainer");
 
-      if (!name || !specialty || !province || !city || !district || !address) {
-        alert("لطفاً تمامی فیلدهای ستاره‌دار (*) فرم پزشک/مطب را پر کنید.");
-        return;
-      }
+      if (typeof window.validateRequiredFields === "function" && !window.validateRequiredFields("tab-doctors")) return;
 
       if (editId) {
         const idx = state.doctors.findIndex(d => d.id === editId);
@@ -2149,10 +2143,7 @@ function setupOrdersTab() {
       const notes = document.getElementById("orderNotes").value.trim();
       const customFieldsVals = extractCustomFieldValuesFromForm("order", "orderCustomFieldsContainer");
 
-      if (!pharmacyName || !province || !city || !district) {
-        alert("لطفاً نام داروخانه، استان، شهر و منطقه را وارد کنید.");
-        return;
-      }
+      if (typeof window.validateRequiredFields === "function" && !window.validateRequiredFields("tab-orders")) return;
 
       const items = getOrderItemsFromUI();
       if (items.length === 0 || !items[0].name) {
@@ -3247,10 +3238,7 @@ function setupAllFormSubmitHandlers() {
       ? extractCustomFieldValuesFromForm("pharmacy", "pharmacyCustomFieldsContainer")
       : {};
 
-    if (!name || !province || !city || !district || !address) {
-      alert("لطفاً تمامی فیلدهای ستاره‌دار (*) فرم داروخانه را پر کنید.");
-      return;
-    }
+    if (typeof window.validateRequiredFields === "function" && !window.validateRequiredFields("tab-pharmacies")) return;
 
     // بررسی تکراری بودن داروخانه (Requirement 2 in prompt)
     if (!editId) {
@@ -3309,10 +3297,7 @@ function setupAllFormSubmitHandlers() {
       ? extractCustomFieldValuesFromForm("doctor", "doctorCustomFieldsContainer")
       : {};
 
-    if (!name || !specialty || !province || !city || !district || !address) {
-      alert("لطفاً تمامی فیلدهای ستاره‌دار (*) فرم پزشک/مطب را پر کنید.");
-      return;
-    }
+    if (typeof window.validateRequiredFields === "function" && !window.validateRequiredFields("tab-doctors")) return;
 
     if (!editId) {
       const isDup = state.doctors.some(d => d.name === name || (phone && d.phone === phone));
@@ -3367,10 +3352,7 @@ function setupAllFormSubmitHandlers() {
       ? extractCustomFieldValuesFromForm("order", "orderCustomFieldsContainer")
       : {};
 
-    if (!pharmacyName || !province || !city || !district) {
-      alert("لطفاً نام داروخانه، استان، شهر و منطقه را وارد کنید.");
-      return;
-    }
+    if (typeof window.validateRequiredFields === "function" && !window.validateRequiredFields("tab-orders")) return;
 
     const items = getOrderItemsFromUI();
     if (items.length === 0 || !items[0].name) {

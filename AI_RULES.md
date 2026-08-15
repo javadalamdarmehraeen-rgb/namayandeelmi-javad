@@ -1256,4 +1256,24 @@ The agent MUST:
    it is append-update only, except for refreshing file contents and the
    summary sections.
 
+---
+
+# 64. AUTOMATIC DELIVERY ZIP RULE (PERMANENT — USER-MANDATED)
+
+Declared by the user on 2026-08-16 and valid for ALL future work:
+
+Every time the user sends a new request and the agent finishes handling it,
+the agent's turn is NOT complete until a FRESH download package exists:
+
+1. Rebuild the full program ZIP (exclude `.git` / `node_modules`; include the
+   updated `chat.arena`) with the name pattern `namayandeelmi-v<version>.zip`.
+2. Ensure the live download preview (port 8000 server) serves the NEW file —
+   update `download_server.py`'s `ZIP_PATH`/`ZIP_NAME` when the name changes
+   and restart the preview process.
+3. Present the new ZIP file to the user at the end of the turn.
+4. Verify before delivery: unzip and check the embedded `package.json`
+   version matches the announced version, then state that proof in the reply.
+
+Skipping any of these steps is an incomplete delivery.
+
 # END OF AI RULES

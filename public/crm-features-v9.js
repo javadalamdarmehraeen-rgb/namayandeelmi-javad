@@ -522,10 +522,7 @@
         ? extractCustomFieldValuesFromForm("pharmacy", "pharmacyCustomFieldsContainer")
         : {}
     };
-    if (!rec.name || !rec.province || !rec.city || !rec.district || !rec.address) {
-      safeAlert("لطفاً نام، استان، شهر، منطقه و آدرس/لوکیشن داروخانه را کامل کنید.");
-      return;
-    }
+    if (typeof window.validateRequiredFields === "function" && !window.validateRequiredFields("tab-pharmacies")) return;
     if (!editId) {
       const dup = state.pharmacies.some(function (p) { return p.name === rec.name || (rec.phone && p.phone === rec.phone); });
       if (dup) safeAlert("هشدار: داروخانه‌ای با این نام یا تلفن قبلاً ثبت شده؛ با این حال ذخیره می‌شود.");
@@ -573,10 +570,7 @@
         ? extractCustomFieldValuesFromForm("doctor", "doctorCustomFieldsContainer")
         : {}
     };
-    if (!rec.name || !rec.specialty || !rec.province || !rec.city || !rec.district || !rec.address) {
-      safeAlert("لطفاً فیلدهای ستاره‌دار پزشک/مطب و آدرس/لوکیشن را کامل کنید.");
-      return;
-    }
+    if (typeof window.validateRequiredFields === "function" && !window.validateRequiredFields("tab-doctors")) return;
     if (!editId) {
       const dup = state.doctors.some(function (d) { return d.name === rec.name || (rec.phone && d.phone === rec.phone); });
       if (dup) safeAlert("هشدار: پزشک/مطب با این نام یا تلفن قبلاً ثبت شده است.");
@@ -641,10 +635,7 @@
         ? extractCustomFieldValuesFromForm("order", "orderCustomFieldsContainer")
         : {}
     };
-    if (!rec.pharmacyName || !rec.province || !rec.city || !rec.district) {
-      safeAlert("لطفاً نام داروخانه، استان، شهر و منطقه را وارد کنید.");
-      return;
-    }
+    if (typeof window.validateRequiredFields === "function" && !window.validateRequiredFields("tab-orders")) return;
     if (!items.length) {
       safeAlert("حداقل یک قلم کالا وارد کنید.");
       return;

@@ -1050,6 +1050,8 @@ in-browser confirmation by the user (PENDING USER VERIFICATION).
 
 ---
 
+---
+
 # 39. CHAT.ARENA MEMORY FILE DECISION
 
 Date: 2026-08-16
@@ -1067,5 +1069,49 @@ in every delivered ZIP mandatory.
 
 Reason:
 the user explicitly wants immunity against chat loss / context breakage.
+
+---
+
+# 40. V11.15.1 HOTFIX — HARDCODED REQUIRED-FIELD CHECKS REMOVED
+
+Date: 2026-08-16
+
+User report: the star problem was not solved by v11.15.0; with only
+pharmacyName starred, saving a pharmacy still raised
+«لطفاً نام، استان، شهر، منطقه و آدرس/لوکیشن داروخانه را کامل کنید.»
+
+Root cause (VERIFIED from source): 9 hardcoded `if (!field...) alert(...)`
+blocks in the entity save paths, independent of the star system:
+3 in the active v9 handlers (`savePharmacyV9`, `saveDoctorV9`,
+`saveOrderV9` in crm-features-v9.js) and 6 in the two duplicated code
+generations of crm-app.js.
+
+Fix (VERIFIED): all 9 blocks replaced by a call to
+`window.validateRequiredFields(tabId)` — the star-aware validator that only
+blocks on admin-starred fields and skips hidden/deleted fields. The
+"at least one order item" check was kept as a business rule (not a field).
+Version bumped to 11.15.1 (package.json, server.js health/log, sw.js cache,
+index.html ?v= params). node --check green; /api/health reports 11.15.1.
+
+PENDING USER VERIFICATION in the browser: with only pharmacyName starred,
+saving a pharmacy with empty province/city/district/address must now succeed
+without any forced-field warning.
+
+---
+
+# 41. AUTOMATIC DELIVERY ZIP RULE
+
+Date: 2026-08-16
+
+User feedback: the ZIP they downloaded was still v11.15.0 (server logs
+confirmed those downloads happened before the v11.15.1 build existed), and
+they declared a new PERMANENT rule: whenever a user request is completed, a
+fresh download ZIP must automatically appear next to the page.
+
+Decision:
+Recorded as AI_RULES.md #64. Delivery checklist per completed request:
+rebuild ZIP → point the download preview at the new file (restart it) →
+present the ZIP → verify the embedded package.json version and state the
+proof in the reply.
 
 # END OF AI DECISION LOG
