@@ -1114,4 +1114,23 @@ rebuild ZIP → point the download preview at the new file (restart it) →
 present the ZIP → verify the embedded package.json version and state the
 proof in the reply.
 
+---
+
+# 42. V11.15.2 — DUPLICATE-SAVE WARNING BECOMES A REAL CHOICE
+
+Date: 2026-08-16
+
+User request: the duplicate pharmacy warning ("هشدار: داروخانه‌ای با این نام
+یا تلفن قبلاً ثبت شده؛ با این حال ذخیره می‌شود.") showed only OK and always
+saved. Wanted: yes/no choice; خیر must cancel the save.
+
+Change (VERIFIED): all four duplicate-warning sites (pharmacy + doctor in
+the active v9 save handlers, and the two duplicated generations in
+crm-app.js) converted from one-way `alert` to `window.confirm`; cancelling
+returns before the record is pushed. Version bumped to 11.15.2.
+
+Note (stated to user honestly): the two button captions come from the
+browser (تأیید/انصراف in Persian Windows); the dialog text itself spells
+out which button saves and which cancels.
+
 # END OF AI DECISION LOG

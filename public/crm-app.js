@@ -3243,9 +3243,7 @@ function setupAllFormSubmitHandlers() {
     // بررسی تکراری بودن داروخانه (Requirement 2 in prompt)
     if (!editId) {
       const isDup = state.pharmacies.some(p => p.name === name || (phone && p.phone === phone));
-      if (isDup) {
-        alert(`⚠️ اخطار: داروخانه «${name}» قبلاً در سیستم ثبت شده است!`);
-      }
+      if (isDup && !window.confirm(`⚠️ هشدار: داروخانه «${name}» قبلاً در سیستم ثبت شده است!\n\nتأیید/بله = با این حال ذخیره شود  |  انصراف/خیر = ذخیره نشود`)) return;
     }
 
     if (editId) {
@@ -3301,9 +3299,7 @@ function setupAllFormSubmitHandlers() {
 
     if (!editId) {
       const isDup = state.doctors.some(d => d.name === name || (phone && d.phone === phone));
-      if (isDup) {
-        alert(`⚠️ اخطار: پزشک/مطب «${name}» قبلاً در سیستم ثبت شده است!`);
-      }
+      if (isDup && !window.confirm(`⚠️ هشدار: پزشک/مطب «${name}» قبلاً در سیستم ثبت شده است!\n\nتأیید/بله = با این حال ذخیره شود  |  انصراف/خیر = ذخیره نشود`)) return;
     }
 
     if (editId) {

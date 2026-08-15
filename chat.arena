@@ -1,6 +1,6 @@
 CHAT.ARENA — حافظه دائمی و کامل پروژه «نماینده علمی» (طنین طب طاها / TENIN TEB TAHA)
 =====================================================================================
-نسخه این فایل: 1.3 | تاریخ به‌روزرسانی: 2026-08-16 (۲۶ مرداد ۱۴۰۵) | نسخه برنامه: 11.15.1
+نسخه این فایل: 1.5 | تاریخ به‌روزرسانی: 2026-08-16 (۲۶ مرداد ۱۴۰۵) | نسخه برنامه: 11.15.2
 این فایل به دستور کاربر ساخته شده و قانون دائمی دارد: بعد از هر گفتگو و هر نسخه جدید برنامه،
 این فایل به‌روزرسانی می‌شود و نسخه به‌روز آن همیشه داخل فایل زیپ تحویلی قرار می‌گیرد.
 (قانون شماره ۶۳ در AI_RULES.md)
@@ -126,6 +126,14 @@ public/*= تمام چیزی است که کاربر نهایی می‌بیند.
 • جزئیات کامل هر نسخه V9 به بعد در CHANGES_V9.md / CHANGES_V10.md / CHANGES_V11.md
   (محتوای کاملشان در بخش ۹ همین فایل هست).
 
+نسخه 11.15.2 — خواسته کاربر: هشدار تکراری با انتخاب واقعی
+۱) هشدار «داروخانه/پزشک با این نام یا تلفن قبلاً ثبت شده» قبلاً فقط یک دکمه OK داشت و
+   همیشه ذخیره می‌کرد. حالا پنجره confirm دودکمه‌ای است: تأیید(بله) = ذخیره شود،
+   انصراف(خیر) = ذخیره نمی‌شود.
+۲) در هر ۴ مسیر ثبت اعمال شد: داروخانه+پزشک در crm-features-v9.js (مسیر فعال) و دو
+   نسخه تکراری متناظر در crm-app.js.
+۳) تست: node --check سبز؛ /api/health نسخه 11.15.2. تأیید مرورگری در انتظار کاربر.
+
 نسخه 11.15.1 — رفع نقص گزارش‌شده توسط کاربر:
 ۱) ریشه واقعی اخطار اجباری پیدا شد: ۹ بررسی سخت‌کدشده مستقل از سیستم ستاره در مسیرهای
    ذخیره داروخانه/پزشک/سفارش (سه‌تایی در crm-features-v9.js + شش‌تایی در دو نسل کد
@@ -234,13 +242,13 @@ public/*= تمام چیزی است که کاربر نهایی می‌بیند.
   [متنی ]      645 بایت  .gitignore
   [متنی ]     1949 بایت  .gitlab-ci.yml
   [متنی ]    16641 بایت  AI_ARCHITECTURE.md
-  [متنی ]    23654 بایت  AI_DECISION_LOG.md
+  [متنی ]    24496 بایت  AI_DECISION_LOG.md
   [متنی ]    15537 بایت  AI_PROJECT_CONTEXT.md
   [متنی ]    21207 بایت  AI_RULES.md
   [متنی ]    17794 بایت  AI_TASKS.md
   [متنی ]    17623 بایت  ARENA_HANDOFF_PROMPT.md
   [متنی ]      600 بایت  CHANGES_V10.md
-  [متنی ]    22242 بایت  CHANGES_V11.md
+  [متنی ]    22800 بایت  CHANGES_V11.md
   [متنی ]     3939 بایت  CHANGES_V9.md
   [متنی ]     1754 بایت  CLEAN_EXTRA_FILES.bat
   [متنی ]     2297 بایت  KEEP_ONLY_GITHUB.bat
@@ -266,7 +274,7 @@ public/*= تمام چیزی است که کاربر نهایی می‌بیند.
   [متنی ]     9805 بایت  mobile/README.md
   [متنی ]     9796 بایت  mobile/src/simAuth.ts
   [متنی ]     8066 بایت  public/cloudflare-worker.js
-  [متنی ]   168687 بایت  public/crm-app.js
+  [متنی ]   168903 بایت  public/crm-app.js
   [متنی ]    34134 بایت  public/crm-data.js
   [متنی ]    13643 بایت  public/crm-features-v10.js
   [متنی ]   106445 بایت  public/crm-features-v11.js
@@ -278,7 +286,7 @@ public/*= تمام چیزی است که کاربر نهایی می‌بیند.
   [متنی ]    19662 بایت  public/crm-features-v17.js
   [متنی ]    33040 بایت  public/crm-features-v18.js
   [متنی ]    60983 بایت  public/crm-features-v19.js
-  [متنی ]    68001 بایت  public/crm-features-v9.js
+  [متنی ]    68206 بایت  public/crm-features-v9.js
   [متنی ]    25683 بایت  public/crm-jalali.js
   [متنی ]   125901 بایت  public/index.html
   [متنی ]    11799 بایت  public/iran-facilities.js
@@ -656,6 +664,48 @@ crm-features-v9.js داخل زیپ صفر مورد). دانلودهای قبلی
 نسخه واقعی عقب بماند. سرور ری‌استارت و صفحه تست شد: <title>دانلود نسخه ۱۱.۱۵.۱</title>.
 لاگ نشان داد کاربر زیپ v11.15.1 را هم دانلود کرده بود. chat.arena به ۱.۳ به‌روز و زیپ
 دوباره ساخته و تحویل شد.
+
+──────────────────────────────── نوبت ۹ ────────────────────────────────
+🧑 کاربر (عیناً؛ همراه خروجی ترمینال ویندوز خود):
+«PS ...
+amayandeelmi-javad> git add -A
+PS ...> git commit -m "v11.15.1: ذخیره فقط با فیلدهای ستاره‌دار در کل برنامه + chat.arena + قوانین دائمی تحویل"
+[main 9f4f386f] v11.15.1: ... 11 files changed, 341 insertions(+), 126 deletions(-)
+PS ...> git push origin main
+To https://github.com/javadalamdarmehraeen-rgb/namayandeelmi-javad.git
+ ! [rejected]          main -> main (fetch first)
+error: failed to push some refs ...
+hint: Updates were rejected because the remote contains work that you do not
+hint: have locally. ...
+متاسفنه مشکل حل نشد و اخطار زیر را می دهد
+لطفاً نام، استان، شهر، منطقه و آدرس/لوکیشن داروخانه را کامل کنید.»
+
+🤖 دستیار:
+بررسی دو واقعیت: ۱) رشته اخطار در کل کد تحویلی ۱۱.۱۵.۱ جستجو شد: صفر مورد — یعنی کدی
+که کاربر اجرا می‌کند قدیمی است. ۲) origin/main بررسی شد: کامیت‌های v11.15.0 کاربر قبلاً
+با موفقیت پوش شده بودند (4a6b2ca / a06edb8) و بعد از آن کامیت 595d1c8 «Add deployment
+info for test-aye6.onrender.com» روی ریموت افتاده که لوکال کاربر ندارد؛ به همین دلیل
+push رد شد (fetch first) و در نتیجه production روی Render هنوز v11.15.0 است و اخطار
+همان‌جا زنده است. راه‌حل داده‌شده: اجرای `git pull --no-rebase origin main` (در صورت
+تعارض: `git pull --no-rebase -X ours origin main`) سپس `git push origin main`؛ بعد ۱-۲
+دقیقه صبر برای دیپلوی خودکار Render و بعد تست با Ctrl+Shift+R یا پنجره ناشناس (به‌خاطر
+کش مرورگر/سرویس‌ورکر). زیپ تازه v11.15.1 با chat.arena ۱.۴ هم بازسازی و تحویل شد.
+
+──────────────────────────────── نوبت ۱۰ ────────────────────────────────
+🧑 کاربر (عیناً):
+«وقتی داروخانه تکراری می زنی این پیغام زیر می اید
+هشدار: داروخانه‌ای با این نام یا تلفن قبلاً ثبت شده؛ با این حال ذخیره می‌شود.
+و در پایین این پیغام کلید ok می اید در حالی که باشد دکمه yes  یا no  و یا بله و خیر
+بیاید و اگر کاربر خیر را زد یعنی ذخیره نشود و اگر بله را زد یعنی ذخیره شود»
+
+🤖 دستیار:
+انجام شد در نسخه 11.15.2: هر ۴ نقطه هشدار تکراری (داروخانه+پزشک در مسیر فعال v9 و دو
+نسخه تکراری در crm-app.js) از alert تک‌دکمه‌ای به confirm دودکمه‌ای تبدیل شد؛ متن پیام
+صریح است: «تأیید/بله = با این حال ذخیره شود | انصراف/خیر = ذخیره نشود». اگر کاربر
+انصراف بزند ذخیره کاملاً لغو می‌شود (return قبل از push). توضیح فنی صادقانه به کاربر:
+متن روی خود دکمه‌ها را مرورگر تعیین می‌کند (در ویندوز فارسی: تأیید/انصراف) اما رفتار
+دقیقاً همان بله/خیر خواسته‌شده است. نسخه به 11.15.2 برده شد، تست‌ها سبز، chat.arena
+به ۱.۵ به‌روز و زیپ تازه تحویل شد؛ سرور دانلود هم به فایل جدید وصل و ری‌استارت شد.
 
 
 ══════════════════════════════════════════════════════════════════════════════════
@@ -1898,7 +1948,7 @@ Then change only what is requested.
 ~~~~~~~~
 
 ──────────────────────────────────────────────────────────────────────────────────
-فایل: AI_DECISION_LOG.md (23654 بایت)
+فایل: AI_DECISION_LOG.md (24496 بایت)
 ──────────────────────────────────────────────────────────────────────────────────
 ~~~~~~~~markdown
 # AI DECISION LOG
@@ -3016,6 +3066,25 @@ Recorded as AI_RULES.md #64. Delivery checklist per completed request:
 rebuild ZIP → point the download preview at the new file (restart it) →
 present the ZIP → verify the embedded package.json version and state the
 proof in the reply.
+
+---
+
+# 42. V11.15.2 — DUPLICATE-SAVE WARNING BECOMES A REAL CHOICE
+
+Date: 2026-08-16
+
+User request: the duplicate pharmacy warning ("هشدار: داروخانه‌ای با این نام
+یا تلفن قبلاً ثبت شده؛ با این حال ذخیره می‌شود.") showed only OK and always
+saved. Wanted: yes/no choice; خیر must cancel the save.
+
+Change (VERIFIED): all four duplicate-warning sites (pharmacy + doctor in
+the active v9 save handlers, and the two duplicated generations in
+crm-app.js) converted from one-way `alert` to `window.confirm`; cancelling
+returns before the record is pushed. Version bumped to 11.15.2.
+
+Note (stated to user honestly): the two button captions come from the
+browser (تأیید/انصراف in Persian Windows); the dialog text itself spells
+out which button saves and which cancels.
 
 # END OF AI DECISION LOG
 ~~~~~~~~
@@ -7172,9 +7241,14 @@ Leaflet محلی. فونت گوگل حذف شد. gzip روی JS/CSS/HTML.
 ~~~~~~~~
 
 ──────────────────────────────────────────────────────────────────────────────────
-فایل: CHANGES_V11.md (22242 بایت)
+فایل: CHANGES_V11.md (22800 بایت)
 ──────────────────────────────────────────────────────────────────────────────────
 ~~~~~~~~markdown
+# نسخه ۱۱.۱۵.۲
+
+1. هشدار «داروخانه/پزشک تکراری» دیگر فقط یک دکمه OK ندارد؛ به پنجره انتخاب دودکمه‌ای تبدیل شد: تأیید/بله = با این حال ذخیره شود، انصراف/خیر = ذخیره نشود. رفتار قبلی (ذخیره خودکار بعد از OK) حذف شد.
+2. این تبدیل در هر ۴ مسیر ثبت اعمال شد: داروخانه و پزشک در crm-features-v9.js (مسیر فعال) و دو نسخه تکراری در crm-app.js.
+
 # نسخه ۱۱.۱۵.۱
 
 1. ریشه اصلی اخطار اجباری پیدا و حذف شد: ۹ بررسی سخت‌کدشده (بدون ربط به سیستم ستاره) در ذخیره داروخانه، پزشک و سفارش — سه‌تایی در crm-features-v9.js و شش‌تایی در دو نسل کد crm-app.js — حذف شدند. پیام‌هایی مثل «لطفاً نام، استان، شهر، منطقه و آدرس/لوکیشن داروخانه را کامل کنید.» دیگر بدون توجه به ستاره اجرا نمی‌شوند.
@@ -9529,7 +9603,7 @@ export default nextConfig;
 ~~~~~~~~json
 {
   "name": "namayandeelmi-javad-crm",
-  "version": "11.15.1",
+  "version": "11.15.2",
   "description": "سیستم جامع مدیریت و ویزیت علمی، داروخانه‌ها، پزشکان و سفارشات (CRM / PWA) هماهنگ با Render و Neon",
   "main": "server.js",
   "engines": {
@@ -9724,7 +9798,7 @@ const server = http.createServer((req, res) => {
     return send(req, res, 200, JSON.stringify({
       ok: true, status: "healthy", message: "OK",
       service: "namayandeelmi-javad-crm",
-      version: "11.15.1",
+      version: "11.15.2",
       timestamp: new Date().toISOString()
     }), "application/json; charset=utf-8");
   }
@@ -9818,7 +9892,7 @@ const server = http.createServer((req, res) => {
 });
 
 server.listen(PORT, "0.0.0.0", () => {
-  console.log("CRM v11.15.1 listening on 0.0.0.0:" + PORT);
+  console.log("CRM v11.15.2 listening on 0.0.0.0:" + PORT);
 });
 ~~~~~~~~
 
@@ -10939,7 +11013,7 @@ async function sendWhatsappCloud(text, to, token) {
 ~~~~~~~~
 
 ──────────────────────────────────────────────────────────────────────────────────
-فایل: public/crm-app.js (168687 بایت)
+فایل: public/crm-app.js (168903 بایت)
 ──────────────────────────────────────────────────────────────────────────────────
 ~~~~~~~~javascript
 // ============================================================================
@@ -14187,9 +14261,7 @@ function setupAllFormSubmitHandlers() {
     // بررسی تکراری بودن داروخانه (Requirement 2 in prompt)
     if (!editId) {
       const isDup = state.pharmacies.some(p => p.name === name || (phone && p.phone === phone));
-      if (isDup) {
-        alert(`⚠️ اخطار: داروخانه «${name}» قبلاً در سیستم ثبت شده است!`);
-      }
+      if (isDup && !window.confirm(`⚠️ هشدار: داروخانه «${name}» قبلاً در سیستم ثبت شده است!\n\nتأیید/بله = با این حال ذخیره شود  |  انصراف/خیر = ذخیره نشود`)) return;
     }
 
     if (editId) {
@@ -14245,9 +14317,7 @@ function setupAllFormSubmitHandlers() {
 
     if (!editId) {
       const isDup = state.doctors.some(d => d.name === name || (phone && d.phone === phone));
-      if (isDup) {
-        alert(`⚠️ اخطار: پزشک/مطب «${name}» قبلاً در سیستم ثبت شده است!`);
-      }
+      if (isDup && !window.confirm(`⚠️ هشدار: پزشک/مطب «${name}» قبلاً در سیستم ثبت شده است!\n\nتأیید/بله = با این حال ذخیره شود  |  انصراف/خیر = ذخیره نشود`)) return;
     }
 
     if (editId) {
@@ -24404,7 +24474,7 @@ button.v19-gps svg{display:block}
 ~~~~~~~~
 
 ──────────────────────────────────────────────────────────────────────────────────
-فایل: public/crm-features-v9.js (68001 بایت)
+فایل: public/crm-features-v9.js (68206 بایت)
 ──────────────────────────────────────────────────────────────────────────────────
 ~~~~~~~~javascript
 // ===========================================================================
@@ -24934,7 +25004,7 @@ button.v19-gps svg{display:block}
     if (typeof window.validateRequiredFields === "function" && !window.validateRequiredFields("tab-pharmacies")) return;
     if (!editId) {
       const dup = state.pharmacies.some(function (p) { return p.name === rec.name || (rec.phone && p.phone === rec.phone); });
-      if (dup) safeAlert("هشدار: داروخانه‌ای با این نام یا تلفن قبلاً ثبت شده؛ با این حال ذخیره می‌شود.");
+      if (dup && !window.confirm("هشدار: داروخانه‌ای با این نام یا تلفن قبلاً ثبت شده است.\n\nتأیید/بله = با این حال ذخیره شود  |  انصراف/خیر = ذخیره نشود")) return;
       state.pharmacies.push(rec);
     } else {
       const idx = state.pharmacies.findIndex(function (p) { return p.id === editId; });
@@ -24982,7 +25052,7 @@ button.v19-gps svg{display:block}
     if (typeof window.validateRequiredFields === "function" && !window.validateRequiredFields("tab-doctors")) return;
     if (!editId) {
       const dup = state.doctors.some(function (d) { return d.name === rec.name || (rec.phone && d.phone === rec.phone); });
-      if (dup) safeAlert("هشدار: پزشک/مطب با این نام یا تلفن قبلاً ثبت شده است.");
+      if (dup && !window.confirm("هشدار: پزشک/مطب با این نام یا تلفن قبلاً ثبت شده است.\n\nتأیید/بله = با این حال ذخیره شود  |  انصراف/خیر = ذخیره نشود")) return;
       state.doctors.push(rec);
     } else {
       const idx = state.doctors.findIndex(function (d) { return d.id === editId; });
@@ -26585,7 +26655,7 @@ button.v19-gps svg{display:block}
   <meta name="theme-color" content="#0d9488" />
   
   <!-- Custom Style with Anti-Cache Version 9.1.0 -->
-  <link rel="stylesheet" href="style.css?v=11.15.1" />
+  <link rel="stylesheet" href="style.css?v=11.15.2" />
 </head>
 <body>
 
@@ -28639,21 +28709,21 @@ button.v19-gps svg{display:block}
   <script src="vendor/leaflet.js"></script>
   
   <!-- Data & Application Logic with Anti-Cache Version 11.10.0 -->
-  <script src="crm-data.js?v=11.15.1"></script>
-  <script src="crm-app.js?v=11.15.1"></script>
-  <script src="crm-features-v9.js?v=11.15.1"></script>
-  <script src="iran-facilities.js?v=11.15.1" defer></script>
-  <script src="crm-features-v10.js?v=11.15.1"></script>
-  <script src="crm-features-v11.js?v=11.15.1"></script>
-  <script src="crm-features-v12.js?v=11.15.1"></script>
-  <script src="crm-features-v13.js?v=11.15.1"></script>
-  <script src="crm-jalali.js?v=11.15.1"></script>
-  <script src="crm-features-v14.js?v=11.15.1"></script>
-  <script src="crm-features-v15.js?v=11.15.1"></script>
-  <script src="crm-features-v16.js?v=11.15.1"></script>
-  <script src="crm-features-v17.js?v=11.15.1"></script>
-  <script src="crm-features-v18.js?v=11.15.1"></script>
-  <script src="crm-features-v19.js?v=11.15.1"></script>
+  <script src="crm-data.js?v=11.15.2"></script>
+  <script src="crm-app.js?v=11.15.2"></script>
+  <script src="crm-features-v9.js?v=11.15.2"></script>
+  <script src="iran-facilities.js?v=11.15.2" defer></script>
+  <script src="crm-features-v10.js?v=11.15.2"></script>
+  <script src="crm-features-v11.js?v=11.15.2"></script>
+  <script src="crm-features-v12.js?v=11.15.2"></script>
+  <script src="crm-features-v13.js?v=11.15.2"></script>
+  <script src="crm-jalali.js?v=11.15.2"></script>
+  <script src="crm-features-v14.js?v=11.15.2"></script>
+  <script src="crm-features-v15.js?v=11.15.2"></script>
+  <script src="crm-features-v16.js?v=11.15.2"></script>
+  <script src="crm-features-v17.js?v=11.15.2"></script>
+  <script src="crm-features-v18.js?v=11.15.2"></script>
+  <script src="crm-features-v19.js?v=11.15.2"></script>
   <!-- فیلدهای مخفی سازگاری با کد قبلی (نباید در UI دیده شوند) -->
   <input type="hidden" id="pharmacyLocationText" value="" />
   <input type="hidden" id="doctorLocationText" value="" />
@@ -31679,7 +31749,7 @@ self.addEventListener("fetch", (event) => {
 فایل: public/sw.js (1145 بایت)
 ──────────────────────────────────────────────────────────────────────────────────
 ~~~~~~~~javascript
-const CACHE = "ttt-v11.15.1";
+const CACHE = "ttt-v11.15.2";
 const PRECACHE = ["/", "/login", "/favicon.png", "/logo.png", "/vendor/leaflet.js", "/vendor/leaflet.css"];
 self.addEventListener("install", function (e) {
   e.waitUntil(caches.open(CACHE).then(function (c) { return c.addAll(PRECACHE).catch(function () {}); }).then(function () { return self.skipWaiting(); }));
@@ -57086,4 +57156,4 @@ export function createZip(entries: ZipEntry[], modified = new Date()): Buffer {
 ~~~~~~~~
 
 
-— پایان chat.arena نسخه ۱.۳ (نسخه برنامه 11.15.1) — این فایل با هر گفتگو/نسخه به‌روزرسانی می‌شود —
+— پایان chat.arena نسخه ۱.۵ (نسخه برنامه 11.15.2) — این فایل با هر گفتگو/نسخه به‌روزرسانی می‌شود —
