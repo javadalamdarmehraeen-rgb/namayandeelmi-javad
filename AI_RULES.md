@@ -1219,8 +1219,8 @@ Concretely:
    `getDefaultPermissionsObject(true)`).
 2. Removed capability → remove its permission key (or mark it deprecated)
    in the same commit.
-3. Changed/enclosed capability → review whether an existing key still maps
-   correctly; add granular keys when one switch now controls several things.
+3. Changed capability → review whether an existing key still maps correctly;
+   add granular keys when one switch now controls several things.
 4. New granular keys must be migrated for existing users (see the
    `migratePermissions` pattern in `crm-features-v19.js`) so saved users
    keep working after update.
@@ -1230,5 +1230,30 @@ Concretely:
 The UI renders permission groups dynamically, so new keys appear
 automatically; skipping this rule leaves capabilities untoggleable and is
 treated as an incomplete change.
+
+---
+
+# 63. CHAT.ARENA MEMORY FILE RULE (PERMANENT — USER-MANDATED)
+
+Declared by the user on 2026-08-16 and valid for ALL future work:
+
+The repository root contains a file named `chat.arena` that is the project's
+living session memory. It contains the full project summary, architecture,
+the ordered chat between the user and the AI, every permanent rule, and the
+complete source of every text file.
+
+The agent MUST:
+
+1. Read `chat.arena` before starting work when it exists (treat it as
+   session memory; source code still overrides it per rule #5).
+2. Update `chat.arena` after every user chat that changes anything, and
+   after every delivered app version: append the new user messages and
+   assistant answers (verbatim), update the version summary, and refresh the
+   embedded file contents of every file that changed.
+3. Include the updated `chat.arena` in every delivered ZIP package alongside
+   the new/changed files.
+4. Never remove or truncate earlier chat turns or rules from `chat.arena`;
+   it is append-update only, except for refreshing file contents and the
+   summary sections.
 
 # END OF AI RULES

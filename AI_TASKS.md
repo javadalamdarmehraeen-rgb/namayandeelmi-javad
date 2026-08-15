@@ -446,6 +446,25 @@ Verification status:
 
 ---
 
+## TASK-008
+
+Create and maintain chat.arena as the full session/project memory file
+
+Status:
+DONE
+
+Scope summary:
+
+1. chat.arena created at repository root (user-requested permanent artifact).
+2. It contains: project summary, architecture explanation, full ordered
+   user/AI chat log (verbatim where available), permanent rules, delivery
+   workflow, risk map, and the full embedded source of all text files in the
+   repository.
+3. AI_RULES.md #63 created: chat.arena must be updated after every chat and
+   every delivered version, and must be included in every delivered ZIP.
+
+---
+
 # 12. NEXT IMMEDIATE TASK
 
 No pending coding task.

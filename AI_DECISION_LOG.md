@@ -982,7 +982,7 @@ They exist to prevent loss of knowledge and accidental regressions.
 
 # 38. V11.15.0 DEVELOPMENT PHASE
 
-Date: 2026-08-15
+Date: 2026-08-16
 
 Source of request: single user message listing 14 numbered change requests,
 plus the explicit constraints: do not change the project skeleton, deliver
@@ -1049,5 +1049,23 @@ version 11.15.0 on `/api/health` (VERIFIED). All 14 items still require
 in-browser confirmation by the user (PENDING USER VERIFICATION).
 
 ---
+
+# 39. CHAT.ARENA MEMORY FILE DECISION
+
+Date: 2026-08-16
+
+The user requested a single permanent handoff file named `chat.arena` that
+must always contain: the full project summary, architecture, the complete
+ordered user/AI chat, all permanent rules, and the complete source of every
+text file — so that a fresh AI session can continue the project with zero
+verbal explanation.
+
+Decision:
+chat.arena is created at the repository root and treated as a required
+project artifact. AI_RULES.md #63 makes its continuous update and inclusion
+in every delivered ZIP mandatory.
+
+Reason:
+the user explicitly wants immunity against chat loss / context breakage.
 
 # END OF AI DECISION LOG
