@@ -658,6 +658,7 @@
       if (!b.id || /^auto-tab-orders-/.test(b.id)) return;
       if (b.label && /اقلام دارویی سفارش/.test(b.label) && b.kind !== "box" && b.id !== "orderItemsBox") return;
       if (!meta[b.id]) meta[b.id] = {};
+      if (meta[b.id].deleted) return;
       if (meta[b.id].order == null || meta[b.id].order === "") meta[b.id].order = b.scanOrder;
       var showForm = meta[b.id].showInForm !== false && meta[b.id].hidden !== true;
       var showList = meta[b.id].showInList;
@@ -678,6 +679,7 @@
         kind: b.kind || "field",
         place: meta[b.id].place || (b.full || b.kind === "box" ? "under" : "beside"),
         required: meta[b.id].required === true || (meta[b.id].required == null && window._v18DefaultReq && window._v18DefaultReq[b.id]),
+        allowAddOption: meta[b.id].allowAddOption !== false,
         exportExcel: meta[b.id].exportExcel === true,
         labelFontFamily: meta[b.id].labelFontFamily || "",
         labelFontWeight: meta[b.id].labelFontWeight || "",
@@ -1525,6 +1527,7 @@
       meta[editing.id].hidden = !$("colFieldInForm").checked;
       meta[editing.id].required = reqVal;
       meta[editing.id].exportExcel = excelVal;
+      meta[editing.id].allowAddOption = $("colFieldFly") ? $("colFieldFly").checked : true;
       saveState();
       logOp("ویرایش فیلد ثابت «" + label + "» در تب " + sec.label);
       setAnyFieldOrder(tabId, editing.id, order);
@@ -1622,9 +1625,10 @@
     };
     var html = "<table class='data-table'><thead><tr><th>ترتیب فرم</th><th>ترتیب لیست</th><th>عنوان</th><th>نوع</th><th>چینش</th><th>فونت لیبل</th><th>بولد لیبل</th><th>سایز فونت لیبل</th><th>فونت فیلد</th><th>بولد فیلد</th><th>سایز فونت فیلد</th><th>ستاره</th><th>فرم</th><th>لیست</th><th>اکسل</th><th>جابجایی</th><th>عملیات</th></tr></thead><tbody>";
     list.forEach(function (f, i) {
-      var src = f.kind === "box" ? "کادر" : (f.kind === "ordercol" ? "داخل کادر اقلام" : (f.kind === "widget" ? "کلید" : (f.builtin ? "ثابت فرم" : "اضافه‌شده")));
+      if (f.kind === "box" || f.kind === "widget" || String(f.inputKind || f.type || "").indexOf("widget-") === 0) return;
+      var src = (f.kind === "ordercol" ? "داخل کادر اقلام" : (f.builtin ? "ثابت فرم" : "اضافه‌شده"));
       var hid = f.hidden ? " col-row-hidden" : "";
-      var rowNo = i + 1;
+      var rowNo = list.indexOf(f) + 1;
       var listNo = f.listOrder || rowNo;
       var place = f.place || "beside";
       var labFs = parseInt(f.labelFontSize, 10) || 14;
@@ -1653,11 +1657,7 @@
         "<button type='button' class='btn btn-outline btn-sm col-move-down' data-fid='" + escHtml(f.id) + "'>▼ پایین‌تر</button></td>" +
         "<td class='col-ops'>";
       html += "<button type='button' class='btn btn-outline btn-sm col-edit-field' data-fid='" + escHtml(f.id) + "'>✏️ ویرایش</button> ";
-      if (f.hidden && f.builtin) {
-        html += "<button type='button' class='btn btn-primary btn-sm col-restore-field' data-fid='" + escHtml(f.id) + "' style='background:#0d9488'>نمایش مجدد</button>";
-      } else {
-        html += "<button type='button' class='btn btn-danger btn-sm col-del-field' data-fid='" + escHtml(f.id) + "'>حذف</button>";
-      }
+      html += "<button type='button' class='btn btn-danger btn-sm col-del-field' data-fid='" + escHtml(f.id) + "'>حذف</button>";
       html += "</td></tr>";
     });
     html += "</tbody></table>";
@@ -1933,16 +1933,23 @@
     var unified = getUnifiedFieldList(tabId);
     var field = unified.filter(function (f) { return f.id === fieldId; })[0];
     var label = field ? field.label : fieldId;
-    if (!confirm("فیلد «" + label + "» از فرم این تب حذف/مخفی شود؟")) return;
+    if (!confirm("فیلد «" + label + "» کاملاً از فرم این تب حذف شود؟ (برگشت با دکمه بازگردانی پایین طراح)")) return;
     var meta = ensureMeta(key);
     if (!meta[fieldId]) meta[fieldId] = {};
+    meta[fieldId].deleted = true;
     meta[fieldId].hidden = true;
+    var live = document.getElementById(fieldId);
+    if (live) {
+      var grp = live.closest(".form-group, .col-widget-wrap");
+      if (grp && grp.parentNode) grp.parentNode.removeChild(grp);
+    }
     saveState();
     applyFullFormLayout(tabId);
-    logOp("حذف/مخفی‌سازی فیلد «" + label + "» از فرم تب");
+    logOp("حذف کامل فیلد «" + label + "» از فرم تب");
+    refreshEntityLists(tabId);
     renderColFieldList();
     renderColTabGrid();
-    alert("فیلد «" + label + "» از فرم تب اصلی برداشته شد.");
+    alert("فیلد «" + label + "» کاملاً حذف شد.");
   }
 
   window.isColShownInList = function (entity, fieldId) {

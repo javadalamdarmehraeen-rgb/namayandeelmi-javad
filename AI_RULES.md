@@ -1202,4 +1202,33 @@ DO NOT CHANGE CODE.
 
 INSPECT FIRST.
 
+---
+
+# 62. PERMISSIONS REFLECTION RULE (PERMANENT — USER-MANDATED)
+
+Declared by the user on 2026-08-15 as part of the v11.15.0 request (item #14)
+and valid for ALL future work, not only v11.15.0:
+
+Every capability that is added, removed, or changed anywhere in the CRM MUST
+also be reflected in the permissions system in the same change.
+
+Concretely:
+
+1. New admin capability → add a permission key to `PERMISSION_GROUPS` in
+   `public/crm-data.js` (new keys default to allowed for admins via
+   `getDefaultPermissionsObject(true)`).
+2. Removed capability → remove its permission key (or mark it deprecated)
+   in the same commit.
+3. Changed/enclosed capability → review whether an existing key still maps
+   correctly; add granular keys when one switch now controls several things.
+4. New granular keys must be migrated for existing users (see the
+   `migratePermissions` pattern in `crm-features-v19.js`) so saved users
+   keep working after update.
+5. The change report for any task must state which permission keys were
+   added/removed/unchanged; "none" is only acceptable with a reason.
+
+The UI renders permission groups dynamically, so new keys appear
+automatically; skipping this rule leaves capabilities untoggleable and is
+treated as an incomplete change.
+
 # END OF AI RULES

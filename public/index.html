@@ -16,7 +16,7 @@
   <meta name="theme-color" content="#0d9488" />
   
   <!-- Custom Style with Anti-Cache Version 9.1.0 -->
-  <link rel="stylesheet" href="style.css?v=11.14.0" />
+  <link rel="stylesheet" href="style.css?v=11.15.0" />
 </head>
 <body>
 
@@ -757,15 +757,19 @@
               <div id="orderProductCatalogBar" class="order-catalog-bar"></div>
               <div class="order-item-head">
                 <span>نام کالا</span>
-                <span>تعداد</span>
-                <span>تعداد جایزه 🎁</span>
+                <span>تعداد کالا</span>
+                <span>تعداد جایزه</span>
                 <span>قیمت واحد</span>
+                <span>جمع مبلغ</span>
+                <span></span>
                 <span></span>
               </div>
               <datalist id="orderProductCatalogList"></datalist>
               <div id="orderItemsContainer" style="display: flex; flex-direction: column; gap: 0.5rem;"></div>
-              <div style="display: flex; justify-content: flex-end; margin-top: 0.75rem; font-weight: 700; color: #0f172a;">
-                <span>مبلغ کل سفارش: <strong id="orderTotalAmountDisplay">0</strong> ریال</span>
+              <div class="v19-order-totals">
+                <div class="v19-ot-row"><span>مبلغ کل سفارش (بدون ارزش افزوده):</span> <strong id="orderTotalAmountDisplay">0</strong> ریال</div>
+                <div class="v19-ot-row"><span>ارزش افزوده (<span id="orderVatPercentView">۱۰٪</span>):</span> <strong id="orderTotalVatDisplay">0</strong> ریال</div>
+                <div class="v19-ot-row v19-ot-grand"><span>مبلغ کل سفارش با ارزش افزوده:</span> <strong id="orderTotalWithVatDisplay">0</strong> ریال</div>
               </div>
             </div>
 
@@ -1402,41 +1406,8 @@
           </div>
         </form>
 
-        <div class="table-responsive">
-          <table class="data-table" id="tableCustomFields">
-            <thead>
-              <tr>
-                <th>بخش مربوطه</th>
-                <th>عنوان فیلد</th>
-                <th>نوع فیلد</th>
-                <th>گزینه‌های منوی کشویی</th>
-                <th>نمایش در فرم ثبت</th>
-                <th>نمایش در لیست</th>
-                <th>عملیات</th>
-              </tr>
-            </thead>
-            <tbody id="tableCustomFieldsBody">
-              <!-- Dynamically populated -->
-            </tbody>
-          </table>
-        </div>
-
-        <h4 style="margin: 1.5rem 0 0.75rem; color: #0f172a;">📋 فهرست فشرده همه کشویی‌ها</h4>
-        <p style="font-size: 0.85rem; color: #64748b; margin-bottom: 0.75rem;">همان گزینه‌ها در گرید تب بالا با ویرایش/حذف هم هست. اینجا فهرست فشرده است.</p>
-        <div class="table-responsive">
-          <table class="data-table">
-            <thead>
-              <tr>
-                <th>تب / محل</th>
-                <th>عنوان فیلد کشویی</th>
-                <th>شناسه</th>
-                <th>گزینه‌های فعلی</th>
-                <th>افزودن گزینه</th>
-              </tr>
-            </thead>
-            <tbody id="tableAllSelectsBody"></tbody>
-          </table>
-        </div>
+        <!-- v11.15: کادر «اطلاعات فیلدها» و «فهرست فشرده همه کشویی‌ها» به درخواست مدیر حذف شد.
+             مدیریت گزینه‌ها از گرید تب‌های بالای همین صفحه انجام می‌شود. -->
       </div>
     </section>
 
@@ -1458,9 +1429,6 @@
           <div class="card-title">
             <span>➕ اضافه کردن کالا</span>
           </div>
-          <button id="btnResetProductForm" class="btn btn-outline btn-sm">
-            <span>➕ کالای جدید</span>
-          </button>
         </div>
         <div id="productSavedBanner" class="product-saved-banner" hidden></div>
         <form id="formProduct" onsubmit="return false;" novalidate style="margin-bottom: 1.5rem;">
@@ -2102,20 +2070,21 @@
   <script src="vendor/leaflet.js"></script>
   
   <!-- Data & Application Logic with Anti-Cache Version 11.10.0 -->
-  <script src="crm-data.js?v=11.14.0"></script>
-  <script src="crm-app.js?v=11.14.0"></script>
-  <script src="crm-features-v9.js?v=11.14.0"></script>
-  <script src="iran-facilities.js?v=11.14.0" defer></script>
-  <script src="crm-features-v10.js?v=11.14.0"></script>
-  <script src="crm-features-v11.js?v=11.14.0"></script>
-  <script src="crm-features-v12.js?v=11.14.0"></script>
-  <script src="crm-features-v13.js?v=11.14.0"></script>
-  <script src="crm-jalali.js?v=11.14.0"></script>
-  <script src="crm-features-v14.js?v=11.14.0"></script>
-  <script src="crm-features-v15.js?v=11.14.0"></script>
-  <script src="crm-features-v16.js?v=11.14.0"></script>
-  <script src="crm-features-v17.js?v=11.14.0"></script>
-  <script src="crm-features-v18.js?v=11.14.0"></script>
+  <script src="crm-data.js?v=11.15.0"></script>
+  <script src="crm-app.js?v=11.15.0"></script>
+  <script src="crm-features-v9.js?v=11.15.0"></script>
+  <script src="iran-facilities.js?v=11.15.0" defer></script>
+  <script src="crm-features-v10.js?v=11.15.0"></script>
+  <script src="crm-features-v11.js?v=11.15.0"></script>
+  <script src="crm-features-v12.js?v=11.15.0"></script>
+  <script src="crm-features-v13.js?v=11.15.0"></script>
+  <script src="crm-jalali.js?v=11.15.0"></script>
+  <script src="crm-features-v14.js?v=11.15.0"></script>
+  <script src="crm-features-v15.js?v=11.15.0"></script>
+  <script src="crm-features-v16.js?v=11.15.0"></script>
+  <script src="crm-features-v17.js?v=11.15.0"></script>
+  <script src="crm-features-v18.js?v=11.15.0"></script>
+  <script src="crm-features-v19.js?v=11.15.0"></script>
   <!-- فیلدهای مخفی سازگاری با کد قبلی (نباید در UI دیده شوند) -->
   <input type="hidden" id="pharmacyLocationText" value="" />
   <input type="hidden" id="doctorLocationText" value="" />

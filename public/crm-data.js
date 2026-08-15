@@ -335,6 +335,18 @@ const PERMISSION_GROUPS = {
     { key: "sys_users", label: "مدیریت کاربران" },
     { key: "sys_msg", label: "تنظیم پیام‌رسان‌ها" },
     { key: "sys_notify", label: "ارسال اعلان به نمایندگان" }
+  ],
+  "ابزارهای مدیریت (نسخه ۱۱.۱۵)": [
+    { key: "sys_manual_design", label: "طراحی دستی تب‌ها" },
+    { key: "sys_copy_tabs", label: "کپی امکانات بین تب‌ها (همه/انتخابی)" },
+    { key: "sys_additions", label: "تب افزودن‌ها و گزینه‌های کشویی" },
+    { key: "sys_geo_edit", label: "مدیریت استان/شهر/منطقه (وابسته)" },
+    { key: "sys_backup", label: "پشتیبان‌گیری خودکار و دستی" },
+    { key: "sys_restore", label: "بازیابی اطلاعات از فایل" },
+    { key: "sys_diag", label: "عیب‌یابی سامانه" },
+    { key: "sys_install", label: "نصب اپلیکیشن (PWA)" },
+    { key: "sys_targets", label: "مدیریت تارگت فروش" },
+    { key: "ord_formula", label: "تنظیم فرمول مبلغ سفارش و درصد ارزش افزوده" }
   ]
 };
 

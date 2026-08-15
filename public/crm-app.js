@@ -2160,7 +2160,9 @@ function setupOrdersTab() {
         return;
       }
 
-      const totalAmount = items.reduce((sum, item) => sum + (item.count * item.price), 0);
+      const totalAmount = items.reduce((sum, item) => sum + calcOrderRowTotal(item.count, item.giftCount || 0, item.price), 0);
+      const vatAmount = Math.round(totalAmount * (getOrderFormula().vat || 0) / 100);
+      const totalAmountWithVat = totalAmount + vatAmount;
 
       if (editId) {
         const idx = state.orders.findIndex(o => o.id === editId);
@@ -2168,7 +2170,7 @@ function setupOrdersTab() {
           state.orders[idx] = {
             ...state.orders[idx],
             pharmacyName, province, city, district, address,
-            repName, orderDate, status, notes, items, totalAmount,
+            repName, orderDate, status, notes, items, totalAmount, vatAmount, totalAmountWithVat,
             customFields: customFieldsVals
           };
         }
@@ -2177,7 +2179,7 @@ function setupOrdersTab() {
         const newOrder = {
           id: "ord-" + Date.now(),
           pharmacyName, province, city, district, address,
-          repName, orderDate, status, notes, items, totalAmount,
+          repName, orderDate, status, notes, items, totalAmount, vatAmount, totalAmountWithVat,
           customFields: customFieldsVals
         };
         state.orders.push(newOrder);
@@ -2319,7 +2321,7 @@ function mergeCatalogIntoOrderItems() {
   }
 }
 
-function addOrderItemRow(name = "", count = 1, price = 0, giftCount = 0) {
+function addOrderItemRow(name = "", count = "", price = 0, giftCount = "") {
   const container = document.getElementById("orderItemsContainer");
   if (!container) return;
 
@@ -2329,12 +2331,17 @@ function addOrderItemRow(name = "", count = 1, price = 0, giftCount = 0) {
   row.className = "order-item-row";
 
   const safeName = String(name || "").replace(/"/g, "&quot;");
+  const cntDisp = (Number(count) > 0) ? String(count) : "";
+  const giftDisp = (Number(giftCount) > 0) ? String(giftCount) : "";
+  const priceDisp = (Number(price) > 0) ? String(price) : "";
   row.innerHTML = `
     <input type="text" class="form-input order-item-name" list="orderProductCatalogList" placeholder="نام کالا از فهرست ثبت‌شده..." value="${safeName}" />
-    <input type="number" class="form-input order-item-count" placeholder="تعداد" min="0" value="${count}" />
-    <input type="number" class="form-input order-item-gift" placeholder="جایزه 🎁" min="0" value="${giftCount || 0}" title="تعداد جایزه" />
-    <input type="number" class="form-input order-item-price" placeholder="قیمت واحد" min="0" value="${price}" />
-    <button type="button" class="btn btn-danger btn-sm" onclick="removeOrderItemRow('${rowId}')">🗑️</button>
+    <input type="number" class="form-input order-item-count" placeholder="تعداد کالا" min="0" value="${cntDisp}" />
+    <input type="number" class="form-input order-item-gift" placeholder="تعداد جایزه" min="0" value="${giftDisp}" title="تعداد جایزه" />
+    <input type="number" class="form-input order-item-price" placeholder="قیمت واحد" min="0" value="${priceDisp}" />
+    <input type="text" class="form-input order-item-total" placeholder="جمع مبلغ" value="" readonly tabindex="-1" title="جمع مبلغ (خودکار: تعداد کالا × قیمت واحد)" />
+    <button type="button" class="btn btn-outline btn-sm order-item-edit" title="ویرایش این کالا در فهرست کالاها">✏️</button>
+    <button type="button" class="btn btn-danger btn-sm" onclick="removeOrderItemRow('${rowId}')" title="حذف ردیف">🗑️</button>
   `;
 
   const nameInp = row.querySelector(".order-item-name");
@@ -2342,9 +2349,18 @@ function addOrderItemRow(name = "", count = 1, price = 0, giftCount = 0) {
     const prod = (state.products || []).find(p => p.name === nameInp.value.trim());
     if (prod) {
       const priceEl = row.querySelector(".order-item-price");
-      if (priceEl) priceEl.value = prod.pharmacyPrice || prod.price || 0;
+      if (priceEl) priceEl.value = prod.pharmacyPrice || prod.price || "";
     }
     updateOrderTotalAmountDisplay();
+  });
+  const editBtn = row.querySelector(".order-item-edit");
+  editBtn.addEventListener("click", () => {
+    const prod = (state.products || []).find(p => p.name === nameInp.value.trim());
+    if (!prod) { alert("این ردیف هنوز با کالایی از فهرست کالاها یکی نیست؛ ابتدا نام کالا را دقیق بنویسید."); return; }
+    if (typeof editProductCatalogItem === "function") {
+      editProductCatalogItem(prod.id);
+      if (typeof switchTab === "function") switchTab("tab-columns-products");
+    }
   });
   row.querySelectorAll("input").forEach(inp => {
     inp.addEventListener("input", updateOrderTotalAmountDisplay);
@@ -2386,13 +2402,62 @@ function getOrderItemsFromUI() {
   return items;
 }
 
+// v11.15 — موتور فرمول مبلغ سفارش (قابل تنظیم توسط مدیر از «اطلاعات کالا»)
+function getOrderFormula() {
+  const def = { qty: "count", op: "*", price: "price", vat: 10 };
+  try {
+    const f = (state.settings && state.settings.orderFormula) || {};
+    return {
+      qty: f.qty === "gift" || f.qty === "price" ? f.qty : "count",
+      price: f.price === "count" || f.price === "gift" ? f.price : "price",
+      op: (f.op === "+" || f.op === "-" || f.op === "/") ? f.op : "*",
+      vat: (f.vat == null || isNaN(Number(f.vat))) ? def.vat : Number(f.vat)
+    };
+  } catch (e) { return def; }
+}
+
+function calcOrderRowTotal(count, gift, price) {
+  const f = getOrderFormula();
+  const vals = { count: Number(count) || 0, gift: Number(gift) || 0, price: Number(price) || 0 };
+  const a = vals[f.qty] != null ? vals[f.qty] : vals.count;
+  const b = vals[f.price] != null ? vals[f.price] : vals.price;
+  if (f.op === "+") return a + b;
+  if (f.op === "-") return Math.max(0, a - b);
+  if (f.op === "/") return b ? Math.round(a / b) : 0;
+  return a * b;
+}
+
 function updateOrderTotalAmountDisplay() {
-  const items = getOrderItemsFromUI();
-  const total = items.reduce((sum, item) => sum + (item.count * item.price), 0);
-  const disp = document.getElementById("orderTotalAmountDisplay");
-  if (disp) {
-    disp.textContent = total.toLocaleString("fa-IR");
+  const container = document.getElementById("orderItemsContainer");
+  let sum = 0;
+  if (container) {
+    Array.prototype.forEach.call(container.children, row => {
+      const n = row.querySelector(".order-item-name");
+      if (!n) return;
+      const name = (n.value || "").trim();
+      const c = row.querySelector(".order-item-count");
+      const g = row.querySelector(".order-item-gift");
+      const p = row.querySelector(".order-item-price");
+      const t = row.querySelector(".order-item-total");
+      const cnt = parseInt(c && c.value, 10) || 0;
+      const gift = parseInt(g && g.value, 10) || 0;
+      const price = parseInt(p && p.value, 10) || 0;
+      const rowTotal = name ? calcOrderRowTotal(cnt, gift, price) : 0;
+      if (t) t.value = (name && rowTotal) ? rowTotal.toLocaleString("fa-IR") : "";
+      sum += rowTotal;
+    });
   }
+  const f = getOrderFormula();
+  const vat = Math.round(sum * (Number(f.vat) || 0) / 100);
+  const withVat = sum + vat;
+  const disp = document.getElementById("orderTotalAmountDisplay");
+  if (disp) disp.textContent = sum.toLocaleString("fa-IR");
+  const vatP = document.getElementById("orderVatPercentView");
+  if (vatP) vatP.textContent = Number(f.vat || 0).toLocaleString("fa-IR") + "٪";
+  const vatD = document.getElementById("orderTotalVatDisplay");
+  if (vatD) vatD.textContent = vat.toLocaleString("fa-IR");
+  const wvD = document.getElementById("orderTotalWithVatDisplay");
+  if (wvD) wvD.textContent = withVat.toLocaleString("fa-IR");
 }
 
 function renderOrdersList(searchQuery = "") {
@@ -3313,7 +3378,9 @@ function setupAllFormSubmitHandlers() {
       return;
     }
 
-    const totalAmount = items.reduce((sum, item) => sum + (item.count * item.price), 0);
+    const totalAmount = items.reduce((sum, item) => sum + calcOrderRowTotal(item.count, item.giftCount || 0, item.price), 0);
+    const vatAmount = Math.round(totalAmount * (getOrderFormula().vat || 0) / 100);
+    const totalAmountWithVat = totalAmount + vatAmount;
 
     // کسر خودکار از باقیمانده تارگت نماینده (Requirement 1 in prompt)
     items.forEach(item => {
@@ -3328,13 +3395,13 @@ function setupAllFormSubmitHandlers() {
     if (editId) {
       const idx = state.orders.findIndex(o => o.id === editId);
       if (idx !== -1) {
-        state.orders[idx] = { ...state.orders[idx], pharmacyName, pharmacyId, province, city, district, address, repName, orderDate, status, notes, items, totalAmount, customFields: customFieldsVals };
+        state.orders[idx] = { ...state.orders[idx], pharmacyName, pharmacyId, province, city, district, address, repName, orderDate, status, notes, items, totalAmount, vatAmount, totalAmountWithVat, customFields: customFieldsVals };
       }
       alert(`✅ سفارش داروخانه «${pharmacyName}» ویرایش شد.`);
     } else {
       state.orders.push({
         id: "ord-" + Date.now(),
-        pharmacyName, pharmacyId, province, city, district, address, repName, orderDate, status, notes, items, totalAmount,
+        pharmacyName, pharmacyId, province, city, district, address, repName, orderDate, status, notes, items, totalAmount, vatAmount, totalAmountWithVat,
         customFields: customFieldsVals
       });
       alert(`✅ سفارش جدید برای داروخانه «${pharmacyName}» ثبت شد. از باقیمانده تارگت نماینده کسر گردید.`);

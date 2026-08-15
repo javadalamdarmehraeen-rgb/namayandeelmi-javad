@@ -935,6 +935,8 @@ V11.12
 V11.13
   ↓
 V11.14
+  ↓
+V11.15
 
 This is the currently recovered historical development path.
 
@@ -975,5 +977,77 @@ None of these documents should be treated as permission to redesign the
 system.
 
 They exist to prevent loss of knowledge and accidental regressions.
+
+---
+
+# 38. V11.15.0 DEVELOPMENT PHASE
+
+Date: 2026-08-15
+
+Source of request: single user message listing 14 numbered change requests,
+plus the explicit constraints: do not change the project skeleton, deliver
+the complete program files for download, and supply the GitHub update
+commands with the new version.
+
+Decision 1 — keep the versioned-file pattern (VERIFIED)
+A single new file `public/crm-features-v19.js` was created and loaded last
+(after v18) in `index.html`. Surgical edits were made to `crm-app.js`
+(order items/totals only), `crm-features-v11.js` (delete semantics, builtin
+`allowAddOption`, skip `meta.deleted`), `crm-data.js` (one new
+`PERMISSION_GROUPS` group), `index.html` (order-table header/totals markup,
+removal of the two additions-tab boxes, version bumps), `sw.js`,
+`server.js`, and `package.json`. No existing versioned file was deleted or
+renamed.
+
+Decision 2 — request #9 was ambiguous (VERIFIED as ambiguity)
+The Persian sentence for item 9 contains a typo that makes the literal
+meaning unclear. Implemented interpretation: an edit ✏️ button was added
+NEXT TO the existing delete 🗑️ button on each order-item row, opening the
+matching catalog product for editing. This interpretation is INFERRED and
+must be confirmed or corrected by the user.
+
+Decision 3 — real list ordering (VERIFIED in code)
+List column ordering previously existed only as stored numbers (the v18
+wrapper sorted a discarded copy — dead code). v19 now reorders actual
+rendered table cells against a slot map that mirrors each list renderer's
+column structure, guarded by a cell-count check; if a renderer's structure
+changes the reorder silently skips instead of corrupting rows.
+
+Decision 4 — backup target storage (VERIFIED design, PENDING browser test)
+The File System Access API directory/file handle cannot be kept in
+localStorage; it is persisted in IndexedDB and re-granted with
+`queryPermission`/`requestPermission` on the backup page. Saving directly
+into a user-chosen folder silently is only possible in Chromium-based
+browsers over a secure context; other browsers get a "save as" picker or a
+regular download fallback. This is a platform limitation, not a code
+choice.
+
+Decision 5 — fake connectivity test retired (VERIFIED)
+`testServerConnectivity` in `crm-app.js` was a hardcoded 700 ms setTimeout
+that always reported success. The troubleshooting button now runs the
+granular diagnostic suite instead. The original function body was left in
+place (overridden at runtime by v19) to keep `crm-app.js` edits minimal.
+
+Decision 6 — permissions rule (VERIFIED, user-mandated)
+Item 14 was recorded as a permanent rule in AI_RULES.md (#62). The new
+permission group "ابزارهای مدیریت (نسخه ۱۱.۱۵)" was appended to
+`PERMISSION_GROUPS`; existing users keep working because
+`getDefaultPermissionsObject(true)` covers new keys and
+`migratePermissions` backfills them.
+
+UNKNOWN on purpose:
+
+1. Whether the user's hosted production (Render) currently serves the state
+   the user edits locally; deployment was not touched in this phase.
+2. Whether item 9's interpretation matches the user's intent.
+3. Long-term interaction between the v19 cell-reorder engine and any future
+   list renderer that changes its column structure.
+
+Verification status: `node --check` passes for every JS file; an HTTP smoke
+test of `server.js` served index.html (with the v19 tag) and reported
+version 11.15.0 on `/api/health` (VERIFIED). All 14 items still require
+in-browser confirmation by the user (PENDING USER VERIFICATION).
+
+---
 
 # END OF AI DECISION LOG

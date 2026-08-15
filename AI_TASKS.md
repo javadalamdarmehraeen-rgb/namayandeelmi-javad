@@ -363,7 +363,11 @@ Track current development state and future tasks.
 Create ARENA_HANDOFF_PROMPT.md
 
 Status:
-TODO
+DONE
+
+Note:
+ARENA_HANDOFF_PROMPT.md exists in the repository root and fulfils these
+requirements; verified present in the current working tree.
 
 Purpose:
 
@@ -384,17 +388,78 @@ The prompt must force the new agent to:
 
 ---
 
+## TASK-007
+
+Apply the 14-point user change request as version v11.15.0
+
+Status:
+DONE
+
+Scope summary:
+
+1. Old default required-star behaviour removed; only pharmacyName and
+   doctorName stay required (one-time state migration in v19 `fixRequiredDefaults`).
+2. Additions tab (افزودن‌ها) compacted; the "compact list of all selects" and
+   "field info" boxes removed; typed add-option inside combos; small colored
+   "add option" button removed (v19 + index.html markup removal).
+3. All delete buttons iconified 🗑️ and all edit buttons ✏️ (v19 `iconifyButtons`).
+4. "Instant add option" (افزودن لحظه‌ای) toggle available and persisted for
+   every field type incl. builtins (v11 save branch + getUnifiedFieldList).
+5. Real per-field list ordering; row number + rep name as first columns
+   (v19 list reorder engine).
+6. Routing column rendered as a GPS icon per row (v19 `paintRouteIcons`).
+7. "پاک کردن" (clear) button added to pharmacies / doctors / orders forms.
+8. Field delete in field-info table now deletes completely; delete button no
+   longer morphs into "نمایش مجدد" (v11 `deleteAnyField` / `renderColFieldList`).
+9. Edit ✏️ button next to delete on each order-item row opens the matching
+   catalog product for editing. NOTE: the user's sentence for this item was
+   ambiguous/typo'd; this interpretation must be confirmed by the user.
+10. Box info (اطلاعات کادرها) and key info (اطلاعات کلیدها) shown only in
+    their own sections, removed from the fields-info table.
+11. Products mega-fix (add-field bar labels, real box/list ordering, info
+    panel under the bar, working per-row edit, تعداد کالا renames, gift image
+    removed, row total = qty × unit price, VAT% admin-only, two readonly
+    totals, admin-editable formula, combo arrow fixed, default 0 cleared on
+    typing, thousands separators, correct order total).
+12. Backup page excluded from auto layout; auto backup actually runs; manual
+    backup lands in the admin-chosen folder/file (File System Access API with
+    persisted handle in IndexedDB when available).
+13. Granular diagnostics (v19 `runDetailedDiagnostics`); fake
+    `testServerConnectivity` replaced by the real granular check.
+14. PERMANENT RULE: every added/removed/changed capability must be reflected
+    in permissions; new permission group "ابزارهای مدیریت (نسخه ۱۱.۱۵)" added
+    in crm-data.js; AI_RULES.md #62 records the rule.
+
+Implementation:
+Single new versioned file public/crm-features-v19.js (loaded after v18) plus
+small surgical edits in index.html, crm-app.js, crm-features-v11.js,
+crm-data.js, sw.js, server.js, package.json. Project skeleton and the
+versioned-file pattern were kept unchanged.
+
+Verification status:
+- `node --check` passes for all JS files (VERIFIED).
+- `node server.js` smoke test: /api/health reports 11.15.0, / serves
+  index.html including the v19 script tag, /crm-features-v19.js serves 200
+  (VERIFIED).
+- In-browser behaviour of the 14 items must be verified by the user in
+  Chrome/Edge (PENDING USER VERIFICATION).
+
+---
+
 # 12. NEXT IMMEDIATE TASK
 
-The next task after the AI memory files are committed is:
+No pending coding task.
 
-TASK-006
+Awaiting user in-browser verification of v11.15.0 (TASK-007), especially:
 
-Create:
+1. List column ordering after setting «شماره ترتیب در لیست».
+2. Typed add-option rows appearing as children of the same combo.
+3. Backup to a chosen folder (requires Chrome/Edge and secure context).
+4. Granular diagnostics output in the troubleshooting tab.
+5. Order item totals, VAT, and the admin-only formula box.
 
-ARENA_HANDOFF_PROMPT.md
-
-This is the next priority.
+After user confirmation, the next task is whatever new change request the
+user issues following their verification pass.
 
 ---
 

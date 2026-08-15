@@ -1,0 +1,8 @@
+[33me4a121cb[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m)[m Add AI project memory and Arena handoff system
+ AI_ARCHITECTURE.md      | 1070 [32m+++++++++++++++++++++++++++++++++++++++++[m
+ AI_DECISION_LOG.md      |  979 [32m++++++++++++++++++++++++++++++++++++++[m
+ AI_PROJECT_CONTEXT.md   |  648 [32m++++++++++++++++++++++++[m[31m-[m
+ AI_RULES.md             | 1205 [32m+++++++++++++++++++++++++++++++++++++++++++++++[m
+ AI_TASKS.md             |  887 [32m++++++++++++++++++++++++++++++++++[m
+ ARENA_HANDOFF_PROMPT.md | 1032 [32m++++++++++++++++++++++++++++++++++++++++[m
+ 6 files changed, 5820 insertions(+), 1 deletion(-)
