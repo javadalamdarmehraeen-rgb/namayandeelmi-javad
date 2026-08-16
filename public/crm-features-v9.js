@@ -104,18 +104,19 @@
     return name.indexOf("مدیر") !== -1 || name.indexOf("سرپرست") !== -1 || name.indexOf("Admin") !== -1;
   }
 
+  // قانون ثابت لیست‌ها: تازه‌ترین رکورد همیشه سطر اول؛ هرگز آرایه اصلی را reverse نکن.
   function visiblePharmacies() {
-    const list = (state && state.pharmacies) || [];
+    const list = ((state && state.pharmacies) || []).slice().reverse();
     if (isAdminLike()) return list;
     return list.filter(function (p) { return !p.repName || p.repName === currentRepName(); });
   }
   function visibleDoctors() {
-    const list = (state && state.doctors) || [];
+    const list = ((state && state.doctors) || []).slice().reverse();
     if (isAdminLike()) return list;
     return list.filter(function (d) { return !d.repName || d.repName === currentRepName(); });
   }
   function visibleOrders() {
-    const list = (state && state.orders) || [];
+    const list = ((state && state.orders) || []).slice().reverse();
     if (isAdminLike()) return list;
     return list.filter(function (o) { return !o.repName || o.repName === currentRepName(); });
   }

@@ -1079,3 +1079,8 @@ ADDENDUM v11.16.1 (2026-08-16)
   a token-free SSH path; SYNC_ALL skips gitlab gracefully until then.
 
 # END OF ARENA AI MASTER HANDOFF PROMPT
+## Addendum — v11.17.0
+- Never re-enable `mirrorPharmacyOrderToOrders`: it is intentionally a no-op to preserve field identity/layout across releases.
+- v20 owns local order match/autofill, entity cascade manager, share-field lock, visit GPS/metrics/routes, route search/export and version badge.
+- v9 visiblePharmacies/Doctors/Orders return reversed copies (newest first).
+- GitHub workflow is pure Node/zero-dependency; do not restore Next commands.

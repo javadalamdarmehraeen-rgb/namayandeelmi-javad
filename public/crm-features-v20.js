@@ -56,7 +56,12 @@
       "cursor:not-allowed!important;opacity:.85!important;border-color:#d1d5db!important;}" +
       ".crm-combo.v20-locked{pointer-events:none;}" +
       ".v20-grey-zone .form-label{color:#9ca3af!important;}" +
-      ".v20-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:12px;align-items:start;}" +
+      ".v20-cards{display:grid!important;grid-template-columns:repeat(auto-fit,minmax(min(260px,100%),1fr))!important;gap:12px;align-items:start;width:100%;}" +
+      ".v20-combo-card{min-width:0!important;width:auto!important;margin:0!important;}" +
+      ".v20-local-match{position:sticky;top:8px;z-index:40;margin:8px 0;box-shadow:0 5px 18px rgba(15,23,42,.16);}" +
+      ".v20-visit-metrics{display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:10px;margin:12px 0;}" +
+      ".v20-metric{background:#f0fdfa;border:1px solid #99f6e4;border-radius:12px;padding:12px;text-align:center}.v20-metric b{display:block;font-size:1.2rem;color:#0f766e;margin-top:4px;}" +
+      ".v20-version{background:#312e81;color:#fff;border-radius:999px;padding:5px 10px;font-weight:800;white-space:nowrap;}" +
       "#v20ChpassFab{background:#0d9488;color:#fff;border:none;border-radius:10px;padding:8px 14px;" +
       "font-weight:700;cursor:pointer;font-family:inherit;font-size:.85rem;margin:0 6px;vertical-align:middle;}" +
       "#v20ChpassFab:hover{background:#0f766e;}" +
@@ -158,8 +163,10 @@
 
   var V20_FA_IDS = {
     pharmacyName: "نام داروخانه", pharmacyProvince: "استان", pharmacyCity: "شهر", pharmacyDistrict: "منطقه",
-    pharmacyIsPercentage: "وضعیت درصدی داروخانه", pharmacyPhone: "تلفن داروخانه",
+    pharmacyType: "نوع داروخانه", pharmacyCategory: "نوع داروخانه", pharmacyIsPercentage: "وضعیت درصدی داروخانه", pharmacyPhone: "تلفن داروخانه",
+    pharmacyAddress: "آدرس دقیق داروخانه", pharmacyManager: "نام مسئول داروخانه",
     doctorName: "نام پزشک", doctorSpecialty: "تخصص پزشک", doctorProvince: "استان", doctorCity: "شهر", doctorDistrict: "منطقه",
+    doctorPhone: "تلفن پزشک", doctorAddress: "آدرس دقیق مطب", doctorIsPercentage: "وضعیت درصدی پزشک",
     orderPharmacyName: "نام داروخانه", orderProvince: "استان", orderCity: "شهر", orderDistrict: "منطقه",
     orderRepName: "نام نماینده", orderStatus: "وضعیت سفارش", orderDate: "تاریخ سفارش",
     cfTargetEntity: "تب مربوطه", cfType: "نوع فیلد"
@@ -309,7 +316,7 @@
     entries.forEach(function (en) {
       var parentSel = en.el.tagName === "SELECT" ? greyParentOptions(en, v20AddPane) : "";
       h += "<div class='v20-combo-card' data-store='" + esc(en.id) + "'>" +
-        "<h5>🔽 " + esc(en.label || en.id) + (en.label ? " <span class='v20-mini'>(" + esc(en.id) + ")</span>" : "") + "</h5>" +
+        "<h5>🔽 " + esc(en.label || V20_FA_IDS[en.id] || "فیلد کشویی") + "</h5>" +
         "<div class='v20-card-tools'>" +
         "<input type='text' class='v20-search' placeholder='🔍 جستجوی لحظه‌ای در زیرمجموعه‌ها...'>" +
         "<input type='text' class='v20-newopt' placeholder='گزینه جدید...' style='flex:.8'>" +
@@ -325,8 +332,10 @@
     if (old) old.parentNode.removeChild(old);
     var div = document.createElement("div");
     div.innerHTML = h;
-    host.appendChild(div.firstChild);
+    // مدیر جدید همیشه ابتدای تب دیده شود؛ کاربر مجبور به اسکرول زیر پنل قدیمی نباشد.
+    host.insertBefore(div.firstChild, host.firstChild);
     bindManager(host);
+    v20RenderEntityManager();
   };
 
   function bindManager(host) {
@@ -870,6 +879,9 @@
   /* ---------- ۷-ب) همگام‌سازی «جای فیلدها» داروخانه → سفارشات ---------- */
   var ORDER_TO_PH_CORE = { PharmacyName: "Name" };
   function mirrorPharmacyOrderToOrders() {
+    // از نسخه ۱۱.۱۷ جای فیلدها فقط از تنظیم ذخیره‌شده مدیر خوانده می‌شود.
+    // جابه‌جایی خودکار DOM در هر بار اجرای نسخه، کد/جای فیلدها را به‌هم می‌زد.
+    return;
     try {
       var ph = $("tab-pharmacies"), od = $("tab-orders");
       if (!ph || !od) return;
@@ -910,14 +922,164 @@
     window.applyFullFormLayout = w;
   }
 
+
+  /* ---------- ۱۲) تثبیت شناسه‌ها + مدیر نام داروخانه/پزشک و وابستگی‌ها ---------- */
+  function v20EntityRecordsHtml(kind) {
+    var S = st() || {};
+    var list = kind === "pharmacy" ? (S.pharmacies || []) : (S.doctors || []);
+    var title = kind === "pharmacy" ? "نام داروخانه و همه اطلاعات وابسته" : "نام پزشک و همه اطلاعات وابسته";
+    var rows = list.slice().reverse().map(function (r) {
+      var sub = [r.province, r.city, r.district, r.address, r.phone, r.specialty].filter(Boolean).join("، ");
+      return "<div class='v20-opt-row' data-entity='" + kind + "' data-id='" + esc(r.id) + "'>" +
+        "<span><strong>" + esc(r.name || "بدون نام") + "</strong><small style='display:block;color:#64748b'>" + esc(sub || "بدون اطلاعات تکمیلی") + "</small></span>" +
+        "<button type='button' class='v20-ent-edit' title='ویرایش نام و همه وابستگی‌ها'>✏️</button>" +
+        "<button type='button' class='v20-ent-del' title='حذف رکورد و وابستگی‌ها'>🗑️</button></div>";
+    }).join("");
+    return "<div class='v20-combo-card v20-entity-card'><h5>🗂️ " + title + "</h5>" +
+      "<div class='v20-mini'>ویرایش نام، سفارش‌ها و ارجاع‌های وابسته را هم اصلاح می‌کند. حذف فقط با تأیید مدیر انجام می‌شود.</div>" +
+      "<div class='v20-card-tools'><input class='v20-ent-search' placeholder='🔍 جستجوی لحظه‌ای نام یا اطلاعات...'></div>" +
+      "<div class='v20-entity-rows'>" + (rows || "<div class='v20-mini'>رکوردی ثبت نشده است.</div>") + "</div></div>";
+  }
+  function v20RenderEntityManager() {
+    var mgr = document.querySelector("#addTabPanel .v20-addmgr");
+    if (!mgr) return;
+    var old = mgr.querySelector(".v20-entity-grid"); if (old) old.remove();
+    if (v20AddPane !== "tab-pharmacies" && v20AddPane !== "tab-doctors") return;
+    var grid = document.createElement("div"); grid.className = "v20-cards v20-entity-grid"; grid.style.marginTop = "14px";
+    grid.innerHTML = v20EntityRecordsHtml(v20AddPane === "tab-pharmacies" ? "pharmacy" : "doctor");
+    mgr.appendChild(grid);
+    var search = grid.querySelector(".v20-ent-search");
+    if (search) search.addEventListener("input", function () {
+      var q = String(search.value || "").toLowerCase();
+      Array.prototype.forEach.call(grid.querySelectorAll(".v20-opt-row"), function (r) { r.style.display = !q || r.textContent.toLowerCase().indexOf(q) >= 0 ? "flex" : "none"; });
+    });
+    grid.addEventListener("click", function (e) {
+      var row = e.target.closest && e.target.closest(".v20-opt-row"); if (!row) return;
+      var kind = row.getAttribute("data-entity"), id = row.getAttribute("data-id"), S = st();
+      var arr = kind === "pharmacy" ? S.pharmacies : S.doctors;
+      var rec = (arr || []).filter(function (x) { return String(x.id) === String(id); })[0]; if (!rec) return;
+      if (e.target.closest(".v20-ent-edit")) {
+        var nn = prompt("نام جدید را وارد کنید؛ همه اطلاعات وابسته هم اصلاح می‌شود:", rec.name || "");
+        if (nn == null || !String(nn).trim()) return; nn = String(nn).trim(); var oldName = rec.name;
+        rec.name = nn;
+        if (kind === "pharmacy") (S.orders || []).forEach(function (o) { if (String(o.pharmacyId || "") === String(id) || o.pharmacyName === oldName) { o.pharmacyName = nn; o.pharmacyId = id; } });
+        [S.visits || [], S.activityLog || [], S.repRoutes || []].forEach(function (a) { a.forEach(function (x) { if (x.doctorName === oldName) x.doctorName = nn; if (x.pharmacyName === oldName) x.pharmacyName = nn; }); });
+        save(); window.v20RenderComboManager(); v20Toast("✅ نام و همه ارجاع‌های وابسته ویرایش شد.");
+      }
+      if (e.target.closest(".v20-ent-del")) {
+        var deps = kind === "pharmacy" ? (S.orders || []).filter(function (o) { return String(o.pharmacyId || "") === String(id) || o.pharmacyName === rec.name; }).length :
+          (S.visits || []).filter(function (v) { return String(v.doctorId || "") === String(id) || v.doctorName === rec.name; }).length;
+        if (!confirm("«" + rec.name + "» و " + deps + " رکورد وابسته حذف شود؟ این کار قابل بازگشت نیست.")) return;
+        if (kind === "pharmacy") { S.pharmacies = arr.filter(function (x) { return x.id !== id; }); S.orders = (S.orders || []).filter(function (o) { return !(String(o.pharmacyId || "") === String(id) || o.pharmacyName === rec.name); }); }
+        else { S.doctors = arr.filter(function (x) { return x.id !== id; }); S.visits = (S.visits || []).filter(function (v) { return !(String(v.doctorId || "") === String(id) || v.doctorName === rec.name); }); }
+        save(); window.v20RenderComboManager(); v20Toast("✅ رکورد و اطلاعات وابسته حذف شد.");
+      }
+    });
+  }
+
+  /* ---------- ۱۳) پیام هم‌نام کنار همان فیلد + جایگذاری دقیق ---------- */
+  function v20SetValue(id, value) {
+    var el = $(id); if (!el) return;
+    el.disabled = false; el.value = value == null ? "" : value;
+    try { el.dispatchEvent(new Event("input", { bubbles: true })); el.dispatchEvent(new Event("change", { bubbles: true })); } catch (e) {}
+    var combo = el.closest && el.closest(".crm-combo"); var vis = combo && combo.querySelector(".crm-combo-input"); if (vis) vis.value = el.options && el.selectedIndex >= 0 ? el.options[el.selectedIndex].text : el.value;
+  }
+  function v20PlaceMatchNearInput() {
+    var inp = $("orderPharmacyName"), box = $("existingPharmacyTopAlert"); if (!inp || !box) return;
+    var group = inp.closest(".form-group") || inp.parentNode;
+    if (group && box.parentNode !== group) group.appendChild(box);
+    box.classList.add("v20-local-match"); box.style.width = "100%";
+  }
+  function v20FillOrderPharmacy() {
+    var S = st(), mid = ($("orderPharmacyMatchedId") || {}).value, name = String(($("orderPharmacyName") || {}).value || "").trim();
+    var rec = ((S && S.pharmacies) || []).filter(function (p) { return String(p.id) === String(mid) || p.name === name; })[0];
+    if (!rec) { v20Toast("داروخانه انتخاب‌شده پیدا نشد."); return; }
+    v20SetValue("orderPharmacyName", rec.name); v20SetValue("orderPharmacyMatchedId", rec.id);
+    v20SetValue("orderProvince", rec.province); try { if (typeof populateCities === "function") populateCities(rec.province, $("orderCity"), rec.city); } catch (e) {}
+    v20SetValue("orderCity", rec.city); try { if (typeof populateDistricts === "function") populateDistricts(rec.province, rec.city, $("orderDistrict"), rec.district); } catch (e2) {}
+    v20SetValue("orderDistrict", rec.district); v20SetValue("orderAddress", rec.address);
+    var phFields = (S.customFields && S.customFields.pharmacy) || [], orFields = (S.customFields && S.customFields.order) || [];
+    phFields.forEach(function (f) { var of = orFields.filter(function (x) { return x.id === "ordm-" + f.id || x.label === f.label; })[0]; if (of) v20SetValue(of.id, (rec.customFields || {})[f.label]); });
+    v20ApplyOrderLock(); v20Toast("✅ همه اطلاعات داروخانه دقیقاً در فیلدهای متناظر جایگذاری شد.");
+  }
+  function bindOrderLocalMatch() {
+    v20PlaceMatchNearInput();
+    var btn = $("btnTopAutoFillPharmacy"); if (btn) btn.addEventListener("click", function (e) { e.preventDefault(); e.stopImmediatePropagation(); v20FillOrderPharmacy(); }, true);
+    var inp = $("orderPharmacyName"); if (inp) inp.addEventListener("input", function () { setTimeout(v20PlaceMatchNearInput, 0); });
+  }
+
+  /* ---------- ۱۴) نسخه دقیق در هدر مدیر ---------- */
+  function renderVersionBadge() {
+    if ($("v20VersionBadge")) return;
+    var actions = document.querySelector(".header-actions"); if (!actions) return;
+    var b = document.createElement("span"); b.id = "v20VersionBadge"; b.className = "v20-version"; b.textContent = "نسخه ۱۱.۱۷.۰"; b.title = "نسخه دقیق برنامه نصب‌شده";
+    actions.insertBefore(b, actions.firstChild);
+  }
+
+  /* ---------- ۱۵) متن ارسالی تحت قفل مدیر ---------- */
+  var SHARE_FIELDS = {
+    pharmacy: [["name","نام داروخانه"],["repName","نام نماینده"],["province","استان"],["city","شهر"],["district","منطقه"],["address","آدرس دقیق"],["phone","تلفن"],["isPercentage","وضعیت درصدی"]],
+    doctor: [["name","نام پزشک"],["specialty","تخصص"],["repName","نام نماینده"],["province","استان"],["city","شهر"],["district","منطقه"],["address","آدرس دقیق"],["phone","تلفن"]],
+    order: [["pharmacyName","نام داروخانه"],["repName","نام نماینده"],["orderDate","تاریخ"],["province","استان"],["city","شهر"],["address","آدرس"],["status","وضعیت"],["items","اقلام"],["totalAmount","مبلغ کل"]]
+  };
+  function shareSettings() { var S = st(); S.settings = S.settings || {}; S.settings.v20ShareFields = S.settings.v20ShareFields || {}; return S.settings.v20ShareFields; }
+  function buildLockedShare(rec, kind) {
+    var cfg = shareSettings(), enabled = cfg[kind] || SHARE_FIELDS[kind].map(function (x) { return x[0]; });
+    return SHARE_FIELDS[kind].filter(function (x) { return enabled.indexOf(x[0]) >= 0; }).map(function (x) {
+      var v = rec[x[0]]; if (x[0] === "items") v = (v || []).map(function (i) { return (i.name || "کالا") + " × " + (i.count || 0); }).join("، ");
+      if (x[0] === "totalAmount") v = Number(v || 0).toLocaleString("fa-IR") + " ریال";
+      if (typeof v === "boolean") v = v ? "بله" : "خیر";
+      return x[1] + ": " + (v == null || v === "" ? "—" : v);
+    }).join("\n");
+  }
+  function renderShareManager() {
+    var host = $("messengerTogglesBox"); if (!host || $("v20ShareManager")) return;
+    var box = document.createElement("div"); box.id = "v20ShareManager"; box.style.cssText = "margin-top:16px;border-top:2px solid #cbd5e1;padding-top:12px";
+    box.innerHTML = "<h4>🔒 تعیین اطلاعات مجاز برای ارسال (فقط مدیر)</h4>" + Object.keys(SHARE_FIELDS).map(function (kind) {
+      var title = kind === "pharmacy" ? "داروخانه" : kind === "doctor" ? "پزشک" : "سفارش", cfg = shareSettings(), on = cfg[kind] || SHARE_FIELDS[kind].map(function (x) { return x[0]; });
+      return "<fieldset style='margin:8px 0;padding:10px;border:1px solid #cbd5e1;border-radius:10px'><legend>" + title + "</legend>" + SHARE_FIELDS[kind].map(function (f) { return "<label style='display:inline-flex;gap:5px;margin:5px 8px'><input type='checkbox' data-kind='" + kind + "' data-field='" + f[0] + "' " + (on.indexOf(f[0]) >= 0 ? "checked" : "") + ">" + f[1] + "</label>"; }).join("") + "</fieldset>";
+    }).join("") + "<div class='v20-mini'>کاربر متن و فیلدهای انتخابی مدیر را نمی‌تواند تغییر دهد.</div>";
+    host.appendChild(box);
+    box.addEventListener("change", function () { var cfg = shareSettings(); Object.keys(SHARE_FIELDS).forEach(function (k) { cfg[k] = Array.prototype.map.call(box.querySelectorAll("input[data-kind='" + k + "']:checked"), function (i) { return i.getAttribute("data-field"); }); }); save(); v20Toast("تنظیم ارسال مدیر ذخیره شد."); });
+  }
+  function wrapShareModal() {
+    var old = window.openRowDetailsModal; if (typeof old !== "function" || old._v20share) return;
+    var w = function (rec, kind) { var r = old.apply(this, arguments), text = buildLockedShare(rec, kind); var map = {btnShareBale:"https://ble.ir/share?text=",btnShareEitaa:"https://eitaa.com/share/url?url=&text=",btnShareTelegram:"https://t.me/share/url?url=&text=",btnShareSoroush:"https://splus.ir/share?text=",btnShareWhatsApp:"https://api.whatsapp.com/send?text="}; Object.keys(map).forEach(function (id) { var b=$(id); if(b)b.onclick=function(){window.open(map[id]+encodeURIComponent(text),"_blank");}; }); var cp=$("btnRowCopyText"); if(cp)cp.onclick=function(){navigator.clipboard.writeText(text).then(function(){v20Toast("متن مجاز مدیر کپی شد.");});}; return r; };
+    w._v20share = true; window.openRowDetailsModal = w;
+  }
+
+  /* ---------- ۱۶) GPS واقعی، کارت آمار، سابقه و جستجو/اکسل رصد ---------- */
+  var v20Watch = null, v20VisitTimer = null;
+  function hav(a,b){if(!a||!b)return 0;var R=6371000,p=Math.PI/180,d1=(b.lat-a.lat)*p,d2=(b.lng-a.lng)*p,x=Math.sin(d1/2)*Math.sin(d1/2)+Math.cos(a.lat*p)*Math.cos(b.lat*p)*Math.sin(d2/2)*Math.sin(d2/2);return 2*R*Math.atan2(Math.sqrt(x),Math.sqrt(1-x));}
+  function visitDate(){return new Date().toLocaleDateString("fa-IR",{timeZone:"Asia/Tehran"});}
+  function ensureVisitCards(){var stBox=$("visitStatusBox");if(!stBox)return null;var h=$("v20VisitMetrics");if(!h){h=document.createElement("div");h.id="v20VisitMetrics";h.className="v20-visit-metrics";stBox.parentNode.insertBefore(h,stBox.nextSibling);}return h;}
+  function refreshVisitCards(){var S=st(),v=S&&S.v20ActiveVisit,h=ensureVisitCards();if(!h)return;var dur=v?Math.max(0,Math.floor((Date.now()-v.startedAt)/1000)):0;h.innerHTML=[["مسافت طی‌شده",Math.round(v?v.distance:0)+" متر"],["مدت توقف",Math.round((v?v.stopMs:0)/60000)+" دقیقه"],["نقاط ثبت‌شده",v?(v.points||[]).length:0],["ساعت شروع",v?v.startTime:"—"]].map(function(x){return "<div class='v20-metric'>"+x[0]+"<b>"+x[1]+"</b></div>";}).join("");var sb=$("visitStatusBox");if(sb&&v)sb.textContent="GPS متصل است — مدت فعالیت: "+Math.floor(dur/60)+" دقیقه و "+(dur%60)+" ثانیه";}
+  function startV20Visit(){var S=st();if(S.v20ActiveVisit){v20Toast("یک ویزیت هم‌اکنون فعال است.");return;}if(!navigator.geolocation){alert("این دستگاه GPS یا دسترسی موقعیت مکانی ندارد.");return;}var rep=sessionStorage.getItem("crmUserName")||"نماینده";S.v20ActiveVisit={id:"route-"+Date.now(),repName:rep,date:visitDate(),startedAt:Date.now(),startTime:new Date().toLocaleTimeString("fa-IR"),points:[],distance:0,stopMs:0,lastMoveAt:Date.now()};save();
+    v20Watch=navigator.geolocation.watchPosition(function(pos){var V=st().v20ActiveVisit;if(!V)return;var p={lat:pos.coords.latitude,lng:pos.coords.longitude,t:Date.now(),acc:pos.coords.accuracy};var prev=V.points[V.points.length-1],d=hav(prev,p);if(d>=3){V.distance+=d;V.lastMoveAt=p.t;}else if(prev){V.stopMs+=Math.max(0,p.t-prev.t);}V.points.push(p);save(false);refreshVisitCards();},function(err){alert(err.code===1?"برای شروع ویزیت، اجازه موقعیت مکانی (GPS) را در مرورگر فعال کنید.":"اتصال GPS برقرار نشد؛ دوباره تلاش کنید.");},{enableHighAccuracy:true,maximumAge:0,timeout:15000});
+    clearInterval(v20VisitTimer);v20VisitTimer=setInterval(refreshVisitCards,1000);refreshVisitCards();v20Toast("✅ GPS متصل شد و ثبت مسیر آغاز شد.");}
+  function stopV20Visit(){var S=st(),V=S&&S.v20ActiveVisit;if(!V){v20Toast("ویزیت فعالی وجود ندارد.");return;}if(v20Watch!=null)navigator.geolocation.clearWatch(v20Watch);v20Watch=null;clearInterval(v20VisitTimer);V.endTime=new Date().toLocaleTimeString("fa-IR");V.endedAt=Date.now();V.durationMs=V.endedAt-V.startedAt;V.status="پایان‌یافته";V.path=(V.points||[]).map(function(p){return[p.lat,p.lng];});V.visited=(V.points||[]).length;V.pending=0;V.lastStop=V.points.length?"آخرین نقطه GPS":"بدون نقطه";S.repRoutes=S.repRoutes||[];S.repRoutes.unshift(V);S.visitTracks=S.visitTracks||[];S.visitTracks.unshift(V);S.v20ActiveVisit=null;save();refreshVisitCards();renderV20Routes();v20Toast("✅ همه فعالیت‌ها با تاریخ در رصد تردد ذخیره شد.");}
+  function bindV20Visit(){var b1=$("btnStartVisit"),b2=$("btnEndVisit");if(b1){var n1=b1.cloneNode(true);b1.parentNode.replaceChild(n1,b1);n1.addEventListener("click",startV20Visit);}if(b2){var n2=b2.cloneNode(true);b2.parentNode.replaceChild(n2,b2);n2.addEventListener("click",stopV20Visit);}refreshVisitCards();}
+  function ensureRouteTools(){var body=$("tableRepRoutesBody");if(!body)return;var table=body.closest("table"),wrap=table&&table.parentNode;if(!wrap||$("v20RouteTools"))return;var d=document.createElement("div");d.id="v20RouteTools";d.style.cssText="display:flex;gap:8px;flex-wrap:wrap;margin:10px 0";d.innerHTML="<input id='v20RouteSearch' class='form-input' style='max-width:360px' placeholder='🔍 جستجوی لحظه‌ای نماینده، تاریخ یا وضعیت...'><button type='button' id='v20RouteExcel' class='btn btn-primary'>📊 خروجی اکسل</button>";wrap.insertBefore(d,table);$("v20RouteSearch").addEventListener("input",renderV20Routes);$("v20RouteExcel").addEventListener("click",exportV20Routes);}
+  function renderV20Routes(){ensureRouteTools();var body=$("tableRepRoutesBody");if(!body)return;var q=String(($("v20RouteSearch")||{}).value||"").toLowerCase(),rep=String(($("routeRepFilterSelect")||{}).value||"");var rows=((st()&&st().repRoutes)||[]).slice().sort(function(a,b){return Number(b.endedAt||b.startedAt||0)-Number(a.endedAt||a.startedAt||0);}).filter(function(r){return(!rep||r.repName===rep)&&(!q||[r.repName,r.date,r.status,r.startTime,r.endTime].join(" ").toLowerCase().indexOf(q)>=0);});var table=body.closest("table"),head=table&&table.querySelector("thead tr");if(head)head.innerHTML="<th>ردیف</th><th>نام نماینده</th><th>تاریخ</th><th>شروع</th><th>پایان</th><th>مسافت (متر)</th><th>توقف (دقیقه)</th><th>نقاط</th><th>وضعیت</th>";body.innerHTML=rows.map(function(r,i){return"<tr><td>"+(i+1)+"</td><td><strong>"+esc(r.repName||"—")+"</strong></td><td>"+esc(r.date||"—")+"</td><td>"+esc(r.startTime||"—")+"</td><td>"+esc(r.endTime||"—")+"</td><td>"+Math.round(r.distance||0)+"</td><td>"+Math.round((r.stopMs||0)/60000)+"</td><td>"+((r.points||[]).length||r.visited||0)+"</td><td>"+esc(r.status||"—")+"</td></tr>";}).join("");}
+  function exportV20Routes(){var rows=((st()&&st().repRoutes)||[]).slice().sort(function(a,b){return Number(b.endedAt||0)-Number(a.endedAt||0);}).map(function(r,i){return[i+1,r.repName||"—",r.date||"—",r.startTime||"—",r.endTime||"—",Math.round(r.distance||0),Math.round((r.stopMs||0)/60000),(r.points||[]).length,r.status||"—"];});window.downloadCSVFile("rep-routes.xls",["ردیف","نام نماینده","تاریخ","ساعت شروع","ساعت پایان","مسافت (متر)","توقف (دقیقه)","نقاط","وضعیت"],rows);}
+
+  /* ---------- ۱۷) آدرس ریز تا کوچه/پلاک ---------- */
+  window.reverseGeocodeCoordinates = async function(lat,lng){try{var res=await fetch("/api/reverse?lat="+encodeURIComponent(lat)+"&lng="+encodeURIComponent(lng)+"&zoom=18");var d=await res.json();if(d&&d.display_name){var a=d.address||{},parts=[a.house_number,a.road||a.pedestrian||a.footway,a.neighbourhood||a.quarter,a.suburb,a.city_district,a.city||a.town||a.village,a.state].filter(Boolean);var precise=parts.join("، ");return precise&&precise.length>=d.display_name.length*.45?precise:d.display_name;}}catch(e){}return"موقعیت "+Number(lat).toFixed(6)+"، "+Number(lng).toFixed(6);};
+
+  /* ---------- ۱۸) همه لیست‌های قدیمی هم تازه‌ترین در بالا ---------- */
+  function wrapNewestTables(){["renderActivityLogTable","renderRepRoutesTable","renderRepHomesTable","renderLeavesTable","renderMonthlyReportsTable","renderNotificationsTable","renderSalesTargetsTable","renderCustomFieldsTable"].forEach(function(n){var old=window[n];if(typeof old!=="function"||old._v20newest)return;var w=function(){var r=old.apply(this,arguments);setTimeout(function(){var map={renderActivityLogTable:"tableActivityLogBody",renderRepRoutesTable:"tableRepRoutesBody",renderRepHomesTable:"tableRepHomesBody",renderLeavesTable:"tableLeavesBody",renderMonthlyReportsTable:"tableMonthlyReportsBody",renderNotificationsTable:"tableNotificationsBody",renderSalesTargetsTable:"tableSalesTargetsBody",renderCustomFieldsTable:"tableCustomFieldsBody"},tb=$(map[n]);if(tb){var rows=Array.prototype.slice.call(tb.children).reverse();rows.forEach(function(x){tb.appendChild(x);});}},0);return r;};w._v20newest=true;window[n]=w;});}
+
   /* ---------- هُوک رفتن به تب‌ها ---------- */
   function onTabChanged(id) {
     v20RefreshFab();
     v20ApplyGreyChains();
-    if (id === "tab-orders") { v20ApplyOrderLock(); setTimeout(mirrorPharmacyOrderToOrders, 120); }
+    if (id === "tab-orders") { v20ApplyOrderLock(); setTimeout(v20PlaceMatchNearInput, 60); }
     if (id === "tab-custom-fields") setTimeout(window.v20RenderComboManager, 60);
     if (id === "tab-columns-products") setTimeout(renderProductExtras, 80);
     if (id === "tab-users-permissions") setTimeout(renderPresetBar, 60);
+    if (id === "tab-messengers") setTimeout(renderShareManager, 60);
+    if (id === "tab-my-visit") setTimeout(refreshVisitCards, 60);
+    if (id === "tab-rep-routes") setTimeout(renderV20Routes, 80);
   }
   function wrapSwitchTab() {
     var os = window.switchTab;
@@ -988,6 +1150,12 @@
     try { wrapFormLayoutMirror(); } catch (e) {}
     try { bindLive(); } catch (e) {}
     try { bindChpassFab(); } catch (e) {}
+    try { bindOrderLocalMatch(); } catch (e) {}
+    try { renderVersionBadge(); } catch (e) {}
+    try { wrapShareModal(); } catch (e) {}
+    try { renderShareManager(); } catch (e) {}
+    try { bindV20Visit(); } catch (e) {}
+    try { wrapNewestTables(); } catch (e) {}
     try { mirrorPharmacyFieldsToOrder(true); } catch (e) {}
     // اعمال اولیه موتورها روی تب فعال
     setTimeout(function () {

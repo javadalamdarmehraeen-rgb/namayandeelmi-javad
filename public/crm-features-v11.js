@@ -177,6 +177,15 @@
         hdrs = ["ردیف"].concat(hdrs);
         rws = rws.map(function (r, i) { return [i + 1].concat(r); });
       }
+      // قانون سراسری اکسل: ستون اول «ردیف» و ستون دوم «نام نماینده» باشد.
+      var repAt = hdrs.findIndex(function (h) { return /نام نماینده|نماینده علمی|نماینده/.test(String(h)); });
+      if (repAt < 0) {
+        hdrs.splice(1, 0, "نام نماینده");
+        rws = rws.map(function (r) { var x = r.slice(); x.splice(1, 0, (typeof currentUserName === "string" ? currentUserName : "—")); return x; });
+      } else if (repAt !== 1) {
+        var repHeader = hdrs.splice(repAt, 1)[0]; hdrs.splice(1, 0, repHeader);
+        rws = rws.map(function (r) { var x = r.slice(), v = x.splice(repAt, 1)[0]; x.splice(1, 0, v); return x; });
+      }
       downloadExcelBordered(filename, hdrs, rws);
       try { orig(filename, hdrs, rws); } catch (e) {}
     };

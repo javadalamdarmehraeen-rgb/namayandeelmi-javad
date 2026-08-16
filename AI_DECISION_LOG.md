@@ -1352,4 +1352,10 @@ User findings (browser) and fixes in crm-features-v20.js:
 
 Syntax-checked; server smoke 11.16.2 OK. Browser verification pending.
 
+## تصمیم ۵۱ — نسخه ۱۱.۱۷.۰: تثبیت شناسه‌ها و موتور ویزیت/رصد (2026-08-17)
+- مرتب‌سازی خودکار DOM داروخانه→سفارش غیرفعال شد تا جای فیلدها بین نسخه‌ها ثابت بماند.
+- قابلیت‌های بزرگ فقط در آخرین لایه v20 افزوده شدند؛ مسیر فعال لیست‌های v9 فقط برای «جدیدترین بالا» اصلاح شد.
+- جلسه GPS در state ذخیره و پس از پایان با unshift در repRoutes و visitTracks ماندگار می‌شود.
+- workflow متناسب با معماری واقعی صفر-وابستگی Node اصلاح شد؛ Next خفته دیگر در CI اجرا نمی‌شود.
+
 # END OF AI DECISION LOG

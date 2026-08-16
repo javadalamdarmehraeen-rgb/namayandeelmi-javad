@@ -355,6 +355,14 @@ const PERMISSION_GROUPS = {
     { key: "sys_grey_chain", label: "زنجیره‌سازی فیلدها و حالت طوسی (فعال تا انتخاب والد)" },
     { key: "sys_order_lock", label: "قفل طوسی فرم سفارش تا انتخاب داروخانه" },
     { key: "sys_mirror_forms", label: "همگام خودکار فیلدهای داروخانه ↔ سفارشات" }
+  ],
+  "ابزارهای مدیریت (نسخه ۱۱.۱۷)": [
+    { key: "sys_stable_fields", label: "تثبیت دائمی شناسه و جای فیلدها بین نسخه‌ها" },
+    { key: "sys_entity_cascade", label: "ویرایش/حذف نام داروخانه و پزشک همراه اطلاعات وابسته" },
+    { key: "sys_share_fields", label: "تعیین فیلدهای مجاز برای ارسال به پیام‌رسان‌ها" },
+    { key: "fld_visit_metrics", label: "نمایش مسافت، توقف، نقاط و ساعت شروع ویزیت" },
+    { key: "fld_route_search", label: "جستجوی لحظه‌ای و خروجی اکسل رصد تردد" },
+    { key: "sys_version_badge", label: "مشاهده نسخه دقیق برنامه در بالای صفحه" }
   ]
 };
 

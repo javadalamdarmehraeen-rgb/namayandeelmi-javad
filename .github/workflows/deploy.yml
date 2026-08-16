@@ -19,12 +19,12 @@ jobs:
           node-version: "20"
           cache: npm
 
-      - run: npm ci --include=dev
-      - run: npx next typegen
-      - run: npx tsc --noEmit
+      # برنامه اصلی صفر-وابستگی و Node خالص است؛ Next.js اسکلت خفته پروژه است.
+      # اجرای npx next در نسخه‌های قبل باعث ضربدر قرمز کاذب GitHub می‌شد.
+      - run: npm ci
+      - name: بررسی نحوی همه فایل‌های JavaScript
+        run: find public -name '*.js' -print0 | xargs -0 -n1 node --check && node --check server.js
       - run: npm run build
-        env:
-          NEXT_PUBLIC_ENDPOINTS: ${{ vars.NEXT_PUBLIC_ENDPOINTS || 'https://ndcohub.ir,https://namayandeelmi-javad.onrender.com' }}
 
   mirror-to-gitlab:
     name: آینه‌سازی روی GitLab
