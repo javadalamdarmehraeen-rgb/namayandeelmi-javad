@@ -1067,4 +1067,20 @@ Understand.
 
 Then change only what is requested.
 
+---
+
+# REPO OPERATIONS TOOLING (v11.15.3)
+
+- Runtime is ZERO-DEPENDENCY: `server.js` and all `scripts/*.mjs` use only
+  Node built-ins. `server-db.json` is runtime-written local data (gitignored).
+- Sync: `SYNC_ALL.bat` / `sync_all.sh` → pull origin (+gitlab) → commit →
+  push origin (+gitlab). GitLab remote is added once by the user
+  (`RAHNAMA_GITLAB.txt`). `.gitlab-ci.yml` mirrors GitLab→GitHub only if
+  GITHUB_TOKEN/GITHUB_REPO_URL CI vars exist (optional path).
+- Portability: `.gitattributes` enforces CRLF for `.bat/.ps1`, LF for
+  `.sh/.py`, binary for media — safe folder moves between the user's two PCs.
+- Whitelist: `OFFICIAL_FILELIST.txt` (239 entries) is consumed by
+  CLEAN_EXTRA_FILES.bat / scripts/clean-extra-files.* — every new repo file
+  must be registered there immediately.
+
 # END OF AI ARCHITECTURE

@@ -1,0 +1,24 @@
+# یکدست‌سازی خط‌پایان فایل‌ها بین ویندوز و لینوکس/مک (کار روی دو سیستم)
+# گیت به‌صورت خودکار متن‌ها را نرمال می‌کند تا فایل‌ها در هر سیستم درست کار کنند.
+
+* text=auto
+
+# اسکریپت‌های ویندوزی حتماً با CRLF ذخیره/تحویل شوند (وگرنه در cmd خراب می‌شوند)
+*.bat   text eol=crlf
+*.cmd   text eol=crlf
+*.ps1   text eol=crlf
+
+# اسکریپت‌های یونیکسی و پایتون حتماً با LF بمانند
+*.sh    text eol=lf
+*.py    text eol=lf
+*.mjs   text eol=lf
+
+# فایل‌های دودویی هرگز تبدیل خط نشوند
+*.png    binary
+*.jpg    binary
+*.jpeg   binary
+*.gif    binary
+*.webp   binary
+*.ico    binary
+*.woff2  binary
+*.zip    binary

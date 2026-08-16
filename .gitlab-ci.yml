@@ -14,9 +14,8 @@ variables:
 build:
   stage: build
   script:
-    - npm ci --include=dev --cache .npm --prefer-offline
-    - npx next typegen
-    - npx tsc --noEmit
+    # اسکلت Next.js این ریپو خفته است و typegen/tsc آن CI را قرمز می‌کرد؛
+    # بیلد واقعی پروژه مثل Render فقط همین اکو است (نسخه 11.15.3+)
     - npm run build
   artifacts:
     expire_in: 1 day

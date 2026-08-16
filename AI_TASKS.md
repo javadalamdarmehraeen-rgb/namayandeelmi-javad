@@ -491,6 +491,45 @@ order) with only their chosen starred fields.
 
 ---
 
+## TASK-010
+
+v11.15.2 — duplicate-save warning becomes a real yes/no choice
+
+Status:
+DONE
+
+User report: the duplicate pharmacy warning had only OK and always saved.
+Wanted: بله saves / خیر cancels.
+
+Fix (VERIFIED): all 4 duplicate-warning sites (pharmacy+doctor in v9 active
+handlers; both app.js generations) converted to `window.confirm`; cancel
+returns before push. Version 11.15.2 everywhere. node --check green; smoke
+green.
+
+---
+
+## TASK-011
+
+Relationship map in chat.arena + durable generator + OFFICIAL_FILELIST fix
+
+Status:
+DONE
+
+Scope:
+1. chat.arena gained section ۳-ب: detailed file/code relationship map (load
+   chain, state lifecycle and key ownership, 7 cross-file flows, storage-key
+   map, 8 relationship hazards).
+2. The session sandbox reset deleted workspace-root helpers; the chat.arena
+   generator was recreated INSIDE the repo as `update_chat_arena.py` so it
+   ships with the ZIP and cannot be lost again.
+3. CRITICAL FINDING: OFFICIAL_FILELIST.txt (whitelist used by the user's
+   CLEAN_EXTRA_FILES.bat) was missing chat.arena, public/crm-features-v17.js,
+   v18.js, v19.js and the AI_*/ARENA_HANDOFF memory files — running cleanup
+   would have deleted them locally. All added to the list (now protected).
+   chat.arena rule #8 records this permanently.
+
+---
+
 # 12. NEXT IMMEDIATE TASK
 
 No pending coding task.
@@ -993,5 +1032,24 @@ PROTECT EXISTING CODE
 CONTINUE DEVELOPMENT SAFELY
 
 ---
+
+---
+
+# 35. V11.15.3 — GIT SYNC + HYGIENE (DONE 2026-08-16)
+
+Completed:
+1. One-command dual sync: SYNC_ALL.bat / sync_all.sh
+   (pull → commit → push to GitHub + GitLab).
+2. Cross-system files: .gitattributes line-ending normalization.
+3. Secrets hygiene: .env verified never tracked; .gitignore hardened;
+   template sanitized. Rule: AI_RULES #65.
+4. Zero-dependency runtime: express/cors removed; lock regenerated;
+   node_modules deletable (commands documented in CHANGES_V11.md).
+5. .gitlab-ci.yml build de-Nextified; GitLab mirror kept optional.
+6. OFFICIAL_FILELIST.txt repaired (KEEP_ONLY_GITHUB.bat) + grown (239).
+
+Pending user-side verification:
+- Sync script run on his Windows machine(s).
+- GitLab remote one-time setup per RAHNAMA_GITLAB.txt (needs HIS account).
 
 # END OF AI TASKS

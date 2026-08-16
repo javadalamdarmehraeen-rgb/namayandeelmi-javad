@@ -800,4 +800,18 @@ Then WAIT for approval before making changes.
 
 ---
 
+---
+
+# CURRENT DELIVERY STATE (2026-08-16)
+
+App version 11.15.3. App screens unchanged since 11.15.2 (star-based
+validation + duplicate-save confirm dialogs); 11.15.3 is a repo/tooling
+release: zero-dependency runtime (node_modules deletable), hardened
+.gitignore for secrets, dual-remote sync scripts (SYNC_ALL.bat /
+sync_all.sh), .gitattributes for two-PC work, RAHNAMA_GITLAB.txt guide,
+whitelist repaired (239 entries). chat.arena regenerated at v1.7 with
+turn 12 appended. Permanent rules: AI_RULES #62 (permissions mirror),
+#63 (chat.arena append-only), #64 (fresh ZIP every completed request),
+#65 (git hygiene + dual-remote sync).
+
 # END OF AI PROJECT CONTEXT

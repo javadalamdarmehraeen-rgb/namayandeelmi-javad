@@ -1276,4 +1276,39 @@ the agent's turn is NOT complete until a FRESH download package exists:
 
 Skipping any of these steps is an incomplete delivery.
 
+---
+
+# 65. GIT HYGIENE + DUAL-REMOTE SYNC RULE (PERMANENT — USER-MANDATED)
+
+Declared by the user on 2026-08-16 and valid for ALL future work:
+
+1. `.env` (any real secrets file with tokens/passwords) must NEVER enter Git.
+   Verified 2026-08-16: full git history contains no real `.env`; only the
+   sanitized template `.env.ndcohub.example`. `.gitignore` blocks `.env`,
+   `.env.*`, `*.env` while re-allowing `!.env*.example` templates. If a real
+   secrets file is ever found tracked: `git rm --cached <file>`, purge it,
+   and TELL THE USER TO ROTATE those tokens/passwords immediately.
+2. `node_modules` must NEVER enter GitHub/GitLab. The runnable app
+   (`server.js` + every `scripts/*.mjs`) uses ONLY Node built-in modules;
+   the dead `express`/`cors` dependencies were removed from `package.json`
+   in v11.15.3 and `package-lock.json` was regenerated dependency-free.
+   `npm install` is NOT required to run the project. Safe local cleanup:
+   Windows `rmdir /s /q node_modules`, Linux/Mac `rm -rf node_modules`.
+3. The user works on TWO computers and constantly moves the project folder
+   between them. Rules:
+   - End of work on either machine = run `SYNC_ALL.bat` (Windows) or
+     `sh sync_all.sh` (Linux/Mac) with a short change message. The script
+     pulls from GitHub (origin) and GitLab (gitlab remote, if configured),
+     commits, and pushes to BOTH — one command updates both remotes.
+   - Start of work on the second machine = run the same script once first
+     to pull the newest state ("first take, then change, then send").
+   - `.gitattributes` keeps line endings stable across systems
+     (`.bat/.ps1` = CRLF, `.sh/.py` = LF, binaries untouched).
+   - `server-db.json` is runtime data and stays local-only (gitignored).
+4. GitLab one-time setup steps live in `RAHNAMA_GITLAB.txt`. Keep that file
+   and both sync scripts up to date whenever remotes/branches change.
+5. Every new repo file must immediately be added to OFFICIAL_FILELIST.txt
+   (whitelist consumed by the user's cleanup scripts); in v11.15.3 the
+   missing `KEEP_ONLY_GITHUB.bat` was found and re-added (239 entries).
+
 # END OF AI RULES

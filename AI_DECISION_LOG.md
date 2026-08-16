@@ -1133,4 +1133,95 @@ Note (stated to user honestly): the two button captions come from the
 browser (تأیید/انصراف in Persian Windows); the dialog text itself spells
 out which button saves and which cancels.
 
+---
+
+# 43. OFFICIAL_FILELIST WHITELIST REPAIR + DURABLE CHAT.ARENA GENERATOR
+
+Date: 2026-08-16
+
+Findings (VERIFIED):
+1. OFFICIAL_FILELIST.txt — the whitelist consumed by the user's
+   CLEAN_EXTRA_FILES.bat (scripts/clean-extra-files.ps1 deletes any file not
+   listed) — was missing: chat.arena, public/crm-features-v17.js,
+   public/crm-features-v18.js, public/crm-features-v19.js, all AI_*.md
+   memory files, and ARENA_HANDOFF_PROMPT.md. Running the cleanup would
+   have deleted them from the user's machine.
+2. The Arena sandbox reset wiped workspace-root helpers (the old chat.arena
+   generator, the download server, the zips) — only the git repo persisted.
+
+Decisions:
+- All missing files were added to OFFICIAL_FILELIST.txt (now 234 entries).
+- The chat.arena generator was recreated INSIDE the repo as
+  `update_chat_arena.py` (self-locating via its own path) so it ships in the
+  ZIP and survives sandbox resets; rules #63/#64 remain in force — the
+  file is regenerated via this script after every chat/version.
+- chat.arena rule #8 added (permanent): every new project file must be
+  added to OFFICIAL_FILELIST.txt immediately.
+
+---
+
+# 44. V11.15.3 — ZERO-DEPENDENCY RUNTIME (node_modules FULLY REMOVABLE)
+
+Date: 2026-08-16
+
+User request: node_modules must never enter GitHub/GitLab and, if possible,
+should not need to be installed at all — plus a delete command for it.
+
+Verification (VERIFIED):
+- `server.js` requires only Node built-ins: http, fs, path, zlib, crypto.
+- Every `scripts/*.mjs` imports only Node built-ins (fs/path/url/child_process).
+- `git ls-files` + history: node_modules was NEVER tracked in git.
+- `.gitignore` already had `/node_modules`; extended to any-depth
+  `node_modules/`.
+
+Decision: the declared `express`/`cors` dependencies in package.json were
+dead weight from the dormant Next.js skeleton era. Removed them (v11.15.3)
+and regenerated `package-lock.json` dependency-free (292 bytes, 0 packages,
+npm audit: 0 vulnerabilities). `npm install` is now a no-op on Render
+(`npm install --include=dev && npm run build` still succeeds). User delete
+command: `rmdir /s /q node_modules` (Windows) / `rm -rf node_modules` (Linux/Mac).
+
+---
+
+# 45. GIT SECRETS AUDIT + HARDENED .gitignore (v11.15.3)
+
+Date: 2026-08-16
+
+User request: guarantee `.env` (tokens/passwords) never enters Git, and
+delete it from GitHub if already there.
+
+Audit result (VERIFIED): no real `.env` ever existed in git history. The
+only tracked match is the template `.env.ndcohub.example`; it contained a
+sample line `ADMIN_PASSWORD=admin1234` which was sanitized to `--------`.
+
+Changes: `.gitignore` now blocks `.env`, `.env.*`, `*.env` with explicit
+re-allow `!.env*.example`, plus `server-db.json`, `*.zip`, `.arena/`,
+any-depth `node_modules/`. Rule recorded as AI_RULES #65 with a rotation
+mandate if a real secret is ever leaked to git.
+
+---
+
+# 46. DUAL-REMOTE ONE-COMMAND SYNC + CROSS-SYSTEM FILES (v11.15.3)
+
+Date: 2026-08-16
+
+User request: every local change must update GitHub AND GitLab with ONE
+command; files must work on any system (user alternates between two PCs
+and moves the project folder between them).
+
+Changes:
+- `SYNC_ALL.bat` (Windows) and `sync_all.sh` (Linux/Mac): pull origin →
+  pull gitlab (if remote exists) → `git add -A` → commit (message arg or
+  timestamp) → push origin → push gitlab. Works immediately for GitHub
+  only; GitLab activates after the one-time `git remote add gitlab ...`
+  (steps in `RAHNAMA_GITLAB.txt`).
+- `.gitattributes` added: `* text=auto`, `.bat/.cmd/.ps1`=CRLF,
+  `.sh/.py/.mjs`=LF, images/fonts/zips binary — line endings can no longer
+  break scripts when hopping between Windows and Linux.
+- `.gitlab-ci.yml` build stage: removed the dormant-Next steps
+  (`npx next typegen`, `npx tsc --noEmit`) so GitLab CI stays green like the
+  Render echo-build. Mirror stage (GitLab→GitHub) left intact (optional).
+- OFFICIAL_FILELIST.txt: added `KEEP_ONLY_GITHUB.bat` (was missing —
+  cleanup would have deleted it) plus the 4 new files (239 entries).
+
 # END OF AI DECISION LOG

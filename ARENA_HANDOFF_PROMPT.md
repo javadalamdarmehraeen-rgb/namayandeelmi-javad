@@ -1029,4 +1029,25 @@ PROJECT UNDERSTANDING REPORT
 
 AND WAIT.
 
+============================================================
+LATEST STATE ADDENDUM (2026-08-16 — v11.15.3)
+============================================================
+
+- App version: 11.15.3. Screens unchanged since 11.15.2; 11.15.3 is a
+  repo/tooling release only.
+- Runtime is zero-dependency (Node built-ins only); node_modules is
+  deletable and gitignored; package-lock.json is dependency-free.
+- Secrets: no real .env ever entered git; .gitignore hardened; template
+  .env.ndcohub.example sanitized. Permanent rule: AI_RULES #65.
+- Sync: user runs SYNC_ALL.bat (Windows) / sync_all.sh (Linux/Mac) → one
+  command pulls then pushes to GitHub AND GitLab (gitlab remote setup in
+  RAHNAMA_GITLAB.txt). .gitattributes keeps files cross-system safe.
+- Memory is regenerated via `python update_chat_arena.py` after every chat;
+  chat.arena v1.7 includes all turns 1-12 and full file contents.
+- OFFICIAL_FILELIST.txt is the cleanup whitelist (239 entries) — register
+  every new repo file there immediately.
+- Permanent delivery rules: AI_RULES #62 (permissions mirror), #63
+  (chat.arena append-only), #64 (fresh versioned ZIP every completed
+  request), #65 (git hygiene + dual-remote sync).
+
 # END OF ARENA AI MASTER HANDOFF PROMPT

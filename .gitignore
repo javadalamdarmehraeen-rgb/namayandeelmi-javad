@@ -28,10 +28,21 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
-# local env files
+# local env files — هیچ فایل محیطی واقعی وارد گیت نشود (رمز/توکن)
+# فقط قالب‌های example مجازند
 .env*.local
 .env
+.env.*
 *.env
+!.env*.example
+
+# node_modules در هیچ سطحی وارد گیت نشود (برنامه بدون آن اجرا می‌شود)
+node_modules/
+
+# داده زمان اجرا و خروجی‌های لوکال
+server-db.json
+*.zip
+.arena/
 
 # vercel
 .vercel
@@ -54,3 +65,7 @@ public/logo.svg
 public/src-svg/
 CHANGELOG_ENHANCEMENTS.md
 crm-app-all-in-one.html
+
+# خروجی کامپایل پایتون
+__pycache__/
+*.pyc
