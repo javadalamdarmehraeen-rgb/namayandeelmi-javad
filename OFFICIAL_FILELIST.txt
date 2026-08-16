@@ -15,6 +15,8 @@ CHANGES_V11.md
 CHANGES_V9.md
 CLEAN_EXTRA_FILES.bat
 KEEP_ONLY_GITHUB.bat
+PROJECT_GRAPH.md
+PUSH_FRESH_GITHUB.bat
 PUSH_GITHUB_CLEAN.bat
 RAHNAMA_GITLAB.txt
 RAHNAMA_PAKSAZI.txt
@@ -47,6 +49,7 @@ public/crm-features-v16.js
 public/crm-features-v17.js
 public/crm-features-v18.js
 public/crm-features-v19.js
+public/crm-features-v20.js
 public/crm-features-v9.js
 public/crm-jalali.js
 public/data/iran-provinces-lite.geojson
@@ -237,3 +240,4 @@ src/proxy.ts
 sync_all.sh
 tsconfig.json
 update_chat_arena.py
+update_project_graph.py

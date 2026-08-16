@@ -804,14 +804,13 @@ Then WAIT for approval before making changes.
 
 # CURRENT DELIVERY STATE (2026-08-16)
 
-App version 11.15.3. App screens unchanged since 11.15.2 (star-based
-validation + duplicate-save confirm dialogs); 11.15.3 is a repo/tooling
-release: zero-dependency runtime (node_modules deletable), hardened
-.gitignore for secrets, dual-remote sync scripts (SYNC_ALL.bat /
-sync_all.sh), .gitattributes for two-PC work, RAHNAMA_GITLAB.txt guide,
-whitelist repaired (239 entries). chat.arena regenerated at v1.7 with
-turn 12 appended. Permanent rules: AI_RULES #62 (permissions mirror),
-#63 (chat.arena append-only), #64 (fresh ZIP every completed request),
-#65 (git hygiene + dual-remote sync).
+App version 11.16.1 (= 11.16.0 feature pack + push-repair tooling).
+GitHub remote was found replaced by a single manual commit "پروژه اولیه"
+(11.15.3); one-time repair script PUSH_FRESH_GITHUB.bat delivered
+(unrelated-histories merge, his files win). GitLab token page disabled on
+his account → token-free SSH method documented (RAHNAMA_GITLAB.txt);
+SYNC_ALL skips gitlab gracefully. New last layer remains
+crm-features-v20.js; knowledge graph PROJECT_GRAPH.md is read-first
+(rule #66). Permanent rules: #62-#68.
 
 # END OF AI PROJECT CONTEXT

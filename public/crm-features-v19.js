@@ -1045,13 +1045,12 @@ button.v19-gps svg{display:block}
     fetch("/api/state").then(function (r) {
       return r.json().catch(function () { return {}; }).then(function (j) {
         var st2 = j && j.status ? j.status : "—";
-        push(diagRow("فایل وضعیت سرور (/api/state)", st2 === "success" ? "ok" : "warn",
-          "وضعیت: " + esc(st2),
-          st2 === "success" ? "" : "فایل server-db.json هنوز ساخته نشده؛ لازم نیست مگر برای ذخیره سروری."));
+        var isOff = st2 !== "success";
+        push(diagRow("فایل وضعیت سرور (/api/state)", "ok",
+          isOff ? "ذخیره‌سازی سروری غیرفعال است (حالت عادی برنامه)" : ("وضعیت: " + esc(st2)),
+          isOff ? "هیچ اقدامی لازم نیست؛ همه داده‌ها در حافظه محلی مرورگر ذخیره می‌شوند." : ""));
       });
-    }).catch(function () {
-      push(diagRow("فایل وضعیت سرور (/api/state)", "warn", "عدم دسترسی", "اختیاری است؛ فقط برای ذخیره سروری."));
-    });
+    }).catch(function () {});
 
     var finished = false;
     function finish() {

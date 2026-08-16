@@ -1,6 +1,6 @@
 {
   "name": "namayandeelmi-javad-crm",
-  "version": "11.15.3",
+  "version": "11.16.1",
   "description": "سیستم جامع مدیریت و ویزیت علمی، داروخانه‌ها، پزشکان و سفارشات (CRM / PWA) هماهنگ با Render و Neon",
   "main": "server.js",
   "engines": {
@@ -26,8 +26,5 @@
     "neon"
   ],
   "author": "Javad Alamdar Mehraeen & Arena",
-  "license": "MIT",
-  "dependencies": {
-    "pg": "^8.23.0"
-  }
+  "license": "MIT"
 }

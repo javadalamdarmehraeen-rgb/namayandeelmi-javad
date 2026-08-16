@@ -1224,4 +1224,99 @@ Changes:
 - OFFICIAL_FILELIST.txt: added `KEEP_ONLY_GITHUB.bat` (was missing —
   cleanup would have deleted it) plus the 4 new files (239 entries).
 
+---
+
+# 47. PROJECT KNOWLEDGE GRAPH (PROJECT_GRAPH.md + update_project_graph.py)
+
+Date: 2026-08-16
+
+User request: stop re-reading the whole codebase every turn (token waste);
+build ONE file that is the project's knowledge graph (all files, "classes"
+/functions, and their relationships — e.g. what relates to the API service)
+and keep it updated as the AI's first-stop reference.
+
+Decision (VERIFIED): `update_project_graph.py` statically parses server.js,
+scripts/*.mjs and all public/*.js and emits `PROJECT_GRAPH.md`: script load
+chain (17 scripts), per-file cards (role/size/functions/window names), the
+window override graph (which layer overrides which), the API consumer map,
+browser-storage key map, tab↔file map and duplicated-function hotspots.
+Output deterministic; rule #66 makes it regenerate before every chat.arena
+build. First build: 26 files, 131 window names, 23 tabs, 36 KB.
+
+---
+
+# 48. V11.16.0 — crm-features-v20.js MEGA-LAYER
+
+Date: 2026-08-16
+
+New last-layer file `public/crm-features-v20.js` (no skeleton changes; loads
+after v19 so it wins all overrides):
+
+1. `window.state` getter (defineProperty) — the v19 diagnostics row
+   «شی state در دسترس نیست» was because crm-app.js declares `state` with a
+   lexical binding, invisible as window.state. Fixed; plus /api/state now
+   reports a neutral OK line and the stale cloud-servers blurb in
+   index.html was replaced with real guidance.
+2. `window.v20DupGate(kind)` — exact-duplicate records (all normalized
+   fields equal, incl. case of ANOTHER user having entered them) are HARD
+   BLOCKED with "edit-only" message; near duplicates (name or phone) keep
+   the 11.15.2 confirm dialog. Wired into all 4 save paths (v9 pharmacy/
+   doctor + 2 duplicate generations in crm-app.js per rule #1/#62 spirit).
+3. Additions-tab combo manager: per-tab selector, every combo field of the
+   tab with Persian label, its options stacked UNDER the field, per-option
+   ✏️/🗑️, per-field instant search, per-field add box, and live refresh
+   (MutationObserver + saveState wrap). Renames/removals persist via
+   state.v20Renames / state.v20HiddenOptions / state.selectExtraOptions.
+4. Grey-chain engine: dependent fields disabled+grey until parent filled
+   (defaults: province→city→district in pharmacy/doctor/order); master
+   toggle + per-field parent selector in the combo manager
+   (state.v20GreyMap, settings.v20GreyOn).
+5. Order form lock: all fields grey/disabled except pharmacy name until an
+   existing pharmacy is selected and auto-filled ("جایگذاری خودکار");
+   afterwards descriptor fields stay grey and ONLY the product section is
+   active (settings.v20OrderLock, default ON).
+6. Pharmacy-name instant add ⇒ auto-save (delegated click on the ➕ add
+   button inside tab-pharmacies clicks btnSavePharmacy).
+7. Mirror: fields added/removed in pharmacies tab auto-add/remove in orders
+   (state.customFields clone with `ordm-` prefix + deleteCustomField wrap).
+8. Product-box field insertion fix: stored customFields.products are now
+   rendered into the product form grid with real width/order applied.
+9. List columns: post-render reorder wrapper enforcing ردیف=col#1,
+   rep-name=col#2 and listOrder for mapped columns (2+ matches required).
+10. Number spinners removed from order-item qty inputs (CSS).
+11. "🔑 تغییر رمز" button fixed at the top of every page; writes
+    CRM_USERS_AUTH + state.users so the next login uses the new password.
+12. Role presets (نماینده علمی / کارشناس فروش / سرپرست) in the users tab —
+    one click applies a ready-made permission bundle (admin user excluded).
+    New PERMISSION_GROUPS block «ابزارهای مدیریت (نسخه ۱۱.۱۶)» in
+    crm-data.js (rule #62 satisfied).
+
+All syntax-checked (node --check) and server smoke-tested (11.16.0).
+Browser confirmation by the user is pending.
+
+---
+
+# 49. GITHUB REMOTE HISTORY REPLACED — "پروژه اولیه" SINGLE COMMIT
+
+Date: 2026-08-16
+
+User report: GitHub did NOT show the updated files (still old program).
+
+Diagnosis (VERIFIED via fetch): origin/main had been replaced by ONE manual
+commit `c0abb06 «پروژه اولیه»` containing the v11.15.3 snapshot (has
+SYNC_ALL.bat / chat.arena / crm-features-v19.js / update_chat_arena.py;
+NO crm-features-v20.js / PROJECT_GRAPH.md). The old history (921f60d etc.)
+is gone from remote, so the user's normal pushes were rejected
+(unrelated/diverged histories).
+
+Fix delivered: `PUSH_FRESH_GITHUB.bat` — commits local files, fetches,
+merges with `--allow-unrelated-histories -X ours` (his files always win),
+then pushes and prints the remote tip as proof. After this one-time repair,
+SYNC_ALL.bat works normally again.
+
+GitLab without token (user: token page is disabled): SSH-key method was
+documented in RAHNAMA_GITLAB.txt (ssh-keygen → add public key →
+remote set-url gitlab git@gitlab.com:...). GitLab support stays in the
+code (SYNC_ALL auto-detects the gitlab remote and skips gracefully).
+
 # END OF AI DECISION LOG

@@ -1052,4 +1052,46 @@ Pending user-side verification:
 - Sync script run on his Windows machine(s).
 - GitLab remote one-time setup per RAHNAMA_GITLAB.txt (needs HIS account).
 
+---
+
+# 36. V11.16.0 — KNOWLEDGE GRAPH + FORM UX PACK (DONE 2026-08-16)
+
+Completed (code + sandbox tests):
+1. PROJECT_GRAPH.md knowledge graph + update_project_graph.py generator
+   (rule #66: read first, regenerate every delivery).
+2. crm-features-v20.js: combo manager (Persian labels, stacked options,
+   per-option edit/delete, instant search, live refresh), grey chains,
+   order-form lock, typed-add auto-save, pharmacy↔order field mirror,
+   product-field rendering fix, list column-order enforcement, number
+   spinner removal, top change-password button, role presets.
+3. Exact-duplicate hard block on all 4 save paths (v20DupGate).
+4. Diagnostics repaired (window.state getter, /api/state neutral, banner).
+5. Permissions mirrored (crm-data.js «نسخه ۱۱.۱۶» group — rule #62).
+6. Delivery commands now dual-remote (rule #67).
+
+Pending user-side verification (browser):
+- Combo manager edit/delete/search on his data.
+- Grey chains + order lock behavior in a real order.
+- Exact-duplicate block (identical record) and near-dup confirm.
+- Product-field insertion (order/size) and list column order in lists.
+- Role preset application on a test user.
+- Typed-add ⇒ auto-save of a new pharmacy.
+
+---
+
+# 37. V11.16.1 — GITHUB PUSH REPAIR (DONE 2026-08-16)
+
+Completed:
+1. Diagnosed remote: single manual commit c0abb06 "پروژه اولیه" (11.15.3
+   snapshot) replaced the history → normal pushes rejected.
+2. PUSH_FRESH_GITHUB.bat one-time repair (merge --allow-unrelated-histories
+   -X ours → push) + works as rescue for any future replaced history.
+3. RAHNAMA_GITLAB.txt: token-free SSH method added (token UI disabled on
+   his GitLab); GitLab support preserved in code (SYNC_ALL auto-detects).
+
+Pending user-side verification:
+- Run PUSH_FRESH_GITHUB.bat once, then confirm GitHub web shows
+  public/crm-features-v20.js + PROJECT_GRAPH.md (Ctrl+F5).
+- Later: SSH setup for GitLab when he is ready.
+
 # END OF AI TASKS

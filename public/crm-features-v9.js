@@ -525,7 +525,7 @@
     if (typeof window.validateRequiredFields === "function" && !window.validateRequiredFields("tab-pharmacies")) return;
     if (!editId) {
       const dup = state.pharmacies.some(function (p) { return p.name === rec.name || (rec.phone && p.phone === rec.phone); });
-      if (dup && !window.confirm("هشدار: داروخانه‌ای با این نام یا تلفن قبلاً ثبت شده است.\n\nتأیید/بله = با این حال ذخیره شود  |  انصراف/خیر = ذخیره نشود")) return;
+      if (dup && !window.v20DupGate("pharmacy")) return;
       state.pharmacies.push(rec);
     } else {
       const idx = state.pharmacies.findIndex(function (p) { return p.id === editId; });
@@ -573,7 +573,7 @@
     if (typeof window.validateRequiredFields === "function" && !window.validateRequiredFields("tab-doctors")) return;
     if (!editId) {
       const dup = state.doctors.some(function (d) { return d.name === rec.name || (rec.phone && d.phone === rec.phone); });
-      if (dup && !window.confirm("هشدار: پزشک/مطب با این نام یا تلفن قبلاً ثبت شده است.\n\nتأیید/بله = با این حال ذخیره شود  |  انصراف/خیر = ذخیره نشود")) return;
+      if (dup && !window.v20DupGate("doctor")) return;
       state.doctors.push(rec);
     } else {
       const idx = state.doctors.findIndex(function (d) { return d.id === editId; });

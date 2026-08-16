@@ -1050,4 +1050,32 @@ LATEST STATE ADDENDUM (2026-08-16 — v11.15.3)
   (chat.arena append-only), #64 (fresh versioned ZIP every completed
   request), #65 (git hygiene + dual-remote sync).
 
+============================================================
+ADDENDUM v11.16.0 (2026-08-16)
+============================================================
+
+- READ FIRST: PROJECT_GRAPH.md — the auto-generated knowledge graph
+  (files/functions/window-overrides/API map/storage map/tab map). Rule #66:
+  regenerate with update_project_graph.py before every chat.arena build.
+- New last script layer: public/crm-features-v20.js (index.html loads 17
+  scripts; v20 wins all overrides). Contains: combo manager, grey chains,
+  order lock, v20DupGate (exact-dup block wired into v9 + both crm-app.js
+  generations), field mirror pharmacy→orders, presets, change-password FAB.
+- window.state getter now exists (v20) — diagnostics depend on it.
+- New state keys: selectExtraOptions (pre-existing), v20Renames,
+  v20HiddenOptions, v20GreyMap, settings.v20GreyOn, settings.v20OrderLock.
+- Git delivery instructions must target GitHub AND GitLab (rule #67).
+- chat.arena v1.9 (turn 14 appended); permanent rules now #62-#67.
+
+============================================================
+ADDENDUM v11.16.1 (2026-08-16)
+============================================================
+
+- Remote incident: GitHub main was replaced by one manual commit
+  "پروژه اولیه" (11.15.3 content). Repair tool: PUSH_FRESH_GITHUB.bat
+  (merge --allow-unrelated-histories -X ours, then push). Rule: if the
+  user says "GitHub didn't update", FIRST fetch and inspect origin/main.
+- GitLab tokens are disabled on his account → RAHNAMA_GITLAB.txt now has
+  a token-free SSH path; SYNC_ALL skips gitlab gracefully until then.
+
 # END OF ARENA AI MASTER HANDOFF PROMPT
