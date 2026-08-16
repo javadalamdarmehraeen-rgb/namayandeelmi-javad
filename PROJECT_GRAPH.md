@@ -115,10 +115,10 @@
 - تعداد توابع داخلی: 65
 - نام‌های window که تعریف/بازنویسی می‌کند: `_v18DefaultReq`, `_v19BackupLayoutGuard`, `_v19ComboHook`, `_v19Hist`, `_v19IcObs`, `_v19ProdTableWrap`, `_v19Sw`, `applyFullFormLayout`, `applySelectExtraOptions`, `extraListColumns`, `performAutoBackup`, `renderAllCustomFieldsInFormsAndTables`, `renderColumnsProductsTable`, `renderPharmaciesList`, `switchTab`, `testServerConnectivity`
 
-### `public/crm-features-v20.js` (44707 بایت)
+### `public/crm-features-v20.js` (52377 بایت)
 - نقش: ============================================================
-- تعداد توابع داخلی: 45
-- نام‌های window که تعریف/بازنویسی می‌کند: `_v20Rendering`, `applyFullFormLayout`, `deleteCustomField`, `renderExtraTabCustomFields`, `saveState`, `switchTab`, `v20ApplyGreyChains`, `v20ApplyOrderLock`, `v20DupGate`, `v20RenderComboManager`, `v20RenderProductExtras`
+- تعداد توابع داخلی: 54
+- نام‌های window که تعریف/بازنویسی می‌کند: `_v20AutoSaveSig`, `_v20AutoSaveT`, `_v20Rendering`, `applyFullFormLayout`, `deleteCustomField`, `renderExtraTabCustomFields`, `saveState`, `switchTab`, `v20ApplyGreyChains`, `v20ApplyOrderLock`, `v20DupGate`, `v20RenderComboManager`, `v20RenderProductExtras`
 
 ### `public/crm-features-v9.js` (67820 بایت)
 - نقش: ===========================================================================
@@ -140,7 +140,7 @@
 - تعداد توابع داخلی: 10
 
 ### `public/sw.js` (1145 بایت)
-- نقش: const CACHE = "ttt-v11.16.1";
+- نقش: const CACHE = "ttt-v11.16.2";
 - تعداد توابع داخلی: 0
 
 ### `public/vendor/leaflet.js` (147552 بایت)
@@ -291,7 +291,7 @@
 - `public/crm-features-v15.js` → 3 شناسه (مثل: `orderPharmacyName`, `orderPharmacyPickBox`, `orderTotalAmountDisplay`)
 - `public/crm-features-v17.js` → 9 شناسه (مثل: `existingPharmacyAlertText`, `existingPharmacyTopAlert`, `orderAddress`, `orderCity`, `orderDistrict`, `orderPharmacyMatchedId`, `orderPharmacyName`, `orderPharmacyPickBox`)
 - `public/crm-features-v19.js` → 2 شناسه (مثل: `orderEditId`, `orderItemsContainer`)
-- `public/crm-features-v20.js` → 4 شناسه (مثل: `orderItemsContainer`, `orderPharmacyMatchedId`, `orderPharmacyName`, `orderProductCatalogBar`)
+- `public/crm-features-v20.js` → 2 شناسه (مثل: `orderPharmacyMatchedId`, `orderPharmacyName`)
 - `public/crm-features-v9.js` → 7 شناسه (مثل: `cardOrdList`, `formOrder`, `ordListCountBadge`, `orderItemsContainer`, `searchOrderInput`, `tableOrdersBody`, `tableOrdersHeader`)
 
 ### tab-overview-map «🗺️ نقشه جامع»
@@ -305,7 +305,6 @@
 - `public/crm-features-v14.js` → 4 شناسه (مثل: `btnSavePharmacy`, `formPharmacy`, `pharmacyEditId`, `pharmacyName`)
 - `public/crm-features-v16.js` → 8 شناسه (مثل: `formPharmacy`, `pharmacyAddress`, `pharmacyCity`, `pharmacyDistrict`, `pharmacyEditId`, `pharmacyName`, `pharmacyPhone`, `pharmacyProvince`)
 - `public/crm-features-v17.js` → 8 شناسه (مثل: `btnSavePharmacy`, `formPharmacy`, `pharmacyAddress`, `pharmacyCity`, `pharmacyDistrict`, `pharmacyName`, `pharmacyPhone`, `pharmacyProvince`)
-- `public/crm-features-v20.js` → 2 شناسه (مثل: `btnSavePharmacy`, `pharmacyName`)
 - `public/crm-features-v9.js` → 11 شناسه (مثل: `btnPhMapSearch`, `btnPharmacyCurrentLocation`, `btnPharmacyGetAddressFromPoint`, `cardPhList`, `formPharmacy`, `phFileInput`, `phListCountBadge`, `phTableCountBadge`)
 
 ### tab-rep-homes «🏠 منزل نمایندگان»
@@ -349,7 +348,7 @@
 - `fields` ← `public/crm-app.js`, `public/crm-features-v11.js`, `public/crm-features-v12.js`, `public/crm-features-v20.js`
 - `fill` ← `public/crm-features-v10.js`, `public/crm-features-v13.js`
 - `hits` ← `public/crm-features-v14.js`, `public/crm-features-v16.js`, `public/crm-features-v17.js`
-- `lab` ← `public/crm-features-v11.js`, `public/crm-features-v18.js`, `public/crm-features-v19.js`
+- `lab` ← `public/crm-features-v11.js`, `public/crm-features-v18.js`, `public/crm-features-v19.js`, `public/crm-features-v20.js`
 - `label` ← `public/crm-features-v11.js`, `public/crm-features-v14.js`, `public/crm-features-v15.js`
 - `last` ← `public/crm-features-v18.js`, `public/crm-features-v19.js`
 - `lay` ← `public/crm-features-v13.js`, `public/crm-features-v18.js`

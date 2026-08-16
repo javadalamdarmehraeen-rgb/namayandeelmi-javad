@@ -804,7 +804,10 @@ Then WAIT for approval before making changes.
 
 # CURRENT DELIVERY STATE (2026-08-16)
 
-App version 11.16.1 (= 11.16.0 feature pack + push-repair tooling).
+App version 11.16.2 (user-verification fix pack on v20: grid combo cards,
+uniform grey engine + combo lock, always-active order product section,
+field-order mirror pharmacy→orders, header-docked change-password button,
+duplicate false-positive fix with autosave signature suppression).
 GitHub remote was found replaced by a single manual commit "پروژه اولیه"
 (11.15.3); one-time repair script PUSH_FRESH_GITHUB.bat delivered
 (unrelated-histories merge, his files win). GitLab token page disabled on

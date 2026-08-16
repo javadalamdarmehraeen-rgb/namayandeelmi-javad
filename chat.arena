@@ -1,6 +1,6 @@
 CHAT.ARENA — حافظه دائمی و کامل پروژه «نماینده علمی» (طنین طب طاها / TENIN TEB TAHA)
 =====================================================================================
-نسخه این فایل: 1.9 | تاریخ به‌روزرسانی: 2026-08-16 (۲۶ مرداد ۱۴۰۵) | نسخه برنامه: 11.16.1
+نسخه این فایل: 1.10 | تاریخ به‌روزرسانی: 2026-08-16 (۲۶ مرداد ۱۴۰۵) | نسخه برنامه: 11.16.2
 این فایل به دستور کاربر ساخته شده و قانون دائمی دارد: بعد از هر گفتگو و هر نسخه جدید برنامه،
 این فایل به‌روزرسانی می‌شود و نسخه به‌روز آن همیشه داخل فایل زیپ تحویلی قرار می‌گیرد.
 (قانون شماره ۶۳ در AI_RULES.md) — بازسازی با: python update_chat_arena.py
@@ -333,9 +333,22 @@ crm-jalali.js, iran-facilities.js, sw.js, manifest.json, offline.html, icons/, v
 بخش ۴) تاریخچه نسخه‌ها و آخرین دوره تغییرات
 ══════════════════════════════════════════════════════════════════════════════════
 • مسیر نسخه‌ها (بازسازی از ریپو): V1 → … → V9 → V10 → V11 → V11.1 … V11.14 → V11.15
-  → V11.15.1 → V11.15.2 → V11.15.3 → V11.16.0 → V11.16.1.
+  → V11.15.1 → V11.15.2 → V11.15.3 → V11.16.0 → V11.16.1 → V11.16.2.
 • جزئیات کامل هر نسخه V9 به بعد در CHANGES_V9.md / CHANGES_V10.md / CHANGES_V11.md
   (محتوای کاملشان در بخش ۹ همین فایل هست).
+
+نسخه 11.16.2 — تأیید قانون گراف‌اول + اصلاحات بازخورد مرورگری کاربر
+۱) قانون دوباره تأکید شد: برای صرفه‌جویی توکن، اول PROJECT_GRAPH.md خوانده شود
+   (همان قانون ۶۶).
+۲) مدیر کشویی‌ها: کارت‌ها کنار هم (شبکه)؛ نام‌های فارسی با واژه‌نامه+placeholder؛
+   حذف سال/ماه شمسی از این بخش؛ «نوع داروخانه» کارت عادی شد.
+۳) موتور طوسی یکدست شد (setFieldGrey روی کل بلوک + ورودی دیداری کمبو + حفظ اسکرول)؛
+   پس دیگر «نصف طوسی نصف سفید» و «کشیده شدن فیلد به بالا» نیست؛ در سفارشات کشویی
+   طوسی واقعاً قفل است و بخش کالا همیشه فعال؛ ترتیب فیلدهای داروخانه به سفارشات
+   هم منتقل می‌شود.
+۴) دکمه تغییر رمز کنار دکمه خروج (داخل هدر) نشست؛ هشدار کاذب «قبلاً ثبت شده» با
+   مهار امضای ذخیره خودکار و استثنای رکورد در حال ویرایش رفع شد.
+۵) تست: node --check سبز؛ /api/health نسخه 11.16.2؛ تأیید مرورگری در انتظار کاربر.
 
 نسخه 11.16.1 — گزارش کاربر: «فایل‌ها روی گیت‌هاب آپدیت نشده‌اند؛ برنامه قبلی است»
 ۱) تشخیص با fetch واقعی: origin/main فقط یک کامیت دستی c0abb06 «پروژه اولیه» با
@@ -519,18 +532,18 @@ crm-jalali.js, iran-facilities.js, sw.js, manifest.json, offline.html, icons/, v
   [متنی ]     1082 بایت  .gitignore
   [متنی ]     2057 بایت  .gitlab-ci.yml
   [متنی ]    17455 بایت  AI_ARCHITECTURE.md
-  [متنی ]    33568 بایت  AI_DECISION_LOG.md
-  [متنی ]    16107 بایت  AI_PROJECT_CONTEXT.md
+  [متنی ]    35259 بایت  AI_DECISION_LOG.md
+  [متنی ]    16327 بایت  AI_PROJECT_CONTEXT.md
   [متنی ]    25086 بایت  AI_RULES.md
-  [متنی ]    21811 بایت  AI_TASKS.md
+  [متنی ]    22631 بایت  AI_TASKS.md
   [متنی ]    20434 بایت  ARENA_HANDOFF_PROMPT.md
   [متنی ]      600 بایت  CHANGES_V10.md
-  [متنی ]    30581 بایت  CHANGES_V11.md
+  [متنی ]    32691 بایت  CHANGES_V11.md
   [متنی ]     3939 بایت  CHANGES_V9.md
   [متنی ]     1806 بایت  CLEAN_EXTRA_FILES.bat
   [متنی ]     2377 بایت  KEEP_ONLY_GITHUB.bat
   [متنی ]     6275 بایت  OFFICIAL_FILELIST.txt
-  [متنی ]    36468 بایت  PROJECT_GRAPH.md
+  [متنی ]    36393 بایت  PROJECT_GRAPH.md
   [متنی ]     2642 بایت  PUSH_FRESH_GITHUB.bat
   [متنی ]     2680 بایت  PUSH_GITHUB_CLEAN.bat
   [متنی ]     6579 بایت  RAHNAMA_GITLAB.txt
@@ -550,7 +563,7 @@ crm-jalali.js, iran-facilities.js, sw.js, manifest.json, offline.html, icons/, v
   [متنی ]     7947 بایت  server.js
   [متنی ]     2426 بایت  sync_all.sh
   [متنی ]      738 بایت  tsconfig.json
-  [متنی ]   106682 بایت  update_chat_arena.py
+  [متنی ]   112655 بایت  update_chat_arena.py
   [متنی ]    10215 بایت  update_project_graph.py
   [متنی ]     2535 بایت  .github/workflows/deploy.yml
   [متنی ]      214 بایت  .github/workflows/keep_alive.yml
@@ -570,7 +583,7 @@ crm-jalali.js, iran-facilities.js, sw.js, manifest.json, offline.html, icons/, v
   [متنی ]    19662 بایت  public/crm-features-v17.js
   [متنی ]    33040 بایت  public/crm-features-v18.js
   [متنی ]    60932 بایت  public/crm-features-v19.js
-  [متنی ]    44707 بایت  public/crm-features-v20.js
+  [متنی ]    52377 بایت  public/crm-features-v20.js
   [متنی ]    67820 بایت  public/crm-features-v9.js
   [متنی ]    25683 بایت  public/crm-jalali.js
   [متنی ]   126145 بایت  public/index.html
@@ -729,7 +742,7 @@ crm-jalali.js, iran-facilities.js, sw.js, manifest.json, offline.html, icons/, v
   [متنی ]     8984 بایت  src/lib/tracker.ts
   [متنی ]     2276 بایت  src/lib/useLive.ts
   [متنی ]     3346 بایت  src/lib/zip.ts
-  [تصویر]   110438 بایت  __pycache__/update_chat_arena.cpython-311.pyc
+  [تصویر]   116411 بایت  __pycache__/update_chat_arena.cpython-311.pyc
   [تصویر]    23282 بایت  public/apple-touch-icon.png
   [تصویر]     4527 بایت  public/favicon.png
   [تصویر]    26208 بایت  public/icon-192.png
@@ -1137,6 +1150,40 @@ push رد شد (fetch first) و در نتیجه production روی Render هنو�
 ۴) قانون دائمی ۶۸ ثبت شد: در هر گزارش «گیت آپدیت نشد» اول وضعیت واقعی ریموت با
    fetch بررسی شود، نه حدس. نسخه به 11.16.1 رسید، تست‌ها سبز، گراف دانش و
    chat.arena (۱.۹) بازسازی و زیپ تازه تحویل شد.
+
+──────────────────────────────── نوبت ۱۵ ────────────────────────────────
+🧑 کاربر (عیناً):
+«قانون ما این شد بخاطر اینکه در مصرف توکن صرفه جویی شود تو فایل گراف را بررسی کنی و دوباره همه کدهای سیستم را بررسی نکنی
+
+در تب افزودن فیلدهای کشویی کنار هم باشد نه اینکه همه در زیر همدیگر باشد و اینکه بعضی از اسم فیلها باز بصورت انگلیسی نوشته شده و اینکه در تب داروخانه فیلد سال و ماه و نوع داروخانه در کنار هستش که از اونجا پاک بشه و مثل بقیه فیلهای کشویی بشه
+
+در تب افزودن همه فیلهای کشویی در تب خودش موجود باشه  
+در تب داروخانه تب هایی که قرار بود طوسی بشه نصفش طوسی شده و نصفش سفیده اگر در تب دیگری هم به این صورت هستش درستش کن و اینکه وقتی نام استان را انتخاب میکنی فیلد به طرف بالا کشیده میشه و از خط خودش خارج میشه  
+در تب سفارشات فیلهای کشویی با اینکه طوسی هسند اما قابل انتخاب هستند.اگر میبینی درست نمیشه اونها را به فیلد ساده تبدیل کن و به عنوان فیلد کشویی در پیش فرض شناخته بشه و اگر جای فیلد در تب داروخانه تغییر کرد به همان صورت در سفارشات نیز تغییر کند
+
+دکمه تغییر رمز روی دکمه خروج قرار گرفته که این درست نیست  
+در سفارشات فیلدهای کالا و فیلهای مرتبط با ان طوسی و غیر فعال شده که نباید به این صورت باشد و باید فعال باشد
+
+وقتی که میخوای نام داروخانه یا پزشک را ثبت کنی و افزودن را میزنی میگه این داروخانه قبلا ثبت شده و این اشتباه است درحالی که این داروخانه جدید است»
+
+🤖 دستیار:
+همه در نسخه 11.16.2 اصلاح شد (فقط ویرایش داخل لایه crm-features-v20.js):
+۱) قانون گراف‌اول (۶۶) تأیید و این نوبت هم با خوانش‌های خیلی کوچکِ هدفمند انجام شد.
+۲) مدیر کشویی‌ها: کارت فیلدها با گرید واکنش‌گرا «کنار هم» چیده شد؛ نام‌های انگلیسی
+   با fallback به placeholder و واژه‌نامه فارسی (V20_FA_IDS) فارسی شد؛ فیلدهای سال/ماه
+   تاریخ شمسی از این بخش حذف و «نوع داروخانه» یک کارت عادیِ مثل بقیه شد؛ کارت‌های هر
+   تب فقط همان تب را نشان می‌دهند.
+۳) طوسی‌سازی یکدست: setFieldGrey روی کل form-group + ورودی دیداری کمبو اعمال می‌کند
+   (پایان «نصف طوسی نصف سفید» و قفل واقعی کشویی‌های طوسی در سفارشات) و اسکرول صفحه
+   هنگام موتورها حفظ می‌شود (پایان «کشیده شدن فیلد به بالا» بعد از انتخاب استان).
+۴) سفارشات: بخش کالا (کاتالوگ/اقلام/تعداد کالا/جایزه) همیشه فعال و عادی است؛ کافی
+   نیست حتماً جایگذاری شود. تغییر جای فیلدها در تب داروخانه، همان ترتیب را در
+   سفارشات هم اعمال می‌کند (mirrorPharmacyOrderToOrders با نگاشت Name↔PharmacyName).
+۵) دکمه تغییر رمز به‌جای افتادن روی «خروج»، داخل هدر دقیقاً کنار دکمه خروج نشاند.
+۶) رفع هشدار اشتباه «قبلاً ثبت شده» هنگام افزودن رکورد جدید: امضای ذخیره خودکار
+   ۱۲۰ ثانیه نگه داشته می‌شود و تکرارش پیام دوستانه می‌دهد بدون ساخت رکورد تکراری؛
+   رکورد در حال ویرایش هم از بررسی تکراری جدا شد.
+۷) مستندات و گراف و chat.arena (۱.۱۰) بازسازی شد؛ تست‌ها سبز. تأیید در انتظار کاربر.
 
 
 
@@ -2440,7 +2487,7 @@ Then change only what is requested.
 ~~~~~~~~
 
 ──────────────────────────────────────────────────────────────────────────────────
-فایل: AI_DECISION_LOG.md (33568 بایت)
+فایل: AI_DECISION_LOG.md (35259 بایت)
 ──────────────────────────────────────────────────────────────────────────────────
 ~~~~~~~~markdown
 # AI DECISION LOG
@@ -3764,11 +3811,44 @@ documented in RAHNAMA_GITLAB.txt (ssh-keygen → add public key →
 remote set-url gitlab git@gitlab.com:...). GitLab support stays in the
 code (SYNC_ALL auto-detects the gitlab remote and skips gracefully).
 
+---
+
+# 50. V11.16.2 — USER-REPORTED FIX PACK
+
+Date: 2026-08-16
+
+User findings (browser) and fixes in crm-features-v20.js:
+1. Combo-manager cards now render side-by-side in a responsive grid
+   (`.v20-cards`, auto-fill ≥330px) — not all stacked.
+2. English field names: faLabel v2 falls back to placeholder text and a
+   built-in Persian dictionary (V20_FA_IDS). Jalali year/month selects are
+   excluded from the combos manager (isDatePartField), so «سال/ماه» no
+   longer clutter the pharmacies card area and «نوع داروخانه» is a normal
+   card like other combos.
+3. Grey uniformity: new `setFieldGrey()` greys the whole form-group AND
+   disables the visible `.crm-combo-input` (pointer-events:none on
+   `.crm-combo.v20-locked`) — kills the "half grey / half white" state and
+   stops grey-but-selectable combos in orders. Scroll position is
+   preserved around every engine run (fixes the field-jump-after-province
+   complaint).
+4. Orders: product section (#orderItemsContainer / catalog bar / totals)
+   is now ALWAYS active; descriptor fields grey; pharmacy field ORDER
+   changes mirror into orders (`mirrorPharmacyOrderToOrders`, alias
+   pharmacy Name ↔ order PharmacyName, hooked on applyFullFormLayout).
+5. Change-password FAB docks inside the header next to #btnLogoutSystem
+   (inline-block), no longer overlapping the logout button.
+6. Duplicate false-positive on instant-add: gate now excludes the record
+   being edited, and v20SigOf/_v20AutoSaveSig suppression turns the
+   re-save of a just-auto-saved record into a friendly notice without
+   creating a duplicate row.
+
+Syntax-checked; server smoke 11.16.2 OK. Browser verification pending.
+
 # END OF AI DECISION LOG
 ~~~~~~~~
 
 ──────────────────────────────────────────────────────────────────────────────────
-فایل: AI_PROJECT_CONTEXT.md (16107 بایت)
+فایل: AI_PROJECT_CONTEXT.md (16327 بایت)
 ──────────────────────────────────────────────────────────────────────────────────
 ~~~~~~~~markdown
 # AI PROJECT CONTEXT
@@ -4577,7 +4657,10 @@ Then WAIT for approval before making changes.
 
 # CURRENT DELIVERY STATE (2026-08-16)
 
-App version 11.16.1 (= 11.16.0 feature pack + push-repair tooling).
+App version 11.16.2 (user-verification fix pack on v20: grid combo cards,
+uniform grey engine + combo lock, always-active order product section,
+field-order mirror pharmacy→orders, header-docked change-password button,
+duplicate false-positive fix with autosave signature suppression).
 GitHub remote was found replaced by a single manual commit "پروژه اولیه"
 (11.15.3); one-time repair script PUSH_FRESH_GITHUB.bat delivered
 (unrelated-histories merge, his files win). GitLab token page disabled on
@@ -5948,7 +6031,7 @@ and state the facts from the actual remote state.
 ~~~~~~~~
 
 ──────────────────────────────────────────────────────────────────────────────────
-فایل: AI_TASKS.md (21811 بایت)
+فایل: AI_TASKS.md (22631 بایت)
 ──────────────────────────────────────────────────────────────────────────────────
 ~~~~~~~~markdown
 # AI TASKS
@@ -7046,6 +7129,23 @@ Pending user-side verification:
 - Run PUSH_FRESH_GITHUB.bat once, then confirm GitHub web shows
   public/crm-features-v20.js + PROJECT_GRAPH.md (Ctrl+F5).
 - Later: SSH setup for GitLab when he is ready.
+
+---
+
+# 38. V11.16.2 — USER VERIFICATION FIX PACK (DONE 2026-08-16)
+
+Completed (from user's browser findings):
+1. Combo manager: side-by-side card grid; Persian labels (placeholder +
+   V20_FA_IDS dictionary); jalali سال/ماه excluded from that section.
+2. Uniform greying via setFieldGrey (whole form-group + visible combo
+   input disabled, pointer-events off) + scroll preserved (no field jump).
+3. Orders: product section always active; pharmacy field-order changes
+   mirror into orders; grey combos are truly unselectable.
+4. Change-password button now sits beside the logout button (not on it).
+5. False "قبلاً ثبت شده" on brand-new records fixed (autosave signature
+   suppression + editing-record exclusion in v20DupGate).
+
+Pending user verification: same list, in browser after Ctrl+Shift+R.
 
 # END OF AI TASKS
 ~~~~~~~~
@@ -8154,9 +8254,18 @@ Leaflet محلی. فونت گوگل حذف شد. gzip روی JS/CSS/HTML.
 ~~~~~~~~
 
 ──────────────────────────────────────────────────────────────────────────────────
-فایل: CHANGES_V11.md (30581 بایت)
+فایل: CHANGES_V11.md (32691 بایت)
 ──────────────────────────────────────────────────────────────────────────────────
 ~~~~~~~~markdown
+# نسخه ۱۱.۱۶.۲
+
+1. اصلاحات مدیر کشویی‌های افزودن‌ها (به گزارش کاربر): کارت‌های فیلدها حالا کنار هم (شبکه‌ای) چیده می‌شوند نه همه زیر هم؛ نام‌های انگلیسی با واژه‌نامه فارسی + خواندن placeholder رفع شد؛ فیلدهای «سال» و «ماه» تاریخ شمسی از این بخش حذف شدند و «نوع داروخانه» مثل بقیه کشویی‌ها یک کارت عادی است.
+2. رفع ناهماهنگی طوسی‌ها: موتور طوسی حالا روی کل بلوک فیلد (شامل ورودی دیداری کمبوها) اعمال می‌شود — دیگر «نصف طوسی نصف سفید» نیست؛ و با حفظ موقعیت اسکرول، پدیده «کشیده شدن فیلد به بالا بعد از انتخاب استان» برطرف شد.
+3. سفارشات: فیلدهای کشویی طوسی واقعاً غیرقابل‌انتخاب می‌شوند (قفل روی خود کمبو)، و برخلاف قبل، بخش کالا (تعداد کالا/جایزه/کاتالوگ) همیشه فعال و عادی می‌ماند. اگر جای فیلدها در تب داروخانه عوض شود، همان ترتیب در سفارشات هم اعمال می‌شود.
+4. دکمه «تغییر رمز» دیگر روی دکمه خروج نیفتاده؛ داخل هدر درست کنار خروج می‌نشیند.
+5. رفع هشدار اشتباه «قبلاً ثبت شده» برای رکورد جدید: امضای رکوردی که لحظه‌ای پیش خودکار ذخیره شده به خاطر سپرده می‌شود و ثبت دوباره‌اش با پیام دوستانه (بدون ایجاد رکورد تکراری) جلوگیری می‌شود؛ رکوردِ در حال ویرایش هم از بررسی تکراری مستثنا است.
+6. قانون تکیدی کاربر: ابتدا PROJECT_GRAPH.md خوانده شود، نه کل کدها (همان قانون ۶۶ — تأیید مجدد).
+
 # نسخه ۱۱.۱۶.۱
 
 1. رفع مشکل آپدیت نشدن گیت‌هاب: مشخص شد روی گیت‌هاب یک کامیت دستی «پروژه اولیه» با محتوای 11.15.3 جایگزین تاریخچه شده و به‌خاطر نخوردن تاریخچه‌ها push رد می‌شد. اسکریپت PUSH_FRESH_GITHUB.bat ساخته شد: ثبت فایل‌ها ← ادغام امن با allow-unrelated-histories (فایل‌های شما برنده) ← push. بعد از این یک‌بار، SYNC_ALL.bat دوباره مثل قبل کار می‌کند.
@@ -8851,7 +8960,7 @@ update_project_graph.py
 ~~~~~~~~
 
 ──────────────────────────────────────────────────────────────────────────────────
-فایل: PROJECT_GRAPH.md (36468 بایت)
+فایل: PROJECT_GRAPH.md (36393 بایت)
 ──────────────────────────────────────────────────────────────────────────────────
 ~~~~~~~~markdown
 # 🕸️ گراف دانش پروژه «نماینده علمی» (PROJECT_GRAPH.md)
@@ -8971,10 +9080,10 @@ update_project_graph.py
 - تعداد توابع داخلی: 65
 - نام‌های window که تعریف/بازنویسی می‌کند: `_v18DefaultReq`, `_v19BackupLayoutGuard`, `_v19ComboHook`, `_v19Hist`, `_v19IcObs`, `_v19ProdTableWrap`, `_v19Sw`, `applyFullFormLayout`, `applySelectExtraOptions`, `extraListColumns`, `performAutoBackup`, `renderAllCustomFieldsInFormsAndTables`, `renderColumnsProductsTable`, `renderPharmaciesList`, `switchTab`, `testServerConnectivity`
 
-### `public/crm-features-v20.js` (44707 بایت)
+### `public/crm-features-v20.js` (52377 بایت)
 - نقش: ============================================================
-- تعداد توابع داخلی: 45
-- نام‌های window که تعریف/بازنویسی می‌کند: `_v20Rendering`, `applyFullFormLayout`, `deleteCustomField`, `renderExtraTabCustomFields`, `saveState`, `switchTab`, `v20ApplyGreyChains`, `v20ApplyOrderLock`, `v20DupGate`, `v20RenderComboManager`, `v20RenderProductExtras`
+- تعداد توابع داخلی: 54
+- نام‌های window که تعریف/بازنویسی می‌کند: `_v20AutoSaveSig`, `_v20AutoSaveT`, `_v20Rendering`, `applyFullFormLayout`, `deleteCustomField`, `renderExtraTabCustomFields`, `saveState`, `switchTab`, `v20ApplyGreyChains`, `v20ApplyOrderLock`, `v20DupGate`, `v20RenderComboManager`, `v20RenderProductExtras`
 
 ### `public/crm-features-v9.js` (67820 بایت)
 - نقش: ===========================================================================
@@ -8996,7 +9105,7 @@ update_project_graph.py
 - تعداد توابع داخلی: 10
 
 ### `public/sw.js` (1145 بایت)
-- نقش: const CACHE = "ttt-v11.16.1";
+- نقش: const CACHE = "ttt-v11.16.2";
 - تعداد توابع داخلی: 0
 
 ### `public/vendor/leaflet.js` (147552 بایت)
@@ -9147,7 +9256,7 @@ update_project_graph.py
 - `public/crm-features-v15.js` → 3 شناسه (مثل: `orderPharmacyName`, `orderPharmacyPickBox`, `orderTotalAmountDisplay`)
 - `public/crm-features-v17.js` → 9 شناسه (مثل: `existingPharmacyAlertText`, `existingPharmacyTopAlert`, `orderAddress`, `orderCity`, `orderDistrict`, `orderPharmacyMatchedId`, `orderPharmacyName`, `orderPharmacyPickBox`)
 - `public/crm-features-v19.js` → 2 شناسه (مثل: `orderEditId`, `orderItemsContainer`)
-- `public/crm-features-v20.js` → 4 شناسه (مثل: `orderItemsContainer`, `orderPharmacyMatchedId`, `orderPharmacyName`, `orderProductCatalogBar`)
+- `public/crm-features-v20.js` → 2 شناسه (مثل: `orderPharmacyMatchedId`, `orderPharmacyName`)
 - `public/crm-features-v9.js` → 7 شناسه (مثل: `cardOrdList`, `formOrder`, `ordListCountBadge`, `orderItemsContainer`, `searchOrderInput`, `tableOrdersBody`, `tableOrdersHeader`)
 
 ### tab-overview-map «🗺️ نقشه جامع»
@@ -9161,7 +9270,6 @@ update_project_graph.py
 - `public/crm-features-v14.js` → 4 شناسه (مثل: `btnSavePharmacy`, `formPharmacy`, `pharmacyEditId`, `pharmacyName`)
 - `public/crm-features-v16.js` → 8 شناسه (مثل: `formPharmacy`, `pharmacyAddress`, `pharmacyCity`, `pharmacyDistrict`, `pharmacyEditId`, `pharmacyName`, `pharmacyPhone`, `pharmacyProvince`)
 - `public/crm-features-v17.js` → 8 شناسه (مثل: `btnSavePharmacy`, `formPharmacy`, `pharmacyAddress`, `pharmacyCity`, `pharmacyDistrict`, `pharmacyName`, `pharmacyPhone`, `pharmacyProvince`)
-- `public/crm-features-v20.js` → 2 شناسه (مثل: `btnSavePharmacy`, `pharmacyName`)
 - `public/crm-features-v9.js` → 11 شناسه (مثل: `btnPhMapSearch`, `btnPharmacyCurrentLocation`, `btnPharmacyGetAddressFromPoint`, `cardPhList`, `formPharmacy`, `phFileInput`, `phListCountBadge`, `phTableCountBadge`)
 
 ### tab-rep-homes «🏠 منزل نمایندگان»
@@ -9205,7 +9313,7 @@ update_project_graph.py
 - `fields` ← `public/crm-app.js`, `public/crm-features-v11.js`, `public/crm-features-v12.js`, `public/crm-features-v20.js`
 - `fill` ← `public/crm-features-v10.js`, `public/crm-features-v13.js`
 - `hits` ← `public/crm-features-v14.js`, `public/crm-features-v16.js`, `public/crm-features-v17.js`
-- `lab` ← `public/crm-features-v11.js`, `public/crm-features-v18.js`, `public/crm-features-v19.js`
+- `lab` ← `public/crm-features-v11.js`, `public/crm-features-v18.js`, `public/crm-features-v19.js`, `public/crm-features-v20.js`
 - `label` ← `public/crm-features-v11.js`, `public/crm-features-v14.js`, `public/crm-features-v15.js`
 - `last` ← `public/crm-features-v18.js`, `public/crm-features-v19.js`
 - `lay` ← `public/crm-features-v13.js`, `public/crm-features-v18.js`
@@ -10312,7 +10420,7 @@ export default nextConfig;
 ~~~~~~~~json
 {
   "name": "namayandeelmi-javad-crm",
-  "version": "11.16.1",
+  "version": "11.16.2",
   "description": "سیستم جامع مدیریت و ویزیت علمی، داروخانه‌ها، پزشکان و سفارشات (CRM / PWA) هماهنگ با Render و Neon",
   "main": "server.js",
   "engines": {
@@ -10503,7 +10611,7 @@ const server = http.createServer((req, res) => {
     return send(req, res, 200, JSON.stringify({
       ok: true, status: "healthy", message: "OK",
       service: "namayandeelmi-javad-crm",
-      version: "11.16.1",
+      version: "11.16.2",
       timestamp: new Date().toISOString()
     }), "application/json; charset=utf-8");
   }
@@ -10597,7 +10705,7 @@ const server = http.createServer((req, res) => {
 });
 
 server.listen(PORT, "0.0.0.0", () => {
-  console.log("CRM v11.16.1 listening on 0.0.0.0:" + PORT);
+  console.log("CRM v11.16.2 listening on 0.0.0.0:" + PORT);
 });
 ~~~~~~~~
 
@@ -10719,7 +10827,7 @@ git status -sb
 ~~~~~~~~
 
 ──────────────────────────────────────────────────────────────────────────────────
-فایل: update_chat_arena.py (106682 بایت)
+فایل: update_chat_arena.py (112655 بایت)
 ──────────────────────────────────────────────────────────────────────────────────
 ~~~~~~~~python
 #!/usr/bin/env python3
@@ -10773,7 +10881,7 @@ def walk_files():
 
 HEADER = """CHAT.ARENA — حافظه دائمی و کامل پروژه «نماینده علمی» (طنین طب طاها / TENIN TEB TAHA)
 =====================================================================================
-نسخه این فایل: 1.9 | تاریخ به‌روزرسانی: 2026-08-16 (۲۶ مرداد ۱۴۰۵) | نسخه برنامه: 11.16.1
+نسخه این فایل: 1.10 | تاریخ به‌روزرسانی: 2026-08-16 (۲۶ مرداد ۱۴۰۵) | نسخه برنامه: 11.16.2
 این فایل به دستور کاربر ساخته شده و قانون دائمی دارد: بعد از هر گفتگو و هر نسخه جدید برنامه،
 این فایل به‌روزرسانی می‌شود و نسخه به‌روز آن همیشه داخل فایل زیپ تحویلی قرار می‌گیرد.
 (قانون شماره ۶۳ در AI_RULES.md) — بازسازی با: python update_chat_arena.py
@@ -11106,9 +11214,22 @@ crm-jalali.js, iran-facilities.js, sw.js, manifest.json, offline.html, icons/, v
 بخش ۴) تاریخچه نسخه‌ها و آخرین دوره تغییرات
 ══════════════════════════════════════════════════════════════════════════════════
 • مسیر نسخه‌ها (بازسازی از ریپو): V1 → … → V9 → V10 → V11 → V11.1 … V11.14 → V11.15
-  → V11.15.1 → V11.15.2 → V11.15.3 → V11.16.0 → V11.16.1.
+  → V11.15.1 → V11.15.2 → V11.15.3 → V11.16.0 → V11.16.1 → V11.16.2.
 • جزئیات کامل هر نسخه V9 به بعد در CHANGES_V9.md / CHANGES_V10.md / CHANGES_V11.md
   (محتوای کاملشان در بخش ۹ همین فایل هست).
+
+نسخه 11.16.2 — تأیید قانون گراف‌اول + اصلاحات بازخورد مرورگری کاربر
+۱) قانون دوباره تأکید شد: برای صرفه‌جویی توکن، اول PROJECT_GRAPH.md خوانده شود
+   (همان قانون ۶۶).
+۲) مدیر کشویی‌ها: کارت‌ها کنار هم (شبکه)؛ نام‌های فارسی با واژه‌نامه+placeholder؛
+   حذف سال/ماه شمسی از این بخش؛ «نوع داروخانه» کارت عادی شد.
+۳) موتور طوسی یکدست شد (setFieldGrey روی کل بلوک + ورودی دیداری کمبو + حفظ اسکرول)؛
+   پس دیگر «نصف طوسی نصف سفید» و «کشیده شدن فیلد به بالا» نیست؛ در سفارشات کشویی
+   طوسی واقعاً قفل است و بخش کالا همیشه فعال؛ ترتیب فیلدهای داروخانه به سفارشات
+   هم منتقل می‌شود.
+۴) دکمه تغییر رمز کنار دکمه خروج (داخل هدر) نشست؛ هشدار کاذب «قبلاً ثبت شده» با
+   مهار امضای ذخیره خودکار و استثنای رکورد در حال ویرایش رفع شد.
+۵) تست: node --check سبز؛ /api/health نسخه 11.16.2؛ تأیید مرورگری در انتظار کاربر.
 
 نسخه 11.16.1 — گزارش کاربر: «فایل‌ها روی گیت‌هاب آپدیت نشده‌اند؛ برنامه قبلی است»
 ۱) تشخیص با fetch واقعی: origin/main فقط یک کامیت دستی c0abb06 «پروژه اولیه» با
@@ -11664,6 +11785,40 @@ push رد شد (fetch first) و در نتیجه production روی Render هنو�
 ۴) قانون دائمی ۶۸ ثبت شد: در هر گزارش «گیت آپدیت نشد» اول وضعیت واقعی ریموت با
    fetch بررسی شود، نه حدس. نسخه به 11.16.1 رسید، تست‌ها سبز، گراف دانش و
    chat.arena (۱.۹) بازسازی و زیپ تازه تحویل شد.
+
+──────────────────────────────── نوبت ۱۵ ────────────────────────────────
+🧑 کاربر (عیناً):
+«قانون ما این شد بخاطر اینکه در مصرف توکن صرفه جویی شود تو فایل گراف را بررسی کنی و دوباره همه کدهای سیستم را بررسی نکنی
+
+در تب افزودن فیلدهای کشویی کنار هم باشد نه اینکه همه در زیر همدیگر باشد و اینکه بعضی از اسم فیلها باز بصورت انگلیسی نوشته شده و اینکه در تب داروخانه فیلد سال و ماه و نوع داروخانه در کنار هستش که از اونجا پاک بشه و مثل بقیه فیلهای کشویی بشه
+
+در تب افزودن همه فیلهای کشویی در تب خودش موجود باشه  
+در تب داروخانه تب هایی که قرار بود طوسی بشه نصفش طوسی شده و نصفش سفیده اگر در تب دیگری هم به این صورت هستش درستش کن و اینکه وقتی نام استان را انتخاب میکنی فیلد به طرف بالا کشیده میشه و از خط خودش خارج میشه  
+در تب سفارشات فیلهای کشویی با اینکه طوسی هسند اما قابل انتخاب هستند.اگر میبینی درست نمیشه اونها را به فیلد ساده تبدیل کن و به عنوان فیلد کشویی در پیش فرض شناخته بشه و اگر جای فیلد در تب داروخانه تغییر کرد به همان صورت در سفارشات نیز تغییر کند
+
+دکمه تغییر رمز روی دکمه خروج قرار گرفته که این درست نیست  
+در سفارشات فیلدهای کالا و فیلهای مرتبط با ان طوسی و غیر فعال شده که نباید به این صورت باشد و باید فعال باشد
+
+وقتی که میخوای نام داروخانه یا پزشک را ثبت کنی و افزودن را میزنی میگه این داروخانه قبلا ثبت شده و این اشتباه است درحالی که این داروخانه جدید است»
+
+🤖 دستیار:
+همه در نسخه 11.16.2 اصلاح شد (فقط ویرایش داخل لایه crm-features-v20.js):
+۱) قانون گراف‌اول (۶۶) تأیید و این نوبت هم با خوانش‌های خیلی کوچکِ هدفمند انجام شد.
+۲) مدیر کشویی‌ها: کارت فیلدها با گرید واکنش‌گرا «کنار هم» چیده شد؛ نام‌های انگلیسی
+   با fallback به placeholder و واژه‌نامه فارسی (V20_FA_IDS) فارسی شد؛ فیلدهای سال/ماه
+   تاریخ شمسی از این بخش حذف و «نوع داروخانه» یک کارت عادیِ مثل بقیه شد؛ کارت‌های هر
+   تب فقط همان تب را نشان می‌دهند.
+۳) طوسی‌سازی یکدست: setFieldGrey روی کل form-group + ورودی دیداری کمبو اعمال می‌کند
+   (پایان «نصف طوسی نصف سفید» و قفل واقعی کشویی‌های طوسی در سفارشات) و اسکرول صفحه
+   هنگام موتورها حفظ می‌شود (پایان «کشیده شدن فیلد به بالا» بعد از انتخاب استان).
+۴) سفارشات: بخش کالا (کاتالوگ/اقلام/تعداد کالا/جایزه) همیشه فعال و عادی است؛ کافی
+   نیست حتماً جایگذاری شود. تغییر جای فیلدها در تب داروخانه، همان ترتیب را در
+   سفارشات هم اعمال می‌کند (mirrorPharmacyOrderToOrders با نگاشت Name↔PharmacyName).
+۵) دکمه تغییر رمز به‌جای افتادن روی «خروج»، داخل هدر دقیقاً کنار دکمه خروج نشاند.
+۶) رفع هشدار اشتباه «قبلاً ثبت شده» هنگام افزودن رکورد جدید: امضای ذخیره خودکار
+   ۱۲۰ ثانیه نگه داشته می‌شود و تکرارش پیام دوستانه می‌دهد بدون ساخت رکورد تکراری؛
+   رکورد در حال ویرایش هم از بررسی تکراری جدا شد.
+۷) مستندات و گراف و chat.arena (۱.۱۰) بازسازی شد؛ تست‌ها سبز. تأیید در انتظار کاربر.
 
 """
 
@@ -26468,7 +26623,7 @@ button.v19-gps svg{display:block}
 ~~~~~~~~
 
 ──────────────────────────────────────────────────────────────────────────────────
-فایل: public/crm-features-v20.js (44707 بایت)
+فایل: public/crm-features-v20.js (52377 بایت)
 ──────────────────────────────────────────────────────────────────────────────────
 ~~~~~~~~javascript
 // ============================================================
@@ -26527,10 +26682,14 @@ button.v19-gps svg{display:block}
       "#orderItemsContainer input[type=number]{-moz-appearance:textfield;appearance:textfield;}" +
       ".v20-grey,.v20-grey:disabled{background:#e5e7eb!important;color:#6b7280!important;" +
       "cursor:not-allowed!important;opacity:.85!important;border-color:#d1d5db!important;}" +
-      "#v20ChpassFab{position:fixed;top:8px;left:8px;z-index:1200;background:#0d9488;color:#fff;" +
-      "border:none;border-radius:10px;padding:8px 14px;font-weight:700;cursor:pointer;" +
-      "box-shadow:0 2px 10px rgba(0,0,0,.25);font-family:inherit;font-size:.85rem;}" +
+      ".crm-combo.v20-locked{pointer-events:none;}" +
+      ".v20-grey-zone .form-label{color:#9ca3af!important;}" +
+      ".v20-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:12px;align-items:start;}" +
+      "#v20ChpassFab{background:#0d9488;color:#fff;border:none;border-radius:10px;padding:8px 14px;" +
+      "font-weight:700;cursor:pointer;font-family:inherit;font-size:.85rem;margin:0 6px;vertical-align:middle;}" +
       "#v20ChpassFab:hover{background:#0f766e;}" +
+      ".v20-toast{position:fixed;bottom:24px;right:24px;background:#065f46;color:#fff;padding:12px 20px;" +
+      "border-radius:12px;box-shadow:0 6px 24px rgba(0,0,0,.3);z-index:1400;font-weight:700;direction:rtl;}" +
       ".v20-modal{position:fixed;inset:0;background:rgba(15,23,42,.55);z-index:1300;display:flex;" +
       "align-items:center;justify-content:center;}" +
       ".v20-modal-card{background:#fff;border-radius:14px;padding:22px;min-width:300px;max-width:92vw;" +
@@ -26540,7 +26699,7 @@ button.v19-gps svg{display:block}
       "border-radius:8px;margin-top:5px;background:#fff;}" +
       ".v20-opt-row span{flex:1;}" +
       ".v20-opt-row button{border:1px solid #cbd5e1;background:#f8fafc;border-radius:7px;cursor:pointer;padding:2px 8px;}" +
-      ".v20-combo-card{border:1px solid #dbe2ea;border-radius:12px;padding:12px;margin-top:12px;background:#fbfdff;}" +
+      ".v20-combo-card{border:1px solid #dbe2ea;border-radius:12px;padding:12px;background:#fbfdff;}" +
       ".v20-combo-card h5{margin:0 0 8px;color:#0f172a;}" +
       ".v20-card-tools{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:6px;}" +
       ".v20-card-tools input[type=text]{flex:1;min-width:140px;padding:8px;border:1px solid #cbd5e1;border-radius:8px;}" +
@@ -26555,23 +26714,35 @@ button.v19-gps svg{display:block}
   })();
 
   /* ---------- ۲) تکراری‌گیر دقیق ---------- */
+  function dupPairs(isDoc) {
+    return isDoc
+      ? [["name", "doctorName"], ["phone", "doctorPhone"], ["specialty", "doctorSpecialty"],
+         ["province", "doctorProvince"], ["city", "doctorCity"], ["district", "doctorDistrict"], ["address", "doctorAddress"]]
+      : [["name", "pharmacyName"], ["phone", "pharmacyPhone"], ["manager", "pharmacyManager"],
+         ["province", "pharmacyProvince"], ["city", "pharmacyCity"], ["district", "pharmacyDistrict"], ["address", "pharmacyAddress"]];
+  }
+  function gvById(id) { var e = $(id); return e ? String(e.value || "") : ""; }
+  function v20SigOf(kind) {
+    var isDoc = kind === "doctor";
+    var parts = dupPairs(isDoc).map(function (p) { return norm(gvById(p[1])); });
+    return kind + "|" + parts.join("|");
+  }
   window.v20DupGate = function (kind) {
     try {
       var isDoc = kind === "doctor";
       var S = st(); if (!S) return true;
       var list = isDoc ? (S.doctors || []) : (S.pharmacies || []);
-      function gv(id) { var e = $(id); return e ? String(e.value || "") : ""; }
-      var pairs = isDoc
-        ? [["name", "doctorName"], ["phone", "doctorPhone"], ["specialty", "doctorSpecialty"],
-           ["province", "doctorProvince"], ["city", "doctorCity"], ["district", "doctorDistrict"], ["address", "doctorAddress"]]
-        : [["name", "pharmacyName"], ["phone", "pharmacyPhone"], ["manager", "pharmacyManager"],
-           ["province", "pharmacyProvince"], ["city", "pharmacyCity"], ["district", "pharmacyDistrict"], ["address", "pharmacyAddress"]];
+      var pairs = dupPairs(isDoc);
       var draft = {};
-      pairs.forEach(function (p) { draft[p[0]] = norm(gv(p[1])); });
+      pairs.forEach(function (p) { draft[p[0]] = norm(gvById(p[1])); });
+      // رکوردی که همین الان در حال ویرایشش هستیم از بررسی تکراری خارج می‌شود
+      var editEl = $(isDoc ? "doctorEditId" : "pharmacyEditId");
+      var editingId = editEl ? String(editEl.value || "") : "";
       var title = isDoc ? "پزشک/مطب" : "داروخانه";
       var listFa = isDoc ? "پزشکان" : "داروخانه‌ها";
       var exact = null, partial = false;
       list.forEach(function (r) {
+        if (editingId && String(r.id) === editingId) return;
         var allSame = true, anyVal = false;
         pairs.forEach(function (p) {
           var a = draft[p[0]];
@@ -26584,6 +26755,11 @@ button.v19-gps svg{display:block}
         if (draft.phone && norm(r.phone || "") === draft.phone) partial = true;
       });
       if (exact) {
+        var sig = v20SigOf(kind);
+        if (window._v20AutoSaveSig === sig && (Date.now() - (window._v20AutoSaveT || 0)) < 120000) {
+          alert("✔ این " + title + " همین چند لحظه پیش با موفقیت ثبت شد؛ نیازی به ثبت دوباره نیست.");
+          return false;
+        }
         alert("⛔ این " + title + " قبلاً با دقیقاً همین اطلاعات ثبت شده است" +
           (exact.repName ? " (توسط «" + exact.repName + "»)" : "") +
           ".\n\nثبت مجدد مجاز نیست؛ برای تغییر، از لیست «" + listFa + "» دکمه ✏️ ویرایش همان رکورد را بزنید.");
@@ -26608,28 +26784,54 @@ button.v19-gps svg{display:block}
   ];
   var v20AddPane = "tab-pharmacies";
 
+  var V20_FA_IDS = {
+    pharmacyName: "نام داروخانه", pharmacyProvince: "استان", pharmacyCity: "شهر", pharmacyDistrict: "منطقه",
+    pharmacyIsPercentage: "وضعیت درصدی داروخانه", pharmacyPhone: "تلفن داروخانه",
+    doctorName: "نام پزشک", doctorSpecialty: "تخصص پزشک", doctorProvince: "استان", doctorCity: "شهر", doctorDistrict: "منطقه",
+    orderPharmacyName: "نام داروخانه", orderProvince: "استان", orderCity: "شهر", orderDistrict: "منطقه",
+    orderRepName: "نام نماینده", orderStatus: "وضعیت سفارش", orderDate: "تاریخ سفارش",
+    cfTargetEntity: "تب مربوطه", cfType: "نوع فیلد"
+  };
   function faLabel(el, pane) {
-    var lab = pane ? pane.querySelector('label[for="' + el.id + '"]') : null;
+    var lab = (pane && el.id) ? pane.querySelector('label[for="' + el.id + '"]') : null;
     var t = lab ? lab.textContent : "";
     if (!t) {
       var g = el.closest ? el.closest(".form-group") : null;
       var l2 = g ? g.querySelector(".form-label, label") : null;
       if (l2) t = l2.textContent;
     }
+    if (!t && el.getAttribute) t = el.getAttribute("placeholder") || "";
     t = String(t || "").replace(/\*/g, "").replace(/\(.*?\)/g, "").replace(/\s+/g, " ").trim();
+    // اگر برچسب خالی یا انگلیسی بود، از واژه‌نامه فارسی استفاده شود
+    if (!t || /^[A-Za-z0-9_\-\s]+$/.test(t)) t = V20_FA_IDS[el.id] || t;
     return t || "";
+  }
+  function isDatePartField(id, label) {
+    if (/year|month|jyear|jmonth|روز/i.test(String(id))) return true;
+    if (/^(سال|ماه|روز)$/.test(String(label))) return true;
+    return false;
   }
 
   function collectCombos(paneId) {
     var pane = $(paneId);
     if (!pane) return [];
     var out = [], seen = {};
+    function skipped(el) {
+      return el.closest("#columnsDesignerHost") || el.closest("#jalaliCalendarPopup") ||
+        el.closest(".modal-overlay") || el.closest("#addTabGrid") || el.closest("#addTabPanel") ||
+        el.closest("#v20PresetBar");
+    }
     Array.prototype.forEach.call(pane.querySelectorAll("select[id]"), function (sel) {
-      if (!sel.id || seen[sel.id]) return;
-      if (sel.closest("#columnsDesignerHost") || sel.closest("#jalaliCalendarPopup") ||
-          sel.closest(".modal-overlay") || sel.closest("#addTabGrid") || sel.closest("#addTabPanel") ||
-          sel.closest("#v20PresetBar")) return;
+      if (!sel.id || seen[sel.id] || skipped(sel)) return;
       if (sel.id.indexOf("jalali") === 0 || sel.id.indexOf("v20") === 0) return;
+      var lab = faLabel(sel, pane);
+      // برای کشویی‌های کمبووشده، برچسب از ورودی دیداری خوانده شود
+      if (!lab) {
+        var combo = sel.closest(".crm-combo");
+        var vis = combo ? combo.querySelector(".crm-combo-input") : null;
+        if (vis) lab = faLabel(vis, pane);
+      }
+      if (isDatePartField(sel.id, lab)) return; // سال/ماه تاریخ شمسی در این بخش نیاید (مثل بقیه کشویی‌ها)
       seen[sel.id] = true;
       var opts = [];
       Array.prototype.forEach.call(sel.options, function (o, i) {
@@ -26638,11 +26840,14 @@ button.v19-gps svg{display:block}
         if (i === 0 && !v) return; // جای‌نگهدار «انتخاب کنید...»
         opts.push({ v: v, t: t });
       });
-      out.push({ el: sel, id: sel.id, label: faLabel(sel, pane), opts: opts });
+      out.push({ el: sel, id: sel.id, label: lab, opts: opts });
     });
     // ورودی‌های متصل به datalist (کشویی تایپ‌شونده)
     Array.prototype.forEach.call(pane.querySelectorAll("input[list][id]"), function (inp) {
-      if (seen[inp.id]) return;
+      if (seen[inp.id] || skipped(inp)) return;
+      if (inp.id.indexOf("v20") === 0) return;
+      var lab2 = faLabel(inp, pane);
+      if (isDatePartField(inp.id, lab2)) return;
       var dl = $(inp.getAttribute("list"));
       if (!dl) return;
       seen[inp.id] = true;
@@ -26651,7 +26856,7 @@ button.v19-gps svg{display:block}
         var v = String(o.value || o.textContent || "");
         if (v) opts.push({ v: v, t: v });
       });
-      out.push({ el: inp, id: inp.id, label: faLabel(inp, pane), opts: opts, datalist: dl });
+      out.push({ el: inp, id: inp.id, label: lab2, opts: opts, datalist: dl });
     });
     return out;
   }
@@ -26727,6 +26932,7 @@ button.v19-gps svg{display:block}
       "<label class='v20-mini'><input type='checkbox' id='v20GreyOnChk'" + (greyOn ? " checked" : "") + "> حالت طوسی زنجیره‌ای فعال باشد</label>" +
       "<label class='v20-mini'><input type='checkbox' id='v20OrderLockChk'" + (lockOn ? " checked" : "") + "> قفل طوسی فرم سفارش تا انتخاب داروخانه فعال باشد</label>" +
       "</div>";
+    h += "<div class='v20-cards'>";
     if (!entries.length) h += "<div class='v20-mini'>در این تب فیلد کشویی پیدا نشد.</div>";
     entries.forEach(function (en) {
       var parentSel = en.el.tagName === "SELECT" ? greyParentOptions(en, v20AddPane) : "";
@@ -26741,7 +26947,8 @@ button.v19-gps svg{display:block}
         "<div class='v20-opts' data-store='" + esc(en.id) + "'>" + optionRowsHtml(en) + "</div>" +
         "</div>";
     });
-    h += "</div>";
+    h += "</div>"; // پایان .v20-cards
+    h += "</div>"; // پایان .v20-addmgr
     var old = host.querySelector(".v20-addmgr");
     if (old) old.parentNode.removeChild(old);
     var div = document.createElement("div");
@@ -26829,6 +27036,22 @@ button.v19-gps svg{display:block}
   }
 
   /* ---------- ۴) موتور زنجیره طوسی ---------- */
+  function setFieldGrey(el, grey) {
+    var y = window.scrollY;
+    try {
+      el.disabled = !!grey;
+      el.classList.toggle("v20-grey", !!grey);
+      var combo = el.closest ? el.closest(".crm-combo") : null;
+      if (combo) {
+        combo.classList.toggle("v20-locked", !!grey);
+        var inp = combo.querySelector(".crm-combo-input");
+        if (inp) { inp.disabled = !!grey; inp.classList.toggle("v20-grey", !!grey); }
+      }
+      var fg = el.closest ? el.closest(".form-group") : null;
+      if (fg) fg.classList.toggle("v20-grey-zone", !!grey);
+    } catch (e) {}
+    if (window.scrollY !== y) window.scrollTo(0, y);
+  }
   function seedGreyDefaults() {
     var S = st(); if (!S || S._v20GreySeeded) return;
     S.v20GreyMap = S.v20GreyMap || {};
@@ -26843,66 +27066,92 @@ button.v19-gps svg{display:block}
   function v20ApplyGreyChains() {
     var S = st(); if (!S) return;
     var on = !(S.settings && S.settings.v20GreyOn === false);
+    var y = window.scrollY;
     Object.keys(S.v20GreyMap || {}).forEach(function (id) {
       var el = $(id); if (!el) return;
       // قفل سفارشات مالک فیلدهای سفارش است
       if (id.indexOf("order") === 0 && !(S.settings && S.settings.v20OrderLock === false)) return;
       var pEl = $(S.v20GreyMap[id]);
       var locked = on && pEl && !String(pEl.value || "").trim();
-      el.disabled = !!locked;
-      el.classList.toggle("v20-grey", !!locked);
+      setFieldGrey(el, locked);
     });
+    if (window.scrollY !== y) window.scrollTo(0, y);
   }
   window.v20ApplyGreyChains = v20ApplyGreyChains;
 
   /* ---------- ۵) قفل طوسی فرم سفارش ---------- */
   var ORDER_DESCRIPTORS = ["orderProvince", "orderCity", "orderDistrict", "orderAddress", "orderRepName"];
+  var ORDER_PRODUCT_SCOPE = "#orderItemsContainer, #orderProductCatalogBar, #orderProductCatalogList, #orderTotalsArea";
   function orderMatched() { return !!(($("orderPharmacyMatchedId") || {}).value); }
   function v20ApplyOrderLock() {
     var pane = $("tab-orders"); if (!pane) return;
     var S = st(); if (!S) return;
     var on = !(S.settings && S.settings.v20OrderLock === false);
     var inputs = pane.querySelectorAll("input, select, textarea");
+    var y = window.scrollY;
     if (!on) {
-      Array.prototype.forEach.call(inputs, function (el) { el.disabled = false; el.classList.remove("v20-grey"); });
+      Array.prototype.forEach.call(inputs, function (el) { setFieldGrey(el, false); });
       return;
     }
     var locked = !orderMatched();
     Array.prototype.forEach.call(inputs, function (el) {
       if (!el.id || el.type === "hidden") return;
-      if (el.id === "orderPharmacyName") { el.disabled = false; el.classList.remove("v20-grey"); return; }
-      if (ORDER_DESCRIPTORS.indexOf(el.id) >= 0) {
-        // فیلدهای توصیفی داروخانه: همیشه طوسی (اطلاعات «سر جای خودش» می‌نشیند)
-        el.disabled = true; el.classList.add("v20-grey"); return;
-      }
-      el.disabled = locked;
-      el.classList.toggle("v20-grey", locked);
+      // نام داروخانه و همه فیلدهای بخش کالا: همیشه فعال و عادی
+      if (el.id === "orderPharmacyName") { setFieldGrey(el, false); return; }
+      if (el.closest && el.closest(ORDER_PRODUCT_SCOPE)) { setFieldGrey(el, false); return; }
+      // فیلدهای توصیفی داروخانه: طوسی (اطلاعات سر جای خودش می‌نشیند)
+      if (ORDER_DESCRIPTORS.indexOf(el.id) >= 0) { setFieldGrey(el, true); return; }
+      // بقیه فیلدها: تا انتخاب/جایگذاری داروخانه طوسی‌اند
+      setFieldGrey(el, locked);
     });
-    // بخش کالا بعد از جایگذاری فعال و عادی است
-    var items = $("orderItemsContainer"), bar = $("orderProductCatalogBar");
-    [items, bar].forEach(function (box) {
-      if (!box) return;
-      Array.prototype.forEach.call(box.querySelectorAll("input, select"), function (el) {
-        el.disabled = locked;
-        el.classList.toggle("v20-grey", locked);
-      });
-    });
+    if (window.scrollY !== y) window.scrollTo(0, y);
   }
   window.v20ApplyOrderLock = v20ApplyOrderLock;
 
-  /* ---------- ۶) افزودن لحظه‌ای نام داروخانه = ذخیره خودکار ---------- */
+  /* ---------- ۶) افزودن لحظه‌ای نام = ذخیره خودکار (بدون تکرار کاذب) ---------- */
+  function v20Toast(msg) {
+    try {
+      var d = document.createElement("div");
+      d.className = "v20-toast";
+      d.textContent = msg;
+      document.body.appendChild(d);
+      setTimeout(function () { try { d.parentNode.removeChild(d); } catch (e) {} }, 3200);
+    } catch (e) {}
+  }
   function bindInstantAddSave() {
     document.addEventListener("click", function (e) {
       var b = e.target && e.target.closest ? e.target.closest("button") : null;
       if (!b) return;
       var t = String(b.textContent || "").trim();
       if (t.indexOf("➕ افزودن") !== 0) return;
-      if (!b.closest("#tab-pharmacies")) return;
+      var pane = b.closest("#tab-pharmacies, #tab-doctors");
+      if (!pane) return;
+      var isDoc = pane.id === "tab-doctors";
       setTimeout(function () {
-        var nameInp = $("pharmacyName");
-        if (!nameInp || !String(nameInp.value || "").trim()) return;
-        var saveBtn = $("btnSavePharmacy");
-        if (saveBtn) { log("افزودن لحظه‌ای نام ⇒ ذخیره خودکار داروخانه"); saveBtn.click(); }
+        var nameInp = $(isDoc ? "doctorName" : "pharmacyName");
+        var val = nameInp ? String(nameInp.value || "").trim() : "";
+        if (!val) return;
+        var kind = isDoc ? "doctor" : "pharmacy";
+        var sig = v20SigOf(kind);
+        // اگر همین رکورد لحظاتی پیش با همین امضا ذخیره شد، دوباره ذخیره نکن
+        if (window._v20AutoSaveSig === sig && (Date.now() - (window._v20AutoSaveT || 0)) < 120000) {
+          v20Toast("این رکورد همین الان ذخیره شده؛ دوباره ثبت نمی‌شود.");
+          return;
+        }
+        var S = st();
+        var before = S ? (isDoc ? (S.doctors || []).length : (S.pharmacies || []).length) : 0;
+        window._v20AutoSaveSig = sig;
+        window._v20AutoSaveT = Date.now();
+        var saveBtn = $(isDoc ? "btnSaveDoctor" : "btnSavePharmacy");
+        if (saveBtn) {
+          log("افزودن لحظه‌ای ⇒ ذخیره خودکار رکورد");
+          saveBtn.click();
+          setTimeout(function () {
+            var S2 = st();
+            var after = S2 ? (isDoc ? (S2.doctors || []).length : (S2.pharmacies || []).length) : 0;
+            if (after > before) v20Toast("✅ «" + val + "» ثبت شد.");
+          }, 240);
+        }
       }, 90);
     }, true);
   }
@@ -27108,7 +27357,7 @@ button.v19-gps svg{display:block}
     });
   }
 
-  /* ---------- ۱۰) دکمه تغییر رمز بالای همه صفحه‌ها ---------- */
+  /* ---------- ۱۰) دکمه تغییر رمز (کنار دکمه خروج، نه روی آن) ---------- */
   function persistPass(username, newPass) {
     try {
       var map = JSON.parse(localStorage.getItem("CRM_USERS_AUTH") || "{}");
@@ -27158,12 +27407,22 @@ button.v19-gps svg{display:block}
         alert("✅ رمز شما تغییر کرد و در سیستم ورود هم ثبت شد. از ورود بعدی همان رمز جدید معتبر است.");
       });
     });
-    document.body.appendChild(b);
+    // میزبانی درون هدر، درست قبل از دکمه «خروج» — اگر هدر پیدا نشد، پایینِ هدر شناور می‌شود
+    var logout = $("btnLogoutSystem");
+    if (logout && logout.parentNode) {
+      logout.parentNode.insertBefore(b, logout);
+    } else {
+      b.style.position = "fixed";
+      b.style.top = "64px";
+      b.style.left = "8px";
+      b.style.zIndex = "1100";
+      document.body.appendChild(b);
+    }
     v20RefreshFab();
   }
   function v20RefreshFab() {
     var b = $("v20ChpassFab"); if (!b) return;
-    b.style.display = sessionStorage.getItem("crmLoggedIn") === "1" ? "block" : "none";
+    b.style.display = sessionStorage.getItem("crmLoggedIn") === "1" ? "inline-block" : "none";
   }
 
   /* ---------- ۱۱) سطوح دسترسی آماده ---------- */
@@ -27236,11 +27495,54 @@ button.v19-gps svg{display:block}
     });
   }
 
+  /* ---------- ۷-ب) همگام‌سازی «جای فیلدها» داروخانه → سفارشات ---------- */
+  var ORDER_TO_PH_CORE = { PharmacyName: "Name" };
+  function mirrorPharmacyOrderToOrders() {
+    try {
+      var ph = $("tab-pharmacies"), od = $("tab-orders");
+      if (!ph || !od) return;
+      var seq = [];
+      Array.prototype.forEach.call(ph.querySelectorAll("[id^='pharmacy']"), function (el) {
+        var core = el.id.substring("pharmacy".length);
+        if (core && seq.indexOf(core) < 0) seq.push(core);
+      });
+      if (!seq.length) return;
+      var groups = [];
+      Array.prototype.forEach.call(od.querySelectorAll(".form-group"), function (g) {
+        var el = g.querySelector("[id^='order']");
+        if (el) groups.push({ g: g, core: el.id.substring("order".length), orig: groups.length });
+      });
+      if (!groups.length) return;
+      var parent = groups[0].g.parentNode;
+      var sorted = groups.slice().sort(function (a, b) {
+        var ca = ORDER_TO_PH_CORE[a.core] || a.core;
+        var cb = ORDER_TO_PH_CORE[b.core] || b.core;
+        var ia = seq.indexOf(ca), ib = seq.indexOf(cb);
+        if (ia < 0 && ib < 0) return Math.min(a.orig, b.orig) - Math.max(a.orig, b.orig);
+        if (ia < 0) return 1;
+        if (ib < 0) return -1;
+        return ia - ib;
+      });
+      sorted.forEach(function (it) { parent.appendChild(it.g); });
+    } catch (e) {}
+  }
+  function wrapFormLayoutMirror() {
+    var of = window.applyFullFormLayout;
+    if (typeof of !== "function" || of._v20mirror) return;
+    var w = function (tabId) {
+      var r = of.apply(this, arguments);
+      if (tabId === "tab-pharmacies" || tabId === "pharmacy") setTimeout(mirrorPharmacyOrderToOrders, 60);
+      return r;
+    };
+    w._v20mirror = true;
+    window.applyFullFormLayout = w;
+  }
+
   /* ---------- هُوک رفتن به تب‌ها ---------- */
   function onTabChanged(id) {
     v20RefreshFab();
     v20ApplyGreyChains();
-    if (id === "tab-orders") v20ApplyOrderLock();
+    if (id === "tab-orders") { v20ApplyOrderLock(); setTimeout(mirrorPharmacyOrderToOrders, 120); }
     if (id === "tab-custom-fields") setTimeout(window.v20RenderComboManager, 60);
     if (id === "tab-columns-products") setTimeout(renderProductExtras, 80);
     if (id === "tab-users-permissions") setTimeout(renderPresetBar, 60);
@@ -27311,6 +27613,7 @@ button.v19-gps svg{display:block}
     try { wrapListRenderers(); } catch (e) {}
     try { bindInstantAddSave(); } catch (e) {}
     try { bindMirror(); } catch (e) {}
+    try { wrapFormLayoutMirror(); } catch (e) {}
     try { bindLive(); } catch (e) {}
     try { bindChpassFab(); } catch (e) {}
     try { mirrorPharmacyFieldsToOrder(true); } catch (e) {}
@@ -27319,6 +27622,7 @@ button.v19-gps svg{display:block}
       try {
         v20ApplyGreyChains();
         v20ApplyOrderLock();
+        mirrorPharmacyOrderToOrders();
         var active = document.querySelector(".tab-pane.active");
         if (active) onTabChanged(active.id);
       } catch (e) {}
@@ -29511,7 +29815,7 @@ button.v19-gps svg{display:block}
   <meta name="theme-color" content="#0d9488" />
   
   <!-- Custom Style with Anti-Cache Version 9.1.0 -->
-  <link rel="stylesheet" href="style.css?v=11.16.1" />
+  <link rel="stylesheet" href="style.css?v=11.16.2" />
 </head>
 <body>
 
@@ -31565,22 +31869,22 @@ button.v19-gps svg{display:block}
   <script src="vendor/leaflet.js"></script>
   
   <!-- Data & Application Logic with Anti-Cache Version 11.10.0 -->
-  <script src="crm-data.js?v=11.16.1"></script>
-  <script src="crm-app.js?v=11.16.1"></script>
-  <script src="crm-features-v9.js?v=11.16.1"></script>
-  <script src="iran-facilities.js?v=11.16.1" defer></script>
-  <script src="crm-features-v10.js?v=11.16.1"></script>
-  <script src="crm-features-v11.js?v=11.16.1"></script>
-  <script src="crm-features-v12.js?v=11.16.1"></script>
-  <script src="crm-features-v13.js?v=11.16.1"></script>
-  <script src="crm-jalali.js?v=11.16.1"></script>
-  <script src="crm-features-v14.js?v=11.16.1"></script>
-  <script src="crm-features-v15.js?v=11.16.1"></script>
-  <script src="crm-features-v16.js?v=11.16.1"></script>
-  <script src="crm-features-v17.js?v=11.16.1"></script>
-  <script src="crm-features-v18.js?v=11.16.1"></script>
-  <script src="crm-features-v19.js?v=11.16.1"></script>
-  <script src="crm-features-v20.js?v=11.16.1"></script>
+  <script src="crm-data.js?v=11.16.2"></script>
+  <script src="crm-app.js?v=11.16.2"></script>
+  <script src="crm-features-v9.js?v=11.16.2"></script>
+  <script src="iran-facilities.js?v=11.16.2" defer></script>
+  <script src="crm-features-v10.js?v=11.16.2"></script>
+  <script src="crm-features-v11.js?v=11.16.2"></script>
+  <script src="crm-features-v12.js?v=11.16.2"></script>
+  <script src="crm-features-v13.js?v=11.16.2"></script>
+  <script src="crm-jalali.js?v=11.16.2"></script>
+  <script src="crm-features-v14.js?v=11.16.2"></script>
+  <script src="crm-features-v15.js?v=11.16.2"></script>
+  <script src="crm-features-v16.js?v=11.16.2"></script>
+  <script src="crm-features-v17.js?v=11.16.2"></script>
+  <script src="crm-features-v18.js?v=11.16.2"></script>
+  <script src="crm-features-v19.js?v=11.16.2"></script>
+  <script src="crm-features-v20.js?v=11.16.2"></script>
   <!-- فیلدهای مخفی سازگاری با کد قبلی (نباید در UI دیده شوند) -->
   <input type="hidden" id="pharmacyLocationText" value="" />
   <input type="hidden" id="doctorLocationText" value="" />
@@ -34606,7 +34910,7 @@ self.addEventListener("fetch", (event) => {
 فایل: public/sw.js (1145 بایت)
 ──────────────────────────────────────────────────────────────────────────────────
 ~~~~~~~~javascript
-const CACHE = "ttt-v11.16.1";
+const CACHE = "ttt-v11.16.2";
 const PRECACHE = ["/", "/login", "/favicon.png", "/logo.png", "/vendor/leaflet.js", "/vendor/leaflet.css"];
 self.addEventListener("install", function (e) {
   e.waitUntil(caches.open(CACHE).then(function (c) { return c.addAll(PRECACHE).catch(function () {}); }).then(function () { return self.skipWaiting(); }));

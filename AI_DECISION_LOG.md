@@ -1319,4 +1319,37 @@ documented in RAHNAMA_GITLAB.txt (ssh-keygen → add public key →
 remote set-url gitlab git@gitlab.com:...). GitLab support stays in the
 code (SYNC_ALL auto-detects the gitlab remote and skips gracefully).
 
+---
+
+# 50. V11.16.2 — USER-REPORTED FIX PACK
+
+Date: 2026-08-16
+
+User findings (browser) and fixes in crm-features-v20.js:
+1. Combo-manager cards now render side-by-side in a responsive grid
+   (`.v20-cards`, auto-fill ≥330px) — not all stacked.
+2. English field names: faLabel v2 falls back to placeholder text and a
+   built-in Persian dictionary (V20_FA_IDS). Jalali year/month selects are
+   excluded from the combos manager (isDatePartField), so «سال/ماه» no
+   longer clutter the pharmacies card area and «نوع داروخانه» is a normal
+   card like other combos.
+3. Grey uniformity: new `setFieldGrey()` greys the whole form-group AND
+   disables the visible `.crm-combo-input` (pointer-events:none on
+   `.crm-combo.v20-locked`) — kills the "half grey / half white" state and
+   stops grey-but-selectable combos in orders. Scroll position is
+   preserved around every engine run (fixes the field-jump-after-province
+   complaint).
+4. Orders: product section (#orderItemsContainer / catalog bar / totals)
+   is now ALWAYS active; descriptor fields grey; pharmacy field ORDER
+   changes mirror into orders (`mirrorPharmacyOrderToOrders`, alias
+   pharmacy Name ↔ order PharmacyName, hooked on applyFullFormLayout).
+5. Change-password FAB docks inside the header next to #btnLogoutSystem
+   (inline-block), no longer overlapping the logout button.
+6. Duplicate false-positive on instant-add: gate now excludes the record
+   being edited, and v20SigOf/_v20AutoSaveSig suppression turns the
+   re-save of a just-auto-saved record into a friendly notice without
+   creating a duplicate row.
+
+Syntax-checked; server smoke 11.16.2 OK. Browser verification pending.
+
 # END OF AI DECISION LOG

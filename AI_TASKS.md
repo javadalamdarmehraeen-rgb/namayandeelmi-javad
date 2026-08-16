@@ -1094,4 +1094,21 @@ Pending user-side verification:
   public/crm-features-v20.js + PROJECT_GRAPH.md (Ctrl+F5).
 - Later: SSH setup for GitLab when he is ready.
 
+---
+
+# 38. V11.16.2 — USER VERIFICATION FIX PACK (DONE 2026-08-16)
+
+Completed (from user's browser findings):
+1. Combo manager: side-by-side card grid; Persian labels (placeholder +
+   V20_FA_IDS dictionary); jalali سال/ماه excluded from that section.
+2. Uniform greying via setFieldGrey (whole form-group + visible combo
+   input disabled, pointer-events off) + scroll preserved (no field jump).
+3. Orders: product section always active; pharmacy field-order changes
+   mirror into orders; grey combos are truly unselectable.
+4. Change-password button now sits beside the logout button (not on it).
+5. False "قبلاً ثبت شده" on brand-new records fixed (autosave signature
+   suppression + editing-record exclusion in v20DupGate).
+
+Pending user verification: same list, in browser after Ctrl+Shift+R.
+
 # END OF AI TASKS

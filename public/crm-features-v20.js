@@ -54,10 +54,14 @@
       "#orderItemsContainer input[type=number]{-moz-appearance:textfield;appearance:textfield;}" +
       ".v20-grey,.v20-grey:disabled{background:#e5e7eb!important;color:#6b7280!important;" +
       "cursor:not-allowed!important;opacity:.85!important;border-color:#d1d5db!important;}" +
-      "#v20ChpassFab{position:fixed;top:8px;left:8px;z-index:1200;background:#0d9488;color:#fff;" +
-      "border:none;border-radius:10px;padding:8px 14px;font-weight:700;cursor:pointer;" +
-      "box-shadow:0 2px 10px rgba(0,0,0,.25);font-family:inherit;font-size:.85rem;}" +
+      ".crm-combo.v20-locked{pointer-events:none;}" +
+      ".v20-grey-zone .form-label{color:#9ca3af!important;}" +
+      ".v20-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:12px;align-items:start;}" +
+      "#v20ChpassFab{background:#0d9488;color:#fff;border:none;border-radius:10px;padding:8px 14px;" +
+      "font-weight:700;cursor:pointer;font-family:inherit;font-size:.85rem;margin:0 6px;vertical-align:middle;}" +
       "#v20ChpassFab:hover{background:#0f766e;}" +
+      ".v20-toast{position:fixed;bottom:24px;right:24px;background:#065f46;color:#fff;padding:12px 20px;" +
+      "border-radius:12px;box-shadow:0 6px 24px rgba(0,0,0,.3);z-index:1400;font-weight:700;direction:rtl;}" +
       ".v20-modal{position:fixed;inset:0;background:rgba(15,23,42,.55);z-index:1300;display:flex;" +
       "align-items:center;justify-content:center;}" +
       ".v20-modal-card{background:#fff;border-radius:14px;padding:22px;min-width:300px;max-width:92vw;" +
@@ -67,7 +71,7 @@
       "border-radius:8px;margin-top:5px;background:#fff;}" +
       ".v20-opt-row span{flex:1;}" +
       ".v20-opt-row button{border:1px solid #cbd5e1;background:#f8fafc;border-radius:7px;cursor:pointer;padding:2px 8px;}" +
-      ".v20-combo-card{border:1px solid #dbe2ea;border-radius:12px;padding:12px;margin-top:12px;background:#fbfdff;}" +
+      ".v20-combo-card{border:1px solid #dbe2ea;border-radius:12px;padding:12px;background:#fbfdff;}" +
       ".v20-combo-card h5{margin:0 0 8px;color:#0f172a;}" +
       ".v20-card-tools{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:6px;}" +
       ".v20-card-tools input[type=text]{flex:1;min-width:140px;padding:8px;border:1px solid #cbd5e1;border-radius:8px;}" +
@@ -82,23 +86,35 @@
   })();
 
   /* ---------- ۲) تکراری‌گیر دقیق ---------- */
+  function dupPairs(isDoc) {
+    return isDoc
+      ? [["name", "doctorName"], ["phone", "doctorPhone"], ["specialty", "doctorSpecialty"],
+         ["province", "doctorProvince"], ["city", "doctorCity"], ["district", "doctorDistrict"], ["address", "doctorAddress"]]
+      : [["name", "pharmacyName"], ["phone", "pharmacyPhone"], ["manager", "pharmacyManager"],
+         ["province", "pharmacyProvince"], ["city", "pharmacyCity"], ["district", "pharmacyDistrict"], ["address", "pharmacyAddress"]];
+  }
+  function gvById(id) { var e = $(id); return e ? String(e.value || "") : ""; }
+  function v20SigOf(kind) {
+    var isDoc = kind === "doctor";
+    var parts = dupPairs(isDoc).map(function (p) { return norm(gvById(p[1])); });
+    return kind + "|" + parts.join("|");
+  }
   window.v20DupGate = function (kind) {
     try {
       var isDoc = kind === "doctor";
       var S = st(); if (!S) return true;
       var list = isDoc ? (S.doctors || []) : (S.pharmacies || []);
-      function gv(id) { var e = $(id); return e ? String(e.value || "") : ""; }
-      var pairs = isDoc
-        ? [["name", "doctorName"], ["phone", "doctorPhone"], ["specialty", "doctorSpecialty"],
-           ["province", "doctorProvince"], ["city", "doctorCity"], ["district", "doctorDistrict"], ["address", "doctorAddress"]]
-        : [["name", "pharmacyName"], ["phone", "pharmacyPhone"], ["manager", "pharmacyManager"],
-           ["province", "pharmacyProvince"], ["city", "pharmacyCity"], ["district", "pharmacyDistrict"], ["address", "pharmacyAddress"]];
+      var pairs = dupPairs(isDoc);
       var draft = {};
-      pairs.forEach(function (p) { draft[p[0]] = norm(gv(p[1])); });
+      pairs.forEach(function (p) { draft[p[0]] = norm(gvById(p[1])); });
+      // رکوردی که همین الان در حال ویرایشش هستیم از بررسی تکراری خارج می‌شود
+      var editEl = $(isDoc ? "doctorEditId" : "pharmacyEditId");
+      var editingId = editEl ? String(editEl.value || "") : "";
       var title = isDoc ? "پزشک/مطب" : "داروخانه";
       var listFa = isDoc ? "پزشکان" : "داروخانه‌ها";
       var exact = null, partial = false;
       list.forEach(function (r) {
+        if (editingId && String(r.id) === editingId) return;
         var allSame = true, anyVal = false;
         pairs.forEach(function (p) {
           var a = draft[p[0]];
@@ -111,6 +127,11 @@
         if (draft.phone && norm(r.phone || "") === draft.phone) partial = true;
       });
       if (exact) {
+        var sig = v20SigOf(kind);
+        if (window._v20AutoSaveSig === sig && (Date.now() - (window._v20AutoSaveT || 0)) < 120000) {
+          alert("✔ این " + title + " همین چند لحظه پیش با موفقیت ثبت شد؛ نیازی به ثبت دوباره نیست.");
+          return false;
+        }
         alert("⛔ این " + title + " قبلاً با دقیقاً همین اطلاعات ثبت شده است" +
           (exact.repName ? " (توسط «" + exact.repName + "»)" : "") +
           ".\n\nثبت مجدد مجاز نیست؛ برای تغییر، از لیست «" + listFa + "» دکمه ✏️ ویرایش همان رکورد را بزنید.");
@@ -135,28 +156,54 @@
   ];
   var v20AddPane = "tab-pharmacies";
 
+  var V20_FA_IDS = {
+    pharmacyName: "نام داروخانه", pharmacyProvince: "استان", pharmacyCity: "شهر", pharmacyDistrict: "منطقه",
+    pharmacyIsPercentage: "وضعیت درصدی داروخانه", pharmacyPhone: "تلفن داروخانه",
+    doctorName: "نام پزشک", doctorSpecialty: "تخصص پزشک", doctorProvince: "استان", doctorCity: "شهر", doctorDistrict: "منطقه",
+    orderPharmacyName: "نام داروخانه", orderProvince: "استان", orderCity: "شهر", orderDistrict: "منطقه",
+    orderRepName: "نام نماینده", orderStatus: "وضعیت سفارش", orderDate: "تاریخ سفارش",
+    cfTargetEntity: "تب مربوطه", cfType: "نوع فیلد"
+  };
   function faLabel(el, pane) {
-    var lab = pane ? pane.querySelector('label[for="' + el.id + '"]') : null;
+    var lab = (pane && el.id) ? pane.querySelector('label[for="' + el.id + '"]') : null;
     var t = lab ? lab.textContent : "";
     if (!t) {
       var g = el.closest ? el.closest(".form-group") : null;
       var l2 = g ? g.querySelector(".form-label, label") : null;
       if (l2) t = l2.textContent;
     }
+    if (!t && el.getAttribute) t = el.getAttribute("placeholder") || "";
     t = String(t || "").replace(/\*/g, "").replace(/\(.*?\)/g, "").replace(/\s+/g, " ").trim();
+    // اگر برچسب خالی یا انگلیسی بود، از واژه‌نامه فارسی استفاده شود
+    if (!t || /^[A-Za-z0-9_\-\s]+$/.test(t)) t = V20_FA_IDS[el.id] || t;
     return t || "";
+  }
+  function isDatePartField(id, label) {
+    if (/year|month|jyear|jmonth|روز/i.test(String(id))) return true;
+    if (/^(سال|ماه|روز)$/.test(String(label))) return true;
+    return false;
   }
 
   function collectCombos(paneId) {
     var pane = $(paneId);
     if (!pane) return [];
     var out = [], seen = {};
+    function skipped(el) {
+      return el.closest("#columnsDesignerHost") || el.closest("#jalaliCalendarPopup") ||
+        el.closest(".modal-overlay") || el.closest("#addTabGrid") || el.closest("#addTabPanel") ||
+        el.closest("#v20PresetBar");
+    }
     Array.prototype.forEach.call(pane.querySelectorAll("select[id]"), function (sel) {
-      if (!sel.id || seen[sel.id]) return;
-      if (sel.closest("#columnsDesignerHost") || sel.closest("#jalaliCalendarPopup") ||
-          sel.closest(".modal-overlay") || sel.closest("#addTabGrid") || sel.closest("#addTabPanel") ||
-          sel.closest("#v20PresetBar")) return;
+      if (!sel.id || seen[sel.id] || skipped(sel)) return;
       if (sel.id.indexOf("jalali") === 0 || sel.id.indexOf("v20") === 0) return;
+      var lab = faLabel(sel, pane);
+      // برای کشویی‌های کمبووشده، برچسب از ورودی دیداری خوانده شود
+      if (!lab) {
+        var combo = sel.closest(".crm-combo");
+        var vis = combo ? combo.querySelector(".crm-combo-input") : null;
+        if (vis) lab = faLabel(vis, pane);
+      }
+      if (isDatePartField(sel.id, lab)) return; // سال/ماه تاریخ شمسی در این بخش نیاید (مثل بقیه کشویی‌ها)
       seen[sel.id] = true;
       var opts = [];
       Array.prototype.forEach.call(sel.options, function (o, i) {
@@ -165,11 +212,14 @@
         if (i === 0 && !v) return; // جای‌نگهدار «انتخاب کنید...»
         opts.push({ v: v, t: t });
       });
-      out.push({ el: sel, id: sel.id, label: faLabel(sel, pane), opts: opts });
+      out.push({ el: sel, id: sel.id, label: lab, opts: opts });
     });
     // ورودی‌های متصل به datalist (کشویی تایپ‌شونده)
     Array.prototype.forEach.call(pane.querySelectorAll("input[list][id]"), function (inp) {
-      if (seen[inp.id]) return;
+      if (seen[inp.id] || skipped(inp)) return;
+      if (inp.id.indexOf("v20") === 0) return;
+      var lab2 = faLabel(inp, pane);
+      if (isDatePartField(inp.id, lab2)) return;
       var dl = $(inp.getAttribute("list"));
       if (!dl) return;
       seen[inp.id] = true;
@@ -178,7 +228,7 @@
         var v = String(o.value || o.textContent || "");
         if (v) opts.push({ v: v, t: v });
       });
-      out.push({ el: inp, id: inp.id, label: faLabel(inp, pane), opts: opts, datalist: dl });
+      out.push({ el: inp, id: inp.id, label: lab2, opts: opts, datalist: dl });
     });
     return out;
   }
@@ -254,6 +304,7 @@
       "<label class='v20-mini'><input type='checkbox' id='v20GreyOnChk'" + (greyOn ? " checked" : "") + "> حالت طوسی زنجیره‌ای فعال باشد</label>" +
       "<label class='v20-mini'><input type='checkbox' id='v20OrderLockChk'" + (lockOn ? " checked" : "") + "> قفل طوسی فرم سفارش تا انتخاب داروخانه فعال باشد</label>" +
       "</div>";
+    h += "<div class='v20-cards'>";
     if (!entries.length) h += "<div class='v20-mini'>در این تب فیلد کشویی پیدا نشد.</div>";
     entries.forEach(function (en) {
       var parentSel = en.el.tagName === "SELECT" ? greyParentOptions(en, v20AddPane) : "";
@@ -268,7 +319,8 @@
         "<div class='v20-opts' data-store='" + esc(en.id) + "'>" + optionRowsHtml(en) + "</div>" +
         "</div>";
     });
-    h += "</div>";
+    h += "</div>"; // پایان .v20-cards
+    h += "</div>"; // پایان .v20-addmgr
     var old = host.querySelector(".v20-addmgr");
     if (old) old.parentNode.removeChild(old);
     var div = document.createElement("div");
@@ -356,6 +408,22 @@
   }
 
   /* ---------- ۴) موتور زنجیره طوسی ---------- */
+  function setFieldGrey(el, grey) {
+    var y = window.scrollY;
+    try {
+      el.disabled = !!grey;
+      el.classList.toggle("v20-grey", !!grey);
+      var combo = el.closest ? el.closest(".crm-combo") : null;
+      if (combo) {
+        combo.classList.toggle("v20-locked", !!grey);
+        var inp = combo.querySelector(".crm-combo-input");
+        if (inp) { inp.disabled = !!grey; inp.classList.toggle("v20-grey", !!grey); }
+      }
+      var fg = el.closest ? el.closest(".form-group") : null;
+      if (fg) fg.classList.toggle("v20-grey-zone", !!grey);
+    } catch (e) {}
+    if (window.scrollY !== y) window.scrollTo(0, y);
+  }
   function seedGreyDefaults() {
     var S = st(); if (!S || S._v20GreySeeded) return;
     S.v20GreyMap = S.v20GreyMap || {};
@@ -370,66 +438,92 @@
   function v20ApplyGreyChains() {
     var S = st(); if (!S) return;
     var on = !(S.settings && S.settings.v20GreyOn === false);
+    var y = window.scrollY;
     Object.keys(S.v20GreyMap || {}).forEach(function (id) {
       var el = $(id); if (!el) return;
       // قفل سفارشات مالک فیلدهای سفارش است
       if (id.indexOf("order") === 0 && !(S.settings && S.settings.v20OrderLock === false)) return;
       var pEl = $(S.v20GreyMap[id]);
       var locked = on && pEl && !String(pEl.value || "").trim();
-      el.disabled = !!locked;
-      el.classList.toggle("v20-grey", !!locked);
+      setFieldGrey(el, locked);
     });
+    if (window.scrollY !== y) window.scrollTo(0, y);
   }
   window.v20ApplyGreyChains = v20ApplyGreyChains;
 
   /* ---------- ۵) قفل طوسی فرم سفارش ---------- */
   var ORDER_DESCRIPTORS = ["orderProvince", "orderCity", "orderDistrict", "orderAddress", "orderRepName"];
+  var ORDER_PRODUCT_SCOPE = "#orderItemsContainer, #orderProductCatalogBar, #orderProductCatalogList, #orderTotalsArea";
   function orderMatched() { return !!(($("orderPharmacyMatchedId") || {}).value); }
   function v20ApplyOrderLock() {
     var pane = $("tab-orders"); if (!pane) return;
     var S = st(); if (!S) return;
     var on = !(S.settings && S.settings.v20OrderLock === false);
     var inputs = pane.querySelectorAll("input, select, textarea");
+    var y = window.scrollY;
     if (!on) {
-      Array.prototype.forEach.call(inputs, function (el) { el.disabled = false; el.classList.remove("v20-grey"); });
+      Array.prototype.forEach.call(inputs, function (el) { setFieldGrey(el, false); });
       return;
     }
     var locked = !orderMatched();
     Array.prototype.forEach.call(inputs, function (el) {
       if (!el.id || el.type === "hidden") return;
-      if (el.id === "orderPharmacyName") { el.disabled = false; el.classList.remove("v20-grey"); return; }
-      if (ORDER_DESCRIPTORS.indexOf(el.id) >= 0) {
-        // فیلدهای توصیفی داروخانه: همیشه طوسی (اطلاعات «سر جای خودش» می‌نشیند)
-        el.disabled = true; el.classList.add("v20-grey"); return;
-      }
-      el.disabled = locked;
-      el.classList.toggle("v20-grey", locked);
+      // نام داروخانه و همه فیلدهای بخش کالا: همیشه فعال و عادی
+      if (el.id === "orderPharmacyName") { setFieldGrey(el, false); return; }
+      if (el.closest && el.closest(ORDER_PRODUCT_SCOPE)) { setFieldGrey(el, false); return; }
+      // فیلدهای توصیفی داروخانه: طوسی (اطلاعات سر جای خودش می‌نشیند)
+      if (ORDER_DESCRIPTORS.indexOf(el.id) >= 0) { setFieldGrey(el, true); return; }
+      // بقیه فیلدها: تا انتخاب/جایگذاری داروخانه طوسی‌اند
+      setFieldGrey(el, locked);
     });
-    // بخش کالا بعد از جایگذاری فعال و عادی است
-    var items = $("orderItemsContainer"), bar = $("orderProductCatalogBar");
-    [items, bar].forEach(function (box) {
-      if (!box) return;
-      Array.prototype.forEach.call(box.querySelectorAll("input, select"), function (el) {
-        el.disabled = locked;
-        el.classList.toggle("v20-grey", locked);
-      });
-    });
+    if (window.scrollY !== y) window.scrollTo(0, y);
   }
   window.v20ApplyOrderLock = v20ApplyOrderLock;
 
-  /* ---------- ۶) افزودن لحظه‌ای نام داروخانه = ذخیره خودکار ---------- */
+  /* ---------- ۶) افزودن لحظه‌ای نام = ذخیره خودکار (بدون تکرار کاذب) ---------- */
+  function v20Toast(msg) {
+    try {
+      var d = document.createElement("div");
+      d.className = "v20-toast";
+      d.textContent = msg;
+      document.body.appendChild(d);
+      setTimeout(function () { try { d.parentNode.removeChild(d); } catch (e) {} }, 3200);
+    } catch (e) {}
+  }
   function bindInstantAddSave() {
     document.addEventListener("click", function (e) {
       var b = e.target && e.target.closest ? e.target.closest("button") : null;
       if (!b) return;
       var t = String(b.textContent || "").trim();
       if (t.indexOf("➕ افزودن") !== 0) return;
-      if (!b.closest("#tab-pharmacies")) return;
+      var pane = b.closest("#tab-pharmacies, #tab-doctors");
+      if (!pane) return;
+      var isDoc = pane.id === "tab-doctors";
       setTimeout(function () {
-        var nameInp = $("pharmacyName");
-        if (!nameInp || !String(nameInp.value || "").trim()) return;
-        var saveBtn = $("btnSavePharmacy");
-        if (saveBtn) { log("افزودن لحظه‌ای نام ⇒ ذخیره خودکار داروخانه"); saveBtn.click(); }
+        var nameInp = $(isDoc ? "doctorName" : "pharmacyName");
+        var val = nameInp ? String(nameInp.value || "").trim() : "";
+        if (!val) return;
+        var kind = isDoc ? "doctor" : "pharmacy";
+        var sig = v20SigOf(kind);
+        // اگر همین رکورد لحظاتی پیش با همین امضا ذخیره شد، دوباره ذخیره نکن
+        if (window._v20AutoSaveSig === sig && (Date.now() - (window._v20AutoSaveT || 0)) < 120000) {
+          v20Toast("این رکورد همین الان ذخیره شده؛ دوباره ثبت نمی‌شود.");
+          return;
+        }
+        var S = st();
+        var before = S ? (isDoc ? (S.doctors || []).length : (S.pharmacies || []).length) : 0;
+        window._v20AutoSaveSig = sig;
+        window._v20AutoSaveT = Date.now();
+        var saveBtn = $(isDoc ? "btnSaveDoctor" : "btnSavePharmacy");
+        if (saveBtn) {
+          log("افزودن لحظه‌ای ⇒ ذخیره خودکار رکورد");
+          saveBtn.click();
+          setTimeout(function () {
+            var S2 = st();
+            var after = S2 ? (isDoc ? (S2.doctors || []).length : (S2.pharmacies || []).length) : 0;
+            if (after > before) v20Toast("✅ «" + val + "» ثبت شد.");
+          }, 240);
+        }
       }, 90);
     }, true);
   }
@@ -635,7 +729,7 @@
     });
   }
 
-  /* ---------- ۱۰) دکمه تغییر رمز بالای همه صفحه‌ها ---------- */
+  /* ---------- ۱۰) دکمه تغییر رمز (کنار دکمه خروج، نه روی آن) ---------- */
   function persistPass(username, newPass) {
     try {
       var map = JSON.parse(localStorage.getItem("CRM_USERS_AUTH") || "{}");
@@ -685,12 +779,22 @@
         alert("✅ رمز شما تغییر کرد و در سیستم ورود هم ثبت شد. از ورود بعدی همان رمز جدید معتبر است.");
       });
     });
-    document.body.appendChild(b);
+    // میزبانی درون هدر، درست قبل از دکمه «خروج» — اگر هدر پیدا نشد، پایینِ هدر شناور می‌شود
+    var logout = $("btnLogoutSystem");
+    if (logout && logout.parentNode) {
+      logout.parentNode.insertBefore(b, logout);
+    } else {
+      b.style.position = "fixed";
+      b.style.top = "64px";
+      b.style.left = "8px";
+      b.style.zIndex = "1100";
+      document.body.appendChild(b);
+    }
     v20RefreshFab();
   }
   function v20RefreshFab() {
     var b = $("v20ChpassFab"); if (!b) return;
-    b.style.display = sessionStorage.getItem("crmLoggedIn") === "1" ? "block" : "none";
+    b.style.display = sessionStorage.getItem("crmLoggedIn") === "1" ? "inline-block" : "none";
   }
 
   /* ---------- ۱۱) سطوح دسترسی آماده ---------- */
@@ -763,11 +867,54 @@
     });
   }
 
+  /* ---------- ۷-ب) همگام‌سازی «جای فیلدها» داروخانه → سفارشات ---------- */
+  var ORDER_TO_PH_CORE = { PharmacyName: "Name" };
+  function mirrorPharmacyOrderToOrders() {
+    try {
+      var ph = $("tab-pharmacies"), od = $("tab-orders");
+      if (!ph || !od) return;
+      var seq = [];
+      Array.prototype.forEach.call(ph.querySelectorAll("[id^='pharmacy']"), function (el) {
+        var core = el.id.substring("pharmacy".length);
+        if (core && seq.indexOf(core) < 0) seq.push(core);
+      });
+      if (!seq.length) return;
+      var groups = [];
+      Array.prototype.forEach.call(od.querySelectorAll(".form-group"), function (g) {
+        var el = g.querySelector("[id^='order']");
+        if (el) groups.push({ g: g, core: el.id.substring("order".length), orig: groups.length });
+      });
+      if (!groups.length) return;
+      var parent = groups[0].g.parentNode;
+      var sorted = groups.slice().sort(function (a, b) {
+        var ca = ORDER_TO_PH_CORE[a.core] || a.core;
+        var cb = ORDER_TO_PH_CORE[b.core] || b.core;
+        var ia = seq.indexOf(ca), ib = seq.indexOf(cb);
+        if (ia < 0 && ib < 0) return Math.min(a.orig, b.orig) - Math.max(a.orig, b.orig);
+        if (ia < 0) return 1;
+        if (ib < 0) return -1;
+        return ia - ib;
+      });
+      sorted.forEach(function (it) { parent.appendChild(it.g); });
+    } catch (e) {}
+  }
+  function wrapFormLayoutMirror() {
+    var of = window.applyFullFormLayout;
+    if (typeof of !== "function" || of._v20mirror) return;
+    var w = function (tabId) {
+      var r = of.apply(this, arguments);
+      if (tabId === "tab-pharmacies" || tabId === "pharmacy") setTimeout(mirrorPharmacyOrderToOrders, 60);
+      return r;
+    };
+    w._v20mirror = true;
+    window.applyFullFormLayout = w;
+  }
+
   /* ---------- هُوک رفتن به تب‌ها ---------- */
   function onTabChanged(id) {
     v20RefreshFab();
     v20ApplyGreyChains();
-    if (id === "tab-orders") v20ApplyOrderLock();
+    if (id === "tab-orders") { v20ApplyOrderLock(); setTimeout(mirrorPharmacyOrderToOrders, 120); }
     if (id === "tab-custom-fields") setTimeout(window.v20RenderComboManager, 60);
     if (id === "tab-columns-products") setTimeout(renderProductExtras, 80);
     if (id === "tab-users-permissions") setTimeout(renderPresetBar, 60);
@@ -838,6 +985,7 @@
     try { wrapListRenderers(); } catch (e) {}
     try { bindInstantAddSave(); } catch (e) {}
     try { bindMirror(); } catch (e) {}
+    try { wrapFormLayoutMirror(); } catch (e) {}
     try { bindLive(); } catch (e) {}
     try { bindChpassFab(); } catch (e) {}
     try { mirrorPharmacyFieldsToOrder(true); } catch (e) {}
@@ -846,6 +994,7 @@
       try {
         v20ApplyGreyChains();
         v20ApplyOrderLock();
+        mirrorPharmacyOrderToOrders();
         var active = document.querySelector(".tab-pane.active");
         if (active) onTabChanged(active.id);
       } catch (e) {}
