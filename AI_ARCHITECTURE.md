@@ -1084,3 +1084,10 @@ Then change only what is requested.
   must be registered there immediately.
 
 # END OF AI ARCHITECTURE
+
+## معماری افزوده v11.18.0 — Snapp Corporate
+- UI: `tab-snapp-corporate` در index، منو در MENU_SECTIONS_LIST، موتور در آخرین لایه v20.
+- Data: `state.snappCorporate = {headers, rows, files, lastImport}`؛ dedupe با امضای کامل ردیف.
+- Import: CSV/TSV parser + XLSX ZIP/XML browser parser؛ بدون npm dependency.
+- Security boundary: no credentials, no CAPTCHA solving; official site opens in a separate secure tab.
+- Live map: option empty means all reps; reverse endpoint populates `rep.textAddress`.

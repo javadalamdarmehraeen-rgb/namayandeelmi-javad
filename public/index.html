@@ -16,7 +16,7 @@
   <meta name="theme-color" content="#0d9488" />
   
   <!-- Custom Style with Anti-Cache Version 9.1.0 -->
-  <link rel="stylesheet" href="style.css?v=11.17.0" />
+  <link rel="stylesheet" href="style.css?v=11.18.0" />
 </head>
 <body>
 
@@ -70,6 +70,7 @@
       <button type="button" class="nav-item" data-target="tab-activity-log" onclick="switchTab('tab-activity-log')"><span>⏱️ فعالیت لحظه‌ای</span></button>
       <button type="button" class="nav-item" data-target="tab-overview-map" onclick="switchTab('tab-overview-map')"><span>🗺️ نقشه جامع</span></button>
       <button type="button" class="nav-item" data-target="tab-live-location" onclick="switchTab('tab-live-location')"><span>📍 موقعیت زنده</span></button>
+      <button type="button" class="nav-item" data-target="tab-snapp-corporate" onclick="switchTab('tab-snapp-corporate')"><span>🚕 اسنپ سازمانی</span></button>
       <button type="button" class="nav-item" data-target="tab-search-info" onclick="switchTab('tab-search-info')"><span>🔍 جستجوی اطلاعات</span></button>
       <button type="button" class="nav-item" data-target="tab-rep-routes" onclick="switchTab('tab-rep-routes')"><span>🛣️ رصد تردد</span></button>
       <button type="button" class="nav-item" data-target="tab-my-visit" onclick="switchTab('tab-my-visit')"><span>▶️ شروع/پایان ویزیت</span></button>
@@ -131,6 +132,7 @@
       <button type="button" class="side-menu-item" data-side-target="tab-activity-log" onclick="switchTab('tab-activity-log');closeSideMenu();"><span>فعالیت لحظه‌ای</span><span>⏱️</span></button>
       <button type="button" class="side-menu-item" data-side-target="tab-overview-map" onclick="switchTab('tab-overview-map');closeSideMenu();"><span>نقشه جامع</span><span>🗺️</span></button>
       <button type="button" class="side-menu-item" data-side-target="tab-live-location" onclick="switchTab('tab-live-location');closeSideMenu();"><span>موقعیت زنده</span><span>📍</span></button>
+      <button type="button" class="side-menu-item" data-side-target="tab-snapp-corporate" onclick="switchTab('tab-snapp-corporate');closeSideMenu();"><span>اسنپ سازمانی</span><span>🚕</span></button>
       <button type="button" class="side-menu-item" data-side-target="tab-search-info" onclick="switchTab('tab-search-info');closeSideMenu();"><span>جستجوی اطلاعات</span><span>🔍</span></button>
       <button type="button" class="side-menu-item" data-side-target="tab-rep-routes" onclick="switchTab('tab-rep-routes');closeSideMenu();"><span>رصد تردد</span><span>🛣️</span></button>
       <button type="button" class="side-menu-item" data-side-target="tab-my-visit" onclick="switchTab('tab-my-visit');closeSideMenu();"><span>شروع/پایان ویزیت</span><span>▶️</span></button>
@@ -960,6 +962,43 @@
             </tbody>
           </table>
         </div>
+      </div>
+    </section>
+
+    <!-- ======================================================================
+         TAB: SNAPP CORPORATE (اسنپ سازمانی)
+         ====================================================================== -->
+    <section id="tab-snapp-corporate" class="tab-pane">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title"><span>🚕 اسنپ سازمانی — گزارش سفرها</span></div>
+          <div style="display:flex;gap:.5rem;flex-wrap:wrap">
+            <button type="button" id="btnOpenSnappCorporate" class="btn btn-primary btn-sm">🔐 باز کردن پنل رسمی اسنپ</button>
+            <label class="btn btn-primary btn-sm btn-excel" for="snappReportFiles" style="cursor:pointer">📊 ورود فایل‌های گزارش</label>
+            <input id="snappReportFiles" type="file" accept=".xlsx,.xls,.csv,.txt" multiple hidden>
+            <button type="button" id="btnExportSnappView" class="btn btn-primary btn-sm btn-excel">📊 خروجی اکسل نمای فعلی</button>
+            <button type="button" id="btnDeleteSnappReports" class="btn btn-danger btn-sm">🗑️ حذف گزارش‌های واردشده</button>
+          </div>
+        </div>
+        <div class="alert-banner alert-banner-warning" style="display:block;margin-bottom:1rem">
+          <strong>ورود امن:</strong> کد امنیتی باید توسط مدیر در سایت رسمی وارد شود. نام کاربری و رمز در این برنامه، گیت‌هاب و فایل ZIP ذخیره نمی‌شود. پس از ورود، گزارش دیروز را دانلود و هر دو فایل را هم‌زمان اینجا انتخاب کنید.
+        </div>
+        <div id="snappDailyStatus" class="col-add-status">هنوز گزارشی وارد نشده است.</div>
+        <div class="form-grid" style="margin-top:1rem">
+          <div class="form-group"><label class="form-label" for="snappFilterYear">سال</label><input id="snappFilterYear" class="form-input" inputmode="numeric" placeholder="مثال: ۱۴۰۵"></div>
+          <div class="form-group"><label class="form-label" for="snappFilterMonth">ماه</label><select id="snappFilterMonth" class="form-select"><option value="">همه ماه‌ها</option><option value="01">فروردین</option><option value="02">اردیبهشت</option><option value="03">خرداد</option><option value="04">تیر</option><option value="05">مرداد</option><option value="06">شهریور</option><option value="07">مهر</option><option value="08">آبان</option><option value="09">آذر</option><option value="10">دی</option><option value="11">بهمن</option><option value="12">اسفند</option></select></div>
+          <div class="form-group"><label class="form-label" for="snappFilterFrom">از تاریخ</label><input id="snappFilterFrom" class="form-input" placeholder="۱۴۰۵/۰۵/۲۵"></div>
+          <div class="form-group"><label class="form-label" for="snappFilterTo">تا تاریخ</label><input id="snappFilterTo" class="form-input" placeholder="۱۴۰۵/۰۵/۲۵"></div>
+        </div>
+        <div id="snappSummaryCards" class="v20-visit-metrics"></div>
+      </div>
+      <div class="card">
+        <div class="card-header"><div class="card-title"><span>جمع هزینه به تفکیک نماینده</span></div></div>
+        <div class="table-responsive"><table class="data-table"><thead><tr><th>ردیف</th><th>نام نماینده</th><th>تعداد سفر</th><th>جمع هزینه</th></tr></thead><tbody id="snappRepSummaryBody"></tbody></table></div>
+      </div>
+      <div class="card">
+        <div class="card-header"><div class="card-title"><span>ستون‌های ۱، ۲، ۵، ۹، ۱۲، ۱۵، ۱۸، ۱۹ و ۲۴ گزارش</span></div></div>
+        <div class="table-responsive"><table class="data-table"><thead><tr id="snappReportHead"></tr></thead><tbody id="snappReportBody"></tbody></table></div>
       </div>
     </section>
 
@@ -2070,22 +2109,22 @@
   <script src="vendor/leaflet.js"></script>
   
   <!-- Data & Application Logic with Anti-Cache Version 11.10.0 -->
-  <script src="crm-data.js?v=11.17.0"></script>
-  <script src="crm-app.js?v=11.17.0"></script>
-  <script src="crm-features-v9.js?v=11.17.0"></script>
-  <script src="iran-facilities.js?v=11.17.0" defer></script>
-  <script src="crm-features-v10.js?v=11.17.0"></script>
-  <script src="crm-features-v11.js?v=11.17.0"></script>
-  <script src="crm-features-v12.js?v=11.17.0"></script>
-  <script src="crm-features-v13.js?v=11.17.0"></script>
-  <script src="crm-jalali.js?v=11.17.0"></script>
-  <script src="crm-features-v14.js?v=11.17.0"></script>
-  <script src="crm-features-v15.js?v=11.17.0"></script>
-  <script src="crm-features-v16.js?v=11.17.0"></script>
-  <script src="crm-features-v17.js?v=11.17.0"></script>
-  <script src="crm-features-v18.js?v=11.17.0"></script>
-  <script src="crm-features-v19.js?v=11.17.0"></script>
-  <script src="crm-features-v20.js?v=11.17.0"></script>
+  <script src="crm-data.js?v=11.18.0"></script>
+  <script src="crm-app.js?v=11.18.0"></script>
+  <script src="crm-features-v9.js?v=11.18.0"></script>
+  <script src="iran-facilities.js?v=11.18.0" defer></script>
+  <script src="crm-features-v10.js?v=11.18.0"></script>
+  <script src="crm-features-v11.js?v=11.18.0"></script>
+  <script src="crm-features-v12.js?v=11.18.0"></script>
+  <script src="crm-features-v13.js?v=11.18.0"></script>
+  <script src="crm-jalali.js?v=11.18.0"></script>
+  <script src="crm-features-v14.js?v=11.18.0"></script>
+  <script src="crm-features-v15.js?v=11.18.0"></script>
+  <script src="crm-features-v16.js?v=11.18.0"></script>
+  <script src="crm-features-v17.js?v=11.18.0"></script>
+  <script src="crm-features-v18.js?v=11.18.0"></script>
+  <script src="crm-features-v19.js?v=11.18.0"></script>
+  <script src="crm-features-v20.js?v=11.18.0"></script>
   <!-- فیلدهای مخفی سازگاری با کد قبلی (نباید در UI دیده شوند) -->
   <input type="hidden" id="pharmacyLocationText" value="" />
   <input type="hidden" id="doctorLocationText" value="" />

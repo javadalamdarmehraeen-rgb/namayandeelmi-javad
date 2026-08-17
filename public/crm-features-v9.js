@@ -604,9 +604,12 @@
       const giftEl = rows[i].querySelector(".order-item-gift");
       const priceEl = rows[i].querySelector(".order-item-price");
       if (nameEl && nameEl.value.trim()) {
+        // کالای بدون تعداد اصلاً سفارش نیست؛ قبلاً || 1 به‌اشتباه آن را یک عدد حساب می‌کرد.
+        const qty = parseInt(countEl && countEl.value, 10) || 0;
+        if (qty <= 0) continue;
         items.push({
           name: nameEl.value.trim(),
-          count: parseInt(countEl && countEl.value, 10) || 1,
+          count: qty,
           giftCount: parseInt(giftEl && giftEl.value, 10) || 0,
           price: parseInt(priceEl && priceEl.value, 10) || 0
         });
@@ -631,6 +634,7 @@
       status: val("orderStatus") || "در حال بررسی",
       notes: val("orderNotes"),
       items: items,
+      quantityValidated: true,
       totalAmount: items.reduce(function (s, it) { return s + (it.count * it.price); }, 0),
       customFields: (typeof extractCustomFieldValuesFromForm === "function")
         ? extractCustomFieldValuesFromForm("order", "orderCustomFieldsContainer")

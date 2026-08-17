@@ -1349,4 +1349,11 @@ If the remote history was replaced/recreated, deliver the one-time repair
 `PUSH_FRESH_GITHUB.bat` (merge --allow-unrelated-histories -X ours → push)
 and state the facts from the actual remote state.
 
+# 69. SECRET + CAPTCHA SAFETY RULE (PERMANENT)
+
+Credentials pasted in chat must never be copied into source, chat.arena, ZIP,
+documentation, Git, logs or examples. Redact them and tell the user to rotate
+the exposed password. CAPTCHA/security-code bypass must not be implemented.
+Use manual manager login or an official provider API/service account.
+
 # END OF AI RULES

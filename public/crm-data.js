@@ -362,7 +362,20 @@ const PERMISSION_GROUPS = {
     { key: "sys_share_fields", label: "تعیین فیلدهای مجاز برای ارسال به پیام‌رسان‌ها" },
     { key: "fld_visit_metrics", label: "نمایش مسافت، توقف، نقاط و ساعت شروع ویزیت" },
     { key: "fld_route_search", label: "جستجوی لحظه‌ای و خروجی اکسل رصد تردد" },
-    { key: "sys_version_badge", label: "مشاهده نسخه دقیق برنامه در بالای صفحه" }
+    { key: "sys_version_badge", label: "مشاهده نسخه دقیق برنامه در بالای صفحه (فقط مدیر)" },
+    { key: "ord_qty_guard", label: "حذف کالای بدون تعداد از سفارش، ارسال و جمع مبلغ" },
+    { key: "sys_share_dynamic", label: "هماهنگی خودکار فیلدهای مجاز پیام‌رسان با ستون‌های لیست" },
+    { key: "sys_entity_search", label: "جستجوی مقیاس‌پذیر نام داروخانه/پزشک بدون نمایش فهرست بلند" },
+    { key: "sys_product_layout_save", label: "ذخیره قطعی ترتیب، عرض، ارتفاع و فیلدهای اطلاعات کالا" }
+  ],
+  "ابزارهای مدیریت (نسخه ۱۱.۱۸)": [
+    { key: "sys_snapp_access", label: "دسترسی به تب اسنپ سازمانی" },
+    { key: "sys_snapp_import", label: "ورود فایل‌های گزارش اسنپ سازمانی" },
+    { key: "sys_snapp_export", label: "خروجی اکسل گزارش تجمیعی اسنپ" },
+    { key: "sys_snapp_delete", label: "حذف گزارش‌های واردشده اسنپ" },
+    { key: "live_all_reps", label: "نمایش هم‌زمان موقعیت همه نمایندگان" },
+    { key: "live_text_address", label: "تبدیل موقعیت نمایندگان به آدرس متنی" },
+    { key: "sys_button_colors", label: "رنگ استاندارد کلیدها (اکسل سبز، حذف قرمز)" }
   ]
 };
 

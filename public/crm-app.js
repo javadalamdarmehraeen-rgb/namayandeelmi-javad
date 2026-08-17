@@ -33,6 +33,7 @@ const MENU_SECTIONS_LIST = [
   { id: "tab-activity-log", label: "فعالیت لحظه‌ای", icon: "⏱️" },
   { id: "tab-overview-map", label: "نقشه جامع", icon: "🗺️" },
   { id: "tab-live-location", label: "موقعیت زنده", icon: "📍" },
+  { id: "tab-snapp-corporate", label: "اسنپ سازمانی", icon: "🚕" },
   { id: "tab-search-info", label: "جستجوی اطلاعات", icon: "🔍" },
   { id: "tab-rep-routes", label: "رصد تردد", icon: "🛣️" },
   { id: "tab-my-visit", label: "شروع/پایان ویزیت", icon: "▶️" },
@@ -2161,7 +2162,7 @@ function setupOrdersTab() {
           state.orders[idx] = {
             ...state.orders[idx],
             pharmacyName, province, city, district, address,
-            repName, orderDate, status, notes, items, totalAmount, vatAmount, totalAmountWithVat,
+            repName, orderDate, status, notes, items, quantityValidated: true, totalAmount, vatAmount, totalAmountWithVat,
             customFields: customFieldsVals
           };
         }
@@ -2170,7 +2171,7 @@ function setupOrdersTab() {
         const newOrder = {
           id: "ord-" + Date.now(),
           pharmacyName, province, city, district, address,
-          repName, orderDate, status, notes, items, totalAmount, vatAmount, totalAmountWithVat,
+          repName, orderDate, status, notes, items, quantityValidated: true, totalAmount, vatAmount, totalAmountWithVat,
           customFields: customFieldsVals
         };
         state.orders.push(newOrder);
@@ -3373,13 +3374,13 @@ function setupAllFormSubmitHandlers() {
     if (editId) {
       const idx = state.orders.findIndex(o => o.id === editId);
       if (idx !== -1) {
-        state.orders[idx] = { ...state.orders[idx], pharmacyName, pharmacyId, province, city, district, address, repName, orderDate, status, notes, items, totalAmount, vatAmount, totalAmountWithVat, customFields: customFieldsVals };
+        state.orders[idx] = { ...state.orders[idx], pharmacyName, pharmacyId, province, city, district, address, repName, orderDate, status, notes, items, quantityValidated: true, totalAmount, vatAmount, totalAmountWithVat, customFields: customFieldsVals };
       }
       alert(`✅ سفارش داروخانه «${pharmacyName}» ویرایش شد.`);
     } else {
       state.orders.push({
         id: "ord-" + Date.now(),
-        pharmacyName, pharmacyId, province, city, district, address, repName, orderDate, status, notes, items, totalAmount, vatAmount, totalAmountWithVat,
+        pharmacyName, pharmacyId, province, city, district, address, repName, orderDate, status, notes, items, quantityValidated: true, totalAmount, vatAmount, totalAmountWithVat,
         customFields: customFieldsVals
       });
       alert(`✅ سفارش جدید برای داروخانه «${pharmacyName}» ثبت شد. از باقیمانده تارگت نماینده کسر گردید.`);

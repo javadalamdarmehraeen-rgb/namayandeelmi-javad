@@ -1,6 +1,6 @@
 CHAT.ARENA — حافظه دائمی و کامل پروژه «نماینده علمی» (طنین طب طاها / TENIN TEB TAHA)
 =====================================================================================
-نسخه این فایل: 1.11 | تاریخ به‌روزرسانی: 2026-08-17 (۲۷ مرداد ۱۴۰۵) | نسخه برنامه: 11.17.0
+نسخه این فایل: 1.14 | تاریخ به‌روزرسانی: 2026-08-17 (۲۷ مرداد ۱۴۰۵) | نسخه برنامه: 11.18.0
 این فایل به دستور کاربر ساخته شده و قانون دائمی دارد: بعد از هر گفتگو و هر نسخه جدید برنامه،
 این فایل به‌روزرسانی می‌شود و نسخه به‌روز آن همیشه داخل فایل زیپ تحویلی قرار می‌گیرد.
 (قانون شماره ۶۳ در AI_RULES.md) — بازسازی با: python update_chat_arena.py
@@ -333,9 +333,25 @@ crm-jalali.js, iran-facilities.js, sw.js, manifest.json, offline.html, icons/, v
 بخش ۴) تاریخچه نسخه‌ها و آخرین دوره تغییرات
 ══════════════════════════════════════════════════════════════════════════════════
 • مسیر نسخه‌ها (بازسازی از ریپو): V1 → … → V9 → V10 → V11 → V11.1 … V11.14 → V11.15
-  → V11.15.1 → V11.15.2 → V11.15.3 → V11.16.0 → V11.16.1 → V11.16.2 → V11.17.0.
+  → V11.15.1 → V11.15.2 → V11.15.3 → V11.16.0 → V11.16.1 → V11.16.2 → V11.17.0 → V11.17.1 → V11.18.0.
 • جزئیات کامل هر نسخه V9 به بعد در CHANGES_V9.md / CHANGES_V10.md / CHANGES_V11.md
   (محتوای کاملشان در بخش ۹ همین فایل هست).
+
+نسخه 11.18.0 — تب امن اسنپ سازمانی + موقعیت متنی همه نمایندگان
+۱) تب و دسترسی اسنپ سازمانی بدون ذخیره credential و بدون دورزدن CAPTCHA اضافه شد.
+۲) ورود دو فایل CSV/XLSX با dedupe، ۹ ستون منتخب، فیلتر سال/ماه/بازه و تجمیع نماینده اضافه شد.
+۳) دانلود دوتایی اکسل رفع و رنگ اکسل/حذف استاندارد شد.
+۴) موقعیت زنده «همه نمایندگان» + آدرس متنی خودکار هر نماینده اضافه شد.
+۵) اعتبارنامه پیام کاربر از حافظه پروژه حذف/سانسور و تعویض فوری رمز توصیه شد.
+۶) تست واقعی فایل اسنپ و خودکارسازی کامل در انتظار API رسمی/نمونه فایل کاربر است.
+
+نسخه 11.17.1 — صفر واقعی تعداد، اشتراک پویا و افزودن‌های مقیاس‌پذیر
+۱) `|| 1` از مسیر فعال سفارش حذف شد؛ qty خالی/صفر نه ذخیره، نه ارسال و نه جمع می‌شود.
+۲) فیلدهای مجاز پیام‌رسان از همه ستون‌های فعلی/سفارشی پویا ساخته و تیک‌ها دقیق اعمال می‌شوند.
+۳) مدیر افزودن‌ها تمام‌عرض و چندستونه شد؛ قدیمی مخفی و تعلق هر فیلد به تب خودش کنترل شد.
+۴) مدیریت ۱۰هزار نام search-only شد؛ تاریخ سفارش فعال، نام سفارش پاک و هشدار بدون تغییر layout است.
+۵) نسخه فقط مدیر است و ذخیره/اعمال ترتیب، عرض و ارتفاع اطلاعات کالا در v20 تضمین شد.
+۶) تست نحوی همه JS، build و smoke نسخه 11.17.1 موفق است.
 
 نسخه 11.17.0 — تثبیت فیلدها، سفارش، افزودن‌ها، اشتراک مدیر و GPS/رصد کامل
 ۱) جابه‌جایی خودکار فیلدهای داروخانه→سفارش متوقف شد تا شناسه و جای فیلدها در هر نسخه ثابت بماند.
@@ -539,19 +555,19 @@ crm-jalali.js, iran-facilities.js, sw.js, manifest.json, offline.html, icons/, v
   [متنی ]      849 بایت  .gitattributes
   [متنی ]     1082 بایت  .gitignore
   [متنی ]     2057 بایت  .gitlab-ci.yml
-  [متنی ]    17455 بایت  AI_ARCHITECTURE.md
-  [متنی ]    36023 بایت  AI_DECISION_LOG.md
-  [متنی ]    16802 بایت  AI_PROJECT_CONTEXT.md
-  [متنی ]    25086 بایت  AI_RULES.md
-  [متنی ]    23406 بایت  AI_TASKS.md
-  [متنی ]    20889 بایت  ARENA_HANDOFF_PROMPT.md
+  [متنی ]    18014 بایت  AI_ARCHITECTURE.md
+  [متنی ]    37646 بایت  AI_DECISION_LOG.md
+  [متنی ]    17767 بایت  AI_PROJECT_CONTEXT.md
+  [متنی ]    25437 بایت  AI_RULES.md
+  [متنی ]    24862 بایت  AI_TASKS.md
+  [متنی ]    21967 بایت  ARENA_HANDOFF_PROMPT.md
   [متنی ]      600 بایت  CHANGES_V10.md
-  [متنی ]    34619 بایت  CHANGES_V11.md
+  [متنی ]    37742 بایت  CHANGES_V11.md
   [متنی ]     3939 بایت  CHANGES_V9.md
   [متنی ]     1806 بایت  CLEAN_EXTRA_FILES.bat
   [متنی ]     2377 بایت  KEEP_ONLY_GITHUB.bat
   [متنی ]     6275 بایت  OFFICIAL_FILELIST.txt
-  [متنی ]    36954 بایت  PROJECT_GRAPH.md
+  [متنی ]    37777 بایت  PROJECT_GRAPH.md
   [متنی ]     2642 بایت  PUSH_FRESH_GITHUB.bat
   [متنی ]     2680 بایت  PUSH_GITHUB_CLEAN.bat
   [متنی ]     6579 بایت  RAHNAMA_GITLAB.txt
@@ -571,7 +587,7 @@ crm-jalali.js, iran-facilities.js, sw.js, manifest.json, offline.html, icons/, v
   [متنی ]     7947 بایت  server.js
   [متنی ]     2426 بایت  sync_all.sh
   [متنی ]      738 بایت  tsconfig.json
-  [متنی ]   126460 بایت  update_chat_arena.py
+  [متنی ]   145535 بایت  update_chat_arena.py
   [متنی ]    10215 بایت  update_project_graph.py
   [متنی ]     2727 بایت  .github/workflows/deploy.yml
   [متنی ]      214 بایت  .github/workflows/keep_alive.yml
@@ -579,10 +595,10 @@ crm-jalali.js, iran-facilities.js, sw.js, manifest.json, offline.html, icons/, v
   [متنی ]     9805 بایت  mobile/README.md
   [متنی ]     9796 بایت  mobile/src/simAuth.ts
   [متنی ]     8066 بایت  public/cloudflare-worker.js
-  [متنی ]   168520 بایت  public/crm-app.js
-  [متنی ]    35803 بایت  public/crm-data.js
+  [متنی ]   168701 بایت  public/crm-app.js
+  [متنی ]    37176 بایت  public/crm-data.js
   [متنی ]    13643 بایت  public/crm-features-v10.js
-  [متنی ]   107173 بایت  public/crm-features-v11.js
+  [متنی ]   107385 بایت  public/crm-features-v11.js
   [متنی ]    44613 بایت  public/crm-features-v12.js
   [متنی ]    32088 بایت  public/crm-features-v13.js
   [متنی ]    34125 بایت  public/crm-features-v14.js
@@ -591,10 +607,10 @@ crm-jalali.js, iran-facilities.js, sw.js, manifest.json, offline.html, icons/, v
   [متنی ]    19662 بایت  public/crm-features-v17.js
   [متنی ]    33040 بایت  public/crm-features-v18.js
   [متنی ]    60932 بایت  public/crm-features-v19.js
-  [متنی ]    74905 بایت  public/crm-features-v20.js
-  [متنی ]    68030 بایت  public/crm-features-v9.js
+  [متنی ]    98323 بایت  public/crm-features-v20.js
+  [متنی ]    68275 بایت  public/crm-features-v9.js
   [متنی ]    25683 بایت  public/crm-jalali.js
-  [متنی ]   126145 بایت  public/index.html
+  [متنی ]   130562 بایت  public/index.html
   [متنی ]    11799 بایت  public/iran-facilities.js
   [متنی ]     7100 بایت  public/login.html
   [متنی ]      966 بایت  public/manifest.json
@@ -1257,6 +1273,239 @@ SYNC_ALL.bat v11.17.0
 اگر گیت‌لب هنوز تنظیم نشده باشد، برنامه همگام‌سازی گیت‌هاب را انجام می‌دهد و گیت‌لب را رد می‌کند.
 
 
+──────────────────────────────── نوبت ۱۷ ────────────────────────────────
+🧑 کاربر (عیناً):
+«PS E:\porozheha\list prozheha
+amayandeelmi-javad&gt; git add -A
+
+PS E:\porozheha\list prozheha
+amayandeelmi-javad&gt; git commit -m 
+
+error: switch `m' requires a value
+
+PS E:\porozheha\list prozheha
+amayandeelmi-javad&gt; git push origin main
+
+Everything up-to-date
+
+PS E:\porozheha\list prozheha
+amayandeelmi-javad&gt; 
+
+گیت هاب اپدیت نمی شود»
+
+🤖 دستیار:
+بررسی مستقیم انجام شد و حق با شماست: گیت‌هاب هنوز روی کامیت `9b8546b` و نسخه **11.16.2** است.
+
+علت این بار کاملاً مشخص است:
+
+```text
+git commit -m
+```
+
+ناقص اجرا شده است. بعد از `-m` باید متن کامیت نوشته شود. بنابراین هیچ کامیتی ساخته نشده و `git push` هم پیام **Everything up-to-date** داده است؛ یعنی چیزی برای ارسال پیدا نکرده است.
+
+### همین دستورها را به‌ترتیب اجرا کنید
+
+ابتدا مطمئن شوید فایل‌های نسخه جدید واقعاً در همین پوشه هستند:
+
+```powershell
+Get-Content package.json | Select-String '"version"'
+```
+
+باید `11.17.0` نمایش داده شود. سپس:
+
+```powershell
+git status --short
+git add -A
+git commit -m "v11.17.0: تثبیت فیلدها، سفارشات و رصد تردد"
+git pull --no-rebase origin main
+git push origin main
+git push gitlab main
+git fetch origin
+git log origin/main -1 --oneline
+```
+
+بعد از موفقیت، دستور آخر باید کامیتی با عنوان `v11.17.0` نشان دهد.
+
+### اگر گیت‌لب هنوز وصل نیست
+پیغام خطای گیت‌لب مانع آپدیت گیت‌هاب نیست. در آن حالت فقط این دستور را بزنید:
+
+```powershell
+git push origin main
+```
+
+### اگر دستور commit گفت `nothing to commit`
+یعنی فایل‌های ZIP نسخه ۱۱.۱۷.۰ را در این پوشه جایگزین نکرده‌اید یا در پوشه دیگری هستید. در آن حالت:
+
+1. فایل `namayandeelmi-v11.17.0.zip` را باز کنید.
+2. همه فایل‌های داخل آن را روی همین مسیر جایگزین کنید:
+   `E:\porozheha\list prozheha
+amayandeelmi-javad`
+3. دوباره دستورهای بالا را اجرا کنید.
+
+پس از پوش موفق، گیت‌هاب اجرای جدید می‌سازد و اصلاح ضربدر قرمز نیز اعمال می‌شود. ضربدر اجرای قدیمی ۱۱.۱۶.۲ پاک نمی‌شود، اما اجرای **۱۱.۱۷.۰** باید سبز شود.
+
+
+──────────────────────────────── نوبت ۱۸ ────────────────────────────────
+🧑 کاربر (عیناً):
+«وقتی کاربر میخواد سفارش را ارسال کنه بصورت زیر میاره.یعنی برای کالاهایی که تعداد نداره عدد 1 میزنه که این درست نیست و کالاهایی که تعداد ندارد اصلا نباید وارد این لیست ارسال بشه و در جمع کل هم این عدد 1 را محاسبه می کنه
+
+نام داروخانه: داروخانه شبانه‌روزی رازی
+
+نام نماینده: مدیر سیستم
+
+تاریخ: 1405/05/25
+
+استان: تهران
+
+شهر: تهران
+
+آدرس: میدان انقلاب، ابتدای کارگر شمالی، نبش کوچه ششم
+
+وضعیت: تایید شده
+
+اقلام: امگا 3 × 2000، امگا 5 × 1، امگا 3.5 × 1، امگا مولتی × 1، امگا وومن × 1، امگا من × 1، کپسول ملاتونین × 1
+
+مبلغ کل: ۴٬۰۱۲ ریال
+
+در تب پیامرسان ها در قسمت تعیین اطلاعات مجاز برای ارسال (فقط مدیر) می بایست تمام ستون های موجود در لیست را برای داروخانه و پزشک و سفارشات را بیاره تا مدیر بتونه انتخاب کنه و هر کدام که تیکش برداشته بشه نباید داخل ارسال بیاره اما باز اطلاعات اون فیلد را میاره و هر ستونی که توسط مدیر در لیست اصلی حذف یا اضافه شد را اعمال کند
+
+در تب افزودن در قسمت فیلهای کشویی همچنان فیلدها زیر یکدیگر قرار دارند که قرار شد کنار یکدیگر باشند و در تب پزشکان فیلدهای تب داروخانه را نشان می دهد که قرار شد در هر تب فیلدهای کشویی خود ان تب را در تب اصلیش نشان دهد و برخی از فیلدهای کشویی را به سبک قدیمی نشان می دهد که باید سبک جدید باشد و اینکه قرار است در اینده لیست داروخانه و پزشک بیش از 10 هزار نام باشد که نمایش این ذو فیلد  صفحه را خیلی کشیده به سمت پایین می کند و بنظرم باید نمایش همه داروخانه ها و پزشکان حذف شود و این دو فیلد فقط فیلد سرچ داشته باشد تا وقتی سرچ انجام می شود نام ان داروخانه یا پزشک نمایان شود و کلید ویرایش یا حذف داشته باشد  
+در تب سفارشات فیلد تاریخ سفارش باید فعال باشد و نباید طوسی باشد و وقتی کاربر نام داروخانه را می زند و کلید ذخیره را می زند باید فیلد پاک شود و اماده ثبت بعدی شود و اینکه اگر نامی تایپ شد و کاربر به تبی دیگر رفت باز به تب سفارشات برگشت فیلد اماده تایپ باشد و نام قبلی در فیلد داروخانه نماند و اینکه کادر سفارش ثبت شده و جایگذاری اتوماتیک کوچک شده و ترتیب فیلدها را بهم می زند که این صحیح نیست  
+قرار شد نمایش ورزن برنامه فقط در صفحه مدیر باشد اما در صفحه کاربران دیگر نیز وجود دارد  
+اطلاعات کالا و اضافه و یا حذف کردن فیلد و ترتیب و ارتفاع و پیکسل در سا نشد و کار نمی کند»
+
+🤖 دستیار:
+نسخه **۱۱.۱۷.۱** آماده شد و موارد گزارش‌شده اصلاح شدند.
+
+### ۱. کالای بدون تعداد و جمع مبلغ
+علت اصلی پیدا شد: در مسیر فعال سفارش، تعداد خالی با عبارت `|| 1` به عدد ۱ تبدیل می‌شد.
+
+اکنون:
+- تعداد خالی یا صفر اصلاً داخل سفارش ذخیره نمی‌شود؛
+- در متن پیام‌رسان نمایش داده نمی‌شود؛
+- در جمع مبلغ محاسبه نمی‌شود؛
+- سفارش‌های قدیمی با الگوی مشخص خطای قبلی، یعنی چند کالای ×۱ کنار یک تعداد واقعی، هنگام ارسال پاک‌سازی و مبلغشان دوباره محاسبه می‌شود؛
+- سفارش جدید با علامت داخلی «تعداد تأییدشده» ذخیره می‌شود تا تعداد واقعی ۱ در آینده حذف نشود.
+
+بنابراین در نمونه شما فقط **امگا ۳ × ۲۰۰۰** باید ارسال و محاسبه شود.
+
+### ۲. تعیین اطلاعات مجاز پیام‌رسان‌ها
+این بخش دیگر فهرست ثابت ندارد. اکنون تمام ستون‌های فعلی لیست‌های داروخانه، پزشک و سفارش را شامل می‌شود:
+- ستون‌های اصلی؛
+- ستون‌های اضافه‌شده مدیر؛
+- فیلدهای سفارشی که در لیست فعال‌اند.
+
+اگر مدیر تیک هر مورد را بردارد، آن مورد قطعاً از متن کپی و همه پیام‌رسان‌ها حذف می‌شود. اضافه یا حذف ستون در لیست اصلی نیز پس از ورود دوباره به تب پیام‌رسان‌ها خودکار اعمال می‌شود.
+
+### ۳. تب افزودن‌ها
+- مدیر جدید اکنون تمام عرض صفحه را می‌گیرد؛ به همین دلیل کارت‌ها واقعاً کنار یکدیگر قرار می‌گیرند.
+- نمایش قدیمی زیر آن کاملاً مخفی شد.
+- هر تب فقط شناسه‌ها و فیلدهای متعلق به خودش را نشان می‌دهد؛ فیلد داروخانه دیگر در پزشکان دیده نمی‌شود.
+- نام‌های داروخانه و پزشک دیگر یکجا نمایش داده نمی‌شوند.
+- برای بیش از ۱۰هزار نام، فقط کادر جستجو نمایش داده می‌شود؛ با نوشتن حداقل دو حرف، حداکثر ۵۰ نتیجه همراه ویرایش و حذف می‌آید.
+
+### ۴. سفارشات
+- تاریخ سفارش همیشه فعال و سفید است.
+- پس از ثبت موفق، نام داروخانه پاک می‌شود.
+- با خروج از تب سفارشات و بازگشت، نام تایپ‌شده قبلی پاک شده و فیلد آماده ثبت بعدی است.
+- پیام «سفارش ثبت شده / جایگذاری اتوماتیک» به‌صورت شناور کنار نام داروخانه باز می‌شود و دیگر اندازه یا ترتیب فیلدهای فرم را تغییر نمی‌دهد.
+
+### ۵. نسخه و اطلاعات کالا
+- نشان **نسخه ۱۱.۱۷.۱** فقط برای مدیر و سرپرست دیده می‌شود و برای کاربران عادی مخفی است.
+- ذخیره فیلد کالا، حذف، ترتیب فرم، ترتیب لیست، عرض پیکسلی و ارتفاع پیکسلی در لایه نهایی تثبیت شد و بعد از ذخیره دوباره روی فرم اعمال می‌شود.
+
+### وضعیت آزمایش
+- بررسی نحوی همه ۲۰ فایل JavaScript و سرور: **موفق**
+- ساخت برنامه: **موفق**
+- سلامت سرور و صفحه اصلی: **نسخه 11.17.1 و HTTP 200 — موفق**
+- موارد ظاهری و رفتار مرورگر: **در انتظار تأیید شما پس از استقرار**
+
+بعد از جایگزینی فایل‌ها، این دستورها را دقیقاً با متن کامیت اجرا کنید:
+
+```powershell
+git add -A
+git commit -m "v11.17.1: اصلاح تعداد سفارش، پیام‌رسان و تب افزودن"
+git pull --no-rebase origin main
+git push origin main
+git push gitlab main
+```
+
+اگر گیت‌لب هنوز وصل نیست، خط آخر گیت‌لب را اجرا نکنید. سپس ۱ تا ۲ دقیقه صبر کنید و در سایت **Ctrl+Shift+R** بزنید.
+
+
+──────────────────────────────── نوبت ۱۹ ────────────────────────────────
+🧑 کاربر (متن امنیتی‌سازی‌شده؛ اعتبارنامه عمداً حذف شده است):
+«یک تب را میخوام به برنامه اضافه کنی بنام اسنپ سازمانی
+
+در تب اسنپ سازمانی میخوام بصورت اتوماتیک برنامه بره وارد سایت بشه یوزر و پسود و کد امنیتی را وارد کنه و گزارشات را روزانه بصورت اتوماتیک دریافت کنه  
+ادرس سایت https://corporate.snapp.taxi/auth/login هستش و در بخش ورود مدیر نام کاربری [به‌دلیل امنیت حذف شد] و رمز عبور [به‌دلیل امنیت حذف شد] هستش و کد امنیتی هر بار تغییر می کند که باید برنامه ان را تشخیص دهد. بعد از ورود، گزارش سفر روز قبل جستجو و خروجی اکسل دریافت شود؛ ستون‌های ۱،۲،۵،۹،۱۲،۱۵،۱۸،۱۹،۲۴ در تب نمایش یابد و فیلدهای سال، ماه، از تاریخ و تا تاریخ برای جمع کلی و تفکیک نماینده اضافه شود.
+
+خروجی اکسل دوتا دوتا با دو پسوند دریافت می‌شود. شکل کلیدها یکسان باشد؛ اکسل سبز و حذف قرمز.
+
+در موقعیت زنده گزینه همه نمایندگان اضافه شود تا همه روی نقشه دیده شوند و برای هر نماینده آدرس متنی خودکار نمایش داده شود.»
+
+🤖 دستیار:
+نسخه **۱۱.۱۸.۰** آماده شد و تب **🚕 اسنپ سازمانی** به برنامه اضافه شد.
+
+## نکته امنیتی بسیار مهم
+رمزی که در پیام فرستادید دیگر محرمانه محسوب نمی‌شود. لطفاً همین الآن آن را در پنل اسنپ تغییر دهید. نام کاربری و رمز شما عمداً در هیچ‌کدام از این موارد ذخیره نشده است:
+- کد برنامه؛
+- گیت‌هاب یا گیت‌لب؛
+- فایل ZIP؛
+- `chat.arena`؛
+- تنظیمات مرورگر.
+
+حل یا دورزدن خودکار کد امنیتی متغیر پیاده‌سازی نشد. این کد برای جلوگیری از ورود ربات است. خودکارسازی کامل روزانه فقط زمانی امن و قابل‌اعتماد است که اسنپ یک **API رسمی یا حساب سرویس سازمانی** ارائه کند.
+
+## امکانات اضافه‌شده به تب اسنپ سازمانی
+- کلید بازکردن مستقیم پنل رسمی اسنپ در صفحه جدا؛
+- تاریخ پیش‌فرض «روز قبل»؛
+- ورود هم‌زمان چند فایل گزارش `CSV` و `XLSX`؛
+- تشخیص دو خروجی همسان و جلوگیری از ثبت دوباره ردیف‌ها؛
+- نمایش ستون‌های ۱، ۲، ۵، ۹، ۱۲، ۱۵، ۱۸، ۱۹ و ۲۴؛
+- چهار فیلد **سال، ماه، از تاریخ و تا تاریخ**؛
+- محاسبه تعداد سفر و جمع هزینه در بازه انتخابی؛
+- جمع هزینه به تفکیک هر نماینده؛
+- ذخیره گزارش‌های واردشده در وضعیت برنامه؛
+- خروجی اکسل از نمای فیلترشده؛
+- حذف همه گزارش‌ها فقط با تأیید مدیر.
+
+برای استفاده، مدیر یک‌بار وارد سایت رسمی می‌شود، کد امنیتی را خودش وارد می‌کند، دو فایل گزارش را دانلود می‌کند و هر دو را هم‌زمان در تب اسنپ سازمانی انتخاب می‌کند.
+
+## اصلاح خروجی‌ها و رنگ کلیدها
+- باگ دریافت هم‌زمان دو فایل با پسوندهای XLS و CSV رفع شد؛ هر کلیک اکنون فقط **یک فایل اکسل** می‌گیرد.
+- همه کلیدهای اکسل سبز شدند.
+- همه کلیدهای حذف قرمز شدند.
+
+## موقعیت زنده
+- گزینه **همه نمایندگان** به فیلد انتخاب نماینده اضافه شد.
+- با انتخاب آن، موقعیت همه نمایندگان هم‌زمان روی نقشه تنظیم می‌شود.
+- ستون **آدرس متنی موقعیت فعلی** اضافه شد.
+- مختصات هر نماینده خودکار به آدرس متنی تبدیل و در سطر خودش ذخیره می‌شود.
+
+## وضعیت تأیید
+- نسخه برنامه و سرور: **11.18.0**؛
+- بررسی نحوی همه فایل‌های JavaScript: **موفق**؛
+- ساخت برنامه: **موفق**؛
+- صفحه اصلی و تب جدید: **HTTP 200 و تأییدشده**؛
+- عدم وجود نام کاربری/رمز افشاشده در پروژه: **تأییدشده**؛
+- خواندن فایل واقعی خروجی اسنپ و تطبیق عنوان ستون‌ها: **در انتظار آزمایش شما با دو فایل واقعی**؛
+- دریافت کاملاً خودکار روزانه: **انجام نشده؛ نیازمند API رسمی اسنپ است**.
+
+بعد از جایگزینی فایل‌ها، دستورها را با متن کامیت کامل اجرا کنید:
+
+```powershell
+git add -A
+git commit -m "v11.18.0: افزودن اسنپ سازمانی و موقعیت همه نمایندگان"
+git pull --no-rebase origin main
+git push origin main
+git push gitlab main
+```
+
+اگر گیت‌لب هنوز تنظیم نشده، فقط خط گیت‌لب را اجرا نکنید. پس از استقرار Render، حدود ۱ تا ۲ دقیقه صبر کنید و **Ctrl+Shift+R** بزنید.
+
+
 
 ══════════════════════════════════════════════════════════════════════════════════
 بخش ۹) محتوای کامل فایل‌های پروژه — بدون هیچ سانسور یا پنهان‌کاری
@@ -1466,7 +1715,7 @@ sync-after-deploy:
 ~~~~~~~~
 
 ──────────────────────────────────────────────────────────────────────────────────
-فایل: AI_ARCHITECTURE.md (17455 بایت)
+فایل: AI_ARCHITECTURE.md (18014 بایت)
 ──────────────────────────────────────────────────────────────────────────────────
 ~~~~~~~~markdown
 # AI ARCHITECTURE
@@ -2555,10 +2804,17 @@ Then change only what is requested.
   must be registered there immediately.
 
 # END OF AI ARCHITECTURE
+
+## معماری افزوده v11.18.0 — Snapp Corporate
+- UI: `tab-snapp-corporate` در index، منو در MENU_SECTIONS_LIST، موتور در آخرین لایه v20.
+- Data: `state.snappCorporate = {headers, rows, files, lastImport}`؛ dedupe با امضای کامل ردیف.
+- Import: CSV/TSV parser + XLSX ZIP/XML browser parser؛ بدون npm dependency.
+- Security boundary: no credentials, no CAPTCHA solving; official site opens in a separate secure tab.
+- Live map: option empty means all reps; reverse endpoint populates `rep.textAddress`.
 ~~~~~~~~
 
 ──────────────────────────────────────────────────────────────────────────────────
-فایل: AI_DECISION_LOG.md (36023 بایت)
+فایل: AI_DECISION_LOG.md (37646 بایت)
 ──────────────────────────────────────────────────────────────────────────────────
 ~~~~~~~~markdown
 # AI DECISION LOG
@@ -3921,11 +4177,24 @@ Syntax-checked; server smoke 11.16.2 OK. Browser verification pending.
 - جلسه GPS در state ذخیره و پس از پایان با unshift در repRoutes و visitTracks ماندگار می‌شود.
 - workflow متناسب با معماری واقعی صفر-وابستگی Node اصلاح شد؛ Next خفته دیگر در CI اجرا نمی‌شود.
 
+## تصمیم ۵۲ — نسخه ۱۱.۱۷.۱: صفر واقعی تعداد و رابط مقیاس‌پذیر (2026-08-17)
+- مسیر فعال v9 از `parseInt(...) || 1` به صفر+فیلتر qty<=0 تغییر کرد و هر دو نسل crm-app نیز quantityValidated می‌نویسند.
+- فهرست اشتراک از ثابت به پویا بر اساس ستون‌های هسته، extraListColumns و customFields قابل نمایش تبدیل شد.
+- برای مقیاس ۱۰هزار نام، رندر کامل ممنوع و فقط جستجوی حداقل دو حرف/۵۰ نتیجه مجاز شد.
+- پنل قدیمی افزودن‌ها مخفی و v20 تمام عرض شد؛ فیلتر تعلق شناسه مانع نشت فیلد داروخانه به پزشک است.
+
+## تصمیم ۵۳ — نسخه ۱۱.۱۸.۰: اسنپ سازمانی امن و بدون دورزدن CAPTCHA (2026-08-17)
+- اعتبارنامه افشاشده عمداً در هیچ فایل ثبت نشد و کاربر ملزم به تغییر رمز شد.
+- به‌جای ربات CAPTCHA، ورود دستی مدیر + ورود دو فایل و dedupe محلی پیاده شد؛ خودکارسازی کامل فقط با API رسمی آینده مجاز است.
+- XLSX با ZIP/XML بومی مرورگر و CSV/XLS متنی بدون dependency خارجی خوانده می‌شود.
+- گزارش‌های اسنپ در state.snappCorporate، با فیلتر سال/ماه/بازه و تجمیع نماینده ذخیره می‌شوند.
+- موقعیت همه نمایندگان و reverse geocode متنی در v20 اضافه شد.
+
 # END OF AI DECISION LOG
 ~~~~~~~~
 
 ──────────────────────────────────────────────────────────────────────────────────
-فایل: AI_PROJECT_CONTEXT.md (16802 بایت)
+فایل: AI_PROJECT_CONTEXT.md (17767 بایت)
 ──────────────────────────────────────────────────────────────────────────────────
 ~~~~~~~~markdown
 # AI PROJECT CONTEXT
@@ -4749,10 +5018,16 @@ crm-features-v20.js; knowledge graph PROJECT_GRAPH.md is read-first
 # END OF AI PROJECT CONTEXT
 ## افزونه وضعیت نسخه ۱۱.۱۷.۰ (2026-08-17)
 آخرین نسخه فعال 11.17.0 است. لایه نهایی v20 اکنون تثبیت جای فیلد، جایگذاری محلی سفارش، مدیریت وابسته نام‌ها، قفل محتوای پیام‌رسان، GPS/رصد تردد کامل، نسخه هدر و آدرس دقیق را پوشش می‌دهد. CI گیت‌هاب با معماری Node صفر-وابستگی هماهنگ شد.
+
+## افزونه وضعیت نسخه ۱۱.۱۷.۱ (2026-08-17)
+نسخه فعال 11.17.1 است. quantityValidated مرز داده سفارش جدید است؛ اقلام qty<=0 ذخیره نمی‌شوند. اشتراک پویا از ستون‌های فعلی ساخته می‌شود. مدیر نام‌های بزرگ فقط با جستجو کار می‌کند. v20 مالک نهایی نمایش افزودن‌ها، پاکسازی سفارش، نسخه فقط مدیر و اعمال تنظیمات کالا است.
+
+## افزونه وضعیت نسخه ۱۱.۱۸.۰ (2026-08-17)
+نسخه فعال 11.18.0 است. تب tab-snapp-corporate فقط مدیر/دسترسی صریح، بدون credential، گزارش‌ها را از CSV/XLSX وارد و در state.snappCorporate نگه می‌دارد. CAPTCHA هرگز خودکار حل نمی‌شود. موقعیت زنده اکنون حالت همه نمایندگان و textAddress کش‌شده دارد.
 ~~~~~~~~
 
 ──────────────────────────────────────────────────────────────────────────────────
-فایل: AI_RULES.md (25086 بایت)
+فایل: AI_RULES.md (25437 بایت)
 ──────────────────────────────────────────────────────────────────────────────────
 ~~~~~~~~markdown
 # AI RULES
@@ -6106,11 +6381,18 @@ If the remote history was replaced/recreated, deliver the one-time repair
 `PUSH_FRESH_GITHUB.bat` (merge --allow-unrelated-histories -X ours → push)
 and state the facts from the actual remote state.
 
+# 69. SECRET + CAPTCHA SAFETY RULE (PERMANENT)
+
+Credentials pasted in chat must never be copied into source, chat.arena, ZIP,
+documentation, Git, logs or examples. Redact them and tell the user to rotate
+the exposed password. CAPTCHA/security-code bypass must not be implemented.
+Use manual manager login or an official provider API/service account.
+
 # END OF AI RULES
 ~~~~~~~~
 
 ──────────────────────────────────────────────────────────────────────────────────
-فایل: AI_TASKS.md (23406 بایت)
+فایل: AI_TASKS.md (24862 بایت)
 ──────────────────────────────────────────────────────────────────────────────────
 ~~~~~~~~markdown
 # AI TASKS
@@ -7235,11 +7517,29 @@ Pending user verification: same list, in browser after Ctrl+Shift+R.
 - [x] نسخه در هدر و اصلاح ضربدر قرمز GitHub Actions
 - [ ] تأیید مرورگری کاربر پس از استقرار و Ctrl+Shift+R
 
+## ۴۰) نسخه ۱۱.۱۷.۱ — بازخورد نوبت ۱۸
+- [x] حذف کالای تعداد خالی از ذخیره/ارسال/جمع + پاکسازی الگوی قدیمی
+- [x] پیام‌رسان پویا مطابق تمام ستون‌های فعلی و سفارشی
+- [x] کارت‌های واقعی کنارهم، حذف سبک قدیم، تفکیک کامل تب‌ها
+- [x] جستجوی مقیاس‌پذیر نام داروخانه/پزشک
+- [x] تاریخ فعال، پاکسازی نام سفارش و هشدار شناور بدون تغییر ترتیب
+- [x] نسخه فقط مدیر + تضمین ذخیره تنظیمات کالا
+- [ ] تأیید مرورگری کاربر پس از استقرار و پاک‌سازی کش
+
+## ۴۱) نسخه ۱۱.۱۸.۰ — اسنپ سازمانی و موقعیت همه نمایندگان
+- [x] تب/منوی اسنپ سازمانی + دسترسی‌های رسمی
+- [x] ورود امن دستی و عدم ذخیره credential/CAPTCHA bypass
+- [x] ورود چند فایل، dedupe، ۹ ستون منتخب، فیلتر و تجمیع
+- [x] رفع دانلود دوتایی و استاندارد رنگ اکسل/حذف
+- [x] همه نمایندگان روی نقشه + آدرس متنی هر نماینده
+- [ ] تأیید ساختار فایل واقعی خروجی اسنپ توسط کاربر
+- [ ] خودکارسازی روزانه فقط در صورت ارائه API رسمی اسنپ
+
 # END OF AI TASKS
 ~~~~~~~~
 
 ──────────────────────────────────────────────────────────────────────────────────
-فایل: ARENA_HANDOFF_PROMPT.md (20889 بایت)
+فایل: ARENA_HANDOFF_PROMPT.md (21967 بایت)
 ──────────────────────────────────────────────────────────────────────────────────
 ~~~~~~~~markdown
 # ARENA AI MASTER HANDOFF PROMPT
@@ -8328,6 +8628,20 @@ ADDENDUM v11.16.1 (2026-08-16)
 - v20 owns local order match/autofill, entity cascade manager, share-field lock, visit GPS/metrics/routes, route search/export and version badge.
 - v9 visiblePharmacies/Doctors/Orders return reversed copies (newest first).
 - GitHub workflow is pure Node/zero-dependency; do not restore Next commands.
+
+## Addendum — v11.17.1
+- Never restore `|| 1` in order quantity collection. New orders set `quantityValidated: true`; old obvious bug-pattern rows are cleaned only for sharing.
+- Share fields are dynamic (`dynamicShareFields`), not a hardcoded visible subset.
+- Entity manager must remain search-only (2 chars, max 50); never render 10k names.
+- Legacy direct children of addTabPanel stay hidden; v20 manager owns full width and filters IDs by entity prefix/custom ownership.
+- Product layout persistence is reinforced in v20; orderDate is always exempt from grey lock.
+
+## Addendum — v11.18.0
+- Never store the credential pasted in turn 19; it was intentionally redacted. Tell user to rotate it.
+- Do not automate CAPTCHA. Full daily automation requires an official Snapp API.
+- Snapp import supports CSV/text XLS and modern XLSX; test against the user's real pair before claiming browser verification.
+- Selected source columns are zero-based [0,1,4,8,11,14,17,18,23]; import dedupes paired formats.
+- Excel wrapper now downloads only XLS (do not restore orig CSV call).
 ~~~~~~~~
 
 ──────────────────────────────────────────────────────────────────────────────────
@@ -8347,9 +8661,29 @@ Leaflet محلی. فونت گوگل حذف شد. gzip روی JS/CSS/HTML.
 ~~~~~~~~
 
 ──────────────────────────────────────────────────────────────────────────────────
-فایل: CHANGES_V11.md (34619 بایت)
+فایل: CHANGES_V11.md (37742 بایت)
 ──────────────────────────────────────────────────────────────────────────────────
 ~~~~~~~~markdown
+# نسخه ۱۱.۱۸.۰
+
+1. تب مدیرمحور «اسنپ سازمانی» به منوی بالا، سایدبار و بدنه برنامه اضافه شد؛ هیچ نام کاربری/رمزی در پروژه ذخیره نمی‌شود و ورود CAPTCHA عمداً دستی و امن است.
+2. بازکردن پنل رسمی، تاریخ پیش‌فرض دیروز، ورود هم‌زمان چند فایل CSV/XLSX، حذف ردیف تکراری دو خروجی، ذخیره گزارش‌ها و نمایش ستون‌های ۱،۲،۵،۹،۱۲،۱۵،۱۸،۱۹،۲۴ اضافه شد.
+3. چهار فیلد سال، ماه، از تاریخ و تا تاریخ + جمع کل، تعداد سفر و تجمیع به تفکیک نماینده اضافه شد.
+4. خروجی اکسل نمای فیلترشده اضافه و باگ دانلود دوتایی XLS+CSV حذف شد؛ هر کلیک فقط یک فایل می‌گیرد.
+5. رنگ سراسری کلیدهای اکسل سبز و حذف قرمز شد.
+6. موقعیت زنده دارای گزینه «همه نمایندگان»، fitBounds هم‌زمان و ستون آدرس متنی خودکار برای هر نماینده شد.
+7. قانون امنیتی ۶۹: اسرار چت هرگز در کد/chat.arena/ZIP ثبت نشوند و CAPTCHA دور زده نشود.
+
+# نسخه ۱۱.۱۷.۱
+
+1. باگ اصلی «تعداد خالی = ۱» در مسیر فعال ذخیره سفارش حذف شد؛ کالای با تعداد صفر/خالی وارد سفارش، ارسال یا جمع مبلغ نمی‌شود. رکوردهای قدیمی با الگوی مشخص این خطا نیز هنگام ارسال پاک‌سازی می‌شوند.
+2. تعیین اطلاعات پیام‌رسان از حالت فهرست ثابت خارج شد و تمام ستون‌های واقعی و سفارشی لیست‌های داروخانه، پزشک و سفارش را پویا می‌خواند؛ تیک برداشته‌شده قطعاً از متن حذف می‌شود.
+3. مدیر کشویی‌ها تمام عرض پنل را می‌گیرد و کارت‌ها کنار هم‌اند؛ پنل قدیمی مخفی شد و هر تب فقط شناسه‌های متعلق به خودش را نشان می‌دهد.
+4. نام‌های داروخانه/پزشک دیگر یکجا رندر نمی‌شوند؛ جستجوی حداقل دو حرف، حداکثر ۵۰ نتیجه با ویرایش/حذف نشان می‌دهد و برای بیش از ۱۰هزار رکورد آماده است.
+5. تاریخ سفارش همیشه فعال است؛ نام داروخانه پس از ثبت یا خروج/بازگشت به تب پاک می‌شود؛ هشدار جایگذاری به‌صورت شناور کنار ورودی است و ترتیب فرم را جابه‌جا نمی‌کند.
+6. نشان نسخه فقط برای مدیر/سرپرست نمایش داده می‌شود.
+7. ذخیره و اعمال دوباره ترتیب، ترتیب لیست، عرض و ارتفاع پیکسلی اطلاعات کالا در لایه نهایی تضمین شد.
+
 # نسخه ۱۱.۱۷.۰
 
 1. شناسه و جای فیلدها تثبیت شد؛ جابه‌جایی خودکار DOM هنگام ورود نسخه جدید متوقف شد.
@@ -9065,7 +9399,7 @@ update_project_graph.py
 ~~~~~~~~
 
 ──────────────────────────────────────────────────────────────────────────────────
-فایل: PROJECT_GRAPH.md (36954 بایت)
+فایل: PROJECT_GRAPH.md (37777 بایت)
 ──────────────────────────────────────────────────────────────────────────────────
 ~~~~~~~~markdown
 # 🕸️ گراف دانش پروژه «نماینده علمی» (PROJECT_GRAPH.md)
@@ -9126,12 +9460,12 @@ update_project_graph.py
 - نقش: **
 - تعداد توابع داخلی: 8
 
-### `public/crm-app.js` (168520 بایت)
+### `public/crm-app.js` (168701 بایت)
 - نقش: ============================================================================
 - تعداد توابع داخلی: 161
 - نام‌های window که تعریف/بازنویسی می‌کند: `_editingProductId`, `_lastSavedProductId`, `_lastSavedProductName`, `_navHamburgerBound`, `activeDateInputForPicker`, `applyAllFormLayouts`, `applyCustomFieldOrderInForm`, `attachInstantAdd`, `attachJalaliPicker`, `buildDesignerWidget`, `cleanupOrphanCustomFields`, `getAllMenuSections`, `rememberPharmacyName`, `renderExtraTabCustomFields`, `validateRequiredFields`
 
-### `public/crm-data.js` (35803 بایت)
+### `public/crm-data.js` (37176 بایت)
 - نقش: ============================================================================
 - تعداد توابع داخلی: 1
 
@@ -9140,7 +9474,7 @@ update_project_graph.py
 - تعداد توابع داخلی: 22
 - نام‌های window که تعریف/بازنویسی می‌کند: `__lastHealth`, `switchTab`
 
-### `public/crm-features-v11.js` (107173 بایت)
+### `public/crm-features-v11.js` (107385 بایت)
 - نقش: v11 — تغییر رمز، ردیف واقعی، اکسل خط‌کشی، ویزیت زنده، تارگت، ستون‌ها، دسترسی ریز
 - تعداد توابع داخلی: 101
 - نام‌های window که تعریف/بازنویسی می‌کند: `FA_FIELD_LABELS`, `_actMap`, `_actMarks`, `_activeColTab`, `_colDelPatched`, `_colEditScroll`, `_editingBoxId`, `_editingColField`, `_layoutBusy`, `_visitKeepAlive`, `addWidgetToActiveTab`, `applyAllFormLayouts`, `applyCustomFieldOrderInForm`, `applyFullFormLayout`, `applySelectExtraOptions`, `builtinFieldValue`, `changeUserPassword`, `cleanupOrphanCustomFields`, `deleteCustomField`, `downloadCSVFile`, `extraListColumns`, `getAllMenuSections`, `getMainGrid`, `getUnifiedFieldList`, `groupIsShared`, `isColShownInList`, `paintFieldBox`, `paintRequiredStar`, `refreshColumnsDesigner`, `renderAllSystemSelects`, `renderColBoxInfoTable`, `renderColBoxList`, `renderColBtnInfoTable`, `renderExtraTabCustomFields`, `renderUserCardsList`, `switchTab`, `validateRequiredFields`, `writeFieldSize`
@@ -9185,12 +9519,12 @@ update_project_graph.py
 - تعداد توابع داخلی: 65
 - نام‌های window که تعریف/بازنویسی می‌کند: `_v18DefaultReq`, `_v19BackupLayoutGuard`, `_v19ComboHook`, `_v19Hist`, `_v19IcObs`, `_v19ProdTableWrap`, `_v19Sw`, `applyFullFormLayout`, `applySelectExtraOptions`, `extraListColumns`, `performAutoBackup`, `renderAllCustomFieldsInFormsAndTables`, `renderColumnsProductsTable`, `renderPharmaciesList`, `switchTab`, `testServerConnectivity`
 
-### `public/crm-features-v20.js` (74905 بایت)
+### `public/crm-features-v20.js` (98323 بایت)
 - نقش: ============================================================
-- تعداد توابع داخلی: 78
-- نام‌های window که تعریف/بازنویسی می‌کند: `_v20AutoSaveSig`, `_v20AutoSaveT`, `_v20Rendering`, `applyFullFormLayout`, `deleteCustomField`, `openRowDetailsModal`, `renderExtraTabCustomFields`, `reverseGeocodeCoordinates`, `saveState`, `switchTab`, `v20ApplyGreyChains`, `v20ApplyOrderLock`, `v20DupGate`, `v20RenderComboManager`, `v20RenderProductExtras`
+- تعداد توابع داخلی: 113
+- نام‌های window که تعریف/بازنویسی می‌کند: `_v20AutoSaveSig`, `_v20AutoSaveT`, `_v20Rendering`, `applyFullFormLayout`, `builtinFieldValue`, `deleteCustomField`, `extraListColumns`, `openRowDetailsModal`, `renderExtraTabCustomFields`, `renderLiveLocationTab`, `reverseGeocodeCoordinates`, `saveState`, `switchTab`, `v20ApplyGreyChains`, `v20ApplyOrderLock`, `v20DupGate`, `v20RenderComboManager`, `v20RenderProductExtras`
 
-### `public/crm-features-v9.js` (68030 بایت)
+### `public/crm-features-v9.js` (68275 بایت)
 - نقش: ===========================================================================
 - تعداد توابع داخلی: 97
 - نام‌های window که تعریف/بازنویسی می‌کند: `builtinFieldValue`, `downloadCSVFile`, `getOrderItemsFromUI`, `isColShownInList`, `renderDoctorsList`, `renderLiveLocationTab`, `renderOrdersList`, `renderPharmaciesList`, `setupLiveLocationTab`, `setupRepsTab`, `switchTab`, `validateRequiredFields`
@@ -9210,7 +9544,7 @@ update_project_graph.py
 - تعداد توابع داخلی: 10
 
 ### `public/sw.js` (1145 بایت)
-- نقش: const CACHE = "ttt-v11.17.0";
+- نقش: const CACHE = "ttt-v11.18.0";
 - تعداد توابع داخلی: 0
 
 ### `public/vendor/leaflet.js` (147552 بایت)
@@ -9235,13 +9569,13 @@ update_project_graph.py
 - `attachInstantAdd`: تعریف/بازنویسی به ترتیب لود → `public/crm-app.js` ← `public/crm-jalali.js` ← `public/crm-features-v16.js` ← `public/crm-features-v17.js`
 - `attachJalaliPicker`: تعریف/بازنویسی به ترتیب لود → `public/crm-app.js` ← `public/crm-jalali.js`
 - `buildDesignerWidget`: تعریف/بازنویسی به ترتیب لود → `public/crm-app.js` ← `public/crm-features-v12.js` ← `public/crm-jalali.js` ← `public/crm-features-v18.js`
-- `builtinFieldValue`: تعریف/بازنویسی به ترتیب لود → `public/crm-features-v9.js` ← `public/crm-features-v11.js` ← `public/crm-features-v17.js`
+- `builtinFieldValue`: تعریف/بازنویسی به ترتیب لود → `public/crm-features-v9.js` ← `public/crm-features-v11.js` ← `public/crm-features-v17.js` ← `public/crm-features-v20.js`
 - `cleanupOrphanCustomFields`: تعریف/بازنویسی به ترتیب لود → `public/crm-app.js` ← `public/crm-features-v11.js`
 - `copyPageToTab`: تعریف/بازنویسی به ترتیب لود → `public/crm-features-v13.js` ← `public/crm-features-v18.js`
 - `deleteCustomField`: تعریف/بازنویسی به ترتیب لود → `public/crm-features-v11.js` ← `public/crm-features-v20.js`
 - `downloadCSVFile`: تعریف/بازنویسی به ترتیب لود → `public/crm-features-v9.js` ← `public/crm-features-v11.js`
 - `editUserTab`: تعریف/بازنویسی به ترتیب لود → `public/crm-features-v12.js` ← `public/crm-features-v14.js`
-- `extraListColumns`: تعریف/بازنویسی به ترتیب لود → `public/crm-features-v11.js` ← `public/crm-features-v19.js`
+- `extraListColumns`: تعریف/بازنویسی به ترتیب لود → `public/crm-features-v11.js` ← `public/crm-features-v19.js` ← `public/crm-features-v20.js`
 - `getAllMenuSections`: تعریف/بازنویسی به ترتیب لود → `public/crm-app.js` ← `public/crm-features-v11.js` ← `public/crm-features-v12.js` ← `public/crm-features-v13.js` ← `public/crm-features-v14.js`
 - `getUnifiedFieldList`: تعریف/بازنویسی به ترتیب لود → `public/crm-features-v11.js` ← `public/crm-features-v13.js` ← `public/crm-features-v18.js`
 - `iconFromTabLabel`: تعریف/بازنویسی به ترتیب لود → `public/crm-features-v12.js` ← `public/crm-features-v14.js`
@@ -9256,6 +9590,7 @@ update_project_graph.py
 - `renderColBtnInfoTable`: تعریف/بازنویسی به ترتیب لود → `public/crm-features-v11.js` ← `public/crm-features-v18.js`
 - `renderCustomFieldsInForm`: تعریف/بازنویسی به ترتیب لود → `public/crm-features-v13.js` ← `public/crm-jalali.js`
 - `renderExtraTabCustomFields`: تعریف/بازنویسی به ترتیب لود → `public/crm-app.js` ← `public/crm-features-v11.js` ← `public/crm-features-v20.js`
+- `renderLiveLocationTab`: تعریف/بازنویسی به ترتیب لود → `public/crm-features-v9.js` ← `public/crm-features-v20.js`
 - `renderPharmaciesList`: تعریف/بازنویسی به ترتیب لود → `public/crm-features-v9.js` ← `public/crm-features-v19.js`
 - `switchTab`: تعریف/بازنویسی به ترتیب لود → `public/crm-features-v9.js` ← `public/crm-features-v10.js` ← `public/crm-features-v11.js` ← `public/crm-features-v12.js` ← `public/crm-features-v13.js` ← `public/crm-jalali.js` ← `public/crm-features-v14.js` ← `public/crm-features-v15.js` ← `public/crm-features-v16.js` ← `public/crm-features-v17.js` ← `public/crm-features-v18.js` ← `public/crm-features-v19.js` ← `public/crm-features-v20.js`
 - `validateRequiredFields`: تعریف/بازنویسی به ترتیب لود → `public/crm-app.js` ← `public/crm-features-v9.js` ← `public/crm-features-v11.js` ← `public/crm-features-v12.js` ← `public/crm-features-v18.js`
@@ -9281,7 +9616,7 @@ update_project_graph.py
 - `crmLoggedIn` ← sessionStorage: `public/crm-app.js`, `public/crm-features-v10.js`, `public/crm-features-v19.js`, `public/crm-features-v20.js`, `public/crm-features-v9.js`
 - `crmUserId` ← sessionStorage: `public/crm-features-v9.js`
 - `crmUserName` ← sessionStorage: `public/crm-features-v10.js`, `public/crm-features-v11.js`, `public/crm-features-v19.js`, `public/crm-features-v20.js`
-- `crmUserRole` ← sessionStorage: `public/crm-features-v10.js`, `public/crm-features-v11.js`, `public/crm-features-v19.js`
+- `crmUserRole` ← sessionStorage: `public/crm-features-v10.js`, `public/crm-features-v11.js`, `public/crm-features-v19.js`, `public/crm-features-v20.js`
 - `crmUsername` ← sessionStorage: `public/crm-features-v19.js`, `public/crm-features-v20.js`
 
 ## و) گراف تب‌ها (تب ↔ فایل‌هایی که با المان‌هایش کار می‌کنند)
@@ -9331,6 +9666,7 @@ update_project_graph.py
 
 ### tab-live-location «📍 موقعیت زنده»
 - `public/crm-app.js` → 1 شناسه (مثل: `map-live-reps`)
+- `public/crm-features-v20.js` → 4 شناسه (مثل: `btnFindLiveRep`, `liveRepSearchSelect`, `tableLiveReps`, `tableLiveRepsBody`)
 - `public/crm-features-v9.js` → 5 شناسه (مثل: `btnFindLiveRep`, `btnRefreshLiveMap`, `btnSimulateLiveMovement`, `liveRepSearchSelect`, `tableLiveRepsBody`)
 
 ### tab-manual-design «🎨 طراحی دستی تب‌ها»
@@ -9363,7 +9699,7 @@ update_project_graph.py
 - `public/crm-features-v15.js` → 3 شناسه (مثل: `orderPharmacyName`, `orderPharmacyPickBox`, `orderTotalAmountDisplay`)
 - `public/crm-features-v17.js` → 9 شناسه (مثل: `existingPharmacyAlertText`, `existingPharmacyTopAlert`, `orderAddress`, `orderCity`, `orderDistrict`, `orderPharmacyMatchedId`, `orderPharmacyName`, `orderPharmacyPickBox`)
 - `public/crm-features-v19.js` → 2 شناسه (مثل: `orderEditId`, `orderItemsContainer`)
-- `public/crm-features-v20.js` → 6 شناسه (مثل: `btnTopAutoFillPharmacy`, `existingPharmacyTopAlert`, `orderCity`, `orderDistrict`, `orderPharmacyMatchedId`, `orderPharmacyName`)
+- `public/crm-features-v20.js` → 10 شناسه (مثل: `btnSaveOrder`, `btnTopAutoFillPharmacy`, `existingPharmacyTopAlert`, `formOrder`, `orderCity`, `orderDistrict`, `orderEditId`, `orderPharmacyMatchedId`)
 - `public/crm-features-v9.js` → 7 شناسه (مثل: `cardOrdList`, `formOrder`, `ordListCountBadge`, `orderItemsContainer`, `searchOrderInput`, `tableOrdersBody`, `tableOrdersHeader`)
 
 ### tab-overview-map «🗺️ نقشه جامع»
@@ -9398,6 +9734,9 @@ update_project_graph.py
 - `public/crm-features-v9.js` → 3 شناسه (مثل: `formLoginModal`, `jalaliCalendarPopup`, `jalaliTodayBtn`)
 - `public/crm-jalali.js` → 7 شناسه (مثل: `jalaliCalendarPopup`, `jalaliDaysGrid`, `jalaliMonthSelect`, `jalaliNextMonth`, `jalaliPrevMonth`, `jalaliTodayBtn`, `jalaliYearSelect`)
 
+### tab-snapp-corporate «🚕 اسنپ سازمانی»
+- `public/crm-features-v20.js` → 13 شناسه (مثل: `btnDeleteSnappReports`, `btnExportSnappView`, `btnOpenSnappCorporate`, `snappDailyStatus`, `snappFilterFrom`, `snappFilterMonth`, `snappFilterTo`, `snappFilterYear`)
+
 ### tab-troubleshooting «🛠️ عیب‌یابی»
 - `public/crm-app.js` → 1 شناسه (مثل: `diagnosticsStatusBox`)
 - `public/crm-features-v10.js` → 2 شناسه (مثل: `diagnosticsStatusBox`, `diagnosticsVisual`)
@@ -9415,6 +9754,7 @@ update_project_graph.py
 - `attach` ← `public/crm-features-v14.js`, `public/crm-features-v9.js`
 - `boot` ← `public/crm-features-v10.js`, `public/crm-features-v11.js`, `public/crm-features-v12.js`, `public/crm-features-v13.js`, `public/crm-features-v14.js`, `public/crm-features-v15.js`, `public/crm-features-v16.js`, `public/crm-features-v17.js`, `public/crm-features-v18.js`, `public/crm-features-v19.js`, `public/crm-features-v9.js`, `public/crm-jalali.js`
 - `c` ← `public/crm-features-v11.js`, `public/crm-features-v16.js`
+- `custom` ← `public/crm-features-v15.js`, `public/crm-features-v20.js`
 - `customs` ← `public/crm-features-v11.js`, `public/crm-features-v19.js`
 - `doc` ← `public/crm-app.js`, `public/crm-features-v10.js`
 - `esc` ← `public/crm-features-v11.js`, `public/crm-features-v12.js`, `public/crm-features-v13.js`, `public/crm-features-v14.js`, `public/crm-features-v16.js`, `public/crm-features-v17.js`, `public/crm-features-v18.js`, `public/crm-features-v19.js`, `public/crm-features-v20.js`
@@ -10507,13 +10847,13 @@ export default nextConfig;
 ~~~~~~~~json
 {
   "name": "namayandeelmi-javad-crm",
-  "version": "11.17.0",
+  "version": "11.18.0",
   "lockfileVersion": 3,
   "requires": true,
   "packages": {
     "": {
       "name": "namayandeelmi-javad-crm",
-      "version": "11.17.0",
+      "version": "11.18.0",
       "license": "MIT",
       "engines": {
         "node": ">=20.0.0"
@@ -10529,7 +10869,7 @@ export default nextConfig;
 ~~~~~~~~json
 {
   "name": "namayandeelmi-javad-crm",
-  "version": "11.17.0",
+  "version": "11.18.0",
   "description": "سیستم جامع مدیریت و ویزیت علمی، داروخانه‌ها، پزشکان و سفارشات (CRM / PWA) هماهنگ با Render و Neon",
   "main": "server.js",
   "engines": {
@@ -10720,7 +11060,7 @@ const server = http.createServer((req, res) => {
     return send(req, res, 200, JSON.stringify({
       ok: true, status: "healthy", message: "OK",
       service: "namayandeelmi-javad-crm",
-      version: "11.17.0",
+      version: "11.18.0",
       timestamp: new Date().toISOString()
     }), "application/json; charset=utf-8");
   }
@@ -10814,7 +11154,7 @@ const server = http.createServer((req, res) => {
 });
 
 server.listen(PORT, "0.0.0.0", () => {
-  console.log("CRM v11.17.0 listening on 0.0.0.0:" + PORT);
+  console.log("CRM v11.18.0 listening on 0.0.0.0:" + PORT);
 });
 ~~~~~~~~
 
@@ -10936,7 +11276,7 @@ git status -sb
 ~~~~~~~~
 
 ──────────────────────────────────────────────────────────────────────────────────
-فایل: update_chat_arena.py (126460 بایت)
+فایل: update_chat_arena.py (145535 بایت)
 ──────────────────────────────────────────────────────────────────────────────────
 ~~~~~~~~python
 #!/usr/bin/env python3
@@ -10990,7 +11330,7 @@ def walk_files():
 
 HEADER = """CHAT.ARENA — حافظه دائمی و کامل پروژه «نماینده علمی» (طنین طب طاها / TENIN TEB TAHA)
 =====================================================================================
-نسخه این فایل: 1.11 | تاریخ به‌روزرسانی: 2026-08-17 (۲۷ مرداد ۱۴۰۵) | نسخه برنامه: 11.17.0
+نسخه این فایل: 1.14 | تاریخ به‌روزرسانی: 2026-08-17 (۲۷ مرداد ۱۴۰۵) | نسخه برنامه: 11.18.0
 این فایل به دستور کاربر ساخته شده و قانون دائمی دارد: بعد از هر گفتگو و هر نسخه جدید برنامه،
 این فایل به‌روزرسانی می‌شود و نسخه به‌روز آن همیشه داخل فایل زیپ تحویلی قرار می‌گیرد.
 (قانون شماره ۶۳ در AI_RULES.md) — بازسازی با: python update_chat_arena.py
@@ -11323,9 +11663,25 @@ crm-jalali.js, iran-facilities.js, sw.js, manifest.json, offline.html, icons/, v
 بخش ۴) تاریخچه نسخه‌ها و آخرین دوره تغییرات
 ══════════════════════════════════════════════════════════════════════════════════
 • مسیر نسخه‌ها (بازسازی از ریپو): V1 → … → V9 → V10 → V11 → V11.1 … V11.14 → V11.15
-  → V11.15.1 → V11.15.2 → V11.15.3 → V11.16.0 → V11.16.1 → V11.16.2 → V11.17.0.
+  → V11.15.1 → V11.15.2 → V11.15.3 → V11.16.0 → V11.16.1 → V11.16.2 → V11.17.0 → V11.17.1 → V11.18.0.
 • جزئیات کامل هر نسخه V9 به بعد در CHANGES_V9.md / CHANGES_V10.md / CHANGES_V11.md
   (محتوای کاملشان در بخش ۹ همین فایل هست).
+
+نسخه 11.18.0 — تب امن اسنپ سازمانی + موقعیت متنی همه نمایندگان
+۱) تب و دسترسی اسنپ سازمانی بدون ذخیره credential و بدون دورزدن CAPTCHA اضافه شد.
+۲) ورود دو فایل CSV/XLSX با dedupe، ۹ ستون منتخب، فیلتر سال/ماه/بازه و تجمیع نماینده اضافه شد.
+۳) دانلود دوتایی اکسل رفع و رنگ اکسل/حذف استاندارد شد.
+۴) موقعیت زنده «همه نمایندگان» + آدرس متنی خودکار هر نماینده اضافه شد.
+۵) اعتبارنامه پیام کاربر از حافظه پروژه حذف/سانسور و تعویض فوری رمز توصیه شد.
+۶) تست واقعی فایل اسنپ و خودکارسازی کامل در انتظار API رسمی/نمونه فایل کاربر است.
+
+نسخه 11.17.1 — صفر واقعی تعداد، اشتراک پویا و افزودن‌های مقیاس‌پذیر
+۱) `|| 1` از مسیر فعال سفارش حذف شد؛ qty خالی/صفر نه ذخیره، نه ارسال و نه جمع می‌شود.
+۲) فیلدهای مجاز پیام‌رسان از همه ستون‌های فعلی/سفارشی پویا ساخته و تیک‌ها دقیق اعمال می‌شوند.
+۳) مدیر افزودن‌ها تمام‌عرض و چندستونه شد؛ قدیمی مخفی و تعلق هر فیلد به تب خودش کنترل شد.
+۴) مدیریت ۱۰هزار نام search-only شد؛ تاریخ سفارش فعال، نام سفارش پاک و هشدار بدون تغییر layout است.
+۵) نسخه فقط مدیر است و ذخیره/اعمال ترتیب، عرض و ارتفاع اطلاعات کالا در v20 تضمین شد.
+۶) تست نحوی همه JS، build و smoke نسخه 11.17.1 موفق است.
 
 نسخه 11.17.0 — تثبیت فیلدها، سفارش، افزودن‌ها، اشتراک مدیر و GPS/رصد کامل
 ۱) جابه‌جایی خودکار فیلدهای داروخانه→سفارش متوقف شد تا شناسه و جای فیلدها در هر نسخه ثابت بماند.
@@ -12000,6 +12356,234 @@ push رد شد (fetch first) و در نتیجه production روی Render هنو�
 SYNC_ALL.bat v11.17.0
 ```
 اگر گیت‌لب هنوز تنظیم نشده باشد، برنامه همگام‌سازی گیت‌هاب را انجام می‌دهد و گیت‌لب را رد می‌کند.
+
+
+──────────────────────────────── نوبت ۱۷ ────────────────────────────────
+🧑 کاربر (عیناً):
+«PS E:\porozheha\list prozheha\namayandeelmi-javad&gt; git add -A
+
+PS E:\porozheha\list prozheha\namayandeelmi-javad&gt; git commit -m 
+
+error: switch `m' requires a value
+
+PS E:\porozheha\list prozheha\namayandeelmi-javad&gt; git push origin main
+
+Everything up-to-date
+
+PS E:\porozheha\list prozheha\namayandeelmi-javad&gt; 
+
+گیت هاب اپدیت نمی شود»
+
+🤖 دستیار:
+بررسی مستقیم انجام شد و حق با شماست: گیت‌هاب هنوز روی کامیت `9b8546b` و نسخه **11.16.2** است.
+
+علت این بار کاملاً مشخص است:
+
+```text
+git commit -m
+```
+
+ناقص اجرا شده است. بعد از `-m` باید متن کامیت نوشته شود. بنابراین هیچ کامیتی ساخته نشده و `git push` هم پیام **Everything up-to-date** داده است؛ یعنی چیزی برای ارسال پیدا نکرده است.
+
+### همین دستورها را به‌ترتیب اجرا کنید
+
+ابتدا مطمئن شوید فایل‌های نسخه جدید واقعاً در همین پوشه هستند:
+
+```powershell
+Get-Content package.json | Select-String '"version"'
+```
+
+باید `11.17.0` نمایش داده شود. سپس:
+
+```powershell
+git status --short
+git add -A
+git commit -m "v11.17.0: تثبیت فیلدها، سفارشات و رصد تردد"
+git pull --no-rebase origin main
+git push origin main
+git push gitlab main
+git fetch origin
+git log origin/main -1 --oneline
+```
+
+بعد از موفقیت، دستور آخر باید کامیتی با عنوان `v11.17.0` نشان دهد.
+
+### اگر گیت‌لب هنوز وصل نیست
+پیغام خطای گیت‌لب مانع آپدیت گیت‌هاب نیست. در آن حالت فقط این دستور را بزنید:
+
+```powershell
+git push origin main
+```
+
+### اگر دستور commit گفت `nothing to commit`
+یعنی فایل‌های ZIP نسخه ۱۱.۱۷.۰ را در این پوشه جایگزین نکرده‌اید یا در پوشه دیگری هستید. در آن حالت:
+
+1. فایل `namayandeelmi-v11.17.0.zip` را باز کنید.
+2. همه فایل‌های داخل آن را روی همین مسیر جایگزین کنید:
+   `E:\porozheha\list prozheha\namayandeelmi-javad`
+3. دوباره دستورهای بالا را اجرا کنید.
+
+پس از پوش موفق، گیت‌هاب اجرای جدید می‌سازد و اصلاح ضربدر قرمز نیز اعمال می‌شود. ضربدر اجرای قدیمی ۱۱.۱۶.۲ پاک نمی‌شود، اما اجرای **۱۱.۱۷.۰** باید سبز شود.
+
+
+──────────────────────────────── نوبت ۱۸ ────────────────────────────────
+🧑 کاربر (عیناً):
+«وقتی کاربر میخواد سفارش را ارسال کنه بصورت زیر میاره.یعنی برای کالاهایی که تعداد نداره عدد 1 میزنه که این درست نیست و کالاهایی که تعداد ندارد اصلا نباید وارد این لیست ارسال بشه و در جمع کل هم این عدد 1 را محاسبه می کنه
+
+نام داروخانه: داروخانه شبانه‌روزی رازی
+
+نام نماینده: مدیر سیستم
+
+تاریخ: 1405/05/25
+
+استان: تهران
+
+شهر: تهران
+
+آدرس: میدان انقلاب، ابتدای کارگر شمالی، نبش کوچه ششم
+
+وضعیت: تایید شده
+
+اقلام: امگا 3 × 2000، امگا 5 × 1، امگا 3.5 × 1، امگا مولتی × 1، امگا وومن × 1، امگا من × 1، کپسول ملاتونین × 1
+
+مبلغ کل: ۴٬۰۱۲ ریال
+
+در تب پیامرسان ها در قسمت تعیین اطلاعات مجاز برای ارسال (فقط مدیر) می بایست تمام ستون های موجود در لیست را برای داروخانه و پزشک و سفارشات را بیاره تا مدیر بتونه انتخاب کنه و هر کدام که تیکش برداشته بشه نباید داخل ارسال بیاره اما باز اطلاعات اون فیلد را میاره و هر ستونی که توسط مدیر در لیست اصلی حذف یا اضافه شد را اعمال کند
+
+در تب افزودن در قسمت فیلهای کشویی همچنان فیلدها زیر یکدیگر قرار دارند که قرار شد کنار یکدیگر باشند و در تب پزشکان فیلدهای تب داروخانه را نشان می دهد که قرار شد در هر تب فیلدهای کشویی خود ان تب را در تب اصلیش نشان دهد و برخی از فیلدهای کشویی را به سبک قدیمی نشان می دهد که باید سبک جدید باشد و اینکه قرار است در اینده لیست داروخانه و پزشک بیش از 10 هزار نام باشد که نمایش این ذو فیلد  صفحه را خیلی کشیده به سمت پایین می کند و بنظرم باید نمایش همه داروخانه ها و پزشکان حذف شود و این دو فیلد فقط فیلد سرچ داشته باشد تا وقتی سرچ انجام می شود نام ان داروخانه یا پزشک نمایان شود و کلید ویرایش یا حذف داشته باشد  
+در تب سفارشات فیلد تاریخ سفارش باید فعال باشد و نباید طوسی باشد و وقتی کاربر نام داروخانه را می زند و کلید ذخیره را می زند باید فیلد پاک شود و اماده ثبت بعدی شود و اینکه اگر نامی تایپ شد و کاربر به تبی دیگر رفت باز به تب سفارشات برگشت فیلد اماده تایپ باشد و نام قبلی در فیلد داروخانه نماند و اینکه کادر سفارش ثبت شده و جایگذاری اتوماتیک کوچک شده و ترتیب فیلدها را بهم می زند که این صحیح نیست  
+قرار شد نمایش ورزن برنامه فقط در صفحه مدیر باشد اما در صفحه کاربران دیگر نیز وجود دارد  
+اطلاعات کالا و اضافه و یا حذف کردن فیلد و ترتیب و ارتفاع و پیکسل در سا نشد و کار نمی کند»
+
+🤖 دستیار:
+نسخه **۱۱.۱۷.۱** آماده شد و موارد گزارش‌شده اصلاح شدند.
+
+### ۱. کالای بدون تعداد و جمع مبلغ
+علت اصلی پیدا شد: در مسیر فعال سفارش، تعداد خالی با عبارت `|| 1` به عدد ۱ تبدیل می‌شد.
+
+اکنون:
+- تعداد خالی یا صفر اصلاً داخل سفارش ذخیره نمی‌شود؛
+- در متن پیام‌رسان نمایش داده نمی‌شود؛
+- در جمع مبلغ محاسبه نمی‌شود؛
+- سفارش‌های قدیمی با الگوی مشخص خطای قبلی، یعنی چند کالای ×۱ کنار یک تعداد واقعی، هنگام ارسال پاک‌سازی و مبلغشان دوباره محاسبه می‌شود؛
+- سفارش جدید با علامت داخلی «تعداد تأییدشده» ذخیره می‌شود تا تعداد واقعی ۱ در آینده حذف نشود.
+
+بنابراین در نمونه شما فقط **امگا ۳ × ۲۰۰۰** باید ارسال و محاسبه شود.
+
+### ۲. تعیین اطلاعات مجاز پیام‌رسان‌ها
+این بخش دیگر فهرست ثابت ندارد. اکنون تمام ستون‌های فعلی لیست‌های داروخانه، پزشک و سفارش را شامل می‌شود:
+- ستون‌های اصلی؛
+- ستون‌های اضافه‌شده مدیر؛
+- فیلدهای سفارشی که در لیست فعال‌اند.
+
+اگر مدیر تیک هر مورد را بردارد، آن مورد قطعاً از متن کپی و همه پیام‌رسان‌ها حذف می‌شود. اضافه یا حذف ستون در لیست اصلی نیز پس از ورود دوباره به تب پیام‌رسان‌ها خودکار اعمال می‌شود.
+
+### ۳. تب افزودن‌ها
+- مدیر جدید اکنون تمام عرض صفحه را می‌گیرد؛ به همین دلیل کارت‌ها واقعاً کنار یکدیگر قرار می‌گیرند.
+- نمایش قدیمی زیر آن کاملاً مخفی شد.
+- هر تب فقط شناسه‌ها و فیلدهای متعلق به خودش را نشان می‌دهد؛ فیلد داروخانه دیگر در پزشکان دیده نمی‌شود.
+- نام‌های داروخانه و پزشک دیگر یکجا نمایش داده نمی‌شوند.
+- برای بیش از ۱۰هزار نام، فقط کادر جستجو نمایش داده می‌شود؛ با نوشتن حداقل دو حرف، حداکثر ۵۰ نتیجه همراه ویرایش و حذف می‌آید.
+
+### ۴. سفارشات
+- تاریخ سفارش همیشه فعال و سفید است.
+- پس از ثبت موفق، نام داروخانه پاک می‌شود.
+- با خروج از تب سفارشات و بازگشت، نام تایپ‌شده قبلی پاک شده و فیلد آماده ثبت بعدی است.
+- پیام «سفارش ثبت شده / جایگذاری اتوماتیک» به‌صورت شناور کنار نام داروخانه باز می‌شود و دیگر اندازه یا ترتیب فیلدهای فرم را تغییر نمی‌دهد.
+
+### ۵. نسخه و اطلاعات کالا
+- نشان **نسخه ۱۱.۱۷.۱** فقط برای مدیر و سرپرست دیده می‌شود و برای کاربران عادی مخفی است.
+- ذخیره فیلد کالا، حذف، ترتیب فرم، ترتیب لیست، عرض پیکسلی و ارتفاع پیکسلی در لایه نهایی تثبیت شد و بعد از ذخیره دوباره روی فرم اعمال می‌شود.
+
+### وضعیت آزمایش
+- بررسی نحوی همه ۲۰ فایل JavaScript و سرور: **موفق**
+- ساخت برنامه: **موفق**
+- سلامت سرور و صفحه اصلی: **نسخه 11.17.1 و HTTP 200 — موفق**
+- موارد ظاهری و رفتار مرورگر: **در انتظار تأیید شما پس از استقرار**
+
+بعد از جایگزینی فایل‌ها، این دستورها را دقیقاً با متن کامیت اجرا کنید:
+
+```powershell
+git add -A
+git commit -m "v11.17.1: اصلاح تعداد سفارش، پیام‌رسان و تب افزودن"
+git pull --no-rebase origin main
+git push origin main
+git push gitlab main
+```
+
+اگر گیت‌لب هنوز وصل نیست، خط آخر گیت‌لب را اجرا نکنید. سپس ۱ تا ۲ دقیقه صبر کنید و در سایت **Ctrl+Shift+R** بزنید.
+
+
+──────────────────────────────── نوبت ۱۹ ────────────────────────────────
+🧑 کاربر (متن امنیتی‌سازی‌شده؛ اعتبارنامه عمداً حذف شده است):
+«یک تب را میخوام به برنامه اضافه کنی بنام اسنپ سازمانی
+
+در تب اسنپ سازمانی میخوام بصورت اتوماتیک برنامه بره وارد سایت بشه یوزر و پسود و کد امنیتی را وارد کنه و گزارشات را روزانه بصورت اتوماتیک دریافت کنه  
+ادرس سایت https://corporate.snapp.taxi/auth/login هستش و در بخش ورود مدیر نام کاربری [به‌دلیل امنیت حذف شد] و رمز عبور [به‌دلیل امنیت حذف شد] هستش و کد امنیتی هر بار تغییر می کند که باید برنامه ان را تشخیص دهد. بعد از ورود، گزارش سفر روز قبل جستجو و خروجی اکسل دریافت شود؛ ستون‌های ۱،۲،۵،۹،۱۲،۱۵،۱۸،۱۹،۲۴ در تب نمایش یابد و فیلدهای سال، ماه، از تاریخ و تا تاریخ برای جمع کلی و تفکیک نماینده اضافه شود.
+
+خروجی اکسل دوتا دوتا با دو پسوند دریافت می‌شود. شکل کلیدها یکسان باشد؛ اکسل سبز و حذف قرمز.
+
+در موقعیت زنده گزینه همه نمایندگان اضافه شود تا همه روی نقشه دیده شوند و برای هر نماینده آدرس متنی خودکار نمایش داده شود.»
+
+🤖 دستیار:
+نسخه **۱۱.۱۸.۰** آماده شد و تب **🚕 اسنپ سازمانی** به برنامه اضافه شد.
+
+## نکته امنیتی بسیار مهم
+رمزی که در پیام فرستادید دیگر محرمانه محسوب نمی‌شود. لطفاً همین الآن آن را در پنل اسنپ تغییر دهید. نام کاربری و رمز شما عمداً در هیچ‌کدام از این موارد ذخیره نشده است:
+- کد برنامه؛
+- گیت‌هاب یا گیت‌لب؛
+- فایل ZIP؛
+- `chat.arena`؛
+- تنظیمات مرورگر.
+
+حل یا دورزدن خودکار کد امنیتی متغیر پیاده‌سازی نشد. این کد برای جلوگیری از ورود ربات است. خودکارسازی کامل روزانه فقط زمانی امن و قابل‌اعتماد است که اسنپ یک **API رسمی یا حساب سرویس سازمانی** ارائه کند.
+
+## امکانات اضافه‌شده به تب اسنپ سازمانی
+- کلید بازکردن مستقیم پنل رسمی اسنپ در صفحه جدا؛
+- تاریخ پیش‌فرض «روز قبل»؛
+- ورود هم‌زمان چند فایل گزارش `CSV` و `XLSX`؛
+- تشخیص دو خروجی همسان و جلوگیری از ثبت دوباره ردیف‌ها؛
+- نمایش ستون‌های ۱، ۲، ۵، ۹، ۱۲، ۱۵، ۱۸، ۱۹ و ۲۴؛
+- چهار فیلد **سال، ماه، از تاریخ و تا تاریخ**؛
+- محاسبه تعداد سفر و جمع هزینه در بازه انتخابی؛
+- جمع هزینه به تفکیک هر نماینده؛
+- ذخیره گزارش‌های واردشده در وضعیت برنامه؛
+- خروجی اکسل از نمای فیلترشده؛
+- حذف همه گزارش‌ها فقط با تأیید مدیر.
+
+برای استفاده، مدیر یک‌بار وارد سایت رسمی می‌شود، کد امنیتی را خودش وارد می‌کند، دو فایل گزارش را دانلود می‌کند و هر دو را هم‌زمان در تب اسنپ سازمانی انتخاب می‌کند.
+
+## اصلاح خروجی‌ها و رنگ کلیدها
+- باگ دریافت هم‌زمان دو فایل با پسوندهای XLS و CSV رفع شد؛ هر کلیک اکنون فقط **یک فایل اکسل** می‌گیرد.
+- همه کلیدهای اکسل سبز شدند.
+- همه کلیدهای حذف قرمز شدند.
+
+## موقعیت زنده
+- گزینه **همه نمایندگان** به فیلد انتخاب نماینده اضافه شد.
+- با انتخاب آن، موقعیت همه نمایندگان هم‌زمان روی نقشه تنظیم می‌شود.
+- ستون **آدرس متنی موقعیت فعلی** اضافه شد.
+- مختصات هر نماینده خودکار به آدرس متنی تبدیل و در سطر خودش ذخیره می‌شود.
+
+## وضعیت تأیید
+- نسخه برنامه و سرور: **11.18.0**؛
+- بررسی نحوی همه فایل‌های JavaScript: **موفق**؛
+- ساخت برنامه: **موفق**؛
+- صفحه اصلی و تب جدید: **HTTP 200 و تأییدشده**؛
+- عدم وجود نام کاربری/رمز افشاشده در پروژه: **تأییدشده**؛
+- خواندن فایل واقعی خروجی اسنپ و تطبیق عنوان ستون‌ها: **در انتظار آزمایش شما با دو فایل واقعی**؛
+- دریافت کاملاً خودکار روزانه: **انجام نشده؛ نیازمند API رسمی اسنپ است**.
+
+بعد از جایگزینی فایل‌ها، دستورها را با متن کامیت کامل اجرا کنید:
+
+```powershell
+git add -A
+git commit -m "v11.18.0: افزودن اسنپ سازمانی و موقعیت همه نمایندگان"
+git pull --no-rebase origin main
+git push origin main
+git push gitlab main
+```
+
+اگر گیت‌لب هنوز تنظیم نشده، فقط خط گیت‌لب را اجرا نکنید. پس از استقرار Render، حدود ۱ تا ۲ دقیقه صبر کنید و **Ctrl+Shift+R** بزنید.
 
 """
 
@@ -13336,7 +13920,7 @@ async function sendWhatsappCloud(text, to, token) {
 ~~~~~~~~
 
 ──────────────────────────────────────────────────────────────────────────────────
-فایل: public/crm-app.js (168520 بایت)
+فایل: public/crm-app.js (168701 بایت)
 ──────────────────────────────────────────────────────────────────────────────────
 ~~~~~~~~javascript
 // ============================================================================
@@ -13374,6 +13958,7 @@ const MENU_SECTIONS_LIST = [
   { id: "tab-activity-log", label: "فعالیت لحظه‌ای", icon: "⏱️" },
   { id: "tab-overview-map", label: "نقشه جامع", icon: "🗺️" },
   { id: "tab-live-location", label: "موقعیت زنده", icon: "📍" },
+  { id: "tab-snapp-corporate", label: "اسنپ سازمانی", icon: "🚕" },
   { id: "tab-search-info", label: "جستجوی اطلاعات", icon: "🔍" },
   { id: "tab-rep-routes", label: "رصد تردد", icon: "🛣️" },
   { id: "tab-my-visit", label: "شروع/پایان ویزیت", icon: "▶️" },
@@ -15502,7 +16087,7 @@ function setupOrdersTab() {
           state.orders[idx] = {
             ...state.orders[idx],
             pharmacyName, province, city, district, address,
-            repName, orderDate, status, notes, items, totalAmount, vatAmount, totalAmountWithVat,
+            repName, orderDate, status, notes, items, quantityValidated: true, totalAmount, vatAmount, totalAmountWithVat,
             customFields: customFieldsVals
           };
         }
@@ -15511,7 +16096,7 @@ function setupOrdersTab() {
         const newOrder = {
           id: "ord-" + Date.now(),
           pharmacyName, province, city, district, address,
-          repName, orderDate, status, notes, items, totalAmount, vatAmount, totalAmountWithVat,
+          repName, orderDate, status, notes, items, quantityValidated: true, totalAmount, vatAmount, totalAmountWithVat,
           customFields: customFieldsVals
         };
         state.orders.push(newOrder);
@@ -16714,13 +17299,13 @@ function setupAllFormSubmitHandlers() {
     if (editId) {
       const idx = state.orders.findIndex(o => o.id === editId);
       if (idx !== -1) {
-        state.orders[idx] = { ...state.orders[idx], pharmacyName, pharmacyId, province, city, district, address, repName, orderDate, status, notes, items, totalAmount, vatAmount, totalAmountWithVat, customFields: customFieldsVals };
+        state.orders[idx] = { ...state.orders[idx], pharmacyName, pharmacyId, province, city, district, address, repName, orderDate, status, notes, items, quantityValidated: true, totalAmount, vatAmount, totalAmountWithVat, customFields: customFieldsVals };
       }
       alert(`✅ سفارش داروخانه «${pharmacyName}» ویرایش شد.`);
     } else {
       state.orders.push({
         id: "ord-" + Date.now(),
-        pharmacyName, pharmacyId, province, city, district, address, repName, orderDate, status, notes, items, totalAmount, vatAmount, totalAmountWithVat,
+        pharmacyName, pharmacyId, province, city, district, address, repName, orderDate, status, notes, items, quantityValidated: true, totalAmount, vatAmount, totalAmountWithVat,
         customFields: customFieldsVals
       });
       alert(`✅ سفارش جدید برای داروخانه «${pharmacyName}» ثبت شد. از باقیمانده تارگت نماینده کسر گردید.`);
@@ -17368,7 +17953,7 @@ function deleteProductCatalogItem(id) {
 ~~~~~~~~
 
 ──────────────────────────────────────────────────────────────────────────────────
-فایل: public/crm-data.js (35803 بایت)
+فایل: public/crm-data.js (37176 بایت)
 ──────────────────────────────────────────────────────────────────────────────────
 ~~~~~~~~javascript
 // ============================================================================
@@ -17735,7 +18320,20 @@ const PERMISSION_GROUPS = {
     { key: "sys_share_fields", label: "تعیین فیلدهای مجاز برای ارسال به پیام‌رسان‌ها" },
     { key: "fld_visit_metrics", label: "نمایش مسافت، توقف، نقاط و ساعت شروع ویزیت" },
     { key: "fld_route_search", label: "جستجوی لحظه‌ای و خروجی اکسل رصد تردد" },
-    { key: "sys_version_badge", label: "مشاهده نسخه دقیق برنامه در بالای صفحه" }
+    { key: "sys_version_badge", label: "مشاهده نسخه دقیق برنامه در بالای صفحه (فقط مدیر)" },
+    { key: "ord_qty_guard", label: "حذف کالای بدون تعداد از سفارش، ارسال و جمع مبلغ" },
+    { key: "sys_share_dynamic", label: "هماهنگی خودکار فیلدهای مجاز پیام‌رسان با ستون‌های لیست" },
+    { key: "sys_entity_search", label: "جستجوی مقیاس‌پذیر نام داروخانه/پزشک بدون نمایش فهرست بلند" },
+    { key: "sys_product_layout_save", label: "ذخیره قطعی ترتیب، عرض، ارتفاع و فیلدهای اطلاعات کالا" }
+  ],
+  "ابزارهای مدیریت (نسخه ۱۱.۱۸)": [
+    { key: "sys_snapp_access", label: "دسترسی به تب اسنپ سازمانی" },
+    { key: "sys_snapp_import", label: "ورود فایل‌های گزارش اسنپ سازمانی" },
+    { key: "sys_snapp_export", label: "خروجی اکسل گزارش تجمیعی اسنپ" },
+    { key: "sys_snapp_delete", label: "حذف گزارش‌های واردشده اسنپ" },
+    { key: "live_all_reps", label: "نمایش هم‌زمان موقعیت همه نمایندگان" },
+    { key: "live_text_address", label: "تبدیل موقعیت نمایندگان به آدرس متنی" },
+    { key: "sys_button_colors", label: "رنگ استاندارد کلیدها (اکسل سبز، حذف قرمز)" }
   ]
 };
 
@@ -18371,7 +18969,7 @@ const DEFAULT_INITIAL_DATA = {
 ~~~~~~~~
 
 ──────────────────────────────────────────────────────────────────────────────────
-فایل: public/crm-features-v11.js (107173 بایت)
+فایل: public/crm-features-v11.js (107385 بایت)
 ──────────────────────────────────────────────────────────────────────────────────
 ~~~~~~~~javascript
 // v11 — تغییر رمز، ردیف واقعی، اکسل خط‌کشی، ویزیت زنده، تارگت، ستون‌ها، دسترسی ریز
@@ -18562,8 +19160,8 @@ const DEFAULT_INITIAL_DATA = {
         var repHeader = hdrs.splice(repAt, 1)[0]; hdrs.splice(1, 0, repHeader);
         rws = rws.map(function (r) { var x = r.slice(), v = x.splice(repAt, 1)[0]; x.splice(1, 0, v); return x; });
       }
+      // فقط یک فایل اکسل دریافت شود؛ اجرای orig قبلاً همان گزارش را دوباره با پسوند CSV دانلود می‌کرد.
       downloadExcelBordered(filename, hdrs, rws);
-      try { orig(filename, hdrs, rws); } catch (e) {}
     };
   }
 
@@ -18731,6 +19329,7 @@ const DEFAULT_INITIAL_DATA = {
     "tab-activity-log": "activity",
     "tab-overview-map": "overview",
     "tab-live-location": "live",
+    "tab-snapp-corporate": "snapp",
     "tab-search-info": "search",
     "tab-rep-routes": "routes",
     "tab-my-visit": "visit",
@@ -20499,6 +21098,7 @@ const DEFAULT_INITIAL_DATA = {
     hideTab("tab-pharmacies", "ph_access");
     hideTab("tab-doctors", "doc_access");
     hideTab("tab-orders", "ord_access");
+    hideTab("tab-snapp-corporate", "sys_snapp_access");
     hideTab("tab-users-permissions", "sys_users");
     hideTab("tab-backup", "sys_users");
     if (p.ph_percentage === false) {
@@ -26821,7 +27421,7 @@ button.v19-gps svg{display:block}
 ~~~~~~~~
 
 ──────────────────────────────────────────────────────────────────────────────────
-فایل: public/crm-features-v20.js (74905 بایت)
+فایل: public/crm-features-v20.js (98323 بایت)
 ──────────────────────────────────────────────────────────────────────────────────
 ~~~~~~~~javascript
 // ============================================================
@@ -26882,9 +27482,12 @@ button.v19-gps svg{display:block}
       "cursor:not-allowed!important;opacity:.85!important;border-color:#d1d5db!important;}" +
       ".crm-combo.v20-locked{pointer-events:none;}" +
       ".v20-grey-zone .form-label{color:#9ca3af!important;}" +
-      ".v20-cards{display:grid!important;grid-template-columns:repeat(auto-fit,minmax(min(260px,100%),1fr))!important;gap:12px;align-items:start;width:100%;}" +
+      "#addTabPanel>.v20-addmgr{grid-column:1/-1!important;width:100%!important;display:block!important;}" +
+      "#addTabPanel>.add-panel-head,#addTabPanel>.add-sel-card,#addTabPanel>p.col-help{display:none!important;}" +
+      ".v20-cards{display:grid!important;grid-template-columns:repeat(auto-fit,minmax(260px,1fr))!important;gap:12px;align-items:start;width:100%;}" +
       ".v20-combo-card{min-width:0!important;width:auto!important;margin:0!important;}" +
-      ".v20-local-match{position:sticky;top:8px;z-index:40;margin:8px 0;box-shadow:0 5px 18px rgba(15,23,42,.16);}" +
+      "@media(max-width:620px){.v20-cards{grid-template-columns:1fr!important;}}" +
+      ".v20-local-match{position:absolute!important;top:calc(100% + 6px);right:0;z-index:80;margin:0!important;min-width:min(560px,90vw);max-width:90vw;width:max-content!important;box-sizing:border-box;box-shadow:0 5px 18px rgba(15,23,42,.16);flex-wrap:wrap;}" +
       ".v20-visit-metrics{display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:10px;margin:12px 0;}" +
       ".v20-metric{background:#f0fdfa;border:1px solid #99f6e4;border-radius:12px;padding:12px;text-align:center}.v20-metric b{display:block;font-size:1.2rem;color:#0f766e;margin-top:4px;}" +
       ".v20-version{background:#312e81;color:#fff;border-radius:999px;padding:5px 10px;font-weight:800;white-space:nowrap;}" +
@@ -26909,7 +27512,10 @@ button.v19-gps svg{display:block}
       ".v20-mini{font-size:.78rem;color:#64748b;}" +
       ".v20-tabbar{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0;}" +
       ".v20-tabbar button{border:1px solid #cbd5e1;background:#fff;border-radius:9px;padding:7px 14px;cursor:pointer;font-family:inherit;}" +
-      ".v20-tabbar button.v20-on{background:#0d9488;color:#fff;border-color:#0d9488;}";
+      ".v20-tabbar button.v20-on{background:#0d9488;color:#fff;border-color:#0d9488;}" +
+      "button[id*='Export'],button[id*='Excel'],.btn-excel{background:#15803d!important;border-color:#15803d!important;color:#fff!important;}" +
+      "button.btn-danger,button[id*='Delete'],button[class*='-del']{background:#dc2626!important;border-color:#dc2626!important;color:#fff!important;}" +
+      "#tab-snapp-corporate .data-table{min-width:900px}#tab-snapp-corporate .card{overflow:visible}";
     var tag = document.createElement("style");
     tag.id = "v20Style";
     tag.textContent = css;
@@ -26982,6 +27588,7 @@ button.v19-gps svg{display:block}
     ["tab-pharmacies", "🏥 داروخانه‌ها"],
     ["tab-doctors", "👨‍⚕️ پزشکان"],
     ["tab-orders", "📦 سفارشات"],
+    ["tab-snapp-corporate", "🚕 اسنپ سازمانی"],
     ["tab-columns-products", "💊 کالاها"],
     ["tab-users-permissions", "👤 کاربران"]
   ];
@@ -27021,8 +27628,20 @@ button.v19-gps svg{display:block}
     var pane = $(paneId);
     if (!pane) return [];
     var out = [], seen = {};
+    // فقط شناسه‌های متعلق به همان تب؛ فیلد کپی‌شده از تب دیگر هرگز وارد این فهرست نشود.
+    function belongs(el) {
+      var id = String(el.id || ""), S = st() || {}, key = paneId === "tab-pharmacies" ? "pharmacy" : paneId === "tab-doctors" ? "doctor" : paneId === "tab-orders" ? "order" : paneId === "tab-snapp-corporate" ? "snapp" : paneId === "tab-columns-products" ? "products" : "users";
+      var custom = ((S.customFields || {})[key] || []).some(function (f) { return f && f.id === id; });
+      if (custom) return true;
+      if (key === "pharmacy") return /^pharmacy/.test(id);
+      if (key === "doctor") return /^(doctor|doc)/.test(id);
+      if (key === "order") return /^(order|ordm-)/.test(id);
+      if (key === "snapp") return /^snapp/.test(id);
+      if (key === "products") return /^(product|prod)/.test(id);
+      return /^user/.test(id);
+    }
     function skipped(el) {
-      return el.closest("#columnsDesignerHost") || el.closest("#jalaliCalendarPopup") ||
+      return !belongs(el) || el.closest("#columnsDesignerHost") || el.closest("#jalaliCalendarPopup") ||
         el.closest(".modal-overlay") || el.closest("#addTabGrid") || el.closest("#addTabPanel") ||
         el.closest("#v20PresetBar");
     }
@@ -27131,7 +27750,7 @@ button.v19-gps svg{display:block}
       tabs += "<button type='button' class='" + (p[0] === v20AddPane ? "v20-on" : "") + "' data-pane='" + p[0] + "'>" + p[1] + "</button>";
     });
     var h = "<div class='v20-addmgr' style='border-top:2px solid #e2e8f0;padding-top:10px;'>" +
-      "<h4 style='margin:8px 0;color:#0f172a;'>🎛️ مدیر کشویی‌ها (نسخه ۱۱.۱۶) — هر فیلد، زیرمجموعه‌هایش دقیقاً زیر همان فیلد است</h4>" +
+      "<h4 style='margin:8px 0;color:#0f172a;'>🎛️ مدیر کشویی‌ها (نسخه ۱۱.۱۸.۰) — هر فیلد، زیرمجموعه‌هایش دقیقاً زیر همان فیلد است</h4>" +
       "<div class='v20-tabbar'>" + tabs + "</div>" +
       "<div class='v20-card-tools' style='margin-bottom:4px'>" +
       "<label class='v20-mini'><input type='checkbox' id='v20GreyOnChk'" + (greyOn ? " checked" : "") + "> حالت طوسی زنجیره‌ای فعال باشد</label>" +
@@ -27303,8 +27922,8 @@ button.v19-gps svg{display:block}
     var locked = !orderMatched();
     Array.prototype.forEach.call(inputs, function (el) {
       if (!el.id || el.type === "hidden") return;
-      // نام داروخانه و همه فیلدهای بخش کالا: همیشه فعال و عادی
-      if (el.id === "orderPharmacyName") { setFieldGrey(el, false); return; }
+      // نام داروخانه، تاریخ سفارش و همه فیلدهای بخش کالا: همیشه فعال و عادی
+      if (el.id === "orderPharmacyName" || el.id === "orderDate") { setFieldGrey(el, false); return; }
       if (el.closest && el.closest(ORDER_PRODUCT_SCOPE)) { setFieldGrey(el, false); return; }
       // فیلدهای توصیفی داروخانه: طوسی (اطلاعات سر جای خودش می‌نشیند)
       if (ORDER_DESCRIPTORS.indexOf(el.id) >= 0) { setFieldGrey(el, true); return; }
@@ -27750,21 +28369,27 @@ button.v19-gps svg{display:block}
 
 
   /* ---------- ۱۲) تثبیت شناسه‌ها + مدیر نام داروخانه/پزشک و وابستگی‌ها ---------- */
-  function v20EntityRecordsHtml(kind) {
-    var S = st() || {};
-    var list = kind === "pharmacy" ? (S.pharmacies || []) : (S.doctors || []);
-    var title = kind === "pharmacy" ? "نام داروخانه و همه اطلاعات وابسته" : "نام پزشک و همه اطلاعات وابسته";
-    var rows = list.slice().reverse().map(function (r) {
+  function v20EntityRows(kind, query) {
+    var S = st() || {}, q = norm(query), list = kind === "pharmacy" ? (S.pharmacies || []) : (S.doctors || []);
+    if (q.length < 2) return "<div class='v20-mini'>برای جلوگیری از کشیده‌شدن صفحه، حداقل ۲ حرف از نام یا اطلاعات را جستجو کنید.</div>";
+    var hits = list.slice().reverse().filter(function (r) {
+      return norm([r.name, r.province, r.city, r.district, r.address, r.phone, r.specialty].join(" ")).indexOf(q) >= 0;
+    }).slice(0, 50);
+    if (!hits.length) return "<div class='v20-mini'>نتیجه‌ای پیدا نشد.</div>";
+    return hits.map(function (r) {
       var sub = [r.province, r.city, r.district, r.address, r.phone, r.specialty].filter(Boolean).join("، ");
       return "<div class='v20-opt-row' data-entity='" + kind + "' data-id='" + esc(r.id) + "'>" +
         "<span><strong>" + esc(r.name || "بدون نام") + "</strong><small style='display:block;color:#64748b'>" + esc(sub || "بدون اطلاعات تکمیلی") + "</small></span>" +
         "<button type='button' class='v20-ent-edit' title='ویرایش نام و همه وابستگی‌ها'>✏️</button>" +
         "<button type='button' class='v20-ent-del' title='حذف رکورد و وابستگی‌ها'>🗑️</button></div>";
     }).join("");
+  }
+  function v20EntityRecordsHtml(kind) {
+    var title = kind === "pharmacy" ? "جستجو و مدیریت نام داروخانه" : "جستجو و مدیریت نام پزشک";
     return "<div class='v20-combo-card v20-entity-card'><h5>🗂️ " + title + "</h5>" +
-      "<div class='v20-mini'>ویرایش نام، سفارش‌ها و ارجاع‌های وابسته را هم اصلاح می‌کند. حذف فقط با تأیید مدیر انجام می‌شود.</div>" +
-      "<div class='v20-card-tools'><input class='v20-ent-search' placeholder='🔍 جستجوی لحظه‌ای نام یا اطلاعات...'></div>" +
-      "<div class='v20-entity-rows'>" + (rows || "<div class='v20-mini'>رکوردی ثبت نشده است.</div>") + "</div></div>";
+      "<div class='v20-mini'>هیچ فهرست بلندبالایی بارگذاری نمی‌شود؛ فقط نتیجه جستجو، حداکثر ۵۰ مورد، نمایش داده می‌شود.</div>" +
+      "<div class='v20-card-tools'><input class='v20-ent-search' placeholder='🔍 حداقل ۲ حرف جستجو کنید...'></div>" +
+      "<div class='v20-entity-rows'>" + v20EntityRows(kind, "") + "</div></div>";
   }
   function v20RenderEntityManager() {
     var mgr = document.querySelector("#addTabPanel .v20-addmgr");
@@ -27776,8 +28401,8 @@ button.v19-gps svg{display:block}
     mgr.appendChild(grid);
     var search = grid.querySelector(".v20-ent-search");
     if (search) search.addEventListener("input", function () {
-      var q = String(search.value || "").toLowerCase();
-      Array.prototype.forEach.call(grid.querySelectorAll(".v20-opt-row"), function (r) { r.style.display = !q || r.textContent.toLowerCase().indexOf(q) >= 0 ? "flex" : "none"; });
+      var rows = grid.querySelector(".v20-entity-rows");
+      if (rows) rows.innerHTML = v20EntityRows(v20AddPane === "tab-pharmacies" ? "pharmacy" : "doctor", search.value);
     });
     grid.addEventListener("click", function (e) {
       var row = e.target.closest && e.target.closest(".v20-opt-row"); if (!row) return;
@@ -27813,8 +28438,9 @@ button.v19-gps svg{display:block}
   function v20PlaceMatchNearInput() {
     var inp = $("orderPharmacyName"), box = $("existingPharmacyTopAlert"); if (!inp || !box) return;
     var group = inp.closest(".form-group") || inp.parentNode;
+    if (group) group.style.position = "relative";
     if (group && box.parentNode !== group) group.appendChild(box);
-    box.classList.add("v20-local-match"); box.style.width = "100%";
+    box.classList.add("v20-local-match"); box.style.width = "";
   }
   function v20FillOrderPharmacy() {
     var S = st(), mid = ($("orderPharmacyMatchedId") || {}).value, name = String(($("orderPharmacyName") || {}).value || "").trim();
@@ -27835,42 +28461,85 @@ button.v19-gps svg{display:block}
   }
 
   /* ---------- ۱۴) نسخه دقیق در هدر مدیر ---------- */
+  function v20IsManager() {
+    var logged = sessionStorage.getItem("crmLoggedIn") === "1", user = sessionStorage.getItem("crmUsername") || "", role = sessionStorage.getItem("crmUserRole") || "";
+    return !logged || user === "admin" || /مدیر|سرپرست|admin/i.test(role);
+  }
   function renderVersionBadge() {
-    if ($("v20VersionBadge")) return;
-    var actions = document.querySelector(".header-actions"); if (!actions) return;
-    var b = document.createElement("span"); b.id = "v20VersionBadge"; b.className = "v20-version"; b.textContent = "نسخه ۱۱.۱۷.۰"; b.title = "نسخه دقیق برنامه نصب‌شده";
-    actions.insertBefore(b, actions.firstChild);
+    var b = $("v20VersionBadge"), actions = document.querySelector(".header-actions"); if (!actions) return;
+    if (!b) { b = document.createElement("span"); b.id = "v20VersionBadge"; b.className = "v20-version"; b.textContent = "نسخه ۱۱.۱۸.۰"; b.title = "نسخه دقیق برنامه نصب‌شده"; actions.insertBefore(b, actions.firstChild); }
+    b.style.display = v20IsManager() ? "inline-block" : "none";
   }
 
-  /* ---------- ۱۵) متن ارسالی تحت قفل مدیر ---------- */
-  var SHARE_FIELDS = {
-    pharmacy: [["name","نام داروخانه"],["repName","نام نماینده"],["province","استان"],["city","شهر"],["district","منطقه"],["address","آدرس دقیق"],["phone","تلفن"],["isPercentage","وضعیت درصدی"]],
-    doctor: [["name","نام پزشک"],["specialty","تخصص"],["repName","نام نماینده"],["province","استان"],["city","شهر"],["district","منطقه"],["address","آدرس دقیق"],["phone","تلفن"]],
-    order: [["pharmacyName","نام داروخانه"],["repName","نام نماینده"],["orderDate","تاریخ"],["province","استان"],["city","شهر"],["address","آدرس"],["status","وضعیت"],["items","اقلام"],["totalAmount","مبلغ کل"]]
+  /* ---------- ۱۵) متن ارسالی پویا، مطابق همه ستون‌های واقعی لیست ---------- */
+  var SHARE_CORE = {
+    pharmacy: [["name","نام داروخانه","name"],["repName","نام نماینده","repName"],["dateAdded","تاریخ ثبت","dateAdded"],["province","استان","province"],["city","شهر","city"],["district","منطقه","district"],["address","آدرس دقیق","address"],["phone","شماره تماس","phone"],["manager","مسئول داروخانه","manager"],["isPercentage","وضعیت درصدی","isPercentage"],["lat","عرض جغرافیایی","lat"],["lng","طول جغرافیایی","lng"]],
+    doctor: [["name","نام پزشک","name"],["repName","نام نماینده","repName"],["dateAdded","تاریخ ثبت","dateAdded"],["specialty","تخصص","specialty"],["province","استان","province"],["city","شهر","city"],["district","منطقه","district"],["address","آدرس دقیق","address"],["phone","شماره تماس","phone"],["isPercentage","وضعیت درصدی","isPercentage"],["lat","عرض جغرافیایی","lat"],["lng","طول جغرافیایی","lng"]],
+    order: [["pharmacyName","نام داروخانه","pharmacyName"],["repName","نام نماینده","repName"],["orderDate","تاریخ","orderDate"],["province","استان","province"],["city","شهر","city"],["district","منطقه","district"],["address","آدرس","address"],["status","وضعیت","status"],["notes","یادداشت","notes"],["items","اقلام","items"],["totalAmount","مبلغ کل","totalAmount"]]
   };
+  function dynamicShareFields(kind) {
+    var S = st() || {}, out = [], seen = {};
+    function add(id, label, getter) { if (!id || seen[id]) return; seen[id] = true; out.push({ id:id, label:label || id, get:getter }); }
+    (SHARE_CORE[kind] || []).forEach(function (x) { add(x[0], x[1], function (r) { return r[x[2]]; }); });
+    try {
+      if (typeof window.extraListColumns === "function") (window.extraListColumns(kind) || []).forEach(function (c) {
+        add(c.id, c.label || c.title, function (r) { return typeof window.builtinFieldValue === "function" ? window.builtinFieldValue(kind, c.id, r) : r[c.id]; });
+      });
+    } catch (e) {}
+    (((S.customFields || {})[kind] || [])).filter(function (f) { return f && !f.deleted && f.showInList !== false; }).forEach(function (f) {
+      add(f.id, f.label, function (r) { return (r.customFields || {})[f.label]; });
+    });
+    return out;
+  }
   function shareSettings() { var S = st(); S.settings = S.settings || {}; S.settings.v20ShareFields = S.settings.v20ShareFields || {}; return S.settings.v20ShareFields; }
+  function selectedShareIds(kind, fields) {
+    var cfg = shareSettings();
+    return Object.prototype.hasOwnProperty.call(cfg, kind) ? cfg[kind] : fields.map(function (f) { return f.id; });
+  }
+  function cleanItemsForShare(rec) {
+    var items = (rec.items || []).filter(function (i) { return Number(i.count) > 0; });
+    // پاکسازی امن رکوردهای ساخته‌شده با باگ قدیمی «خالی = ۱»؛ الگوی آن چند عدد ۱ کنار یک تعداد واقعی بود.
+    if (!rec.quantityValidated) {
+      var ones = items.filter(function (i) { return Number(i.count) === 1; });
+      var real = items.filter(function (i) { return Number(i.count) > 1; });
+      if (ones.length >= 2 && real.length >= 1) items = real;
+    }
+    return items;
+  }
+  function shareValue(rec, kind, f) {
+    var v = f.get(rec);
+    if (kind === "order" && f.id === "items") v = cleanItemsForShare(rec).map(function (i) { return (i.name || "کالا") + " × " + Number(i.count); }).join("، ");
+    if (kind === "order" && f.id === "totalAmount") {
+      var clean = cleanItemsForShare(rec);
+      if (!rec.quantityValidated) v = clean.reduce(function (sum, i) { return sum + (typeof calcOrderRowTotal === "function" ? calcOrderRowTotal(i.count, i.giftCount || 0, i.price || 0) : Number(i.count) * Number(i.price || 0)); }, 0);
+      v = Number(v || 0).toLocaleString("fa-IR") + " ریال";
+    }
+    if (typeof v === "boolean") v = v ? "بله" : "خیر";
+    if (v && typeof v === "object") v = JSON.stringify(v);
+    return v == null || v === "" ? "—" : v;
+  }
   function buildLockedShare(rec, kind) {
-    var cfg = shareSettings(), enabled = cfg[kind] || SHARE_FIELDS[kind].map(function (x) { return x[0]; });
-    return SHARE_FIELDS[kind].filter(function (x) { return enabled.indexOf(x[0]) >= 0; }).map(function (x) {
-      var v = rec[x[0]]; if (x[0] === "items") v = (v || []).map(function (i) { return (i.name || "کالا") + " × " + (i.count || 0); }).join("، ");
-      if (x[0] === "totalAmount") v = Number(v || 0).toLocaleString("fa-IR") + " ریال";
-      if (typeof v === "boolean") v = v ? "بله" : "خیر";
-      return x[1] + ": " + (v == null || v === "" ? "—" : v);
-    }).join("\n");
+    var fields = dynamicShareFields(kind), enabled = selectedShareIds(kind, fields);
+    return fields.filter(function (f) { return enabled.indexOf(f.id) >= 0; }).map(function (f) { return f.label + ": " + shareValue(rec, kind, f); }).join("\n");
   }
   function renderShareManager() {
-    var host = $("messengerTogglesBox"); if (!host || $("v20ShareManager")) return;
+    var host = $("messengerTogglesBox"); if (!host) return;
+    var old = $("v20ShareManager"); if (old) old.remove();
     var box = document.createElement("div"); box.id = "v20ShareManager"; box.style.cssText = "margin-top:16px;border-top:2px solid #cbd5e1;padding-top:12px";
-    box.innerHTML = "<h4>🔒 تعیین اطلاعات مجاز برای ارسال (فقط مدیر)</h4>" + Object.keys(SHARE_FIELDS).map(function (kind) {
-      var title = kind === "pharmacy" ? "داروخانه" : kind === "doctor" ? "پزشک" : "سفارش", cfg = shareSettings(), on = cfg[kind] || SHARE_FIELDS[kind].map(function (x) { return x[0]; });
-      return "<fieldset style='margin:8px 0;padding:10px;border:1px solid #cbd5e1;border-radius:10px'><legend>" + title + "</legend>" + SHARE_FIELDS[kind].map(function (f) { return "<label style='display:inline-flex;gap:5px;margin:5px 8px'><input type='checkbox' data-kind='" + kind + "' data-field='" + f[0] + "' " + (on.indexOf(f[0]) >= 0 ? "checked" : "") + ">" + f[1] + "</label>"; }).join("") + "</fieldset>";
-    }).join("") + "<div class='v20-mini'>کاربر متن و فیلدهای انتخابی مدیر را نمی‌تواند تغییر دهد.</div>";
+    box.innerHTML = "<h4>🔒 تعیین اطلاعات مجاز برای ارسال (فقط مدیر)</h4>" + ["pharmacy","doctor","order"].map(function (kind) {
+      var title = kind === "pharmacy" ? "داروخانه" : kind === "doctor" ? "پزشک" : "سفارش", fields = dynamicShareFields(kind), on = selectedShareIds(kind, fields);
+      return "<fieldset style='margin:8px 0;padding:10px;border:1px solid #cbd5e1;border-radius:10px'><legend>" + title + " — تمام ستون‌های فعلی لیست</legend>" + fields.map(function (f) { return "<label style='display:inline-flex;gap:5px;margin:5px 8px'><input type='checkbox' data-kind='" + kind + "' data-field='" + esc(f.id) + "' " + (on.indexOf(f.id) >= 0 ? "checked" : "") + ">" + esc(f.label) + "</label>"; }).join("") + "</fieldset>";
+    }).join("") + "<div class='v20-mini'>حذف/افزودن ستون در لیست اصلی، این بخش را هم خودکار به‌روز می‌کند. تیک برداشته‌شده قطعاً از متن ارسال حذف می‌شود.</div>";
     host.appendChild(box);
-    box.addEventListener("change", function () { var cfg = shareSettings(); Object.keys(SHARE_FIELDS).forEach(function (k) { cfg[k] = Array.prototype.map.call(box.querySelectorAll("input[data-kind='" + k + "']:checked"), function (i) { return i.getAttribute("data-field"); }); }); save(); v20Toast("تنظیم ارسال مدیر ذخیره شد."); });
+    box.addEventListener("change", function () { var cfg = shareSettings(); ["pharmacy","doctor","order"].forEach(function (k) { cfg[k] = Array.prototype.map.call(box.querySelectorAll("input[data-kind='" + k + "']:checked"), function (i) { return i.getAttribute("data-field"); }); }); save(); v20Toast("✅ فهرست مجاز ارسال ذخیره شد."); });
   }
   function wrapShareModal() {
     var old = window.openRowDetailsModal; if (typeof old !== "function" || old._v20share) return;
-    var w = function (rec, kind) { var r = old.apply(this, arguments), text = buildLockedShare(rec, kind); var map = {btnShareBale:"https://ble.ir/share?text=",btnShareEitaa:"https://eitaa.com/share/url?url=&text=",btnShareTelegram:"https://t.me/share/url?url=&text=",btnShareSoroush:"https://splus.ir/share?text=",btnShareWhatsApp:"https://api.whatsapp.com/send?text="}; Object.keys(map).forEach(function (id) { var b=$(id); if(b)b.onclick=function(){window.open(map[id]+encodeURIComponent(text),"_blank");}; }); var cp=$("btnRowCopyText"); if(cp)cp.onclick=function(){navigator.clipboard.writeText(text).then(function(){v20Toast("متن مجاز مدیر کپی شد.");});}; return r; };
+    var w = function (rec, kind) {
+      var r = old.apply(this, arguments), text = buildLockedShare(rec, kind), map = {btnShareBale:"https://ble.ir/share?text=",btnShareEitaa:"https://eitaa.com/share/url?url=&text=",btnShareTelegram:"https://t.me/share/url?url=&text=",btnShareSoroush:"https://splus.ir/share?text=",btnShareWhatsApp:"https://api.whatsapp.com/send?text="};
+      Object.keys(map).forEach(function (id) { var b=$(id); if(b)b.onclick=function(){window.open(map[id]+encodeURIComponent(text),"_blank");}; });
+      var cp=$("btnRowCopyText"); if(cp)cp.onclick=function(){navigator.clipboard.writeText(text).then(function(){v20Toast("متن دقیقاً طبق تیک‌های مدیر کپی شد.");});}; return r;
+    };
     w._v20share = true; window.openRowDetailsModal = w;
   }
 
@@ -27895,15 +28564,83 @@ button.v19-gps svg{display:block}
   /* ---------- ۱۸) همه لیست‌های قدیمی هم تازه‌ترین در بالا ---------- */
   function wrapNewestTables(){["renderActivityLogTable","renderRepRoutesTable","renderRepHomesTable","renderLeavesTable","renderMonthlyReportsTable","renderNotificationsTable","renderSalesTargetsTable","renderCustomFieldsTable"].forEach(function(n){var old=window[n];if(typeof old!=="function"||old._v20newest)return;var w=function(){var r=old.apply(this,arguments);setTimeout(function(){var map={renderActivityLogTable:"tableActivityLogBody",renderRepRoutesTable:"tableRepRoutesBody",renderRepHomesTable:"tableRepHomesBody",renderLeavesTable:"tableLeavesBody",renderMonthlyReportsTable:"tableMonthlyReportsBody",renderNotificationsTable:"tableNotificationsBody",renderSalesTargetsTable:"tableSalesTargetsBody",renderCustomFieldsTable:"tableCustomFieldsBody"},tb=$(map[n]);if(tb){var rows=Array.prototype.slice.call(tb.children).reverse();rows.forEach(function(x){tb.appendChild(x);});}},0);return r;};w._v20newest=true;window[n]=w;});}
 
+  /* ---------- ۱۹) پاک‌سازی نام سفارش و ذخیره قطعی تنظیمات کالا ---------- */
+  function clearOrderPharmacyDraft() {
+    if (String(($("orderEditId") || {}).value || "")) return;
+    v20SetValue("orderPharmacyName", ""); v20SetValue("orderPharmacyMatchedId", "");
+    var box = $("existingPharmacyTopAlert"), picks = $("orderPharmacyPickBox");
+    if (box) box.style.display = "none";
+    if (picks) { picks.hidden = true; picks.innerHTML = ""; }
+    v20ApplyOrderLock();
+  }
+  function bindOrderResetProof() {
+    var btn = $("btnSaveOrder"), form = $("formOrder");
+    if (btn) btn.addEventListener("click", function () {
+      var S = st(), before = JSON.stringify((S.orders || []).map(function (o) { return [o.id,o.pharmacyName,o.totalAmount,(o.items||[]).length]; }));
+      setTimeout(function () { var S2=st(), after=JSON.stringify((S2.orders||[]).map(function(o){return[o.id,o.pharmacyName,o.totalAmount,(o.items||[]).length];})); if(after!==before) clearOrderPharmacyDraft(); }, 350);
+    }, true);
+    if (form) form.addEventListener("reset", function () { setTimeout(clearOrderPharmacyDraft, 20); });
+  }
+  function productFieldRecord(id) {
+    var S=st(); S.customFields=S.customFields||{}; S.customFields.products=S.customFields.products||[];
+    var c=S.customFields.products.filter(function(f){return f&&f.id===id;})[0];
+    if(c)return c;
+    S.formFieldMeta=S.formFieldMeta||{};S.formFieldMeta.products=S.formFieldMeta.products||{};S.formFieldMeta.products[id]=S.formFieldMeta.products[id]||{};return S.formFieldMeta.products[id];
+  }
+  function applyProductSettings() {
+    var S=st(); if(!S)return; var all={}, meta=((S.formFieldMeta||{}).products)||{};
+    Object.keys(meta).forEach(function(id){all[id]=meta[id];});
+    ((((S.customFields||{}).products)||[])).forEach(function(f){if(f&&f.id)all[f.id]=f;});
+    Object.keys(all).forEach(function(id){var f=all[id]||{},el=$(id)||$("v20pf_"+id)||document.querySelector('[data-custom-field-id="'+id+'"]');if(!el)return;var g=el.closest(".form-group")||el;if(Number(f.order)>0)g.style.setProperty("order",String(Number(f.order)),"important");if(Number(f.size)>=60){el.style.setProperty("width",Number(f.size)+"px","important");el.style.setProperty("max-width","100%","important");}if(Number(f.height)>=24){el.style.setProperty("height",Number(f.height)+"px","important");el.style.setProperty("min-height",Number(f.height)+"px","important");}});
+  }
+  function bindProductPersistence() {
+    document.addEventListener("change",function(e){var t=e.target, map={"v19-pf-ord":"order","v19-pf-lord":"listOrder","v19-pf-size":"size","v19-pf-h":"height"},key="";Object.keys(map).forEach(function(c){if(t.classList&&t.classList.contains(c))key=map[c];});if(!key)return;var id=t.getAttribute("data-fid"),n=parseInt(t.value,10);if(!id||!isFinite(n))return;productFieldRecord(id)[key]=n;save();applyProductSettings();v20Toast("✅ ترتیب و اندازه کالا ذخیره شد.");},true);
+    document.addEventListener("click",function(e){if(e.target&&e.target.id==="btnAddProductField")setTimeout(function(){var S=st(),f=(((S.customFields||{}).products)||[]).slice(-1)[0];if(!f)return;var ids={order:"prodNewFieldOrder",listOrder:"prodNewFieldListOrder",size:"prodNewFieldSize",height:"prodNewFieldHeight"};Object.keys(ids).forEach(function(k){var n=parseInt((($(ids[k])||{}).value),10);if(isFinite(n)&&n>0)f[k]=n;});save();applyProductSettings();v20Toast("✅ فیلد کالا و همه تنظیماتش ذخیره شد.");},180);},true);
+    var oldSave=window.saveState;if(typeof oldSave==="function"&&!oldSave._v20product){var w=function(){var r=oldSave.apply(this,arguments);setTimeout(applyProductSettings,20);return r;};w._v20product=true;window.saveState=w;}
+  }
+
+  /* ---------- ۲۰) اسنپ سازمانی: ورود امن فایل، گزارش و تجمیع ---------- */
+  var SNAPP_COLS = [0,1,4,8,11,14,17,18,23], snappFilteredRows = [];
+  function enDigits(v){var fa="۰۱۲۳۴۵۶۷۸۹",ar="٠١٢٣٤٥٦٧٨٩";return String(v==null?"":v).replace(/[۰-۹]/g,function(c){return fa.indexOf(c);}).replace(/[٠-٩]/g,function(c){return ar.indexOf(c);});}
+  function faDate(d){try{var parts=new Intl.DateTimeFormat("fa-IR-u-ca-persian",{year:"numeric",month:"2-digit",day:"2-digit",timeZone:"Asia/Tehran"}).formatToParts(d),o={};parts.forEach(function(x){o[x.type]=enDigits(x.value);});return o.year+"/"+o.month.padStart(2,"0")+"/"+o.day.padStart(2,"0");}catch(e){return"";}}
+  function normSnappDate(v){var raw=enDigits(v).trim();if(/^\d+(\.\d+)?$/.test(raw)&&Number(raw)>30000){var d=new Date(Date.UTC(1899,11,30)+Number(raw)*86400000);return faDate(d);}var m=raw.match(/(1[34]\d{2})[^0-9]?(\d{1,2})[^0-9]?(\d{1,2})/);if(m)return m[1]+"/"+m[2].padStart(2,"0")+"/"+m[3].padStart(2,"0");var g=raw.match(/(20\d{2})[^0-9]?(\d{1,2})[^0-9]?(\d{1,2})/);if(g)return faDate(new Date(Number(g[1]),Number(g[2])-1,Number(g[3])));return raw;}
+  function snappNumber(v){var s=enDigits(v).replace(/[,٬،\sریالتومان]/g,"").replace(/[()]/g,function(x){return x==="("?"-":"";});var n=Number(s);return isFinite(n)?n:0;}
+  function parseDelimited(text){text=String(text||"").replace(/^\uFEFF/,"");var first=(text.split(/\r?\n/)[0]||""),ds=[["\t",(first.match(/\t/g)||[]).length],[",",(first.match(/,/g)||[]).length],[";",(first.match(/;/g)||[]).length]],del=ds.sort(function(a,b){return b[1]-a[1];})[0][0],rows=[],row=[],cell="",q=false;for(var i=0;i<text.length;i++){var c=text[i];if(c==='"'){if(q&&text[i+1]==='"'){cell+='"';i++;}else q=!q;}else if(!q&&c===del){row.push(cell);cell="";}else if(!q&&(c==='\n'||c==='\r')){if(c==='\r'&&text[i+1]==='\n')i++;row.push(cell);if(row.some(function(x){return String(x).trim();}))rows.push(row);row=[];cell="";}else cell+=c;}row.push(cell);if(row.some(function(x){return String(x).trim();}))rows.push(row);return rows;}
+  function u16(a,p){return a[p]|(a[p+1]<<8);}function u32(a,p){return (u16(a,p)|(u16(a,p+2)<<16))>>>0;}
+  async function unzipEntry(buf,name){var a=new Uint8Array(buf),e=-1;for(var i=a.length-22;i>=Math.max(0,a.length-65558);i--){if(u32(a,i)===0x06054b50){e=i;break;}}if(e<0)throw Error("ساختار ZIP اکسل پیدا نشد");var count=u16(a,e+10),pos=u32(a,e+16),dec=new TextDecoder("utf-8");for(var n=0;n<count;n++){if(u32(a,pos)!==0x02014b50)break;var method=u16(a,pos+10),size=u32(a,pos+20),nl=u16(a,pos+28),xl=u16(a,pos+30),cl=u16(a,pos+32),local=u32(a,pos+42),fn=dec.decode(a.slice(pos+46,pos+46+nl));if(fn===name){var lnl=u16(a,local+26),lxl=u16(a,local+28),data=a.slice(local+30+lnl+lxl,local+30+lnl+lxl+size);if(method===0)return dec.decode(data);if(method!==8||typeof DecompressionStream==="undefined")throw Error("مرورگر امکان بازکردن این فایل XLSX را ندارد");var stream=new Blob([data]).stream().pipeThrough(new DecompressionStream("deflate-raw"));return dec.decode(await new Response(stream).arrayBuffer());}pos+=46+nl+xl+cl;}return"";}
+  async function parseXlsx(file){var buf=await file.arrayBuffer(),ssxml=await unzipEntry(buf,"xl/sharedStrings.xml"),sheet=await unzipEntry(buf,"xl/worksheets/sheet1.xml");if(!sheet)throw Error("برگه اول اکسل پیدا نشد");var xp=new DOMParser(),shared=[];if(ssxml){var sd=xp.parseFromString(ssxml,"text/xml");Array.prototype.forEach.call(sd.querySelectorAll("si"),function(si){shared.push(Array.prototype.map.call(si.querySelectorAll("t"),function(t){return t.textContent;}).join(""));});}var doc=xp.parseFromString(sheet,"text/xml"),out=[];Array.prototype.forEach.call(doc.querySelectorAll("sheetData row"),function(r){var row=[];Array.prototype.forEach.call(r.querySelectorAll("c"),function(c){var ref=c.getAttribute("r")||"A1",letters=(ref.match(/[A-Z]+/)||["A"])[0],idx=0;for(var j=0;j<letters.length;j++)idx=idx*26+letters.charCodeAt(j)-64;idx--;var type=c.getAttribute("t"),v=(c.querySelector("v")||{}).textContent||"";if(type==="s")v=shared[Number(v)]||"";else if(type==="inlineStr")v=Array.prototype.map.call(c.querySelectorAll("t"),function(t){return t.textContent;}).join("");row[idx]=v;});out.push(row.map(function(x){return x==null?"":x;}));});return out;}
+  async function parseSnappFile(file){var ext=(file.name.split(".").pop()||"").toLowerCase();if(ext==="xlsx")return parseXlsx(file);var text=await file.text();if(ext==="xls"&&text.indexOf("<table")>=0){var doc=new DOMParser().parseFromString(text,"text/html");return Array.prototype.map.call(doc.querySelectorAll("tr"),function(tr){return Array.prototype.map.call(tr.querySelectorAll("th,td"),function(td){return td.textContent.trim();});});}return parseDelimited(text);}
+  function snappStore(){var S=st();S.snappCorporate=S.snappCorporate||{headers:[],rows:[],files:[],lastImport:""};return S.snappCorporate;}
+  function snappIndexes(headers){function find(re,fb){for(var i=0;i<headers.length;i++)if(re.test(String(headers[i])))return i;return fb;}return{date:find(/تاریخ.*(سفر|درخواست|انجام)|تاریخ/,0),rep:find(/نماینده|مسافر|کارمند|درخواست.?کننده|نام و نام خانوادگی/,1),amount:find(/مبلغ.*(کل|پرداخت)|هزینه|کرایه|قیمت/,23)};}
+  function snappFilters(){return{year:enDigits(($("snappFilterYear")||{}).value||""),month:enDigits(($("snappFilterMonth")||{}).value||""),from:normSnappDate(($("snappFilterFrom")||{}).value||""),to:normSnappDate(($("snappFilterTo")||{}).value||"")};}
+  function renderSnappCorporate(){var D=snappStore(),h=D.headers||[],idx=snappIndexes(h),f=snappFilters();snappFilteredRows=(D.rows||[]).filter(function(r){var d=normSnappDate(r[idx.date]);if(f.year&&d.slice(0,4)!==f.year)return false;if(f.month&&d.slice(5,7)!==f.month)return false;if(f.from&&d<f.from)return false;if(f.to&&d>f.to)return false;return true;});var total=snappFilteredRows.reduce(function(s,r){return s+snappNumber(r[idx.amount]);},0),by={};snappFilteredRows.forEach(function(r){var n=String(r[idx.rep]||"نامشخص").trim()||"نامشخص";by[n]=by[n]||{n:0,sum:0};by[n].n++;by[n].sum+=snappNumber(r[idx.amount]);});var cards=$("snappSummaryCards");if(cards)cards.innerHTML=[["تعداد سفر",snappFilteredRows.length.toLocaleString("fa-IR")],["جمع کل",total.toLocaleString("fa-IR")+" ریال"],["تعداد نمایندگان",Object.keys(by).length.toLocaleString("fa-IR")],["آخرین ورود",D.lastImport||"—"]].map(function(x){return"<div class='v20-metric'>"+x[0]+"<b>"+x[1]+"</b></div>";}).join("");var rb=$("snappRepSummaryBody");if(rb)rb.innerHTML=Object.keys(by).sort().map(function(n,i){return"<tr><td>"+(i+1)+"</td><td><strong>"+esc(n)+"</strong></td><td>"+by[n].n.toLocaleString("fa-IR")+"</td><td>"+by[n].sum.toLocaleString("fa-IR")+" ریال</td></tr>";}).join("")||"<tr><td colspan='4'>داده‌ای در این بازه نیست.</td></tr>";var hh=$("snappReportHead");if(hh)hh.innerHTML=SNAPP_COLS.map(function(i){return"<th>"+esc(h[i]||("ستون "+(i+1)))+"</th>";}).join("");var body=$("snappReportBody");if(body)body.innerHTML=snappFilteredRows.slice(0,1000).map(function(r){return"<tr>"+SNAPP_COLS.map(function(i){return"<td>"+esc(r[i]||"")+"</td>";}).join("")+"</tr>";}).join("")||"<tr><td colspan='9'>فایلی وارد نشده یا نتیجه‌ای نیست.</td></tr>";var status=$("snappDailyStatus");if(status)status.textContent=D.rows.length?(D.rows.length.toLocaleString("fa-IR")+" ردیف یکتا از "+D.files.length.toLocaleString("fa-IR")+" فایل ذخیره شده است."):"گزارش دیروز وارد نشده است.";}
+  async function importSnappFiles(files){var D=snappStore(),all=[],names=[];for(var i=0;i<files.length;i++){try{var rows=await parseSnappFile(files[i]);if(rows.length){if(!D.headers.length)D.headers=rows[0].slice();var first=rows[0].join("|")===D.headers.join("|")?1:0;all=all.concat(rows.slice(first));names.push(files[i].name);}}catch(e){alert("خطا در فایل «"+files[i].name+"»: "+e.message);}}var seen={};(D.rows||[]).forEach(function(r){seen[r.join("¦")]=true;});var added=0;all.forEach(function(r){while(r.length<24)r.push("");var k=r.join("¦");if(!seen[k]){seen[k]=true;D.rows.push(r);added++;}});D.files=(D.files||[]).concat(names).slice(-100);D.lastImport=new Date().toLocaleString("fa-IR",{timeZone:"Asia/Tehran"});save();renderSnappCorporate();v20Toast("✅ "+added.toLocaleString("fa-IR")+" ردیف یکتا وارد شد؛ فایل تکراری دوباره شمرده نشد.");}
+  function setupSnappCorporate(){var open=$("btnOpenSnappCorporate"),inp=$("snappReportFiles"),del=$("btnDeleteSnappReports"),exp=$("btnExportSnappView");if(open&&!open.dataset.bound){open.dataset.bound="1";open.addEventListener("click",function(){window.open("https://corporate.snapp.taxi/auth/login","_blank","noopener");});}if(inp&&!inp.dataset.bound){inp.dataset.bound="1";inp.addEventListener("change",function(){if(inp.files&&inp.files.length)importSnappFiles(Array.prototype.slice.call(inp.files));inp.value="";});}if(del&&!del.dataset.bound){del.dataset.bound="1";del.addEventListener("click",function(){if(!confirm("همه گزارش‌های واردشده اسنپ از برنامه حذف شود؟"))return;var S=st();S.snappCorporate={headers:[],rows:[],files:[],lastImport:""};save();renderSnappCorporate();});}if(exp&&!exp.dataset.bound){exp.dataset.bound="1";exp.addEventListener("click",function(){var D=snappStore(),heads=SNAPP_COLS.map(function(i){return D.headers[i]||("ستون "+(i+1));}),rows=snappFilteredRows.map(function(r){return SNAPP_COLS.map(function(i){return r[i]||"";});});window.downloadCSVFile("snapp-corporate-report.xls",heads,rows);});}["snappFilterYear","snappFilterMonth","snappFilterFrom","snappFilterTo"].forEach(function(id){var el=$(id);if(el&&!el.dataset.bound){el.dataset.bound="1";el.addEventListener("input",renderSnappCorporate);el.addEventListener("change",renderSnappCorporate);}});var y=new Date(Date.now()-86400000),yd=faDate(y),fr=$("snappFilterFrom"),to=$("snappFilterTo");if(fr&&!fr.value)fr.value=yd;if(to&&!to.value)to.value=yd;renderSnappCorporate();}
+
+  /* ---------- ۲۱) همه نمایندگان + آدرس متنی موقعیت زنده ---------- */
+  async function updateRepTextAddress(r){if(!r||!r.lat||!r.lng)return;var key=Number(r.lat).toFixed(5)+","+Number(r.lng).toFixed(5);if(r._textAddressKey===key&&r.textAddress)return;try{r.textAddress=await window.reverseGeocodeCoordinates(r.lat,r.lng);r._textAddressKey=key;save();var cell=document.querySelector('[data-live-address="'+r.id+'"]');if(cell)cell.textContent=r.textAddress;}catch(e){}}
+  function enhanceLiveLocation(){var sel=$("liveRepSearchSelect");if(sel&&sel.options.length){sel.options[0].textContent="همه نمایندگان";sel.options[0].value="";}var table=$("tableLiveReps"),hr=table&&table.querySelector("thead tr");if(hr&&!hr.querySelector(".v20-live-address-head")){var th=document.createElement("th");th.className="v20-live-address-head";th.textContent="آدرس متنی موقعیت فعلی";hr.insertBefore(th,hr.lastElementChild);}var body=$("tableLiveRepsBody"),reps=(st()&&st().reps)||[];if(body)Array.prototype.forEach.call(body.children,function(tr,i){var r=reps[i];if(!r)return;var old=tr.querySelector("[data-live-address]");if(!old){var td=document.createElement("td");td.setAttribute("data-live-address",r.id);td.textContent=r.textAddress||"در حال دریافت آدرس…";tr.insertBefore(td,tr.lastElementChild);}updateRepTextAddress(r);});}
+  function bindLiveAll(){var btn=$("btnFindLiveRep");if(btn&&!btn.dataset.v20all){btn.dataset.v20all="1";btn.addEventListener("click",function(e){var sel=$("liveRepSearchSelect");if(sel&&sel.value)return;e.preventDefault();e.stopImmediatePropagation();if(typeof window.renderLiveLocationTab==="function")window.renderLiveLocationTab();setTimeout(function(){enhanceLiveLocation();try{var pts=((st()&&st().reps)||[]).filter(function(r){return r.lat&&r.lng;}).map(function(r){return[r.lat,r.lng];});if(typeof mapLiveReps!=="undefined"&&mapLiveReps&&pts.length)mapLiveReps.fitBounds(pts,{padding:[30,30]});}catch(x){}},80);},true);}var body=$("tableLiveRepsBody");if(body&&window.MutationObserver&&!body.dataset.v20addr){body.dataset.v20addr="1";var t;new MutationObserver(function(){clearTimeout(t);t=setTimeout(enhanceLiveLocation,40);}).observe(body,{childList:true,subtree:true});}enhanceLiveLocation();}
+
+  function applySnappVisibility(){var allow=v20IsManager(),S=st(),name=sessionStorage.getItem("crmUserName")||"",u=S&&((S.users||[]).filter(function(x){return x.fullName===name||x.username===sessionStorage.getItem("crmUsername");})[0]);if(u&&u.permissions&&u.permissions.sys_snapp_access===true)allow=true;document.querySelectorAll('[data-target="tab-snapp-corporate"],[data-side-target="tab-snapp-corporate"]').forEach(function(b){b.style.display=allow?"":"none";});var pane=$("tab-snapp-corporate");if(pane&&!allow)pane.style.display="none";}
+
   /* ---------- هُوک رفتن به تب‌ها ---------- */
+  var v20LastTab = (document.querySelector(".tab-pane.active") || {}).id || "";
   function onTabChanged(id) {
+    if (v20LastTab === "tab-orders" && id !== "tab-orders") clearOrderPharmacyDraft();
+    if (id === "tab-orders" && v20LastTab !== "tab-orders") clearOrderPharmacyDraft();
+    v20LastTab = id;
     v20RefreshFab();
+    renderVersionBadge();
+    applySnappVisibility();
     v20ApplyGreyChains();
     if (id === "tab-orders") { v20ApplyOrderLock(); setTimeout(v20PlaceMatchNearInput, 60); }
     if (id === "tab-custom-fields") setTimeout(window.v20RenderComboManager, 60);
-    if (id === "tab-columns-products") setTimeout(renderProductExtras, 80);
+    if (id === "tab-columns-products") setTimeout(function(){ renderProductExtras(); applyProductSettings(); }, 80);
     if (id === "tab-users-permissions") setTimeout(renderPresetBar, 60);
     if (id === "tab-messengers") setTimeout(renderShareManager, 60);
+    if (id === "tab-snapp-corporate") setTimeout(setupSnappCorporate, 60);
+    if (id === "tab-live-location") setTimeout(enhanceLiveLocation, 120);
     if (id === "tab-my-visit") setTimeout(refreshVisitCards, 60);
     if (id === "tab-rep-routes") setTimeout(renderV20Routes, 80);
   }
@@ -27977,10 +28714,14 @@ button.v19-gps svg{display:block}
     try { bindLive(); } catch (e) {}
     try { bindChpassFab(); } catch (e) {}
     try { bindOrderLocalMatch(); } catch (e) {}
+    try { bindOrderResetProof(); } catch (e) {}
+    try { bindProductPersistence(); applyProductSettings(); } catch (e) {}
     try { renderVersionBadge(); } catch (e) {}
     try { wrapShareModal(); } catch (e) {}
     try { renderShareManager(); } catch (e) {}
     try { bindV20Visit(); } catch (e) {}
+    try { bindLiveAll(); } catch (e) {}
+    try { setupSnappCorporate(); applySnappVisibility(); } catch (e) {}
     try { wrapNewestTables(); } catch (e) {}
     try { mirrorPharmacyFieldsToOrder(true); } catch (e) {}
     // اعمال اولیه موتورها روی تب فعال
@@ -28000,7 +28741,7 @@ button.v19-gps svg{display:block}
 ~~~~~~~~
 
 ──────────────────────────────────────────────────────────────────────────────────
-فایل: public/crm-features-v9.js (68030 بایت)
+فایل: public/crm-features-v9.js (68275 بایت)
 ──────────────────────────────────────────────────────────────────────────────────
 ~~~~~~~~javascript
 // ===========================================================================
@@ -28609,9 +29350,12 @@ button.v19-gps svg{display:block}
       const giftEl = rows[i].querySelector(".order-item-gift");
       const priceEl = rows[i].querySelector(".order-item-price");
       if (nameEl && nameEl.value.trim()) {
+        // کالای بدون تعداد اصلاً سفارش نیست؛ قبلاً || 1 به‌اشتباه آن را یک عدد حساب می‌کرد.
+        const qty = parseInt(countEl && countEl.value, 10) || 0;
+        if (qty <= 0) continue;
         items.push({
           name: nameEl.value.trim(),
-          count: parseInt(countEl && countEl.value, 10) || 1,
+          count: qty,
           giftCount: parseInt(giftEl && giftEl.value, 10) || 0,
           price: parseInt(priceEl && priceEl.value, 10) || 0
         });
@@ -28636,6 +29380,7 @@ button.v19-gps svg{display:block}
       status: val("orderStatus") || "در حال بررسی",
       notes: val("orderNotes"),
       items: items,
+      quantityValidated: true,
       totalAmount: items.reduce(function (s, it) { return s + (it.count * it.price); }, 0),
       customFields: (typeof extractCustomFieldValuesFromForm === "function")
         ? extractCustomFieldValuesFromForm("order", "orderCustomFieldsContainer")
@@ -30161,7 +30906,7 @@ button.v19-gps svg{display:block}
 ~~~~~~~~
 
 ──────────────────────────────────────────────────────────────────────────────────
-فایل: public/index.html (126145 بایت)
+فایل: public/index.html (130562 بایت)
 ──────────────────────────────────────────────────────────────────────────────────
 ~~~~~~~~html
 <!DOCTYPE html>
@@ -30182,7 +30927,7 @@ button.v19-gps svg{display:block}
   <meta name="theme-color" content="#0d9488" />
   
   <!-- Custom Style with Anti-Cache Version 9.1.0 -->
-  <link rel="stylesheet" href="style.css?v=11.17.0" />
+  <link rel="stylesheet" href="style.css?v=11.18.0" />
 </head>
 <body>
 
@@ -30236,6 +30981,7 @@ button.v19-gps svg{display:block}
       <button type="button" class="nav-item" data-target="tab-activity-log" onclick="switchTab('tab-activity-log')"><span>⏱️ فعالیت لحظه‌ای</span></button>
       <button type="button" class="nav-item" data-target="tab-overview-map" onclick="switchTab('tab-overview-map')"><span>🗺️ نقشه جامع</span></button>
       <button type="button" class="nav-item" data-target="tab-live-location" onclick="switchTab('tab-live-location')"><span>📍 موقعیت زنده</span></button>
+      <button type="button" class="nav-item" data-target="tab-snapp-corporate" onclick="switchTab('tab-snapp-corporate')"><span>🚕 اسنپ سازمانی</span></button>
       <button type="button" class="nav-item" data-target="tab-search-info" onclick="switchTab('tab-search-info')"><span>🔍 جستجوی اطلاعات</span></button>
       <button type="button" class="nav-item" data-target="tab-rep-routes" onclick="switchTab('tab-rep-routes')"><span>🛣️ رصد تردد</span></button>
       <button type="button" class="nav-item" data-target="tab-my-visit" onclick="switchTab('tab-my-visit')"><span>▶️ شروع/پایان ویزیت</span></button>
@@ -30297,6 +31043,7 @@ button.v19-gps svg{display:block}
       <button type="button" class="side-menu-item" data-side-target="tab-activity-log" onclick="switchTab('tab-activity-log');closeSideMenu();"><span>فعالیت لحظه‌ای</span><span>⏱️</span></button>
       <button type="button" class="side-menu-item" data-side-target="tab-overview-map" onclick="switchTab('tab-overview-map');closeSideMenu();"><span>نقشه جامع</span><span>🗺️</span></button>
       <button type="button" class="side-menu-item" data-side-target="tab-live-location" onclick="switchTab('tab-live-location');closeSideMenu();"><span>موقعیت زنده</span><span>📍</span></button>
+      <button type="button" class="side-menu-item" data-side-target="tab-snapp-corporate" onclick="switchTab('tab-snapp-corporate');closeSideMenu();"><span>اسنپ سازمانی</span><span>🚕</span></button>
       <button type="button" class="side-menu-item" data-side-target="tab-search-info" onclick="switchTab('tab-search-info');closeSideMenu();"><span>جستجوی اطلاعات</span><span>🔍</span></button>
       <button type="button" class="side-menu-item" data-side-target="tab-rep-routes" onclick="switchTab('tab-rep-routes');closeSideMenu();"><span>رصد تردد</span><span>🛣️</span></button>
       <button type="button" class="side-menu-item" data-side-target="tab-my-visit" onclick="switchTab('tab-my-visit');closeSideMenu();"><span>شروع/پایان ویزیت</span><span>▶️</span></button>
@@ -31126,6 +31873,43 @@ button.v19-gps svg{display:block}
             </tbody>
           </table>
         </div>
+      </div>
+    </section>
+
+    <!-- ======================================================================
+         TAB: SNAPP CORPORATE (اسنپ سازمانی)
+         ====================================================================== -->
+    <section id="tab-snapp-corporate" class="tab-pane">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title"><span>🚕 اسنپ سازمانی — گزارش سفرها</span></div>
+          <div style="display:flex;gap:.5rem;flex-wrap:wrap">
+            <button type="button" id="btnOpenSnappCorporate" class="btn btn-primary btn-sm">🔐 باز کردن پنل رسمی اسنپ</button>
+            <label class="btn btn-primary btn-sm btn-excel" for="snappReportFiles" style="cursor:pointer">📊 ورود فایل‌های گزارش</label>
+            <input id="snappReportFiles" type="file" accept=".xlsx,.xls,.csv,.txt" multiple hidden>
+            <button type="button" id="btnExportSnappView" class="btn btn-primary btn-sm btn-excel">📊 خروجی اکسل نمای فعلی</button>
+            <button type="button" id="btnDeleteSnappReports" class="btn btn-danger btn-sm">🗑️ حذف گزارش‌های واردشده</button>
+          </div>
+        </div>
+        <div class="alert-banner alert-banner-warning" style="display:block;margin-bottom:1rem">
+          <strong>ورود امن:</strong> کد امنیتی باید توسط مدیر در سایت رسمی وارد شود. نام کاربری و رمز در این برنامه، گیت‌هاب و فایل ZIP ذخیره نمی‌شود. پس از ورود، گزارش دیروز را دانلود و هر دو فایل را هم‌زمان اینجا انتخاب کنید.
+        </div>
+        <div id="snappDailyStatus" class="col-add-status">هنوز گزارشی وارد نشده است.</div>
+        <div class="form-grid" style="margin-top:1rem">
+          <div class="form-group"><label class="form-label" for="snappFilterYear">سال</label><input id="snappFilterYear" class="form-input" inputmode="numeric" placeholder="مثال: ۱۴۰۵"></div>
+          <div class="form-group"><label class="form-label" for="snappFilterMonth">ماه</label><select id="snappFilterMonth" class="form-select"><option value="">همه ماه‌ها</option><option value="01">فروردین</option><option value="02">اردیبهشت</option><option value="03">خرداد</option><option value="04">تیر</option><option value="05">مرداد</option><option value="06">شهریور</option><option value="07">مهر</option><option value="08">آبان</option><option value="09">آذر</option><option value="10">دی</option><option value="11">بهمن</option><option value="12">اسفند</option></select></div>
+          <div class="form-group"><label class="form-label" for="snappFilterFrom">از تاریخ</label><input id="snappFilterFrom" class="form-input" placeholder="۱۴۰۵/۰۵/۲۵"></div>
+          <div class="form-group"><label class="form-label" for="snappFilterTo">تا تاریخ</label><input id="snappFilterTo" class="form-input" placeholder="۱۴۰۵/۰۵/۲۵"></div>
+        </div>
+        <div id="snappSummaryCards" class="v20-visit-metrics"></div>
+      </div>
+      <div class="card">
+        <div class="card-header"><div class="card-title"><span>جمع هزینه به تفکیک نماینده</span></div></div>
+        <div class="table-responsive"><table class="data-table"><thead><tr><th>ردیف</th><th>نام نماینده</th><th>تعداد سفر</th><th>جمع هزینه</th></tr></thead><tbody id="snappRepSummaryBody"></tbody></table></div>
+      </div>
+      <div class="card">
+        <div class="card-header"><div class="card-title"><span>ستون‌های ۱، ۲، ۵، ۹، ۱۲، ۱۵، ۱۸، ۱۹ و ۲۴ گزارش</span></div></div>
+        <div class="table-responsive"><table class="data-table"><thead><tr id="snappReportHead"></tr></thead><tbody id="snappReportBody"></tbody></table></div>
       </div>
     </section>
 
@@ -32236,22 +33020,22 @@ button.v19-gps svg{display:block}
   <script src="vendor/leaflet.js"></script>
   
   <!-- Data & Application Logic with Anti-Cache Version 11.10.0 -->
-  <script src="crm-data.js?v=11.17.0"></script>
-  <script src="crm-app.js?v=11.17.0"></script>
-  <script src="crm-features-v9.js?v=11.17.0"></script>
-  <script src="iran-facilities.js?v=11.17.0" defer></script>
-  <script src="crm-features-v10.js?v=11.17.0"></script>
-  <script src="crm-features-v11.js?v=11.17.0"></script>
-  <script src="crm-features-v12.js?v=11.17.0"></script>
-  <script src="crm-features-v13.js?v=11.17.0"></script>
-  <script src="crm-jalali.js?v=11.17.0"></script>
-  <script src="crm-features-v14.js?v=11.17.0"></script>
-  <script src="crm-features-v15.js?v=11.17.0"></script>
-  <script src="crm-features-v16.js?v=11.17.0"></script>
-  <script src="crm-features-v17.js?v=11.17.0"></script>
-  <script src="crm-features-v18.js?v=11.17.0"></script>
-  <script src="crm-features-v19.js?v=11.17.0"></script>
-  <script src="crm-features-v20.js?v=11.17.0"></script>
+  <script src="crm-data.js?v=11.18.0"></script>
+  <script src="crm-app.js?v=11.18.0"></script>
+  <script src="crm-features-v9.js?v=11.18.0"></script>
+  <script src="iran-facilities.js?v=11.18.0" defer></script>
+  <script src="crm-features-v10.js?v=11.18.0"></script>
+  <script src="crm-features-v11.js?v=11.18.0"></script>
+  <script src="crm-features-v12.js?v=11.18.0"></script>
+  <script src="crm-features-v13.js?v=11.18.0"></script>
+  <script src="crm-jalali.js?v=11.18.0"></script>
+  <script src="crm-features-v14.js?v=11.18.0"></script>
+  <script src="crm-features-v15.js?v=11.18.0"></script>
+  <script src="crm-features-v16.js?v=11.18.0"></script>
+  <script src="crm-features-v17.js?v=11.18.0"></script>
+  <script src="crm-features-v18.js?v=11.18.0"></script>
+  <script src="crm-features-v19.js?v=11.18.0"></script>
+  <script src="crm-features-v20.js?v=11.18.0"></script>
   <!-- فیلدهای مخفی سازگاری با کد قبلی (نباید در UI دیده شوند) -->
   <input type="hidden" id="pharmacyLocationText" value="" />
   <input type="hidden" id="doctorLocationText" value="" />
@@ -35277,7 +36061,7 @@ self.addEventListener("fetch", (event) => {
 فایل: public/sw.js (1145 بایت)
 ──────────────────────────────────────────────────────────────────────────────────
 ~~~~~~~~javascript
-const CACHE = "ttt-v11.17.0";
+const CACHE = "ttt-v11.18.0";
 const PRECACHE = ["/", "/login", "/favicon.png", "/logo.png", "/vendor/leaflet.js", "/vendor/leaflet.css"];
 self.addEventListener("install", function (e) {
   e.waitUntil(caches.open(CACHE).then(function (c) { return c.addAll(PRECACHE).catch(function () {}); }).then(function () { return self.skipWaiting(); }));

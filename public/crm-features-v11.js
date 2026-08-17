@@ -186,8 +186,8 @@
         var repHeader = hdrs.splice(repAt, 1)[0]; hdrs.splice(1, 0, repHeader);
         rws = rws.map(function (r) { var x = r.slice(), v = x.splice(repAt, 1)[0]; x.splice(1, 0, v); return x; });
       }
+      // فقط یک فایل اکسل دریافت شود؛ اجرای orig قبلاً همان گزارش را دوباره با پسوند CSV دانلود می‌کرد.
       downloadExcelBordered(filename, hdrs, rws);
-      try { orig(filename, hdrs, rws); } catch (e) {}
     };
   }
 
@@ -355,6 +355,7 @@
     "tab-activity-log": "activity",
     "tab-overview-map": "overview",
     "tab-live-location": "live",
+    "tab-snapp-corporate": "snapp",
     "tab-search-info": "search",
     "tab-rep-routes": "routes",
     "tab-my-visit": "visit",
@@ -2123,6 +2124,7 @@
     hideTab("tab-pharmacies", "ph_access");
     hideTab("tab-doctors", "doc_access");
     hideTab("tab-orders", "ord_access");
+    hideTab("tab-snapp-corporate", "sys_snapp_access");
     hideTab("tab-users-permissions", "sys_users");
     hideTab("tab-backup", "sys_users");
     if (p.ph_percentage === false) {

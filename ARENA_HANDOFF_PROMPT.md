@@ -1084,3 +1084,17 @@ ADDENDUM v11.16.1 (2026-08-16)
 - v20 owns local order match/autofill, entity cascade manager, share-field lock, visit GPS/metrics/routes, route search/export and version badge.
 - v9 visiblePharmacies/Doctors/Orders return reversed copies (newest first).
 - GitHub workflow is pure Node/zero-dependency; do not restore Next commands.
+
+## Addendum — v11.17.1
+- Never restore `|| 1` in order quantity collection. New orders set `quantityValidated: true`; old obvious bug-pattern rows are cleaned only for sharing.
+- Share fields are dynamic (`dynamicShareFields`), not a hardcoded visible subset.
+- Entity manager must remain search-only (2 chars, max 50); never render 10k names.
+- Legacy direct children of addTabPanel stay hidden; v20 manager owns full width and filters IDs by entity prefix/custom ownership.
+- Product layout persistence is reinforced in v20; orderDate is always exempt from grey lock.
+
+## Addendum — v11.18.0
+- Never store the credential pasted in turn 19; it was intentionally redacted. Tell user to rotate it.
+- Do not automate CAPTCHA. Full daily automation requires an official Snapp API.
+- Snapp import supports CSV/text XLS and modern XLSX; test against the user's real pair before claiming browser verification.
+- Selected source columns are zero-based [0,1,4,8,11,14,17,18,23]; import dedupes paired formats.
+- Excel wrapper now downloads only XLS (do not restore orig CSV call).
