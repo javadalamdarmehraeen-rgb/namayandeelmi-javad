@@ -56,12 +56,12 @@
 - نقش: **
 - تعداد توابع داخلی: 8
 
-### `public/crm-app.js` (168701 بایت)
+### `public/crm-app.js` (169394 بایت)
 - نقش: ============================================================================
-- تعداد توابع داخلی: 161
+- تعداد توابع داخلی: 162
 - نام‌های window که تعریف/بازنویسی می‌کند: `_editingProductId`, `_lastSavedProductId`, `_lastSavedProductName`, `_navHamburgerBound`, `activeDateInputForPicker`, `applyAllFormLayouts`, `applyCustomFieldOrderInForm`, `attachInstantAdd`, `attachJalaliPicker`, `buildDesignerWidget`, `cleanupOrphanCustomFields`, `getAllMenuSections`, `rememberPharmacyName`, `renderExtraTabCustomFields`, `validateRequiredFields`
 
-### `public/crm-data.js` (37176 بایت)
+### `public/crm-data.js` (37851 بایت)
 - نقش: ============================================================================
 - تعداد توابع داخلی: 1
 
@@ -115,14 +115,14 @@
 - تعداد توابع داخلی: 65
 - نام‌های window که تعریف/بازنویسی می‌کند: `_v18DefaultReq`, `_v19BackupLayoutGuard`, `_v19ComboHook`, `_v19Hist`, `_v19IcObs`, `_v19ProdTableWrap`, `_v19Sw`, `applyFullFormLayout`, `applySelectExtraOptions`, `extraListColumns`, `performAutoBackup`, `renderAllCustomFieldsInFormsAndTables`, `renderColumnsProductsTable`, `renderPharmaciesList`, `switchTab`, `testServerConnectivity`
 
-### `public/crm-features-v20.js` (98323 بایت)
+### `public/crm-features-v20.js` (110408 بایت)
 - نقش: ============================================================
-- تعداد توابع داخلی: 113
-- نام‌های window که تعریف/بازنویسی می‌کند: `_v20AutoSaveSig`, `_v20AutoSaveT`, `_v20Rendering`, `applyFullFormLayout`, `builtinFieldValue`, `deleteCustomField`, `extraListColumns`, `openRowDetailsModal`, `renderExtraTabCustomFields`, `renderLiveLocationTab`, `reverseGeocodeCoordinates`, `saveState`, `switchTab`, `v20ApplyGreyChains`, `v20ApplyOrderLock`, `v20DupGate`, `v20RenderComboManager`, `v20RenderProductExtras`
+- تعداد توابع داخلی: 125
+- نام‌های window که تعریف/بازنویسی می‌کند: `_v20AutoSaveSig`, `_v20AutoSaveT`, `_v20Rendering`, `_v20TopupRows`, `applyFullFormLayout`, `builtinFieldValue`, `deleteCustomField`, `extraListColumns`, `getUnifiedFieldList`, `openRowDetailsModal`, `renderExtraTabCustomFields`, `renderLiveLocationTab`, `reverseGeocodeCoordinates`, `saveState`, `switchTab`, `v20ApplyGreyChains`, `v20ApplyOrderLock`, `v20DupGate`, `v20RenderComboManager`, `v20RenderProductExtras`
 
-### `public/crm-features-v9.js` (68275 بایت)
+### `public/crm-features-v9.js` (68625 بایت)
 - نقش: ===========================================================================
-- تعداد توابع داخلی: 97
+- تعداد توابع داخلی: 98
 - نام‌های window که تعریف/بازنویسی می‌کند: `builtinFieldValue`, `downloadCSVFile`, `getOrderItemsFromUI`, `isColShownInList`, `renderDoctorsList`, `renderLiveLocationTab`, `renderOrdersList`, `renderPharmaciesList`, `setupLiveLocationTab`, `setupRepsTab`, `switchTab`, `validateRequiredFields`
 
 ### `public/crm-jalali.js` (25683 بایت)
@@ -140,7 +140,7 @@
 - تعداد توابع داخلی: 10
 
 ### `public/sw.js` (1145 بایت)
-- نقش: const CACHE = "ttt-v11.18.0";
+- نقش: const CACHE = "ttt-v11.19.0";
 - تعداد توابع داخلی: 0
 
 ### `public/vendor/leaflet.js` (147552 بایت)
@@ -173,7 +173,7 @@
 - `editUserTab`: تعریف/بازنویسی به ترتیب لود → `public/crm-features-v12.js` ← `public/crm-features-v14.js`
 - `extraListColumns`: تعریف/بازنویسی به ترتیب لود → `public/crm-features-v11.js` ← `public/crm-features-v19.js` ← `public/crm-features-v20.js`
 - `getAllMenuSections`: تعریف/بازنویسی به ترتیب لود → `public/crm-app.js` ← `public/crm-features-v11.js` ← `public/crm-features-v12.js` ← `public/crm-features-v13.js` ← `public/crm-features-v14.js`
-- `getUnifiedFieldList`: تعریف/بازنویسی به ترتیب لود → `public/crm-features-v11.js` ← `public/crm-features-v13.js` ← `public/crm-features-v18.js`
+- `getUnifiedFieldList`: تعریف/بازنویسی به ترتیب لود → `public/crm-features-v11.js` ← `public/crm-features-v13.js` ← `public/crm-features-v18.js` ← `public/crm-features-v20.js`
 - `iconFromTabLabel`: تعریف/بازنویسی به ترتیب لود → `public/crm-features-v12.js` ← `public/crm-features-v14.js`
 - `isColShownInList`: تعریف/بازنویسی به ترتیب لود → `public/crm-features-v9.js` ← `public/crm-features-v11.js`
 - `lockManualDesigner`: تعریف/بازنویسی به ترتیب لود → `public/crm-features-v13.js` ← `public/crm-features-v16.js` ← `public/crm-features-v17.js` ← `public/crm-features-v18.js`
@@ -317,12 +317,13 @@
 
 ### tab-rep-routes «🛣️ رصد تردد»
 - `public/crm-app.js` → 1 شناسه (مثل: `tableRepRoutesBody`)
-- `public/crm-features-v20.js` → 2 شناسه (مثل: `routeRepFilterSelect`, `tableRepRoutesBody`)
+- `public/crm-features-v20.js` → 3 شناسه (مثل: `btnRefreshRepRoutesMap`, `routeRepFilterSelect`, `tableRepRoutesBody`)
 - `public/crm-features-v9.js` → 3 شناسه (مثل: `btnRefreshRepRoutesMap`, `routeRepFilterSelect`, `tableRepRoutesBody`)
 
 ### tab-sales-targets «🎯 تارگت فروش»
 - `public/crm-app.js` → 9 شناسه (مثل: `formSalesTarget`, `tableSalesTargetsBody`, `tgtCalcDistPrice`, `tgtCalcPhPrice`, `tgtCountInput`, `tgtMonthSelect`, `tgtProductSelect`, `tgtRepSelect`)
 - `public/crm-features-v10.js` → 6 شناسه (مثل: `tgtCalcDistPrice`, `tgtCalcPhPrice`, `tgtCountInput`, `tgtProductSelect`, `tgtSummaryBox`, `tgtYearInput`)
+- `public/crm-features-v20.js` → 3 شناسه (مثل: `formSalesTarget`, `tableSalesTargetsBody`, `tgtSummaryBox`)
 
 ### tab-search-info «🔍 جستجوی اطلاعات»
 - `public/crm-app.js` → 38 شناسه (مثل: `btnExportSearchInfoCSV`, `btnNavBalad`, `btnNavGoogle`, `btnNavNeshan`, `btnNavWaze`, `btnRowCopyText`, `btnRowDelete`, `btnRowEdit`)
@@ -331,7 +332,7 @@
 - `public/crm-jalali.js` → 7 شناسه (مثل: `jalaliCalendarPopup`, `jalaliDaysGrid`, `jalaliMonthSelect`, `jalaliNextMonth`, `jalaliPrevMonth`, `jalaliTodayBtn`, `jalaliYearSelect`)
 
 ### tab-snapp-corporate «🚕 اسنپ سازمانی»
-- `public/crm-features-v20.js` → 13 شناسه (مثل: `btnDeleteSnappReports`, `btnExportSnappView`, `btnOpenSnappCorporate`, `snappDailyStatus`, `snappFilterFrom`, `snappFilterMonth`, `snappFilterTo`, `snappFilterYear`)
+- `public/crm-features-v20.js` → 19 شناسه (مثل: `btnBuildSnappReport`, `btnExportSnappTopups`, `btnExportSnappView`, `btnOpenSnappCorporate`, `snappDailyStatus`, `snappFilterFrom`, `snappFilterMonth`, `snappFilterRep`)
 
 ### tab-troubleshooting «🛠️ عیب‌یابی»
 - `public/crm-app.js` → 1 شناسه (مثل: `diagnosticsStatusBox`)
@@ -369,7 +370,7 @@
 - `optionsStr` ← `public/crm-features-v14.js`, `public/crm-features-v15.js`
 - `opts` ← `public/crm-features-v11.js`, `public/crm-features-v14.js`
 - `p` ← `public/cloudflare-worker.js`, `public/crm-features-v10.js`, `public/crm-features-v11.js`, `public/crm-features-v16.js`
-- `ph` ← `public/crm-app.js`, `public/crm-features-v10.js`, `public/crm-features-v9.js`
+- `ph` ← `public/crm-app.js`, `public/crm-features-v10.js`, `public/crm-features-v20.js`, `public/crm-features-v9.js`
 - `prod` ← `public/crm-app.js`, `public/crm-features-v9.js`
 - `push` ← `public/crm-features-v14.js`, `public/crm-features-v19.js`
 - `q` ← `public/crm-features-v17.js`, `public/crm-features-v9.js`

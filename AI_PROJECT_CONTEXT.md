@@ -825,3 +825,6 @@ crm-features-v20.js; knowledge graph PROJECT_GRAPH.md is read-first
 
 ## افزونه وضعیت نسخه ۱۱.۱۸.۰ (2026-08-17)
 نسخه فعال 11.18.0 است. تب tab-snapp-corporate فقط مدیر/دسترسی صریح، بدون credential، گزارش‌ها را از CSV/XLSX وارد و در state.snappCorporate نگه می‌دارد. CAPTCHA هرگز خودکار حل نمی‌شود. موقعیت زنده اکنون حالت همه نمایندگان و textAddress کش‌شده دارد.
+
+## افزونه وضعیت نسخه ۱۱.۱۹.۰ (2026-08-17)
+نسخه فعال 11.19.0 است. اسنپ دو آرشیو rows/topups دارد که فقط prepend+dedupe می‌شوند و حذف UI ندارند؛ backup کل state را می‌گیرد. پیام‌رسان همه unified fields را با v20ShareOrder مرتب می‌کند. تارگت مالی از قیمت‌های product مشتق می‌شود.

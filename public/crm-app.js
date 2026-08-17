@@ -2155,13 +2155,14 @@ function setupOrdersTab() {
       const totalAmount = items.reduce((sum, item) => sum + calcOrderRowTotal(item.count, item.giftCount || 0, item.price), 0);
       const vatAmount = Math.round(totalAmount * (getOrderFormula().vat || 0) / 100);
       const totalAmountWithVat = totalAmount + vatAmount;
+      const orderManagerRec = (state.pharmacies || []).find(p => p.id === ((document.getElementById("orderPharmacyMatchedId") || {}).value) || p.name === pharmacyName) || {};
 
       if (editId) {
         const idx = state.orders.findIndex(o => o.id === editId);
         if (idx !== -1) {
           state.orders[idx] = {
             ...state.orders[idx],
-            pharmacyName, province, city, district, address,
+            pharmacyName, orderManager: orderManagerRec.manager || "", orderManagerPhone: orderManagerRec.managerPhone || "", province, city, district, address,
             repName, orderDate, status, notes, items, quantityValidated: true, totalAmount, vatAmount, totalAmountWithVat,
             customFields: customFieldsVals
           };
@@ -2170,7 +2171,7 @@ function setupOrdersTab() {
       } else {
         const newOrder = {
           id: "ord-" + Date.now(),
-          pharmacyName, province, city, district, address,
+          pharmacyName, orderManager: orderManagerRec.manager || "", orderManagerPhone: orderManagerRec.managerPhone || "", province, city, district, address,
           repName, orderDate, status, notes, items, quantityValidated: true, totalAmount, vatAmount, totalAmountWithVat,
           customFields: customFieldsVals
         };
@@ -3360,6 +3361,7 @@ function setupAllFormSubmitHandlers() {
     const totalAmount = items.reduce((sum, item) => sum + calcOrderRowTotal(item.count, item.giftCount || 0, item.price), 0);
     const vatAmount = Math.round(totalAmount * (getOrderFormula().vat || 0) / 100);
     const totalAmountWithVat = totalAmount + vatAmount;
+    const orderManagerRec = (state.pharmacies || []).find(p => p.id === pharmacyId || p.name === pharmacyName) || {};
 
     // کسر خودکار از باقیمانده تارگت نماینده (Requirement 1 in prompt)
     items.forEach(item => {
@@ -3374,13 +3376,13 @@ function setupAllFormSubmitHandlers() {
     if (editId) {
       const idx = state.orders.findIndex(o => o.id === editId);
       if (idx !== -1) {
-        state.orders[idx] = { ...state.orders[idx], pharmacyName, pharmacyId, province, city, district, address, repName, orderDate, status, notes, items, quantityValidated: true, totalAmount, vatAmount, totalAmountWithVat, customFields: customFieldsVals };
+        state.orders[idx] = { ...state.orders[idx], pharmacyName, pharmacyId, orderManager: orderManagerRec.manager || "", orderManagerPhone: orderManagerRec.managerPhone || "", province, city, district, address, repName, orderDate, status, notes, items, quantityValidated: true, totalAmount, vatAmount, totalAmountWithVat, customFields: customFieldsVals };
       }
       alert(`✅ سفارش داروخانه «${pharmacyName}» ویرایش شد.`);
     } else {
       state.orders.push({
         id: "ord-" + Date.now(),
-        pharmacyName, pharmacyId, province, city, district, address, repName, orderDate, status, notes, items, quantityValidated: true, totalAmount, vatAmount, totalAmountWithVat,
+        pharmacyName, pharmacyId, orderManager: orderManagerRec.manager || "", orderManagerPhone: orderManagerRec.managerPhone || "", province, city, district, address, repName, orderDate, status, notes, items, quantityValidated: true, totalAmount, vatAmount, totalAmountWithVat,
         customFields: customFieldsVals
       });
       alert(`✅ سفارش جدید برای داروخانه «${pharmacyName}» ثبت شد. از باقیمانده تارگت نماینده کسر گردید.`);

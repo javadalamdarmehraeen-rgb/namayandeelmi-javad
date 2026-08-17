@@ -1091,3 +1091,9 @@ Then change only what is requested.
 - Import: CSV/TSV parser + XLSX ZIP/XML browser parser؛ بدون npm dependency.
 - Security boundary: no credentials, no CAPTCHA solving; official site opens in a separate secure tab.
 - Live map: option empty means all reps; reverse endpoint populates `rep.textAddress`.
+
+## معماری افزوده v11.19.0
+- Snapp archive: `rows` and `topups`, each immutable from UI, newest imports prepended, full-row signatures dedupe.
+- Header detection scans first 25 rows; trip and topup schemas are separated.
+- Share ordering: `settings.v20ShareOrder[entity][fieldId]`; rendering sorts before composing text.
+- Target report derives distributor/pharmacy unit and total prices from `state.products`.

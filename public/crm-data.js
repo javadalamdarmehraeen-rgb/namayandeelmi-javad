@@ -372,10 +372,15 @@ const PERMISSION_GROUPS = {
     { key: "sys_snapp_access", label: "دسترسی به تب اسنپ سازمانی" },
     { key: "sys_snapp_import", label: "ورود فایل‌های گزارش اسنپ سازمانی" },
     { key: "sys_snapp_export", label: "خروجی اکسل گزارش تجمیعی اسنپ" },
-    { key: "sys_snapp_delete", label: "حذف گزارش‌های واردشده اسنپ" },
+    { key: "sys_snapp_topup", label: "ورود و تجمیع دائمی گزارش افزایش موجودی" },
     { key: "live_all_reps", label: "نمایش هم‌زمان موقعیت همه نمایندگان" },
     { key: "live_text_address", label: "تبدیل موقعیت نمایندگان به آدرس متنی" },
-    { key: "sys_button_colors", label: "رنگ استاندارد کلیدها (اکسل سبز، حذف قرمز)" }
+    { key: "sys_button_colors", label: "رنگ استاندارد کلیدها (اکسل سبز، حذف قرمز)" },
+    { key: "sys_share_order", label: "انتخاب و ترتیب همه فیلدهای متن ارسالی" },
+    { key: "sys_snapp_archive", label: "آرشیو حذف‌ناپذیر سفرها و افزایش موجودی در پشتیبان" },
+    { key: "sys_layout_polish", label: "چیدمان شبکه‌ای و مرتب فرم‌های عمومی" },
+    { key: "fld_routes_controls", label: "کنترل‌های کامل بروزرسانی، همه نمایندگان، جستجو و اکسل تردد" },
+    { key: "sys_target_financial", label: "تارگت تعداد و ریال پخش/داروخانه با جمع نماینده و کل" }
   ]
 };
 

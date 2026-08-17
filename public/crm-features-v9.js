@@ -622,9 +622,13 @@
     ensureStateExtras();
     const editId = val("orderEditId");
     const items = collectOrderItems();
+    const matchedPharmacy = (state.pharmacies || []).find(function(p){ return p.id === val("orderPharmacyMatchedId") || p.name === val("orderPharmacyName"); }) || {};
     const rec = {
       id: editId || ("ord-" + Date.now()),
       pharmacyName: val("orderPharmacyName"),
+      pharmacyId: matchedPharmacy.id || val("orderPharmacyMatchedId"),
+      orderManager: matchedPharmacy.manager || "",
+      orderManagerPhone: matchedPharmacy.managerPhone || "",
       province: val("orderProvince"),
       city: val("orderCity"),
       district: val("orderDistrict"),

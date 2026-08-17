@@ -1098,3 +1098,9 @@ ADDENDUM v11.16.1 (2026-08-16)
 - Snapp import supports CSV/text XLS and modern XLSX; test against the user's real pair before claiming browser verification.
 - Selected source columns are zero-based [0,1,4,8,11,14,17,18,23]; import dedupes paired formats.
 - Excel wrapper now downloads only XLS (do not restore orig CSV call).
+
+## Addendum — v11.19.0
+- Never restore Snapp delete UI/permission. Both rows and topups are archival and included in full-state backups.
+- New imports must stay `fresh.concat(old)` and deduped.
+- Share items format is `name = تعداد کالا: N / تعداد جایزه: G`; order date output is DD/MM/YYYY.
+- Real user spreadsheet was not attached to workspace and production /api/state returned empty; do not claim exact real-file verification until browser feedback/sample arrives.
