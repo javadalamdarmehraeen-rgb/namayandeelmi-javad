@@ -27,10 +27,10 @@
 
 ## ب) کارت فایل‌ها (نقش + توابع + نام‌های window که می‌سازد)
 
-### `server.js` (7947 بایت)
+### `server.js` (9666 بایت)
 - نقش: سرور سبک Node.js برای Render — ورود جدا، gzip، health، ژئوکد، محدودیت نرخ
 - تعداد توابع داخلی: 4
-- endpointهای سرور: `/api/backup`, `/api/state`, `/api/state`
+- endpointهای سرور: `/api/backup`, `/api/backup/email`, `/api/state`, `/api/state`
 
 ### `scripts/build-sw.mjs` (2656 بایت)
 - نقش: #!/usr/bin/env node
@@ -61,7 +61,7 @@
 - تعداد توابع داخلی: 162
 - نام‌های window که تعریف/بازنویسی می‌کند: `_editingProductId`, `_lastSavedProductId`, `_lastSavedProductName`, `_navHamburgerBound`, `activeDateInputForPicker`, `applyAllFormLayouts`, `applyCustomFieldOrderInForm`, `attachInstantAdd`, `attachJalaliPicker`, `buildDesignerWidget`, `cleanupOrphanCustomFields`, `getAllMenuSections`, `rememberPharmacyName`, `renderExtraTabCustomFields`, `validateRequiredFields`
 
-### `public/crm-data.js` (37851 بایت)
+### `public/crm-data.js` (38845 بایت)
 - نقش: ============================================================================
 - تعداد توابع داخلی: 1
 
@@ -115,12 +115,12 @@
 - تعداد توابع داخلی: 65
 - نام‌های window که تعریف/بازنویسی می‌کند: `_v18DefaultReq`, `_v19BackupLayoutGuard`, `_v19ComboHook`, `_v19Hist`, `_v19IcObs`, `_v19ProdTableWrap`, `_v19Sw`, `applyFullFormLayout`, `applySelectExtraOptions`, `extraListColumns`, `performAutoBackup`, `renderAllCustomFieldsInFormsAndTables`, `renderColumnsProductsTable`, `renderPharmaciesList`, `switchTab`, `testServerConnectivity`
 
-### `public/crm-features-v20.js` (110408 بایت)
+### `public/crm-features-v20.js` (116453 بایت)
 - نقش: ============================================================
-- تعداد توابع داخلی: 125
-- نام‌های window که تعریف/بازنویسی می‌کند: `_v20AutoSaveSig`, `_v20AutoSaveT`, `_v20Rendering`, `_v20TopupRows`, `applyFullFormLayout`, `builtinFieldValue`, `deleteCustomField`, `extraListColumns`, `getUnifiedFieldList`, `openRowDetailsModal`, `renderExtraTabCustomFields`, `renderLiveLocationTab`, `reverseGeocodeCoordinates`, `saveState`, `switchTab`, `v20ApplyGreyChains`, `v20ApplyOrderLock`, `v20DupGate`, `v20RenderComboManager`, `v20RenderProductExtras`
+- تعداد توابع داخلی: 133
+- نام‌های window که تعریف/بازنویسی می‌کند: `_v20AutoSaveSig`, `_v20AutoSaveT`, `_v20Rendering`, `_v20TopupRows`, `applyFullFormLayout`, `builtinFieldValue`, `deleteCustomField`, `extraListColumns`, `getUnifiedFieldList`, `openRowDetailsModal`, `performAutoBackup`, `renderExtraTabCustomFields`, `renderLiveLocationTab`, `reverseGeocodeCoordinates`, `saveState`, `switchTab`, `v20ApplyGreyChains`, `v20ApplyOrderLock`, `v20DupGate`, `v20RenderComboManager`, `v20RenderProductExtras`
 
-### `public/crm-features-v9.js` (68625 بایت)
+### `public/crm-features-v9.js` (69121 بایت)
 - نقش: ===========================================================================
 - تعداد توابع داخلی: 98
 - نام‌های window که تعریف/بازنویسی می‌کند: `builtinFieldValue`, `downloadCSVFile`, `getOrderItemsFromUI`, `isColShownInList`, `renderDoctorsList`, `renderLiveLocationTab`, `renderOrdersList`, `renderPharmaciesList`, `setupLiveLocationTab`, `setupRepsTab`, `switchTab`, `validateRequiredFields`
@@ -140,7 +140,7 @@
 - تعداد توابع داخلی: 10
 
 ### `public/sw.js` (1145 بایت)
-- نقش: const CACHE = "ttt-v11.19.0";
+- نقش: const CACHE = "ttt-v11.20.0";
 - تعداد توابع داخلی: 0
 
 ### `public/vendor/leaflet.js` (147552 بایت)
@@ -177,6 +177,7 @@
 - `iconFromTabLabel`: تعریف/بازنویسی به ترتیب لود → `public/crm-features-v12.js` ← `public/crm-features-v14.js`
 - `isColShownInList`: تعریف/بازنویسی به ترتیب لود → `public/crm-features-v9.js` ← `public/crm-features-v11.js`
 - `lockManualDesigner`: تعریف/بازنویسی به ترتیب لود → `public/crm-features-v13.js` ← `public/crm-features-v16.js` ← `public/crm-features-v17.js` ← `public/crm-features-v18.js`
+- `performAutoBackup`: تعریف/بازنویسی به ترتیب لود → `public/crm-features-v19.js` ← `public/crm-features-v20.js`
 - `placeFieldOnTab`: تعریف/بازنویسی به ترتیب لود → `public/crm-features-v12.js` ← `public/crm-features-v13.js`
 - `refreshColumnsDesigner`: تعریف/بازنویسی به ترتیب لود → `public/crm-features-v11.js` ← `public/crm-features-v12.js` ← `public/crm-features-v14.js`
 - `refreshManualCanvas`: تعریف/بازنویسی به ترتیب لود → `public/crm-features-v12.js` ← `public/crm-features-v13.js`
@@ -195,6 +196,7 @@
 ## د) گراف API (سرویس api ↔ مصرف‌کننده‌ها)
 
 - `/api/backup` [GET] — مصرف‌کننده: —
+- `/api/backup/email` [POST] — مصرف‌کننده: `public/crm-features-v20.js`
 - `/api/geocode?q=` [؟] — مصرف‌کننده: `public/crm-app.js`
 - `/api/health` [؟] — مصرف‌کننده: `public/crm-features-v10.js`, `public/crm-features-v19.js`
 - `/api/reverse?lat=` [؟] — مصرف‌کننده: `public/crm-app.js`, `public/crm-features-v20.js`
@@ -225,6 +227,7 @@
 ### tab-backup «💾 پشتیبان‌گیری»
 - `public/crm-app.js` → 14 شناسه (مثل: `autoBackupHandleStatus`, `btnCancelRestore`, `btnConfirmRestore`, `btnManualBackupNow`, `btnSelectAutoBackupFolder`, `chkAutoBackupEnabled`, `dropzoneRestore`, `fileInputRestore`)
 - `public/crm-features-v19.js` → 1 شناسه (مثل: `autoBackupHandleStatus`)
+- `public/crm-features-v20.js` → 1 شناسه (مثل: `autoBackupHandleStatus`)
 - `public/crm-features-v9.js` → 2 شناسه (مثل: `backupEmailInput`, `backupIntervalSelect`)
 
 ### tab-columns-products «🧱 ستون‌ها و کالاها»
@@ -327,12 +330,12 @@
 
 ### tab-search-info «🔍 جستجوی اطلاعات»
 - `public/crm-app.js` → 38 شناسه (مثل: `btnExportSearchInfoCSV`, `btnNavBalad`, `btnNavGoogle`, `btnNavNeshan`, `btnNavWaze`, `btnRowCopyText`, `btnRowDelete`, `btnRowEdit`)
-- `public/crm-features-v20.js` → 1 شناسه (مثل: `btnRowCopyText`)
+- `public/crm-features-v20.js` → 2 شناسه (مثل: `btnRowCopyText`, `rowDetailsContentBox`)
 - `public/crm-features-v9.js` → 3 شناسه (مثل: `formLoginModal`, `jalaliCalendarPopup`, `jalaliTodayBtn`)
 - `public/crm-jalali.js` → 7 شناسه (مثل: `jalaliCalendarPopup`, `jalaliDaysGrid`, `jalaliMonthSelect`, `jalaliNextMonth`, `jalaliPrevMonth`, `jalaliTodayBtn`, `jalaliYearSelect`)
 
 ### tab-snapp-corporate «🚕 اسنپ سازمانی»
-- `public/crm-features-v20.js` → 19 شناسه (مثل: `btnBuildSnappReport`, `btnExportSnappTopups`, `btnExportSnappView`, `btnOpenSnappCorporate`, `snappDailyStatus`, `snappFilterFrom`, `snappFilterMonth`, `snappFilterRep`)
+- `public/crm-features-v20.js` → 24 شناسه (مثل: `btnBuildSnappReport`, `btnBuildSnappTopupReport`, `btnExportSnappTopups`, `btnExportSnappView`, `btnOpenSnappCorporate`, `snappDailyStatus`, `snappFilterFrom`, `snappFilterMonth`)
 
 ### tab-troubleshooting «🛠️ عیب‌یابی»
 - `public/crm-app.js` → 1 شناسه (مثل: `diagnosticsStatusBox`)

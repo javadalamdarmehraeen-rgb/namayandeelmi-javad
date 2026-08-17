@@ -828,3 +828,6 @@ crm-features-v20.js; knowledge graph PROJECT_GRAPH.md is read-first
 
 ## افزونه وضعیت نسخه ۱۱.۱۹.۰ (2026-08-17)
 نسخه فعال 11.19.0 است. اسنپ دو آرشیو rows/topups دارد که فقط prepend+dedupe می‌شوند و حذف UI ندارند؛ backup کل state را می‌گیرد. پیام‌رسان همه unified fields را با v20ShareOrder مرتب می‌کند. تارگت مالی از قیمت‌های product مشتق می‌شود.
+
+## افزونه وضعیت نسخه ۱۱.۲۰.۰ (2026-08-17)
+نسخه فعال 11.20.0 است. schema سفر و شارژ اسنپ صریح است؛ نمایندگان از users غیرمدیر می‌آیند. email backup endpoint به Resend متصل است ولی بدون env عمداً 503 می‌دهد. جزئیات سفارش و share متن یک منبع دارند.

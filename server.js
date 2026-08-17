@@ -91,7 +91,7 @@ const server = http.createServer((req, res) => {
     return send(req, res, 200, JSON.stringify({
       ok: true, status: "healthy", message: "OK",
       service: "namayandeelmi-javad-crm",
-      version: "11.19.0",
+      version: "11.20.0",
       timestamp: new Date().toISOString()
     }), "application/json; charset=utf-8");
   }
@@ -114,6 +114,26 @@ const server = http.createServer((req, res) => {
       send(req, res, up.ok ? 200 : up.status, text, "application/json; charset=utf-8", { "Cache-Control": "public, max-age=120" });
     }).catch((err) => {
       send(req, res, 502, JSON.stringify({ status: "error", message: String(err.message || err) }), "application/json; charset=utf-8");
+    });
+    return;
+  }
+
+  if (pathname === "/api/backup/email" && req.method === "POST") {
+    const apiKey = process.env.RESEND_API_KEY || "";
+    const from = process.env.BACKUP_FROM_EMAIL || "";
+    if (!apiKey || !from) return send(req, res, 503, JSON.stringify({ status: "not_configured", message: "RESEND_API_KEY و BACKUP_FROM_EMAIL در Render تنظیم نشده‌اند" }), "application/json; charset=utf-8");
+    let body = "";
+    req.on("data", (c) => { body += c; if (body.length > 8 * 1024 * 1024) req.destroy(); });
+    req.on("end", async () => {
+      try {
+        const data = JSON.parse(body), to = String(data.to || "").trim();
+        if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(to)) throw new Error("ایمیل مقصد معتبر نیست");
+        const backup = JSON.stringify(data.state || {}, null, 2);
+        const up = await fetch("https://api.resend.com/emails", { method: "POST", headers: { "Authorization": "Bearer " + apiKey, "Content-Type": "application/json" }, body: JSON.stringify({ from, to: [to], subject: "پشتیبان خودکار CRM — " + new Date().toLocaleDateString("fa-IR"), html: "<p dir='rtl'>نسخه پشتیبان خودکار سامانه پیوست است.</p>", attachments: [{ filename: "crm-backup-latest.json", content: Buffer.from(backup).toString("base64") }] }) });
+        const text = await up.text();
+        if (!up.ok) return send(req, res, up.status, text, "application/json; charset=utf-8");
+        return send(req, res, 200, JSON.stringify({ status: "sent" }), "application/json; charset=utf-8");
+      } catch (err) { return send(req, res, 400, JSON.stringify({ status: "error", message: err.message }), "application/json; charset=utf-8"); }
     });
     return;
   }
@@ -185,5 +205,5 @@ const server = http.createServer((req, res) => {
 });
 
 server.listen(PORT, "0.0.0.0", () => {
-  console.log("CRM v11.19.0 listening on 0.0.0.0:" + PORT);
+  console.log("CRM v11.20.0 listening on 0.0.0.0:" + PORT);
 });

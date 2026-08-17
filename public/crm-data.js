@@ -381,6 +381,16 @@ const PERMISSION_GROUPS = {
     { key: "sys_layout_polish", label: "چیدمان شبکه‌ای و مرتب فرم‌های عمومی" },
     { key: "fld_routes_controls", label: "کنترل‌های کامل بروزرسانی، همه نمایندگان، جستجو و اکسل تردد" },
     { key: "sys_target_financial", label: "تارگت تعداد و ریال پخش/داروخانه با جمع نماینده و کل" }
+  ],
+  "ابزارهای مدیریت (نسخه ۱۱.۲۰)": [
+    { key: "sys_add_auto_tab", label: "تشخیص خودکار تب هنگام افزودن فیلد" },
+    { key: "sys_same_name_merge", label: "همگام اطلاعات فیلدهای هم‌نام" },
+    { key: "sys_geo_cascade_select", label: "انتخاب وابسته استان، شهر و منطقه در مدیر کشویی" },
+    { key: "snapp_trip_fields", label: "گزارش تفکیک‌شده تاریخ/ساعت سفر اسنپ" },
+    { key: "snapp_user_match", label: "تطبیق مسافر اسنپ با کاربران بدون عنوان آقا/خانم" },
+    { key: "snapp_topup_filters", label: "فیلتر مستقل و تهیه گزارش مبلغ شارژ" },
+    { key: "ord_detail_clean", label: "جزئیات و ارسال یکسان بدون کالای فاقد تعداد" },
+    { key: "sys_backup_email", label: "ارسال خودکار پشتیبان به ایمیل از سرویس امن" }
   ]
 };
 

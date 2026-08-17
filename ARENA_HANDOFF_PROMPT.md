@@ -1104,3 +1104,9 @@ ADDENDUM v11.16.1 (2026-08-16)
 - New imports must stay `fresh.concat(old)` and deduped.
 - Share items format is `name = تعداد کالا: N / تعداد جایزه: G`; order date output is DD/MM/YYYY.
 - Real user spreadsheet was not attached to workspace and production /api/state returned empty; do not claim exact real-file verification until browser feedback/sample arrives.
+
+## Addendum — v11.20.0
+- cfTargetEntity stays in DOM for compatibility but is hidden and synced from active v20 pane.
+- Snapp exact schemas: trip 9 columns; topup date-time + creditor (displayed as مبلغ شارژ).
+- Backup email requires RESEND_API_KEY and BACKUP_FROM_EMAIL only in Render env; never commit values. Avoid calling saveState after email success (would recurse).
+- Order list uses cleanOrderItemsV9; modal details is replaced by the exact locked share text.

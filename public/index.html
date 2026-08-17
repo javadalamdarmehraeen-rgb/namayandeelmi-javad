@@ -16,7 +16,7 @@
   <meta name="theme-color" content="#0d9488" />
   
   <!-- Custom Style with Anti-Cache Version 9.1.0 -->
-  <link rel="stylesheet" href="style.css?v=11.19.0" />
+  <link rel="stylesheet" href="style.css?v=11.20.0" />
 </head>
 <body>
 
@@ -1005,6 +1005,7 @@
       </div>
       <div class="card">
         <div class="card-header"><div class="card-title"><span>💳 گزارش افزایش موجودی — آرشیو دائمی</span></div><button type="button" id="btnExportSnappTopups" class="btn btn-primary btn-sm btn-excel">📊 خروجی افزایش موجودی</button></div>
+        <div class="form-grid" style="margin:1rem 0"><div class="form-group"><label class="form-label">سال شارژ</label><input id="snappTopupYear" class="form-input" placeholder="۱۴۰۵"></div><div class="form-group"><label class="form-label">ماه شارژ</label><select id="snappTopupMonth" class="form-select"><option value="">همه ماه‌ها</option><option value="01">فروردین</option><option value="02">اردیبهشت</option><option value="03">خرداد</option><option value="04">تیر</option><option value="05">مرداد</option><option value="06">شهریور</option><option value="07">مهر</option><option value="08">آبان</option><option value="09">آذر</option><option value="10">دی</option><option value="11">بهمن</option><option value="12">اسفند</option></select></div><div class="form-group"><label class="form-label">از تاریخ شارژ</label><input id="snappTopupFrom" class="form-input" placeholder="۱۴۰۵/۰۵/۲۶"></div><div class="form-group"><label class="form-label">تا تاریخ شارژ</label><input id="snappTopupTo" class="form-input" placeholder="۱۴۰۵/۰۵/۲۶"></div><div class="form-group"><button type="button" id="btnBuildSnappTopupReport" class="btn btn-primary">🔎 تهیه گزارش افزایش موجودی</button></div></div>
         <div id="snappTopupSummaryCards" class="v20-visit-metrics"></div>
         <div class="table-responsive"><table class="data-table"><thead><tr id="snappTopupHead"><th>ردیف</th><th>تاریخ</th><th>افزایش موجودی</th></tr></thead><tbody id="snappTopupBody"></tbody></table></div>
       </div>
@@ -2117,22 +2118,22 @@
   <script src="vendor/leaflet.js"></script>
   
   <!-- Data & Application Logic with Anti-Cache Version 11.10.0 -->
-  <script src="crm-data.js?v=11.19.0"></script>
-  <script src="crm-app.js?v=11.19.0"></script>
-  <script src="crm-features-v9.js?v=11.19.0"></script>
-  <script src="iran-facilities.js?v=11.19.0" defer></script>
-  <script src="crm-features-v10.js?v=11.19.0"></script>
-  <script src="crm-features-v11.js?v=11.19.0"></script>
-  <script src="crm-features-v12.js?v=11.19.0"></script>
-  <script src="crm-features-v13.js?v=11.19.0"></script>
-  <script src="crm-jalali.js?v=11.19.0"></script>
-  <script src="crm-features-v14.js?v=11.19.0"></script>
-  <script src="crm-features-v15.js?v=11.19.0"></script>
-  <script src="crm-features-v16.js?v=11.19.0"></script>
-  <script src="crm-features-v17.js?v=11.19.0"></script>
-  <script src="crm-features-v18.js?v=11.19.0"></script>
-  <script src="crm-features-v19.js?v=11.19.0"></script>
-  <script src="crm-features-v20.js?v=11.19.0"></script>
+  <script src="crm-data.js?v=11.20.0"></script>
+  <script src="crm-app.js?v=11.20.0"></script>
+  <script src="crm-features-v9.js?v=11.20.0"></script>
+  <script src="iran-facilities.js?v=11.20.0" defer></script>
+  <script src="crm-features-v10.js?v=11.20.0"></script>
+  <script src="crm-features-v11.js?v=11.20.0"></script>
+  <script src="crm-features-v12.js?v=11.20.0"></script>
+  <script src="crm-features-v13.js?v=11.20.0"></script>
+  <script src="crm-jalali.js?v=11.20.0"></script>
+  <script src="crm-features-v14.js?v=11.20.0"></script>
+  <script src="crm-features-v15.js?v=11.20.0"></script>
+  <script src="crm-features-v16.js?v=11.20.0"></script>
+  <script src="crm-features-v17.js?v=11.20.0"></script>
+  <script src="crm-features-v18.js?v=11.20.0"></script>
+  <script src="crm-features-v19.js?v=11.20.0"></script>
+  <script src="crm-features-v20.js?v=11.20.0"></script>
   <!-- فیلدهای مخفی سازگاری با کد قبلی (نباید در UI دیده شوند) -->
   <input type="hidden" id="pharmacyLocationText" value="" />
   <input type="hidden" id="doctorLocationText" value="" />

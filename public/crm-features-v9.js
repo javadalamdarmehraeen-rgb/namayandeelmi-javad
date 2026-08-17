@@ -854,6 +854,7 @@
     renderPager("docListPager", "doctor", slice.pages, slice.page, function () { renderDoctorsListV9(query); });
   }
 
+  function cleanOrderItemsV9(ord){var items=(ord.items||[]).filter(function(i){return Number(i.count)>0;});if(!ord.quantityValidated){var ones=items.filter(function(i){return Number(i.count)===1;}),real=items.filter(function(i){return Number(i.count)>1;});if(ones.length>=2&&real.length)items=real;}return items;}
   function renderOrdersListV9(q) {
     const tbody = $("tableOrdersBody");
     const thead = $("tableOrdersHeader");
@@ -874,7 +875,9 @@
     const slice = pageSlice(filtered, "order");
     tbody.innerHTML = "";
     slice.rows.forEach(function (ord, i) {
-      const gifts = (ord.items || []).map(function (it) { return it.name + " (" + it.count + " / جایزه " + (it.giftCount || 0) + ")"; }).join("، ");
+      const validItems = cleanOrderItemsV9(ord);
+      const gifts = validItems.map(function (it) { return it.name + " = تعداد کالا: " + it.count + " / تعداد جایزه: " + (it.giftCount || 0); }).join("، ");
+      const cleanTotal = validItems.reduce(function(s,it){return s+(Number(it.count)||0)*(Number(it.price)||0);},0);
       const tr = document.createElement("tr");
       tr.style.cursor = "pointer";
       const abs = ((listPage.order - 1) * PAGE_SIZE) + i + 1;
@@ -885,7 +888,7 @@
         tdVis("order", "orderProvince", "<td>" + [ord.province, ord.city].filter(Boolean).join(" / ") + "</td>") +
         tdVis("order", "orderDate", "<td>" + (ord.orderDate || "—") + "</td>") +
         "<td>" + (gifts || "—") + "</td>" +
-        "<td>" + Number(ord.totalAmount || 0).toLocaleString("fa-IR") + "</td>" +
+        "<td>" + Number(cleanTotal || 0).toLocaleString("fa-IR") + "</td>" +
         tdVis("order", "orderStatus", "<td>" + (ord.status || "—") + "</td>") +
         extraCells("order", ord) +
         cfCellHtml("order", ord) +
